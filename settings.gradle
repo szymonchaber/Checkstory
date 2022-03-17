@@ -14,3 +14,9 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Checkstory"
 include ':app'
+include ':common'
+include ':domain'
+include ':checklist:catalog'
+include ':checklist:template'
+include ':checklist:fill'
+include ':checklist:history'
