@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.common.mvi
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,7 @@ abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewMo
     val state: Flow<STATE>
         get() = _state
 
-    private val _effect = kotlinx.coroutines.channels.Channel<EFFECT>()
+    private val _effect = Channel<EFFECT>()
     val effect: Flow<EFFECT>
         get() = _effect.consumeAsFlow()
 
