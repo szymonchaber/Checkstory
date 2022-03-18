@@ -6,11 +6,24 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.checklist
+
+@Composable
+fun FillChecklistScreen(fillChecklistViewModel: FillChecklistViewModel = viewModel()) {
+    val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState(checklist))
+    FillChecklistView(state.value.checklist)
+}
 
 @Composable
 fun FillChecklistView(checklist: Checklist) {
@@ -35,20 +48,6 @@ fun CheckboxItem(checkbox: Checkbox) {
 @Composable
 fun FillChecklistViewPreview() {
     CheckstoryTheme {
-        FillChecklistView(
-            Checklist(
-                "Cleaning living room",
-                "I love to have a clean living room, but tend to forget about some hard-to-reach places",
-                listOf(
-                    Checkbox("Table", true),
-                    Checkbox("Desk", true),
-                    Checkbox("Floor covers", false)
-                )
-            )
-        )
+        FillChecklistView(checklist)
     }
 }
-
-class Checklist(val title: String, val description: String, val items: List<Checkbox>)
-
-class Checkbox(val title: String, val isChecked: Boolean)
