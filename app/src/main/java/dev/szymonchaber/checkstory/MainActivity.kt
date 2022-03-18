@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
-import dev.szymonchaber.checkstory.ui.theme.CheckstoryTheme
+import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

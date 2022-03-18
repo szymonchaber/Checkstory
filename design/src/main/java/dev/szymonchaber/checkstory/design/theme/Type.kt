@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.ui.theme
+package dev.szymonchaber.checkstory.design.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
