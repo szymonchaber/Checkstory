@@ -35,6 +35,8 @@ abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewMo
     abstract fun buildMviFlow(eventFlow: Flow<EVENT>): Flow<Pair<STATE, EFFECT?>>
 
     fun onEvent(event: EVENT) {
-        this.event.tryEmit(event)
+        viewModelScope.launch {
+            this@BaseViewModel.event.emit(event)
+        }
     }
 }

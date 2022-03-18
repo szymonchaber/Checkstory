@@ -35,6 +35,8 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun DefaultPreview() {
     CheckstoryTheme {
-        FillChecklistView(checklist)
+        FillChecklistView(checklist) {
+            // nop
+        }
     }
 }
