@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistLoadingState
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
@@ -28,7 +28,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.checklist
 
 @Composable
-fun FillChecklistScreen(fillChecklistViewModel: FillChecklistViewModel = viewModel()) {
+fun FillChecklistScreen(
+    fillChecklistViewModel: FillChecklistViewModel,
+    navController: NavHostController
+) {
     val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState.initial)
     when (val loadingState = state.value.checklistLoadingState) {
         ChecklistLoadingState.Loading -> {
