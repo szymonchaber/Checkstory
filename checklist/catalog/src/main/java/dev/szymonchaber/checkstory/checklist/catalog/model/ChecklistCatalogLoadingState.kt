@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.checklist.fill.model
+package dev.szymonchaber.checkstory.checklist.catalog.model
 
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 

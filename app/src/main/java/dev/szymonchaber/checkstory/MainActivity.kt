@@ -13,15 +13,18 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dagger.hilt.android.AndroidEntryPoint
-import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistCatalogLoadingState
-import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistCatalogState
-import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistCatalogViewModel
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.navigation.CheckstoryScreens
@@ -52,13 +55,23 @@ fun MainScreen(viewModel: ChecklistCatalogViewModel, navController: NavHostContr
             style = MaterialTheme.typography.h5
         )
         val checklistCatalogState by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
+
+        val checklistCatalogEffect by viewModel.effect.collectAsState(initial = null)
+        LaunchedEffect(checklistCatalogEffect) {
+            when (checklistCatalogEffect) {
+                is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
+                    navController.navigate(CheckstoryScreens.DetailsScreen.route)
+                }
+                null -> Unit
+            }
+        }
         when (val state = checklistCatalogState.loadingState) {
             ChecklistCatalogLoadingState.Loading -> {
                 Text(text = "Loading")
             }
             is ChecklistCatalogLoadingState.Success -> {
                 state.checklistTemplates.forEach {
-                    ChecklistTemplateView(navController, it)
+                    ChecklistTemplateView(it, viewModel::onEvent)
                 }
             }
         }
@@ -68,8 +81,8 @@ fun MainScreen(viewModel: ChecklistCatalogViewModel, navController: NavHostContr
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ChecklistTemplateView(
-    navController: NavHostController,
-    checklistTemplate: ChecklistTemplate
+    checklistTemplate: ChecklistTemplate,
+    eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -77,7 +90,7 @@ private fun ChecklistTemplateView(
             .padding(top = 16.dp),
         elevation = 4.dp,
         onClick = {
-            navController.navigate(CheckstoryScreens.DetailsScreen.route)
+            eventListener(ChecklistCatalogEvent.ChecklistTemplateClicked(checklistTemplate.title)) // TODO change to id
         }
     ) {
         Text(

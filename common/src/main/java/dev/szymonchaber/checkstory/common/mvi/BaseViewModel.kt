@@ -6,7 +6,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
 abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewModel() {
@@ -17,7 +17,7 @@ abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewMo
 
     private val _effect = Channel<EFFECT>()
     val effect: Flow<EFFECT>
-        get() = _effect.consumeAsFlow()
+        get() = _effect.receiveAsFlow()
 
     private val event: MutableSharedFlow<EVENT> = MutableSharedFlow()
 
