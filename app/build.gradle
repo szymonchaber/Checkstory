@@ -53,6 +53,7 @@ dependencies {
     implementation project(':design')
     implementation project(':domain')
     implementation project(':data')
+    implementation project(':navigation')
     implementation project(':checklist:catalog')
     implementation project(':checklist:template')
     implementation project(':checklist:fill')
