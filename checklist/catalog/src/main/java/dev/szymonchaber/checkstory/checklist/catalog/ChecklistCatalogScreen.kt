@@ -26,23 +26,23 @@ fun ChecklistCatalogScreen(viewModel: ChecklistCatalogViewModel, navController: 
             text = "Checklists",
             style = MaterialTheme.typography.h5
         )
-        val checklistCatalogState by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
+        val state by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
 
-        val checklistCatalogEffect by viewModel.effect.collectAsState(initial = null)
-        LaunchedEffect(checklistCatalogEffect) {
-            when (checklistCatalogEffect) {
+        val effect by viewModel.effect.collectAsState(initial = null)
+        LaunchedEffect(effect) {
+            when (effect) {
                 is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
-                    navController.navigate(CheckstoryScreens.DetailsScreen.route)
+                    navController.navigate(CheckstoryScreens.DetailsScreen.destination((effect as ChecklistCatalogEffect.CreateAndNavigateToChecklist).basedOn))
                 }
                 null -> Unit
             }
         }
-        when (val state = checklistCatalogState.loadingState) {
+        when (val loadingState = state.loadingState) {
             ChecklistCatalogLoadingState.Loading -> {
                 Text(text = "Loading")
             }
             is ChecklistCatalogLoadingState.Success -> {
-                state.checklistTemplates.forEach {
+                loadingState.checklistTemplates.forEach {
                     ChecklistTemplateView(it, viewModel::onEvent)
                 }
             }

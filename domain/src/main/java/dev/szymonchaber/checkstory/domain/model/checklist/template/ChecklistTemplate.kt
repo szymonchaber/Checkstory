@@ -1,6 +1,9 @@
 package dev.szymonchaber.checkstory.domain.model.checklist.template
 
+import java.util.*
+
 data class ChecklistTemplate(
+    val id: ChecklistTemplateId,
     val title: String,
     val description: String,
     val items: List<TemplateCheckbox>
@@ -8,17 +11,21 @@ data class ChecklistTemplate(
 
 data class TemplateCheckbox(val title: String)
 
-val checklistTemplate = ChecklistTemplate(
-    "Cleaning living room",
-    "I love to have a clean living room, but tend to forget about some hard-to-reach places",
-    listOf(
-        TemplateCheckbox("Table"),
-        TemplateCheckbox("Desk"),
-        TemplateCheckbox("Floor"),
-        TemplateCheckbox("Windows"),
-        TemplateCheckbox("Couch"),
-        TemplateCheckbox("Chairs"),
-        TemplateCheckbox("Shelves"),
-        TemplateCheckbox("Shelves"),
-    ),
-)
+object ChecklistFactory {
+
+    fun createChecklistTemplate(
+        title: String,
+        description: String,
+        vararg checkboxes: String,
+        id: ChecklistTemplateId = ChecklistTemplateId(UUID.randomUUID().toString()),
+    ): ChecklistTemplate {
+        return ChecklistTemplate(
+            id,
+            title,
+            description,
+            checkboxes.map {
+                TemplateCheckbox(it)
+            }
+        )
+    }
+}

@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.checklist.fill.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -13,21 +14,19 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FillChecklistViewModel @Inject constructor(
-    private val getChecklistToFillUseCase: GetChecklistToFillUseCase
+    private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
+    private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
         FillChecklistState.initial
     ) {
 
-    init {
-        onEvent(FillChecklistEvent.LoadChecklist("listId"))
-    }
-
     override fun buildMviFlow(eventFlow: Flow<FillChecklistEvent>): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
+        val handleCreateChecklist = eventFlow.handleCreateChecklist()
         val handleLoadChecklist = eventFlow.handleLoadChecklist()
         val handleCheckChanged = eventFlow.handleCheckChanged()
         val handleNotesChanged = eventFlow.handleNotesChanged()
-        return merge(handleLoadChecklist, handleCheckChanged, handleNotesChanged)
+        return merge(handleCreateChecklist, handleLoadChecklist, handleCheckChanged, handleNotesChanged)
     }
 
     private fun Flow<FillChecklistEvent>.handleCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
@@ -55,6 +54,15 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.LoadChecklist>()
             .flatMapConcat { loadEvent ->
                 getChecklistToFillUseCase.getChecklist(loadEvent.checklistId).map {
+                    FillChecklistState(ChecklistLoadingState.Success(it)) to null
+                }
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleCreateChecklist(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.CreateChecklistFromTemplate>()
+            .flatMapConcat { loadEvent ->
+                createChecklistFromTemplateUseCase.createChecklistFromTemplate(loadEvent.checklistTemplateId).map {
                     FillChecklistState(ChecklistLoadingState.Success(it)) to null
                 }
             }

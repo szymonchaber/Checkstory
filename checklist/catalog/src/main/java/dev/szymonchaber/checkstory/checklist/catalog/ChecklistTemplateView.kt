@@ -24,7 +24,7 @@ fun ChecklistTemplateView(
             .padding(top = 16.dp),
         elevation = 4.dp,
         onClick = {
-            eventListener(ChecklistCatalogEvent.ChecklistTemplateClicked(checklistTemplate.title)) // TODO change to id
+            eventListener(ChecklistCatalogEvent.ChecklistTemplateClicked(checklistTemplate.id))
         }
     ) {
         Text(

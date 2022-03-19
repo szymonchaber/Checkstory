@@ -15,6 +15,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -30,12 +31,19 @@ import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.checklist
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 
 @Composable
 fun FillChecklistScreen(
     fillChecklistViewModel: FillChecklistViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    createChecklistFrom: ChecklistTemplateId?
 ) {
+    createChecklistFrom?.let {
+        LaunchedEffect(key1 = it) {
+            fillChecklistViewModel.onEvent(FillChecklistEvent.CreateChecklistFromTemplate(it))
+        }
+    }
     val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState.initial)
     when (val loadingState = state.value.checklistLoadingState) {
         ChecklistLoadingState.Loading -> {
