@@ -11,9 +11,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Checkbox
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -45,14 +51,32 @@ fun FillChecklistScreen(
         }
     }
     val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState.initial)
-    when (val loadingState = state.value.checklistLoadingState) {
-        ChecklistLoadingState.Loading -> {
-            FillChecklistLoadingView()
-        }
-        is ChecklistLoadingState.Success -> {
-            FillChecklistView(loadingState.checklist, fillChecklistViewModel::onEvent)
-        }
-    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(text = "Checklist")
+                },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.navigateUp()
+                    }) {
+                        Icon(Icons.Filled.ArrowBack, "")
+                    }
+                },
+                elevation = 12.dp
+            )
+        }, content = {
+            when (val loadingState = state.value.checklistLoadingState) {
+                ChecklistLoadingState.Loading -> {
+                    FillChecklistLoadingView()
+                }
+                is ChecklistLoadingState.Success -> {
+                    FillChecklistView(loadingState.checklist, fillChecklistViewModel::onEvent)
+                }
+            }
+        })
 }
 
 @Preview(showBackground = true)
