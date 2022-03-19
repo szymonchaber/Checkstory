@@ -3,26 +3,56 @@ package dev.szymonchaber.checkstory.data.repository
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import java.util.*
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
+
+    private val checklists = mutableMapOf(
+        ChecklistId("fakeId") to Checklist(
+            ChecklistId("fakeId"),
+            "Cleaning something",
+            "It's good to do",
+            listOf(
+                Checkbox("Start", true),
+                Checkbox("Continue", true),
+                Checkbox("Finish", false),
+            ),
+            "It was a good session"
+        ),
+        ChecklistId("fakeId2") to Checklist(
+            ChecklistId("fakeId2"),
+            "Cleaning the office",
+            "The place to be",
+            listOf(
+                Checkbox("Start", true),
+                Checkbox("Continue", true),
+                Checkbox("Finish", false),
+            ),
+            "It was a really good session"
+        )
+    )
+
+    private val checklistsFlow = MutableStateFlow(checklists)
 
     override fun createAndGet(basedOn: ChecklistTemplate): Flow<Checklist> {
         return flow {
-            // TODO add to database & return with assigned id
             with(basedOn) {
                 Checklist(
-                    ChecklistId("GeneratedId"),
+                    ChecklistId(UUID.randomUUID().toString()),
                     title,
                     description,
                     items.map {
@@ -31,6 +61,8 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
                     ""
                 )
             }.let {
+                checklists[it.id] = it
+                checklistsFlow.emit(checklists)
                 emit(it)
             }
         }
@@ -40,8 +72,18 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
             .flowOn(Dispatchers.IO)
     }
 
-    override fun getChecklist(checklistId: String): Flow<Checklist> {
-        return flowOf(checklist)
+    override fun getChecklist(checklistId: ChecklistId): Flow<Checklist> {
+        return flowOf(checklists.getValue(checklistId))
+            .onEach {
+                delay(1000)
+            }
+            .flowOn(Dispatchers.IO)
+    }
+
+    override fun getAllChecklists(): Flow<List<Checklist>> {
+        return checklistsFlow.map {
+            it.values.toList()
+        }
             .onEach {
                 delay(1000)
             }
