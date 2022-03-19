@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.data.repository
 
-import dagger.hilt.android.scopes.ViewModelScoped
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.checklist
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository

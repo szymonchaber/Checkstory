@@ -13,10 +13,10 @@ fun Navigation() {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = CheckstoryScreens.HomeScreen.route) {
         composable(route = CheckstoryScreens.HomeScreen.route) {
-            MainScreen(navController = navController)
+            MainScreen(hiltViewModel(), navController)
         }
         composable(route = CheckstoryScreens.DetailsScreen.route) {
-            FillChecklistScreen(hiltViewModel(), navController = navController)
+            FillChecklistScreen(hiltViewModel(), navController)
         }
     }
 }
