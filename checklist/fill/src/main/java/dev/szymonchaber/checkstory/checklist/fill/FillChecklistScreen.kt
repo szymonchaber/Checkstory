@@ -36,6 +36,7 @@ import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 
@@ -43,8 +44,14 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 fun FillChecklistScreen(
     fillChecklistViewModel: FillChecklistViewModel,
     navController: NavHostController,
+    checklistId: ChecklistId?,
     createChecklistFrom: ChecklistTemplateId?
 ) {
+    checklistId?.let {
+        LaunchedEffect(key1 = it) {
+            fillChecklistViewModel.onEvent(FillChecklistEvent.LoadChecklist(it))
+        }
+    }
     createChecklistFrom?.let {
         LaunchedEffect(key1 = it) {
             fillChecklistViewModel.onEvent(FillChecklistEvent.CreateChecklistFromTemplate(it))

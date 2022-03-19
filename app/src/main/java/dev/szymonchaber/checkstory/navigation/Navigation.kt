@@ -8,6 +8,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import dev.szymonchaber.checkstory.checklist.catalog.ChecklistCatalogScreen
 import dev.szymonchaber.checkstory.checklist.fill.FillChecklistScreen
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 
 @Composable
@@ -22,18 +23,24 @@ fun Navigation() {
         }
         composable(
             route = CheckstoryScreens.DetailsScreen.route,
-            arguments = listOf(navArgument(CheckstoryScreens.DetailsScreen.sourceChecklistTemplateIdArg) {
-                nullable = true
-                defaultValue = null
-            })
+            arguments = listOf(
+                navArgument(CheckstoryScreens.DetailsScreen.checklistIdArg) {
+                    nullable = true
+                    defaultValue = null
+                },
+                navArgument(CheckstoryScreens.DetailsScreen.sourceChecklistTemplateIdArg) {
+                    nullable = true
+                    defaultValue = null
+                }
+            )
         ) {
             FillChecklistScreen(
                 hiltViewModel(),
                 navController,
+                it.arguments?.getString(CheckstoryScreens.DetailsScreen.checklistIdArg)
+                    ?.let(::ChecklistId),
                 it.arguments?.getString(CheckstoryScreens.DetailsScreen.sourceChecklistTemplateIdArg)
-                    ?.let { templateId ->
-                        ChecklistTemplateId(templateId)
-                    }
+                    ?.let(::ChecklistTemplateId)
             )
         }
     }

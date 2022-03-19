@@ -1,8 +1,11 @@
 package dev.szymonchaber.checkstory.checklist.catalog.model
 
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 
 sealed interface ChecklistCatalogEffect {
 
     data class CreateAndNavigateToChecklist(val basedOn: ChecklistTemplateId) : ChecklistCatalogEffect
+
+    data class NavigateToChecklist(val checklistId: ChecklistId) : ChecklistCatalogEffect
 }

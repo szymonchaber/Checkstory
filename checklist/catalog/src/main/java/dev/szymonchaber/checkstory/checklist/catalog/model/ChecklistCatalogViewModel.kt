@@ -34,7 +34,8 @@ class ChecklistCatalogViewModel @Inject constructor(
     override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         val handleLoadChecklist = eventFlow.handleLoadChecklist()
         val handleChecklistClicked = eventFlow.handleChecklistClicked()
-        return merge(handleLoadChecklist, handleChecklistClicked)
+        val handleRecentChecklistClicked = eventFlow.handleRecentChecklistClicked()
+        return merge(handleLoadChecklist, handleChecklistClicked, handleRecentChecklistClicked)
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadChecklist(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
@@ -64,6 +65,13 @@ class ChecklistCatalogViewModel @Inject constructor(
         return filterIsInstance<ChecklistCatalogEvent.ChecklistTemplateClicked>()
             .map {
                 state.first() to ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = it.checklistTemplateId)
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleRecentChecklistClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.RecentChecklistClicked>()
+            .map {
+                state.first() to ChecklistCatalogEffect.NavigateToChecklist(checklistId = it.checklistId)
             }
     }
 }

@@ -56,7 +56,10 @@ private fun ChecklistCatalogView(
         LaunchedEffect(effect) {
             when (effect) {
                 is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
-                    navController.navigate(CheckstoryScreens.DetailsScreen.destination((effect as ChecklistCatalogEffect.CreateAndNavigateToChecklist).basedOn))
+                    navController.navigate(CheckstoryScreens.DetailsScreen.createChecklist((effect as ChecklistCatalogEffect.CreateAndNavigateToChecklist).basedOn))
+                }
+                is ChecklistCatalogEffect.NavigateToChecklist -> {
+                    navController.navigate(CheckstoryScreens.DetailsScreen.goToChecklist((effect as ChecklistCatalogEffect.NavigateToChecklist).checklistId))
                 }
                 null -> Unit
             }
