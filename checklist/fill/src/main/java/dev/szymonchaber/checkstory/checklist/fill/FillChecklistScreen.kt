@@ -1,18 +1,22 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Checkbox
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,11 +39,23 @@ fun FillChecklistScreen(
     val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState.initial)
     when (val loadingState = state.value.checklistLoadingState) {
         ChecklistLoadingState.Loading -> {
-            Text(text = "Loading")
+            FillChecklistLoadingView()
         }
         is ChecklistLoadingState.Success -> {
             FillChecklistView(loadingState.checklist, fillChecklistViewModel::onEvent)
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FillChecklistLoadingView() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator()
     }
 }
 
