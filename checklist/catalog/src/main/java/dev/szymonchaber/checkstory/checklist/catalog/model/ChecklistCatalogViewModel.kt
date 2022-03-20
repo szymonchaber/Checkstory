@@ -5,13 +5,13 @@ import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.zip
 import javax.inject.Inject
 
 @HiltViewModel
@@ -54,7 +54,7 @@ class ChecklistCatalogViewModel @Inject constructor(
                         emit(RecentChecklistsLoadingState.Loading)
                     }
 
-                templatesLoading.zip(recentChecklistsLoading) { templates, checklists ->
+                templatesLoading.combine(recentChecklistsLoading) { templates, checklists ->
                     state.first()
                         .copy(templatesLoadingState = templates, recentChecklistsLoadingState = checklists) to null
                 }
