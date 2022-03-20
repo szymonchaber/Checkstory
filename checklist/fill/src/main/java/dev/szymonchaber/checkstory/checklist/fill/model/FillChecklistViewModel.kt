@@ -8,7 +8,7 @@ import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import javax.inject.Inject
@@ -33,14 +33,13 @@ class FillChecklistViewModel @Inject constructor(
 
     private fun Flow<FillChecklistEvent>.handleCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
         return filterIsInstance<FillChecklistEvent.CheckChanged>()
-            .map { checkChanged ->
+            .flatMapLatest { checkChanged ->
                 val originalState = state.first()
                 val state = state.map {
                     it.checklistLoadingState
                 }
                     .filterIsInstance<ChecklistLoadingState.Success>()
                     .first()
-                val checklist = state.checklist
                 val updatedList = state.checklist.items.map {
                     if (it == checkChanged.item) {
                         it.copy(isChecked = checkChanged.newCheck)
@@ -48,13 +47,17 @@ class FillChecklistViewModel @Inject constructor(
                         it
                     }
                 }
-                originalState.copy(checklistLoadingState = state.copy(checklist = checklist.copy(items = updatedList))) to null
+                val updatedState = state.checklist.copy(items = updatedList)
+                updateChecklistUseCase.updateChecklist(updatedState)
+                    .map {
+                        originalState.copy(checklistLoadingState = state.copy(checklist = updatedState)) to null
+                    }
             }
     }
 
     private fun Flow<FillChecklistEvent>.handleLoadChecklist(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
         return filterIsInstance<FillChecklistEvent.LoadChecklist>()
-            .flatMapConcat { loadEvent ->
+            .flatMapLatest { loadEvent ->
                 getChecklistToFillUseCase.getChecklist(loadEvent.checklistId).map {
                     FillChecklistState(ChecklistLoadingState.Success(it)) to null
                 }
@@ -63,7 +66,7 @@ class FillChecklistViewModel @Inject constructor(
 
     private fun Flow<FillChecklistEvent>.handleCreateChecklist(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
         return filterIsInstance<FillChecklistEvent.CreateChecklistFromTemplate>()
-            .flatMapConcat { loadEvent ->
+            .flatMapLatest { loadEvent ->
                 createChecklistFromTemplateUseCase.createChecklistFromTemplate(loadEvent.checklistTemplateId).map {
                     FillChecklistState(ChecklistLoadingState.Success(it)) to null
                 }
@@ -72,7 +75,7 @@ class FillChecklistViewModel @Inject constructor(
 
     private fun Flow<FillChecklistEvent>.handleNotesChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
         return filterIsInstance<FillChecklistEvent.NotesChanged>()
-            .flatMapConcat { notesChanged ->
+            .flatMapLatest { notesChanged ->
                 val originalState = state.first()
                 val state = state
                     .map {

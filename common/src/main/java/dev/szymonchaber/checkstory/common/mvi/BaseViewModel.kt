@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewModel() {
@@ -25,7 +26,11 @@ abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewMo
         viewModelScope.launch {
             buildMviFlow(event)
                 .collect { (state, effect) ->
-                    _state.emit(state)
+                    state?.let { newState ->
+                        _state.update {
+                            newState
+                        }
+                    }
                     effect?.let {
                         _effect.send(effect)
                     }
@@ -33,7 +38,7 @@ abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewMo
         }
     }
 
-    abstract fun buildMviFlow(eventFlow: Flow<EVENT>): Flow<Pair<STATE, EFFECT?>>
+    abstract fun buildMviFlow(eventFlow: Flow<EVENT>): Flow<Pair<STATE?, EFFECT?>>
 
     fun onEvent(event: EVENT) {
         viewModelScope.launch {

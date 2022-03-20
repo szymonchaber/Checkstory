@@ -21,4 +21,6 @@ sealed class CheckstoryScreens(val route: String) {
             return "details_screen?checklistId=${checklistId.id}"
         }
     }
+
+    object EditTemplateScreen : CheckstoryScreens("template_screen")
 }

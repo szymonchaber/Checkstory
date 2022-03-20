@@ -6,7 +6,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -68,9 +67,6 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
                 emit(it)
             }
         }
-            .onEach {
-                delay(500)
-            }
             .flowOn(Dispatchers.IO)
     }
 
@@ -89,9 +85,6 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
             .map {
                 it.getValue(checklistId)
             }
-            .onEach {
-                delay(1000)
-            }
             .flowOn(Dispatchers.IO)
     }
 
@@ -99,9 +92,6 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
         return checklistsFlow
             .map {
                 it.values.toList()
-            }
-            .onEach {
-                delay(1000)
             }
             .flowOn(Dispatchers.IO)
     }
