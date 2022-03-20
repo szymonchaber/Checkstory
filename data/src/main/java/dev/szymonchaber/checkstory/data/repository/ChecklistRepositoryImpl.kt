@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.onEach
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Singleton
 class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
@@ -47,6 +49,15 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
     )
 
     private val checklistsFlow = MutableStateFlow(checklists)
+
+    fun <T> tickerFlow(period: Duration, initialDelay: Duration = Duration.ZERO, block: (Int) -> T) = flow {
+        delay(initialDelay)
+        var loop = 1
+        while (true) {
+            emit(block(loop++))
+            delay(period)
+        }
+    }
 
     override fun createAndGet(basedOn: ChecklistTemplate): Flow<Checklist> {
         return flow {
@@ -81,11 +92,14 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
     }
 
     override fun getAllChecklists(): Flow<List<Checklist>> {
+        return tickerFlow(period = 2.seconds) { // TODO This is bad
+            checklists.values.toList()
+        }
         return checklistsFlow.map {
             it.values.toList()
         }
             .onEach {
-                delay(1000)
+//                delay(1000)
             }
             .flowOn(Dispatchers.IO)
     }

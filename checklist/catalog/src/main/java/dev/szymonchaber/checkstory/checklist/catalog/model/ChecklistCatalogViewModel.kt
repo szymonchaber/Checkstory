@@ -7,7 +7,7 @@ import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
@@ -40,7 +40,7 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadChecklist(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.LoadChecklistCatalog>()
-            .flatMapConcat {
+            .flatMapLatest {
                 val templatesLoading = getChecklistTemplatesUseCase.getChecklistTemplates()
                     .map {
                         ChecklistCatalogLoadingState.Success(it)
