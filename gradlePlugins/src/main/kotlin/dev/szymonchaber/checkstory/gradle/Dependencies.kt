@@ -12,7 +12,7 @@ class Dependencies : Plugin<Project> {
 
         const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0"
 
-        private const val hiltVersion = "2.38.1"
+        private const val hiltVersion = "2.41"
         const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
         const val hiltKapt = "com.google.dagger:hilt-compiler:$hiltVersion"
 
