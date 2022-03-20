@@ -4,6 +4,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
+import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -15,7 +16,8 @@ import javax.inject.Inject
 @HiltViewModel
 class FillChecklistViewModel @Inject constructor(
     private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
-    private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase
+    private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
+    private val updateChecklistUseCase: UpdateChecklistUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
         FillChecklistState.initial
@@ -70,15 +72,18 @@ class FillChecklistViewModel @Inject constructor(
 
     private fun Flow<FillChecklistEvent>.handleNotesChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
         return filterIsInstance<FillChecklistEvent.NotesChanged>()
-            .map { notesChanged ->
+            .flatMapConcat { notesChanged ->
                 val originalState = state.first()
-                val state = state.map {
-                    it.checklistLoadingState
-                }
+                val state = state
+                    .map {
+                        it.checklistLoadingState
+                    }
                     .filterIsInstance<ChecklistLoadingState.Success>()
                     .first()
-
-                originalState.copy(checklistLoadingState = state.copy(checklist = state.checklist.copy(notes = notesChanged.notes))) to null
+                updateChecklistUseCase.updateChecklist(state.checklist.copy(notes = notesChanged.notes))
+                    .map {
+                        originalState.copy(checklistLoadingState = state.copy(checklist = state.checklist.copy(notes = notesChanged.notes))) to null
+                    }
             }
     }
 }

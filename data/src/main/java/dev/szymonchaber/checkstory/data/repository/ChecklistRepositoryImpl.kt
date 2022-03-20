@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -81,6 +82,14 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
                 delay(500)
             }
             .flowOn(Dispatchers.IO)
+    }
+
+    override fun update(checklist: Checklist): Flow<Unit> {
+        return checklistsFlow.take(1)
+            .onEach {
+                it.replace(checklist.id, checklist)
+                checklistsFlow.emit(it)
+            }.map { }
     }
 
     override fun getChecklist(checklistId: ChecklistId): Flow<Checklist> {

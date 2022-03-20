@@ -9,6 +9,8 @@ interface ChecklistRepository {
 
     fun createAndGet(basedOn: ChecklistTemplate): Flow<Checklist>
 
+    fun update(checklist: Checklist): Flow<Unit>
+
     fun getChecklist(checklistId: ChecklistId): Flow<Checklist>
 
     fun getAllChecklists(): Flow<List<Checklist>>
