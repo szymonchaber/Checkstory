@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,7 +29,14 @@ class FillChecklistViewModel @Inject constructor(
         val handleLoadChecklist = eventFlow.handleLoadChecklist()
         val handleCheckChanged = eventFlow.handleCheckChanged()
         val handleNotesChanged = eventFlow.handleNotesChanged()
-        return merge(handleCreateChecklist, handleLoadChecklist, handleCheckChanged, handleNotesChanged)
+        val handleEditClicked = eventFlow.handleEditClicked()
+        return merge(
+            handleCreateChecklist,
+            handleLoadChecklist,
+            handleCheckChanged,
+            handleNotesChanged,
+            handleEditClicked
+        )
     }
 
     private fun Flow<FillChecklistEvent>.handleCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
@@ -87,6 +95,16 @@ class FillChecklistViewModel @Inject constructor(
                     .map {
                         originalState.copy(checklistLoadingState = state.copy(checklist = state.checklist.copy(notes = notesChanged.notes))) to null
                     }
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleEditClicked(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.EditTemplateClicked>()
+            .flatMapLatest {
+                state.map { it.checklistLoadingState }.filterIsInstance<ChecklistLoadingState.Success>().take(1)
+            }
+            .map {
+                state.first() to FillChecklistEffect.NavigateToEditTemplate(it.checklist.checklistTemplateId)
             }
     }
 }

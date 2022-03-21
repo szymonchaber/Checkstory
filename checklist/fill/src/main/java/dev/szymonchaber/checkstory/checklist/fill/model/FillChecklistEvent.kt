@@ -6,6 +6,8 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 
 sealed class FillChecklistEvent {
 
+    object EditTemplateClicked : FillChecklistEvent()
+
     data class CreateChecklistFromTemplate(val checklistTemplateId: ChecklistTemplateId) : FillChecklistEvent()
 
     data class LoadChecklist(val checklistId: ChecklistId) : FillChecklistEvent()

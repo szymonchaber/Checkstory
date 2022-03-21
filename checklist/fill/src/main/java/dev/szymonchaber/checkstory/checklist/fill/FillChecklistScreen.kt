@@ -20,9 +20,11 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -30,15 +32,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistLoadingState
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEffect
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
-import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.navigation.CheckstoryScreens
 
 @Composable
 fun FillChecklistScreen(
@@ -59,6 +61,18 @@ fun FillChecklistScreen(
     }
     val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState.initial)
 
+    val effect by fillChecklistViewModel.effect.collectAsState(initial = null)
+    LaunchedEffect(key1 = effect) {
+        when (effect) {
+            is FillChecklistEffect.NavigateToEditTemplate -> navController.navigate(
+                CheckstoryScreens.EditTemplateScreen.editTemplate(
+                    (effect as FillChecklistEffect.NavigateToEditTemplate).templateId
+                )
+            )
+            null -> Unit
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,7 +86,14 @@ fun FillChecklistScreen(
                         Icon(Icons.Filled.ArrowBack, "")
                     }
                 },
-                elevation = 12.dp
+                elevation = 12.dp,
+                actions = {
+                    IconButton(onClick = {
+                        fillChecklistViewModel.onEvent(FillChecklistEvent.EditTemplateClicked)
+                    }) {
+                        Icon(Icons.Filled.Edit, "")
+                    }
+                }
             )
         }, content = {
             when (val loadingState = state.value.checklistLoadingState) {
@@ -146,15 +167,5 @@ fun CheckboxItem(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> Uni
             }
         )
         Text(modifier = Modifier.align(CenterVertically), text = checkbox.title)
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FillChecklistViewPreview() {
-    CheckstoryTheme {
-        FillChecklistView(checklist) {
-            // nop
-        }
     }
 }

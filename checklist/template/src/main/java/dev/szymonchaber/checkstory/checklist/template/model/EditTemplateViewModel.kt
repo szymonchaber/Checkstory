@@ -4,6 +4,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -17,6 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
     private val createChecklistTemplateUseCase: CreateChecklistTemplateUseCase,
+    private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
     private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase
 ) : BaseViewModel<
         EditTemplateEvent,
@@ -26,13 +28,10 @@ class EditTemplateViewModel @Inject constructor(
     EditTemplateState.initial
 ) {
 
-    init {
-        onEvent(EditTemplateEvent.CreateChecklistTemplate)
-    }
-
     override fun buildMviFlow(eventFlow: Flow<EditTemplateEvent>): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return merge(
             eventFlow.handleCreateChecklist(),
+            eventFlow.handleEditChecklist(),
             eventFlow.handleTitleChanged(),
             eventFlow.handleDescriptionChanged(),
             eventFlow.handleAddCheckboxClicked(),
@@ -45,6 +44,22 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.CreateChecklistTemplate>()
             .flatMapLatest {
                 createChecklistTemplateUseCase.createChecklistTemplate()
+                    .map {
+                        TemplateLoadingState.Success(it)
+                    }
+                    .onStart<TemplateLoadingState> {
+                        emit(TemplateLoadingState.Loading)
+                    }
+                    .map {
+                        EditTemplateState(it) to null
+                    }
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleEditChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.EditChecklistTemplate>()
+            .flatMapLatest { event ->
+                getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
                     .map {
                         TemplateLoadingState.Success(it)
                     }

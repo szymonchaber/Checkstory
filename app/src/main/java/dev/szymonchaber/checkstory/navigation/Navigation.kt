@@ -46,10 +46,18 @@ fun Navigation() {
         }
         composable(
             route = CheckstoryScreens.EditTemplateScreen.route,
+            arguments = listOf(
+                navArgument(CheckstoryScreens.EditTemplateScreen.templateIdArg) {
+                    nullable = true
+                    defaultValue = null
+                },
+            )
         ) {
             EditTemplateScreen(
                 hiltViewModel(),
                 navController,
+                it.arguments?.getString(CheckstoryScreens.EditTemplateScreen.templateIdArg)
+                    ?.let(::ChecklistTemplateId)
             )
         }
     }

@@ -25,6 +25,7 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
         mapOf(
             ChecklistId("fakeId") to Checklist(
                 ChecklistId("fakeId"),
+                ChecklistTemplateRepositoryImpl.templates[0].id,
                 "Cleaning something",
                 "It's good to do",
                 listOf(
@@ -36,6 +37,7 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
             ),
             ChecklistId("fakeId2") to Checklist(
                 ChecklistId("fakeId2"),
+                ChecklistTemplateRepositoryImpl.templates[1].id,
                 "Cleaning the office",
                 "The place to be",
                 listOf(
@@ -53,6 +55,7 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
             with(basedOn) {
                 Checklist(
                     ChecklistId(UUID.randomUUID().toString()),
+                    basedOn.id,
                     title,
                     description,
                     items.map {

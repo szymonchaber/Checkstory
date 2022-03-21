@@ -22,5 +22,16 @@ sealed class CheckstoryScreens(val route: String) {
         }
     }
 
-    object EditTemplateScreen : CheckstoryScreens("template_screen")
+    object EditTemplateScreen : CheckstoryScreens("template_screen?templateId={templateId}") {
+
+        const val templateIdArg = "templateId"
+
+        fun createTemplate(): String {
+            return route
+        }
+
+        fun editTemplate(templateId: ChecklistTemplateId): String {
+            return "template_screen?templateId=${templateId.id}"
+        }
+    }
 }

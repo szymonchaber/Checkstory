@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -31,13 +32,24 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
 import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 
 @Composable
 fun EditTemplateScreen(
     viewModel: EditTemplateViewModel,
-    navController: NavController
+    navController: NavController,
+    templateId: ChecklistTemplateId?
 ) {
+    templateId?.let {
+        LaunchedEffect(it) {
+            viewModel.onEvent(EditTemplateEvent.EditChecklistTemplate(it))
+        }
+    } ?: run {
+        LaunchedEffect(null) {
+            viewModel.onEvent(EditTemplateEvent.CreateChecklistTemplate)
+        }
+    }
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
     Scaffold(
         topBar = {

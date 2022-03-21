@@ -20,32 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class ChecklistTemplateRepositoryImpl @Inject constructor() : ChecklistTemplateRepository {
 
-    private val templatesFlow = MutableStateFlow(listOf(
-        ChecklistFactory.createChecklistTemplate(
-            "Cleaning living room",
-            "I love to have a clean living room, but tend to forget about some hard-to-reach places",
-            "Table",
-            "Desk",
-            "Floor",
-            "Windows",
-            "Couch",
-            "Chairs",
-            "Shelves",
-        ),
-        ChecklistFactory.createChecklistTemplate(
-            "Cleaning kitchen",
-            "Mise en place is my style, so let's make sure that kitchen is always ready to roll",
-            "Wash the dishes",
-            "Clean the worktop",
-            "Clean the sink",
-            "Clean cupboard fronts",
-            "Arrange the pantry",
-            "Clean windows",
-            "Clean the floor",
-            "Clear the fridge out",
-            "Clean the induction cooker",
-        )
-    ).associateBy {
+    private val templatesFlow = MutableStateFlow(templates.associateBy {
         it.id
     })
 
@@ -92,5 +67,35 @@ class ChecklistTemplateRepositoryImpl @Inject constructor() : ChecklistTemplateR
             }
             emit(Unit)
         }
+    }
+
+    companion object {
+
+        val templates = listOf(
+            ChecklistFactory.createChecklistTemplate(
+                "Cleaning living room",
+                "I love to have a clean living room, but tend to forget about some hard-to-reach places",
+                "Table",
+                "Desk",
+                "Floor",
+                "Windows",
+                "Couch",
+                "Chairs",
+                "Shelves",
+            ),
+            ChecklistFactory.createChecklistTemplate(
+                "Cleaning kitchen",
+                "Mise en place is my style, so let's make sure that kitchen is always ready to roll",
+                "Wash the dishes",
+                "Clean the worktop",
+                "Clean the sink",
+                "Clean cupboard fronts",
+                "Arrange the pantry",
+                "Clean windows",
+                "Clean the floor",
+                "Clear the fridge out",
+                "Clean the induction cooker",
+            )
+        )
     }
 }
