@@ -16,6 +16,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
@@ -73,13 +74,14 @@ fun EditTemplateView(checklistTemplate: ChecklistTemplate, eventCollector: (Edit
         modifier = Modifier
             .verticalScroll(rememberScrollState())
             .fillMaxHeight()
+            .padding(start = 24.dp, end = 24.dp)
     ) {
         TextField(
             value = checklistTemplate.title,
             onValueChange = {
                 eventCollector(EditTemplateEvent.TitleChanged(it))
             },
-            modifier = Modifier.padding(start = 24.dp, top = 24.dp),
+            modifier = Modifier.padding(top = 24.dp),
             textStyle = MaterialTheme.typography.h4,
         )
         TextField(
@@ -87,16 +89,24 @@ fun EditTemplateView(checklistTemplate: ChecklistTemplate, eventCollector: (Edit
             onValueChange = {
                 eventCollector(EditTemplateEvent.DescriptionChanged(it))
             },
-            modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp),
+            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
         )
         Text(
-            modifier = Modifier.padding(start = 24.dp, top = 16.dp),
+            modifier = Modifier.padding(top = 16.dp),
             style = MaterialTheme.typography.caption,
             text = "Items",
         )
         checklistTemplate.items.forEach {
             CheckboxItem(it, eventCollector)
         }
+        AddCheckboxButton(eventCollector)
+    }
+}
+
+@Composable
+fun AddCheckboxButton(eventCollector: (EditTemplateEvent) -> Unit) {
+    IconButton(onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) }) {
+        Icon(Icons.Filled.Add, null)
     }
 }
 
@@ -104,7 +114,7 @@ fun EditTemplateView(checklistTemplate: ChecklistTemplate, eventCollector: (Edit
 fun CheckboxItem(checkbox: TemplateCheckbox, eventCollector: (EditTemplateEvent) -> Unit) {
     Row(
         Modifier
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(end = 16.dp)
             .fillMaxWidth()
     ) {
         Checkbox(

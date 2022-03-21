@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import kotlinx.coroutines.flow.Flow
@@ -10,6 +11,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,6 +35,7 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleCreateChecklist(),
             eventFlow.handleTitleChanged(),
             eventFlow.handleDescriptionChanged(),
+            eventFlow.handleAddCheckboxClicked(),
             eventFlow.handleItemRemoved(),
             eventFlow.handleItemTitleChanged()
         )
@@ -110,11 +113,25 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
+    private fun Flow<EditTemplateEvent>.handleAddCheckboxClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
+            .withSuccessState()
+            .flatMapLatest { (loadingState, _) ->
+                val checklistTemplate = loadingState.checklistTemplate
+                val newItems = checklistTemplate.items.plus(TemplateCheckbox("New checkbox"))
+                updateChecklistTemplateUseCase.updateChecklistTemplate(loadingState.checklistTemplate.copy(items = newItems))
+                    .map {
+                        null to null
+                    }
+            }
+    }
+
     private fun <T> Flow<T>.withSuccessState(): Flow<Pair<TemplateLoadingState.Success, T>> {
         return flatMapLatest { event ->
             state.map { it.templateLoadingState }
                 .filterIsInstance<TemplateLoadingState.Success>()
                 .map { it to event }
+                .take(1)
         }
     }
 }
