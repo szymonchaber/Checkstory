@@ -43,6 +43,9 @@ dependencies {
 
     kapt Dependencies.hiltKapt
 
+    implementation Dependencies.room
+    kapt Dependencies.roomKsp
+
     testImplementation Dependencies.unitTest
     androidTestImplementation Dependencies.uiTest
 }

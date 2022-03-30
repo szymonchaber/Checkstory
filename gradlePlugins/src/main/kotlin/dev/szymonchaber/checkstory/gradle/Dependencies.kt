@@ -38,6 +38,15 @@ class Dependencies : Plugin<Project> {
             "androidx.hilt:hilt-navigation-compose:1.0.0"
         )
 
+        private const val roomVersion = "2.4.2"
+
+        val room = listOf(
+            "androidx.room:room-runtime:$roomVersion",
+            "androidx.room:room-ktx:$roomVersion",
+            "androidx.room:room-paging:2.5.0-alpha01"
+        )
+        val roomKsp = "androidx.room:room-compiler:$roomVersion"
+
         val ui = listOf(androidXCore, appCompat) + compose + lifecycle
 
         val unitTest = listOf(
@@ -47,7 +56,8 @@ class Dependencies : Plugin<Project> {
         val uiTest = listOf(
             "androidx.test.ext:junit:1.1.3",
             "androidx.test.espresso:espresso-core:3.4.0",
-            "androidx.compose.ui:ui-test-junit4:$composeVersion"
+            "androidx.compose.ui:ui-test-junit4:$composeVersion",
+            "androidx.room:room-testing:$roomVersion"
         )
     }
 }
