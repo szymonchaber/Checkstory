@@ -1,34 +1,28 @@
 package dev.szymonchaber.checkstory.data.repository
 
+import dev.szymonchaber.checkstory.data.database.datasource.ChecklistTemplateRoomDataSource
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistFactory
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistTemplateRepositoryImpl @Inject constructor() : ChecklistTemplateRepository {
+class ChecklistTemplateRepositoryImpl @Inject constructor(
+    private val dataSource: ChecklistTemplateRoomDataSource
+) : ChecklistTemplateRepository {
 
     private val templatesFlow = MutableStateFlow(templates.associateBy {
         it.id
     })
 
     override fun getAllChecklistTemplates(): Flow<List<ChecklistTemplate>> {
-        return templatesFlow.map {
-            it.values.toList()
-        }
-            .flowOn(Dispatchers.IO)
+        return dataSource.getAllChecklistTemplates()
     }
 
     override fun getChecklistTemplate(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
