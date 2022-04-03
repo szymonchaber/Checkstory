@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
+import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -31,14 +32,25 @@ object DatabaseModule {
                 withContext(Dispatchers.IO) {
                     it.checklistTemplateDao().insertAll(
                         ChecklistTemplateEntity(
+                            1,
+                            "First template",
+                            "Description"
+                        )
+                    )
+                    it.templateCheckboxDao().insertAll(
+                        TemplateCheckboxEntity(
                             0,
-                            "Tytuł",
-                            "Opis"
+                            1,
+                            "Checkbox item"
+                        ),
+                        TemplateCheckboxEntity(
+                            0,
+                            1,
+                            "Checkbox item 2"
                         )
                     )
                 }
             }
-
         }
     }
 

@@ -22,14 +22,11 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     })
 
     override fun getAllChecklistTemplates(): Flow<List<ChecklistTemplate>> {
-        return dataSource.getAllChecklistTemplates()
+        return dataSource.getAll()
     }
 
     override fun getChecklistTemplate(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
-        return templatesFlow.map {
-            it.getValue(checklistTemplateId)
-        }
-            .flowOn(Dispatchers.IO)
+        return dataSource.getById(checklistTemplateId.id.toLong())
     }
 
     override fun createChecklistTemplate(): Flow<ChecklistTemplate> {

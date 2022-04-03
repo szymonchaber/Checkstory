@@ -2,8 +2,10 @@ package dev.szymonchaber.checkstory.data.database.datasource
 
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
+import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -12,20 +14,39 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao
 ) {
 
-    fun getAllChecklistTemplates(): Flow<List<ChecklistTemplate>> {
-        return checklistTemplateDao.getAll()
+    fun getById(id: Long): Flow<ChecklistTemplate> {
+        return checklistTemplateDao.getById(id)
             .map {
-                it.map(::mapChecklistTemplate)
+                it.toChecklistTemplate()
+                    .first()
             }
     }
 
-    private fun mapChecklistTemplate(checklistTemplateEntity: ChecklistTemplateEntity): ChecklistTemplate {
-        return with(checklistTemplateEntity) {
+    fun getAll(): Flow<List<ChecklistTemplate>> {
+        return checklistTemplateDao.getAll()
+            .map {
+                it.toChecklistTemplate()
+            }
+    }
+
+    private fun Map<ChecklistTemplateEntity, List<TemplateCheckboxEntity>>.toChecklistTemplate(): List<ChecklistTemplate> {
+        return map { (template, checkboxes) ->
+            mapChecklistTemplate(template, checkboxes)
+        }
+    }
+
+    private fun mapChecklistTemplate(
+        template: ChecklistTemplateEntity,
+        checkboxes: List<TemplateCheckboxEntity>
+    ): ChecklistTemplate {
+        return with(template) {
             ChecklistTemplate(
                 ChecklistTemplateId(id.toString()),
                 title,
                 description,
-                listOf()
+                checkboxes.map {
+                    TemplateCheckbox(it.checkboxTitle)
+                }
             )
         }
     }
