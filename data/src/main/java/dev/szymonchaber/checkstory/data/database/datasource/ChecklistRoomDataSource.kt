@@ -8,7 +8,8 @@ import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -20,31 +21,42 @@ class ChecklistRoomDataSource @Inject constructor(
 
     fun getById(id: Long): Flow<Checklist> {
         return checklistDao.getById(id)
-            .map {
+            .flatMapLatest {
                 it.map { (checklist, checkboxes) ->
-                    val (_, title, description) = checklistTemplateDao.getById(checklist.templateId)
-                        .first().keys.first()
-                    checklist.toDomainChecklist(
-                        title,
-                        description,
-                        checkboxes.map(CheckboxEntity::toDomainCheckbox)
-                    )
+                    checklistTemplateDao.getById(checklist.templateId).map {
+                        val (_, title, description) = it.keys.first()
+                        checklist.toDomainChecklist(
+                            title,
+                            description,
+                            checkboxes.map(CheckboxEntity::toDomainCheckbox)
+                        )
+                    }
                 }.first()
             }
     }
 
     fun getAll(): Flow<List<Checklist>> {
         return checklistDao.getAll()
-            .map {
-                it.map { (checklist, checkboxes) ->
-                    val (_, title, description) = checklistTemplateDao.getById(checklist.templateId)
-                        .first().keys.first()
-                    checklist.toDomainChecklist(
-                        title,
-                        description,
-                        checkboxes.map(CheckboxEntity::toDomainCheckbox)
-                    )
+            .flatMapLatest {
+                val map: List<Flow<List<Checklist>>> = it.map { (checklist, checkboxes) ->
+                    checklistTemplateDao.getById(checklist.templateId)
+                        .map {
+                            val (_, title, description) = it.keys.first()
+                            listOf(
+                                checklist.toDomainChecklist(
+                                    title,
+                                    description,
+                                    checkboxes.map(CheckboxEntity::toDomainCheckbox)
+                                )
+                            )
+                        }
                 }
+                val reduce: Flow<List<Checklist>> = map.reduce { left, right ->
+                    left.combine(right) { left, right ->
+                        left + right
+                    }
+                }
+                reduce
             }
     }
 
