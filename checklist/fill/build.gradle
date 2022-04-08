@@ -6,6 +6,7 @@ plugins {
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
     id 'dev.szymonchaber.checkstory.dependencies'
+    id 'com.google.devtools.ksp' version '1.6.10-1.0.4'
 }
 
 android {
@@ -38,6 +39,13 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion Dependencies.composeVersion
     }
+    libraryVariants.all { variant ->
+        kotlin.sourceSets {
+            getByName(variant.name) {
+                kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
+            }
+        }
+    }
 }
 
 dependencies {
@@ -46,9 +54,13 @@ dependencies {
     implementation project(':design')
     implementation project(':data')
     implementation project(':navigation')
+    implementation project(':checklist:template')
 
     implementation Dependencies.common
     implementation Dependencies.ui
+
+    implementation Dependencies.composeDestinations
+    ksp Dependencies.composeDestinationsKsp
 
     kapt Dependencies.hiltKapt
 

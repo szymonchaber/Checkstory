@@ -1,54 +1,38 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistLoadingState
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEffect
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.szymonchaber.checkstory.checklist.fill.model.*
+import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.navigation.CheckstoryScreens
 
+@Destination(route = "fill_checklist_screen", start = true)
 @Composable
 fun FillChecklistScreen(
-    fillChecklistViewModel: FillChecklistViewModel,
-    navController: NavHostController,
+    navigator: DestinationsNavigator,
     checklistId: ChecklistId?,
     createChecklistFrom: ChecklistTemplateId?
 ) {
+    val fillChecklistViewModel = hiltViewModel<FillChecklistViewModel>()
     checklistId?.let {
         LaunchedEffect(key1 = it) {
             fillChecklistViewModel.onEvent(FillChecklistEvent.LoadChecklist(it))
@@ -61,14 +45,12 @@ fun FillChecklistScreen(
     }
     val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState.initial)
 
-    val effect by fillChecklistViewModel.effect.collectAsState(initial = null)
+    val effect = fillChecklistViewModel.effect.collectAsState(initial = null)
     LaunchedEffect(key1 = effect) {
-        when (effect) {
-            is FillChecklistEffect.NavigateToEditTemplate -> navController.navigate(
-                CheckstoryScreens.EditTemplateScreen.editTemplate(
-                    (effect as FillChecklistEffect.NavigateToEditTemplate).templateId
-                )
-            )
+        when (val value = effect.value) {
+            is FillChecklistEffect.NavigateToEditTemplate -> {
+                navigator.navigate(EditTemplateScreenDestination(value.templateId))
+            }
             null -> Unit
         }
     }
@@ -81,7 +63,7 @@ fun FillChecklistScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigateUp()
+                        navigator.navigateUp()
                     }) {
                         Icon(Icons.Filled.ArrowBack, "")
                     }
@@ -131,7 +113,10 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             text = checklist.title,
             style = MaterialTheme.typography.h4
         )
-        Text(modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp), text = checklist.description)
+        Text(
+            modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp),
+            text = checklist.description
+        )
         Text(
             modifier = Modifier.padding(start = 24.dp, top = 16.dp),
             style = MaterialTheme.typography.caption,

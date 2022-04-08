@@ -5,8 +5,7 @@ import org.gradle.api.Project
 
 class Dependencies : Plugin<Project> {
 
-    override fun apply(target: Project) {
-    }
+    override fun apply(target: Project) = Unit
 
     companion object {
 
@@ -37,6 +36,12 @@ class Dependencies : Plugin<Project> {
             "androidx.navigation:navigation-compose:2.4.1",
             "androidx.hilt:hilt-navigation-compose:1.0.0"
         )
+
+        private val composeDestinationsVersion = "1.4.2-beta"
+        val composeDestinations =
+            "io.github.raamcosta.compose-destinations:core:$composeDestinationsVersion"
+        val composeDestinationsKsp =
+            "io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion"
 
         private const val roomVersion = "2.4.2"
 

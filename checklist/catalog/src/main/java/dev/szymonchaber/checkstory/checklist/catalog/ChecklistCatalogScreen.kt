@@ -11,13 +11,17 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.catalog.model.*
+import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
+import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
-import dev.szymonchaber.checkstory.navigation.CheckstoryScreens
 
 @Composable
-fun ChecklistCatalogScreen(viewModel: ChecklistCatalogViewModel, navController: NavHostController) {
+@Destination(route = "home_screen", start = true)
+fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -27,10 +31,12 @@ fun ChecklistCatalogScreen(viewModel: ChecklistCatalogViewModel, navController: 
                 elevation = 12.dp
             )
         }, content = {
-            ChecklistCatalogView(viewModel, navController)
+            ChecklistCatalogView(hiltViewModel(), navigator)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(CheckstoryScreens.EditTemplateScreen.createTemplate()) }) {
+            FloatingActionButton(onClick = {
+                navigator.navigate(EditTemplateScreenDestination())
+            }) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = null)
             }
         }
@@ -40,21 +46,23 @@ fun ChecklistCatalogScreen(viewModel: ChecklistCatalogViewModel, navController: 
 @Composable
 private fun ChecklistCatalogView(
     viewModel: ChecklistCatalogViewModel,
-    navController: NavHostController
+    navigator: DestinationsNavigator
 ) {
     Column(
         modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)
     ) {
         val state by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
 
-        val effect by viewModel.effect.collectAsState(initial = null)
+        val effect = viewModel.effect.collectAsState(initial = null)
         LaunchedEffect(effect) {
-            when (effect) {
+            when (val value = effect.value) {
                 is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
-                    navController.navigate(CheckstoryScreens.DetailsScreen.createChecklist((effect as ChecklistCatalogEffect.CreateAndNavigateToChecklist).basedOn))
+                    navigator.navigate(
+                        FillChecklistScreenDestination(createChecklistFrom = value.basedOn)
+                    )
                 }
                 is ChecklistCatalogEffect.NavigateToChecklist -> {
-                    navController.navigate(CheckstoryScreens.DetailsScreen.goToChecklist((effect as ChecklistCatalogEffect.NavigateToChecklist).checklistId))
+                    navigator.navigate(FillChecklistScreenDestination(checklistId = value.checklistId))
                 }
                 null -> Unit
             }
@@ -121,7 +129,11 @@ private fun TemplatesList(
     state: ChecklistCatalogState,
     viewModel: ChecklistCatalogViewModel
 ) {
-    Text(modifier = Modifier.padding(top = 24.dp), text = "Templates", style = MaterialTheme.typography.h5)
+    Text(
+        modifier = Modifier.padding(top = 24.dp),
+        text = "Templates",
+        style = MaterialTheme.typography.h5
+    )
     when (val loadingState = state.templatesLoadingState) {
         ChecklistCatalogLoadingState.Loading -> {
             Text(text = "Loading")
