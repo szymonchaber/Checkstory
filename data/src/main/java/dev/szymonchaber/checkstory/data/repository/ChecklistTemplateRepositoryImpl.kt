@@ -1,10 +1,7 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.database.datasource.ChecklistTemplateRoomDataSource
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistFactory
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.*
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -36,8 +33,8 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
                 "New title",
                 "New description",
                 listOf(
-                    TemplateCheckbox("Checkbox 1"),
-                    TemplateCheckbox("Checkbox 2")
+                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1"),
+                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 2")
                 )
             )
             templatesFlow.update {
@@ -53,9 +50,10 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
 
     override fun updateChecklistTemplate(checklistTemplate: ChecklistTemplate): Flow<Unit> {
         return flow {
-            templatesFlow.update {
-                it.plus(checklistTemplate.id to checklistTemplate)
-            }
+//            templatesFlow.update {
+//                it.plus(checklistTemplate.id to checklistTemplate)
+//            }
+            dataSource.update(checklistTemplate)
             emit(Unit)
         }
     }

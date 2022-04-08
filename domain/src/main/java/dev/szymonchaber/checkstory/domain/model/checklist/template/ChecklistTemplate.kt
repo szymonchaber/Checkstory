@@ -9,7 +9,7 @@ data class ChecklistTemplate(
     val items: List<TemplateCheckbox>
 )
 
-data class TemplateCheckbox(val title: String)
+data class TemplateCheckbox(val id: TemplateCheckboxId, val title: String)
 
 object ChecklistFactory {
 
@@ -24,7 +24,7 @@ object ChecklistFactory {
             title,
             description,
             checkboxes.map {
-                TemplateCheckbox(it)
+                TemplateCheckbox(TemplateCheckboxId(0), it)
             }
         )
     }

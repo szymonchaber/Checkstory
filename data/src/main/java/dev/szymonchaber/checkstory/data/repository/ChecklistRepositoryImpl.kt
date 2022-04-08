@@ -1,19 +1,13 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,9 +23,9 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
                 "Cleaning something",
                 "It's good to do",
                 listOf(
-                    Checkbox("Start", true),
-                    Checkbox("Continue", true),
-                    Checkbox("Finish", false),
+                    Checkbox(CheckboxId(1), "Start", true),
+                    Checkbox(CheckboxId(2), "Continue", true),
+                    Checkbox(CheckboxId(3), "Finish", false),
                 ),
                 "It was a good session"
             ),
@@ -41,9 +35,9 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
                 "Cleaning the office",
                 "The place to be",
                 listOf(
-                    Checkbox("Start", true),
-                    Checkbox("Continue", true),
-                    Checkbox("Finish", false),
+                    Checkbox(CheckboxId(1), "Start", true),
+                    Checkbox(CheckboxId(2), "Continue", true),
+                    Checkbox(CheckboxId(3), "Finish", false),
                 ),
                 "It was a really good session"
             )
@@ -52,6 +46,7 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
 
     override fun createAndGet(basedOn: ChecklistTemplate): Flow<Checklist> {
         return flow {
+            var checkboxIndex = 1L
             with(basedOn) {
                 Checklist(
                     ChecklistId(UUID.randomUUID().toString()),
@@ -59,7 +54,7 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
                     title,
                     description,
                     items.map {
-                        Checkbox(it.title, false)
+                        Checkbox(CheckboxId(checkboxIndex++), it.title, false)
                     },
                     ""
                 )

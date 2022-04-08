@@ -5,13 +5,7 @@ import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistUseCase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -49,7 +43,7 @@ class FillChecklistViewModel @Inject constructor(
                     .filterIsInstance<ChecklistLoadingState.Success>()
                     .first()
                 val updatedList = state.checklist.items.map {
-                    if (it == checkChanged.item) {
+                    if (it.id == checkChanged.item.id) {
                         it.copy(isChecked = checkChanged.newCheck)
                     } else {
                         it

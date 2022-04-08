@@ -10,7 +10,7 @@ import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 interface TemplateCheckboxDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(vararg templateCheckboxes: TemplateCheckboxEntity)
+    suspend fun insertAll(vararg templateCheckboxes: TemplateCheckboxEntity)
 
     @Delete
     fun delete(templateCheckboxDao: TemplateCheckboxEntity)

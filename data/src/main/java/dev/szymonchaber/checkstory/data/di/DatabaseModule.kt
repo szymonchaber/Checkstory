@@ -9,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import kotlinx.coroutines.Dispatchers
@@ -57,5 +58,10 @@ object DatabaseModule {
     @Provides
     fun provideChecklistTemplateDao(database: AppDatabase): ChecklistTemplateDao {
         return database.checklistTemplateDao()
+    }
+
+    @Provides
+    fun provideTemplateCheckboxDao(database: AppDatabase): TemplateCheckboxDao {
+        return database.templateCheckboxDao()
     }
 }
