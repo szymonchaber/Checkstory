@@ -15,7 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.ramcosta.composedestinations.annotation.Destination
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
@@ -24,12 +26,14 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 
+@Destination("edit_template_screen", start = true)
 @Composable
 fun EditTemplateScreen(
-    viewModel: EditTemplateViewModel,
     navController: NavController,
     templateId: ChecklistTemplateId?
 ) {
+    val viewModel = hiltViewModel<EditTemplateViewModel>()
+
     LaunchedEffect(templateId) {
         templateId?.let {
             viewModel.onEvent(EditTemplateEvent.EditChecklistTemplate(it))
