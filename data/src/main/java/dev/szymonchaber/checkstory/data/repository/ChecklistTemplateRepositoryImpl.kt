@@ -21,7 +21,7 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     }
 
     override fun getChecklistTemplate(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
-        return dataSource.getById(checklistTemplateId.id.toLong())
+        return dataSource.getById(checklistTemplateId.id)
     }
 
     override fun createChecklistTemplate(): Flow<ChecklistTemplate> {
@@ -39,7 +39,7 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
         }
             .flowOn(Dispatchers.IO)
             .flatMapLatest {
-                getChecklistTemplate(ChecklistTemplateId(0))
+                getChecklistTemplate(ChecklistTemplateId(it))
             }
     }
 

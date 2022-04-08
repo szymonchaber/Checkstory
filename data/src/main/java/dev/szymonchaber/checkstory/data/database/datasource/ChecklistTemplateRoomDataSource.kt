@@ -36,18 +36,34 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     suspend fun update(checklistTemplate: ChecklistTemplate): Long {
-        val checklistTemplateId = checklistTemplateDao.insert(
+        return checklistTemplateDao.insert(
             ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
         )
-        checkboxDao.insertAll(
-            *checklistTemplate.items.map {
-                TemplateCheckboxEntity.fromDomainTemplateCheckbox(
-                    it,
-                    checklistTemplateId
-                )
-            }.toTypedArray()
+    }
+
+    suspend fun updateTemplateCheckbox(
+        templateCheckbox: TemplateCheckbox,
+        templateId: ChecklistTemplateId
+    ) {
+        checkboxDao.insert(
+            TemplateCheckboxEntity.fromDomainTemplateCheckbox(
+                templateCheckbox,
+                templateId.id
+            )
         )
-        return checklistTemplateId
+    }
+
+    suspend fun createTemplateCheckbox(
+        templateCheckbox: TemplateCheckbox,
+        templateId: ChecklistTemplateId
+    ): Long {
+        return checkboxDao.insert(
+            TemplateCheckboxEntity.fromDomainTemplateCheckbox(templateCheckbox, templateId.id)
+        )
+    }
+
+    suspend fun getTemplateCheckbox(id: TemplateCheckboxId): TemplateCheckbox {
+        return toDomainTemplateCheckbox(checkboxDao.getById(id.id))
     }
 
     suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
@@ -80,9 +96,13 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 title,
                 description,
                 checkboxes.map {
-                    TemplateCheckbox(TemplateCheckboxId(it.checkboxId), it.checkboxTitle)
+                    toDomainTemplateCheckbox(it)
                 }
             )
         }
+    }
+
+    private fun toDomainTemplateCheckbox(it: TemplateCheckboxEntity): TemplateCheckbox {
+        return TemplateCheckbox(TemplateCheckboxId(it.checkboxId), it.checkboxTitle)
     }
 }

@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -26,37 +27,52 @@ fun Navigation() {
             route = CheckstoryScreens.DetailsScreen.route,
             arguments = listOf(
                 navArgument(CheckstoryScreens.DetailsScreen.checklistIdArg) {
-                    nullable = true
-                    defaultValue = null
+                    type = NavType.LongType
+                    defaultValue = -1L
                 },
                 navArgument(CheckstoryScreens.DetailsScreen.sourceChecklistTemplateIdArg) {
-                    nullable = true
-                    defaultValue = null
+                    type = NavType.LongType
+                    defaultValue = -1L
                 }
             )
         ) {
             FillChecklistScreen(
                 hiltViewModel(),
                 navController,
-                it.arguments?.getString(CheckstoryScreens.DetailsScreen.checklistIdArg)
-                    ?.let(::ChecklistId),
-                it.arguments?.getString(CheckstoryScreens.DetailsScreen.sourceChecklistTemplateIdArg)
-                    ?.let(::ChecklistTemplateId)
+                it.arguments?.getLong(
+                    CheckstoryScreens.DetailsScreen.checklistIdArg,
+                    -1L
+                )
+                    ?.takeUnless { id ->
+                        id == -1L
+                    }
+                    ?.let { ChecklistId(it.toString()) },
+                it.arguments?.getLong(
+                    CheckstoryScreens.DetailsScreen.sourceChecklistTemplateIdArg,
+                    -1L
+                )
+                    ?.takeUnless { id ->
+                        id == -1L
+                    }
+                    ?.let { ChecklistTemplateId(it) }
             )
         }
         composable(
             route = CheckstoryScreens.EditTemplateScreen.route,
             arguments = listOf(
                 navArgument(CheckstoryScreens.EditTemplateScreen.templateIdArg) {
-                    nullable = true
-                    defaultValue = null
+                    type = NavType.LongType
+                    defaultValue = -1L
                 },
             )
         ) {
             EditTemplateScreen(
                 hiltViewModel(),
                 navController,
-                it.arguments?.getString(CheckstoryScreens.EditTemplateScreen.templateIdArg)
+                it.arguments?.getLong(CheckstoryScreens.EditTemplateScreen.templateIdArg, -1L)
+                    ?.takeUnless { id ->
+                        id == -1L
+                    }
                     ?.let(::ChecklistTemplateId)
             )
         }

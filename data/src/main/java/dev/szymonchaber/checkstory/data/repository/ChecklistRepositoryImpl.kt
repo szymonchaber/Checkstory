@@ -8,17 +8,17 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @Singleton
 class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
 
     private val checklistsFlow = MutableStateFlow(
         mapOf(
-            ChecklistId("fakeId") to Checklist(
-                ChecklistId("fakeId"),
+            ChecklistId("0") to Checklist(
+                ChecklistId("0"),
                 ChecklistTemplateRepositoryImpl.templates[0].id,
                 "Cleaning something",
                 "It's good to do",
@@ -29,8 +29,8 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
                 ),
                 "It was a good session"
             ),
-            ChecklistId("fakeId2") to Checklist(
-                ChecklistId("fakeId2"),
+            ChecklistId("1") to Checklist(
+                ChecklistId("1"),
                 ChecklistTemplateRepositoryImpl.templates[1].id,
                 "Cleaning the office",
                 "The place to be",
@@ -49,7 +49,7 @@ class ChecklistRepositoryImpl @Inject constructor() : ChecklistRepository {
             var checkboxIndex = 1L
             with(basedOn) {
                 Checklist(
-                    ChecklistId(UUID.randomUUID().toString()),
+                    ChecklistId(Random.nextLong().toString()),
                     basedOn.id,
                     title,
                     description,

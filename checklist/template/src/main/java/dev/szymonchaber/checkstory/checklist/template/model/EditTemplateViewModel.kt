@@ -2,9 +2,8 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.CreateTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import kotlinx.coroutines.flow.*
@@ -14,7 +13,8 @@ import javax.inject.Inject
 class EditTemplateViewModel @Inject constructor(
     private val createChecklistTemplateUseCase: CreateChecklistTemplateUseCase,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
-    private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase
+    private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
+    private val createTemplateCheckboxUseCase: CreateTemplateCheckboxUseCase
 ) : BaseViewModel<
         EditTemplateEvent,
         EditTemplateState,
@@ -128,17 +128,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .flatMapLatest { (loadingState, _) ->
                 val checklistTemplate = loadingState.checklistTemplate
-                val newItems = checklistTemplate.items.plus(
-                    TemplateCheckbox(
-                        TemplateCheckboxId(0),
-                        "New checkbox"
-                    )
-                )
-                updateChecklistTemplateUseCase.updateChecklistTemplate(
-                    loadingState.checklistTemplate.copy(
-                        items = newItems
-                    )
-                )
+                createTemplateCheckboxUseCase.createChecklistTemplate(checklistTemplate.id)
                     .map {
                         null to null
                     }
