@@ -22,7 +22,7 @@ class ChecklistRepositoryImpl @Inject constructor(
         return flow {
             val checklist = with(basedOn) {
                 Checklist(
-                    ChecklistId("0"),
+                    ChecklistId(0),
                     basedOn.id,
                     title,
                     description,
@@ -36,7 +36,7 @@ class ChecklistRepositoryImpl @Inject constructor(
             emit(dataSource.insert(checklist))
         }
             .flatMapConcat {
-                getChecklist(ChecklistId(it.toString()))
+                getChecklist(ChecklistId(it))
             }
     }
 
@@ -45,7 +45,7 @@ class ChecklistRepositoryImpl @Inject constructor(
     }
 
     override fun getChecklist(checklistId: ChecklistId): Flow<Checklist> {
-        return dataSource.getById(checklistId.id.toLong())
+        return dataSource.getById(checklistId.id)
     }
 
     override fun getAllChecklists(): Flow<List<Checklist>> {

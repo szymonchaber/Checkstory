@@ -46,7 +46,7 @@ fun Navigation() {
                     ?.takeUnless { id ->
                         id == -1L
                     }
-                    ?.let { ChecklistId(it.toString()) },
+                    ?.let(::ChecklistId),
                 it.arguments?.getLong(
                     CheckstoryScreens.DetailsScreen.sourceChecklistTemplateIdArg,
                     -1L
@@ -54,7 +54,7 @@ fun Navigation() {
                     ?.takeUnless { id ->
                         id == -1L
                     }
-                    ?.let { ChecklistTemplateId(it) }
+                    ?.let(::ChecklistTemplateId)
             )
         }
         composable(

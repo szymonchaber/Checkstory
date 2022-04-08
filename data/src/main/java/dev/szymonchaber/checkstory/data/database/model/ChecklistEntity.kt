@@ -21,7 +21,7 @@ data class ChecklistEntity(
         checkboxes: List<Checkbox>
     ): Checklist {
         return Checklist(
-            ChecklistId(checklistId.toString()),
+            ChecklistId(checklistId),
             ChecklistTemplateId(templateId),
             templateTitle,
             templateDescription,
@@ -35,7 +35,7 @@ data class ChecklistEntity(
         fun fromDomainChecklist(checklist: Checklist): ChecklistEntity {
             return with(checklist) {
                 ChecklistEntity(
-                    checklistId = checklist.id.id.toLong(),
+                    checklistId = checklist.id.id,
                     templateId = checklistTemplateId.id,
                     notes = notes
                 )
