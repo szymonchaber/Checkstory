@@ -1,11 +1,14 @@
 package dev.szymonchaber.checkstory.data.repository
 
+import android.util.Log
 import dev.szymonchaber.checkstory.data.database.datasource.ChecklistTemplateRoomDataSource
 import dev.szymonchaber.checkstory.domain.model.checklist.template.*
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import java.util.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,10 +16,6 @@ import javax.inject.Singleton
 class ChecklistTemplateRepositoryImpl @Inject constructor(
     private val dataSource: ChecklistTemplateRoomDataSource
 ) : ChecklistTemplateRepository {
-
-    private val templatesFlow = MutableStateFlow(templates.associateBy {
-        it.id
-    })
 
     override fun getAllChecklistTemplates(): Flow<List<ChecklistTemplate>> {
         return dataSource.getAll()
@@ -29,7 +28,7 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     override fun createChecklistTemplate(): Flow<ChecklistTemplate> {
         return flow {
             val newChecklistTemplate = ChecklistTemplate(
-                ChecklistTemplateId(UUID.randomUUID().toString()),
+                ChecklistTemplateId("0"),
                 "New title",
                 "New description",
                 listOf(
@@ -37,22 +36,17 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
                     TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 2")
                 )
             )
-            templatesFlow.update {
-                it.plus(newChecklistTemplate.id to newChecklistTemplate)
-            }
-            emit(newChecklistTemplate.id)
+            emit(dataSource.insert(newChecklistTemplate))
         }
             .flowOn(Dispatchers.IO)
             .flatMapLatest {
-                getChecklistTemplate(it)
+                Log.d("ChecklistRepository", "new id: $it")
+                getChecklistTemplate(ChecklistTemplateId(it.toString()))
             }
     }
 
     override fun updateChecklistTemplate(checklistTemplate: ChecklistTemplate): Flow<Unit> {
         return flow {
-//            templatesFlow.update {
-//                it.plus(checklistTemplate.id to checklistTemplate)
-//            }
             dataSource.update(checklistTemplate)
             emit(Unit)
         }

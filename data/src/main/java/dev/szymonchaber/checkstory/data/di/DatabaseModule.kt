@@ -31,7 +31,7 @@ object DatabaseModule {
         ).build().also {
             GlobalScope.launch {
                 withContext(Dispatchers.IO) {
-                    it.checklistTemplateDao().insertAll(
+                    it.checklistTemplateDao().insert(
                         ChecklistTemplateEntity(
                             1,
                             "First template",

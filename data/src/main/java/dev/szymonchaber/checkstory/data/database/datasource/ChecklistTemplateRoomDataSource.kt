@@ -18,38 +18,66 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 ) {
 
     fun getById(id: Long): Flow<ChecklistTemplate> {
-        return checklistTemplateDao.getById(id)
+        return checklistTemplateDao.getAll()
             .map {
-                it.toChecklistTemplate()
-                    .first()
+                it.filterKeys {
+                    it.id == id // why not direct?
+                }
             }
+            .map {
+                it.map {
+                    it.toChecklistTemplate()
+                }.first()
+            }
+//        return checklistTemplateDao.getById(id)
+//            .map {
+//                it.toChecklistTemplate()
+//                    .first()
+//            }
     }
 
     fun getAll(): Flow<List<ChecklistTemplate>> {
         return checklistTemplateDao.getAll()
             .map {
-                it.toChecklistTemplate()
+                it.map {
+                    it.toChecklistTemplate()
+                }
             }
     }
 
-    suspend fun update(checklistTemplate: ChecklistTemplate) {
+    suspend fun update(checklistTemplate: ChecklistTemplate): Long {
+        val checklistTemplateId = checklistTemplateDao.insert(
+            ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
+        )
         checkboxDao.insertAll(
             *checklistTemplate.items.map {
                 TemplateCheckboxEntity.fromDomainTemplateCheckbox(
                     it,
-                    checklistTemplate.id.id.toLong()
+                    checklistTemplateId
                 )
             }.toTypedArray()
         )
-        checklistTemplateDao.insertAll(
-            ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
-        )
+        return checklistTemplateId
     }
 
-    private fun Map<ChecklistTemplateEntity, List<TemplateCheckboxEntity>>.toChecklistTemplate(): List<ChecklistTemplate> {
-        return map { (template, checkboxes) ->
-            mapChecklistTemplate(template, checkboxes)
-        }
+    suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
+        val checklistTemplateId = checklistTemplateDao.insert(
+            ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
+        )
+        checkboxDao.insertAll(
+            *checklistTemplate.items.map {
+                TemplateCheckboxEntity.fromDomainTemplateCheckbox(
+                    it,
+                    checklistTemplateId
+                )
+            }.toTypedArray()
+        )
+        return checklistTemplateId
+    }
+
+    private fun Map.Entry<ChecklistTemplateEntity, List<TemplateCheckboxEntity>>.toChecklistTemplate(): ChecklistTemplate {
+        val (template, checkboxes) = this
+        return mapChecklistTemplate(template, checkboxes)
     }
 
     private fun mapChecklistTemplate(

@@ -1,20 +1,9 @@
 package dev.szymonchaber.checkstory.checklist.template
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Checkbox
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
@@ -41,15 +30,14 @@ fun EditTemplateScreen(
     navController: NavController,
     templateId: ChecklistTemplateId?
 ) {
-    templateId?.let {
-        LaunchedEffect(it) {
+    LaunchedEffect(templateId) {
+        templateId?.let {
             viewModel.onEvent(EditTemplateEvent.EditChecklistTemplate(it))
-        }
-    } ?: run {
-        LaunchedEffect(null) {
+        } ?: run {
             viewModel.onEvent(EditTemplateEvent.CreateChecklistTemplate)
         }
     }
+
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
     Scaffold(
         topBar = {
@@ -81,7 +69,10 @@ fun EditTemplateScreen(
 }
 
 @Composable
-fun EditTemplateView(checklistTemplate: ChecklistTemplate, eventCollector: (EditTemplateEvent) -> Unit) {
+fun EditTemplateView(
+    checklistTemplate: ChecklistTemplate,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())

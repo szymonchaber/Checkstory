@@ -22,8 +22,8 @@ interface ChecklistTemplateDao {
     fun getById(id: Long): Flow<Map<ChecklistTemplateEntity, List<TemplateCheckboxEntity>>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(vararg templates: ChecklistTemplateEntity)
+    suspend fun insert(template: ChecklistTemplateEntity): Long
 
     @Delete
-    fun delete(template: ChecklistTemplateEntity)
+    suspend fun delete(template: ChecklistTemplateEntity)
 }
