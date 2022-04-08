@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.data.repository
 
-import android.util.Log
 import dev.szymonchaber.checkstory.data.database.datasource.ChecklistTemplateRoomDataSource
 import dev.szymonchaber.checkstory.domain.model.checklist.template.*
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
@@ -28,9 +27,9 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     override fun createChecklistTemplate(): Flow<ChecklistTemplate> {
         return flow {
             val newChecklistTemplate = ChecklistTemplate(
-                ChecklistTemplateId("0"),
-                "New title",
-                "New description",
+                ChecklistTemplateId(0),
+                "New checklist template",
+                "Checklist description",
                 listOf(
                     TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1"),
                     TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 2")
@@ -40,8 +39,7 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
         }
             .flowOn(Dispatchers.IO)
             .flatMapLatest {
-                Log.d("ChecklistRepository", "new id: $it")
-                getChecklistTemplate(ChecklistTemplateId(it.toString()))
+                getChecklistTemplate(ChecklistTemplateId(0))
             }
     }
 

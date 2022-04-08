@@ -18,22 +18,12 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 ) {
 
     fun getById(id: Long): Flow<ChecklistTemplate> {
-        return checklistTemplateDao.getAll()
-            .map {
-                it.filterKeys {
-                    it.id == id // why not direct?
-                }
-            }
+        return checklistTemplateDao.getById(id)
             .map {
                 it.map {
                     it.toChecklistTemplate()
                 }.first()
             }
-//        return checklistTemplateDao.getById(id)
-//            .map {
-//                it.toChecklistTemplate()
-//                    .first()
-//            }
     }
 
     fun getAll(): Flow<List<ChecklistTemplate>> {
@@ -86,7 +76,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     ): ChecklistTemplate {
         return with(template) {
             ChecklistTemplate(
-                ChecklistTemplateId(id.toString()),
+                ChecklistTemplateId(id),
                 title,
                 description,
                 checkboxes.map {

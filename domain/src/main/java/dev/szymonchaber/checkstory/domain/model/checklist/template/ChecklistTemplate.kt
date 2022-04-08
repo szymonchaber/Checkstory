@@ -1,7 +1,5 @@
 package dev.szymonchaber.checkstory.domain.model.checklist.template
 
-import java.util.*
-
 data class ChecklistTemplate(
     val id: ChecklistTemplateId,
     val title: String,
@@ -17,7 +15,7 @@ object ChecklistFactory {
         title: String,
         description: String,
         vararg checkboxes: String,
-        id: ChecklistTemplateId = ChecklistTemplateId(UUID.randomUUID().toString()),
+        id: ChecklistTemplateId = ChecklistTemplateId(0),
     ): ChecklistTemplate {
         return ChecklistTemplate(
             id,
