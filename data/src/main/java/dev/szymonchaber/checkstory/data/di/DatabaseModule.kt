@@ -8,6 +8,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
+import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
+import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
@@ -16,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.Executors
 import javax.inject.Singleton
 
 @Module
@@ -28,31 +31,34 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java, "checkstory-database"
-        ).build().also {
-            GlobalScope.launch {
-                withContext(Dispatchers.IO) {
-                    it.checklistTemplateDao().insert(
-                        ChecklistTemplateEntity(
-                            1,
-                            "First template",
-                            "Description"
+        ).setQueryCallback({ sqlQuery, bindArgs ->
+            println("SQL Query: $sqlQuery SQL Args: $bindArgs")
+        }, Executors.newSingleThreadExecutor())
+            .build().also {
+                GlobalScope.launch {
+                    withContext(Dispatchers.IO) {
+                        it.checklistTemplateDao().insert(
+                            ChecklistTemplateEntity(
+                                1,
+                                "Cleaning something",
+                                "It's good to do"
+                            )
                         )
-                    )
-                    it.templateCheckboxDao().insertAll(
-                        TemplateCheckboxEntity(
-                            0,
-                            1,
-                            "Checkbox item"
-                        ),
-                        TemplateCheckboxEntity(
-                            0,
-                            1,
-                            "Checkbox item 2"
+                        it.templateCheckboxDao().insertAll(
+                            TemplateCheckboxEntity(
+                                0,
+                                1,
+                                "Checkbox item"
+                            ),
+                            TemplateCheckboxEntity(
+                                0,
+                                1,
+                                "Checkbox item 2"
+                            )
                         )
-                    )
+                    }
                 }
             }
-        }
     }
 
     @Provides
@@ -63,5 +69,15 @@ object DatabaseModule {
     @Provides
     fun provideTemplateCheckboxDao(database: AppDatabase): TemplateCheckboxDao {
         return database.templateCheckboxDao()
+    }
+
+    @Provides
+    fun provideChecklistDao(database: AppDatabase): ChecklistDao {
+        return database.checklistDao()
+    }
+
+    @Provides
+    fun provideCheckboxDao(database: AppDatabase): CheckboxDao {
+        return database.checkboxDao()
     }
 }

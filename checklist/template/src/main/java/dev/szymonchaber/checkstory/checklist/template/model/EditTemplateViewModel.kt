@@ -128,7 +128,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .flatMapLatest { (loadingState, _) ->
                 val checklistTemplate = loadingState.checklistTemplate
-                createTemplateCheckboxUseCase.createChecklistTemplate(checklistTemplate.id)
+                createTemplateCheckboxUseCase.createTemplateCheckbox(checklistTemplate.id)
                     .map {
                         null to null
                     }

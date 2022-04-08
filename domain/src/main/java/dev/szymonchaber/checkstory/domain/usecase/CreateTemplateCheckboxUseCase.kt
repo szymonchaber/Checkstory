@@ -10,7 +10,7 @@ class CreateTemplateCheckboxUseCase @Inject constructor(
     private val templateCheckboxRepository: TemplateCheckboxRepository
 ) {
 
-    fun createChecklistTemplate(templateId: ChecklistTemplateId): Flow<TemplateCheckbox> {
+    fun createTemplateCheckbox(templateId: ChecklistTemplateId): Flow<TemplateCheckbox> {
         return templateCheckboxRepository.createTemplateCheckbox(templateId)
     }
 }
