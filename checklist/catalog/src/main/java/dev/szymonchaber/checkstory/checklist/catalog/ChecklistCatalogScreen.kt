@@ -5,31 +5,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
-import dev.szymonchaber.checkstory.checklist.catalog.model.RecentChecklistsLoadingState
+import dev.szymonchaber.checkstory.checklist.catalog.model.*
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.navigation.CheckstoryScreens
 
@@ -47,7 +30,7 @@ fun ChecklistCatalogScreen(viewModel: ChecklistCatalogViewModel, navController: 
             ChecklistCatalogView(viewModel, navController)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(CheckstoryScreens.EditTemplateScreen.route) }) {
+            FloatingActionButton(onClick = { navController.navigate(CheckstoryScreens.EditTemplateScreen.createTemplate()) }) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = null)
             }
         }

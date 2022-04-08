@@ -1,4 +1,4 @@
 package dev.szymonchaber.checkstory.domain.model.checklist.template
 
 @JvmInline
-value class ChecklistTemplateId(val id: Long)
+value class TemplateCheckboxId(val id: Long)
