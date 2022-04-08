@@ -6,6 +6,7 @@ plugins {
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
     id 'dev.szymonchaber.checkstory.dependencies'
+    id 'com.google.devtools.ksp' version '1.6.20-1.0.5'
 }
 
 android {
@@ -32,6 +33,14 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    libraryVariants.all { variant ->
+        kotlin.sourceSets {
+            getByName(variant.name) {
+                kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
+            }
+        }
+    }
 }
 
 dependencies {
@@ -44,7 +53,7 @@ dependencies {
     kapt Dependencies.hiltKapt
 
     implementation Dependencies.room
-    kapt Dependencies.roomKsp
+    ksp Dependencies.roomKsp
 
     testImplementation Dependencies.unitTest
     androidTestImplementation Dependencies.uiTest
