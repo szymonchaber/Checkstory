@@ -5,7 +5,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 
 sealed interface ChecklistCatalogEffect {
 
-    data class CreateAndNavigateToChecklist(val basedOn: ChecklistTemplateId) : ChecklistCatalogEffect
+    data class CreateAndNavigateToChecklist(val basedOn: ChecklistTemplateId) :
+        ChecklistCatalogEffect
 
     data class NavigateToChecklist(val checklistId: ChecklistId) : ChecklistCatalogEffect
+
+    data class NavigateToTemplateEdit(val templateId: ChecklistTemplateId) : ChecklistCatalogEffect
 }

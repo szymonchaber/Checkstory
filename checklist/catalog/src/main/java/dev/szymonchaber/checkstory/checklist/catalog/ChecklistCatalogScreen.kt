@@ -53,9 +53,9 @@ private fun ChecklistCatalogView(
     ) {
         val state by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
 
-        val effect = viewModel.effect.collectAsState(initial = null)
+        val effect by viewModel.effect.collectAsState(initial = null)
         LaunchedEffect(effect) {
-            when (val value = effect.value) {
+            when (val value = effect) {
                 is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
                     navigator.navigate(
                         FillChecklistScreenDestination(createChecklistFrom = value.basedOn)
@@ -63,6 +63,9 @@ private fun ChecklistCatalogView(
                 }
                 is ChecklistCatalogEffect.NavigateToChecklist -> {
                     navigator.navigate(FillChecklistScreenDestination(checklistId = value.checklistId))
+                }
+                is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
+                    navigator.navigate(EditTemplateScreenDestination(value.templateId))
                 }
                 null -> Unit
             }

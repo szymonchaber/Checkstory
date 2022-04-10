@@ -4,14 +4,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -32,10 +25,11 @@ class ChecklistCatalogViewModel @Inject constructor(
     }
 
     override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        val handleLoadChecklist = eventFlow.handleLoadChecklist()
-        val handleChecklistClicked = eventFlow.handleChecklistClicked()
-        val handleRecentChecklistClicked = eventFlow.handleRecentChecklistClicked()
-        return merge(handleLoadChecklist, handleChecklistClicked, handleRecentChecklistClicked)
+        val loadChecklist = eventFlow.handleLoadChecklist()
+        val templateClicked = eventFlow.handleTemplateClicked()
+        val recentChecklistClicked = eventFlow.handleRecentChecklistClicked()
+        val editTemplateClicked = eventFlow.handleEditTemplateClicked()
+        return merge(loadChecklist, templateClicked, recentChecklistClicked, editTemplateClicked)
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadChecklist(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
@@ -61,10 +55,10 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleChecklistClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+    private fun Flow<ChecklistCatalogEvent>.handleTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.ChecklistTemplateClicked>()
             .map {
-                state.first() to ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = it.checklistTemplateId)
+                state.first() to ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = it.templateId)
             }
     }
 
@@ -72,6 +66,13 @@ class ChecklistCatalogViewModel @Inject constructor(
         return filterIsInstance<ChecklistCatalogEvent.RecentChecklistClicked>()
             .map {
                 state.first() to ChecklistCatalogEffect.NavigateToChecklist(checklistId = it.checklistId)
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleEditTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.EditChecklistTemplateClicked>()
+            .map {
+                state.first() to ChecklistCatalogEffect.NavigateToTemplateEdit(templateId = it.templateId)
             }
     }
 }

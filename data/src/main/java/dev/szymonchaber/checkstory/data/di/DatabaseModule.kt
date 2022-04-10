@@ -12,6 +12,8 @@ import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
+import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
+import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +39,7 @@ object DatabaseModule {
             .build().also {
                 GlobalScope.launch {
                     withContext(Dispatchers.IO) {
+                        // TODO the app without below code will crash
                         it.checklistTemplateDao().insert(
                             ChecklistTemplateEntity(
                                 1,
@@ -56,6 +59,29 @@ object DatabaseModule {
                                 "Checkbox item 2"
                             )
                         )
+                        it.checklistDao()
+                            .insert(
+                                ChecklistEntity(
+                                    1,
+                                    1,
+                                    "Awesome session"
+                                )
+                            )
+                        it.checkboxDao()
+                            .insertAll(
+                                CheckboxEntity(
+                                    0,
+                                    1,
+                                    "Clean the table",
+                                    false
+                                ),
+                                CheckboxEntity(
+                                    0,
+                                    1,
+                                    "Clean the desk",
+                                    true
+                                )
+                            )
                     }
                 }
             }
