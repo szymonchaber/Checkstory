@@ -16,6 +16,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.catalog.model.*
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
+import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 
@@ -68,7 +69,7 @@ private fun ChecklistCatalogView(
                     navigator.navigate(EditTemplateScreenDestination(value.templateId))
                 }
                 is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
-//                    navigator.navigate() // TODO
+                    navigator.navigate(ChecklistHistoryScreenDestination(value.templateId))
                 }
                 null -> Unit
             }

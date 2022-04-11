@@ -6,6 +6,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
@@ -50,5 +51,9 @@ class ChecklistRepositoryImpl @Inject constructor(
 
     override fun getAllChecklists(): Flow<List<Checklist>> {
         return dataSource.getAll()
+    }
+
+    override fun getChecklists(basedOn: ChecklistTemplateId): Flow<List<Checklist>> {
+        return dataSource.getBasedOn(basedOn)
     }
 }

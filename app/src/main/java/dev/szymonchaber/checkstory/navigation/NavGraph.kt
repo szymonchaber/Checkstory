@@ -4,6 +4,7 @@ import com.ramcosta.composedestinations.spec.DestinationSpec
 import com.ramcosta.composedestinations.spec.NavGraphSpec
 import dev.szymonchaber.checkstory.checklist.catalog.destinations.ChecklistCatalogScreenDestination
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
+import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 
 object NavGraph : NavGraphSpec {
@@ -15,6 +16,7 @@ object NavGraph : NavGraphSpec {
     override val destinationsByRoute = listOf<DestinationSpec<*>>(
         ChecklistCatalogScreenDestination,
         FillChecklistScreenDestination,
-        EditTemplateScreenDestination
+        EditTemplateScreenDestination,
+        ChecklistHistoryScreenDestination
     ).associateBy { it.route }
 }

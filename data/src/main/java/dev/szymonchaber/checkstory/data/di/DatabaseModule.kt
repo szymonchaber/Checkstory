@@ -59,29 +59,23 @@ object DatabaseModule {
                                 "Checkbox item 2"
                             )
                         )
-                        it.checklistDao()
-                            .insert(
-                                ChecklistEntity(
-                                    1,
-                                    1,
-                                    "Awesome session"
-                                )
-                            )
-                        it.checkboxDao()
-                            .insertAll(
-                                CheckboxEntity(
-                                    0,
-                                    1,
-                                    "Clean the table",
-                                    false
-                                ),
-                                CheckboxEntity(
-                                    0,
-                                    1,
-                                    "Clean the desk",
-                                    true
-                                )
-                            )
+                        it.insert {
+                            checklist(1, "This was an awesome session") {
+                                checkbox("Clean the table", true)
+                                checkbox("Dust the lamp shade", false)
+                                checkbox("Clean all the windows", false)
+                                checkbox("Be awesome", true)
+                            }
+                            checklist(
+                                1,
+                                "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
+                            ) {
+                                checkbox("Clean the table", false)
+                                checkbox("Dust the lamp shade", true)
+                                checkbox("Clean all the windows", true)
+                                checkbox("Be totally awesome", false)
+                            }
+                        }
                     }
                 }
             }
@@ -106,4 +100,58 @@ object DatabaseModule {
     fun provideCheckboxDao(database: AppDatabase): CheckboxDao {
         return database.checkboxDao()
     }
+}
+
+class InsertDsl {
+
+    class Checklist(val templateId: Long, val notes: String = "")
+
+    class Checkbox(val title: String, val isChecked: Boolean = false)
+
+    private val items = mutableMapOf<Checklist, List<Checkbox>>()
+
+    class CheckboxDsl {
+
+        val checkboxes = mutableListOf<Checkbox>()
+
+        fun checkbox(title: String, isChecked: Boolean = false) {
+            checkboxes.add(Checkbox(title, isChecked))
+        }
+    }
+
+    fun checklist(templateId: Long, notes: String = "", checkboxesBlock: CheckboxDsl.() -> Unit) {
+        items[Checklist(templateId, notes)] = CheckboxDsl().apply(checkboxesBlock).checkboxes
+    }
+
+    fun insertInto(appDatabase: AppDatabase) {
+        GlobalScope.launch {
+            withContext(Dispatchers.IO) {
+                items.map { (checklist, checkboxes) ->
+                    appDatabase.checklistDao().insert(
+                        ChecklistEntity(
+                            0,
+                            checklist.templateId,
+                            checklist.notes
+                        )
+                    ) to checkboxes
+                }.forEach { (checklistId, checkboxes) ->
+                    appDatabase.checkboxDao().insertAll(
+                        *checkboxes.map {
+                            CheckboxEntity(
+                                0,
+                                checklistId,
+                                it.title,
+                                it.isChecked
+                            )
+                        }.toTypedArray()
+                    )
+                }
+            }
+        }
+    }
+}
+
+fun AppDatabase.insert(block: (InsertDsl).() -> Unit) {
+
+    InsertDsl().apply(block).insertInto(this)
 }
