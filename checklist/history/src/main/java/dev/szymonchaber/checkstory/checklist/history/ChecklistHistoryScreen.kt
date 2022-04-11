@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 
@@ -57,7 +58,11 @@ private fun ChecklistHistoryView(
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {
         when (val value = effect) {
-            is ChecklistHistoryEffect.ExampleEffect -> Unit
+            is ChecklistHistoryEffect.NavigateToFillChecklistScreen -> navigator.navigate(
+                FillChecklistScreenDestination(
+                    value.checklistId
+                )
+            )
             null -> Unit
         }
     }
