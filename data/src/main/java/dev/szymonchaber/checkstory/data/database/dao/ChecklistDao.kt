@@ -1,9 +1,6 @@
 package dev.szymonchaber.checkstory.data.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +21,7 @@ interface ChecklistDao {
     )
     fun getById(id: Long): Flow<Map<ChecklistEntity, List<CheckboxEntity>>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(checklistEntity: ChecklistEntity): Long
 
     @Update

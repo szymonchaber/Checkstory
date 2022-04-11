@@ -67,6 +67,9 @@ private fun ChecklistCatalogView(
                 is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
                     navigator.navigate(EditTemplateScreenDestination(value.templateId))
                 }
+                is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
+//                    navigator.navigate() // TODO
+                }
                 null -> Unit
             }
         }

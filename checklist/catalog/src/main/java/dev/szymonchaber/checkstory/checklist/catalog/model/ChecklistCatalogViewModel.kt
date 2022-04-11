@@ -25,11 +25,13 @@ class ChecklistCatalogViewModel @Inject constructor(
     }
 
     override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        val loadChecklist = eventFlow.handleLoadChecklist()
-        val templateClicked = eventFlow.handleTemplateClicked()
-        val recentChecklistClicked = eventFlow.handleRecentChecklistClicked()
-        val editTemplateClicked = eventFlow.handleEditTemplateClicked()
-        return merge(loadChecklist, templateClicked, recentChecklistClicked, editTemplateClicked)
+        return merge(
+            eventFlow.handleLoadChecklist(),
+            eventFlow.handleTemplateClicked(),
+            eventFlow.handleRecentChecklistClicked(),
+            eventFlow.handleEditTemplateClicked(),
+            eventFlow.handleHistoryClicked()
+        )
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadChecklist(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
@@ -56,7 +58,7 @@ class ChecklistCatalogViewModel @Inject constructor(
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.ChecklistTemplateClicked>()
+        return filterIsInstance<ChecklistCatalogEvent.TemplateClicked>()
             .map {
                 state.first() to ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = it.templateId)
             }
@@ -70,9 +72,16 @@ class ChecklistCatalogViewModel @Inject constructor(
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleEditTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.EditChecklistTemplateClicked>()
+        return filterIsInstance<ChecklistCatalogEvent.EditTemplateClicked>()
             .map {
                 state.first() to ChecklistCatalogEffect.NavigateToTemplateEdit(templateId = it.templateId)
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleHistoryClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.TemplateHistoryClicked>()
+            .map {
+                state.first() to ChecklistCatalogEffect.NavigateToTemplateHistory(templateId = it.templateId)
             }
     }
 }

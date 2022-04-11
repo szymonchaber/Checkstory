@@ -1,10 +1,12 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,7 +31,7 @@ fun ChecklistTemplateView(
             .padding(top = 16.dp),
         elevation = 4.dp,
         onClick = {
-            eventListener(ChecklistCatalogEvent.ChecklistTemplateClicked(checklistTemplate.id))
+            eventListener(ChecklistCatalogEvent.TemplateClicked(checklistTemplate.id))
         }
     ) {
         Column {
@@ -38,17 +40,27 @@ fun ChecklistTemplateView(
                 text = checklistTemplate.title,
                 style = MaterialTheme.typography.subtitle1
             )
-            IconButton(
+            Row(
                 modifier = Modifier.align(Alignment.End),
-                onClick = {
-                    eventListener(
-                        ChecklistCatalogEvent.EditChecklistTemplateClicked(
-                            checklistTemplate.id
-                        )
-                    )
-                }
             ) {
-                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
+                IconButton(
+                    onClick = {
+                        eventListener(
+                            ChecklistCatalogEvent.EditTemplateClicked(checklistTemplate.id)
+                        )
+                    }
+                ) {
+                    Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
+                }
+                IconButton(
+                    onClick = {
+                        eventListener(
+                            ChecklistCatalogEvent.TemplateHistoryClicked(checklistTemplate.id)
+                        )
+                    }
+                ) {
+                    Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
+                }
             }
         }
     }
