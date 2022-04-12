@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,7 +34,8 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
                 listOf(
                     TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1"),
                     TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 2")
-                )
+                ),
+                LocalDateTime.now()
             )
             emit(dataSource.insert(newChecklistTemplate))
         }

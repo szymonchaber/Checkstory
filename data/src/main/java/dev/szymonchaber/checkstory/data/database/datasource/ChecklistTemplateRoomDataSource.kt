@@ -10,6 +10,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 class ChecklistTemplateRoomDataSource @Inject constructor(
@@ -97,7 +98,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 description,
                 checkboxes.map {
                     toDomainTemplateCheckbox(it)
-                }
+                },
+                LocalDateTime.now()
             )
         }
     }

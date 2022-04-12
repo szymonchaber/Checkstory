@@ -47,7 +47,12 @@ object DatabaseModule {
             withContext(Dispatchers.IO) {
                 // TODO the app without below code will crash
                 checklistTemplateDao.insert(
-                    ChecklistTemplateEntity(1, "Cleaning something", "It's good to do")
+                    ChecklistTemplateEntity(
+                        1,
+                        "Cleaning something",
+                        "It's good to do",
+                        LocalDateTime.now().minusDays(2)
+                    )
                 )
                 templateCheckboxDao.insertAll(
                     TemplateCheckboxEntity(0, 1, "Checkbox item"),

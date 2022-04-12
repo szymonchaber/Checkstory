@@ -14,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
+import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -39,6 +41,13 @@ fun ChecklistTemplateView(
                 modifier = Modifier.padding(16.dp),
                 text = checklistTemplate.title,
                 style = MaterialTheme.typography.subtitle1
+            )
+            DateFormatText(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 16.dp, bottom = 8.dp),
+                localDateTime = checklistTemplate.createdAt
             )
             Row(
                 modifier = Modifier.align(Alignment.End),
@@ -79,7 +88,8 @@ fun ChecklistTemplateViewPreview() {
                     TemplateCheckboxId(0),
                     "Checkbox 1"
                 )
-            )
+            ),
+            LocalDateTime.now()
         ),
         eventListener = {}
     )
