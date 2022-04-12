@@ -6,6 +6,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import java.time.LocalDateTime
 
 @Entity
 data class ChecklistEntity(
@@ -13,6 +14,7 @@ data class ChecklistEntity(
     val checklistId: Long,
     val templateId: Long,
     val notes: String,
+    val createdAt: LocalDateTime
 ) {
 
     fun toDomainChecklist(
@@ -26,7 +28,8 @@ data class ChecklistEntity(
             templateTitle,
             templateDescription,
             checkboxes,
-            notes
+            notes,
+            createdAt
         )
     }
 
@@ -37,7 +40,8 @@ data class ChecklistEntity(
                 ChecklistEntity(
                     checklistId = checklist.id.id,
                     templateId = checklistTemplateId.id,
-                    notes = notes
+                    notes = notes,
+                    checklist.createdAt
                 )
             }
         }

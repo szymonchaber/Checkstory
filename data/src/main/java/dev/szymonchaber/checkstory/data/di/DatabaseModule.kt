@@ -8,7 +8,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
-import dev.szymonchaber.checkstory.data.database.Converters
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
@@ -21,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
 import java.util.concurrent.Executors
 import javax.inject.Singleton
 
@@ -35,7 +35,6 @@ object DatabaseModule {
             context,
             AppDatabase::class.java, "checkstory-database"
         )
-            .addTypeConverter(Converters())
             .setQueryCallback({ sqlQuery, bindArgs ->
                 println("SQL Query: $sqlQuery SQL Args: $bindArgs")
             }, Executors.newSingleThreadExecutor())
@@ -54,22 +53,22 @@ object DatabaseModule {
                     TemplateCheckboxEntity(0, 1, "Checkbox item"),
                     TemplateCheckboxEntity(0, 1, "Checkbox item 2")
                 )
-            }
-            insert {
-                checklist(1, "This was an awesome session") {
-                    checkbox("Clean the table", true)
-                    checkbox("Dust the lamp shade", false)
-                    checkbox("Clean all the windows", false)
-                    checkbox("Be awesome", true)
-                }
-                checklist(
-                    1,
-                    "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
-                ) {
-                    checkbox("Clean the table", false)
-                    checkbox("Dust the lamp shade", true)
-                    checkbox("Clean all the windows", true)
-                    checkbox("Be totally awesome", false)
+                insert {
+                    checklist(1, "This was an awesome session") {
+                        checkbox("Clean the table", true)
+                        checkbox("Dust the lamp shade", false)
+                        checkbox("Clean all the windows", false)
+                        checkbox("Be awesome", true)
+                    }
+                    checklist(
+                        1,
+                        "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
+                    ) {
+                        checkbox("Clean the table", false)
+                        checkbox("Dust the lamp shade", true)
+                        checkbox("Clean all the windows", true)
+                        checkbox("Be totally awesome", false)
+                    }
                 }
             }
         }
@@ -125,7 +124,8 @@ class InsertDsl {
                         ChecklistEntity(
                             0,
                             checklist.templateId,
-                            checklist.notes
+                            checklist.notes,
+                            LocalDateTime.now().minusDays(2)
                         )
                     ) to checkboxes
                 }.forEach { (checklistId, checkboxes) ->

@@ -7,6 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -15,6 +16,8 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Composable
 @Destination(route = "checklist_history", start = true)
@@ -110,9 +113,7 @@ fun ChecklistHistoryItem(
             eventListener(ChecklistHistoryEvent.ChecklistClicked(checklist.id))
         }
     ) {
-        val notes by remember {
-            mutableStateOf(checklist.notes.takeUnless(String::isBlank)?.let { "\"$it\"" } ?: "🙊")
-        }
+        val notes = checklist.notes.takeUnless(String::isBlank)?.let { "\"$it\"" } ?: "🙊"
         Column(
             modifier = Modifier.padding(all = 16.dp)
         ) {
@@ -124,6 +125,16 @@ fun ChecklistHistoryItem(
                 modifier = Modifier.padding(top = 16.dp),
                 text = notes,
                 style = MaterialTheme.typography.subtitle1
+            )
+            val format = remember {
+                DateTimeFormatter.ofPattern("dd MMMM, HH:mm", Locale.getDefault())
+            }
+            Text(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .align(Alignment.End),
+                text = checklist.createdAt.format(format),
+                style = MaterialTheme.typography.caption
             )
         }
     }

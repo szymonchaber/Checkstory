@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +31,8 @@ class ChecklistRepositoryImpl @Inject constructor(
                     items.map {
                         Checkbox(CheckboxId(0), it.title, false)
                     },
-                    ""
+                    "",
+                    LocalDateTime.now()
                 )
             }
 
