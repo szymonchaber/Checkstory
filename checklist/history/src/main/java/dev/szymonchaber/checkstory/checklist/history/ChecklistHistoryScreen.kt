@@ -134,7 +134,8 @@ fun ChecklistHistoryItem(
                     .padding(top = 16.dp)
                     .align(Alignment.End),
                 text = checklist.createdAt.format(format),
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.caption,
+                maxLines = 1
             )
         }
     }

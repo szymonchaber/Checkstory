@@ -124,7 +124,8 @@ fun RecentChecklistItemView(
             Text(
                 modifier = Modifier.padding(top = 16.dp),
                 text = notes,
-                style = MaterialTheme.typography.subtitle1
+                style = MaterialTheme.typography.subtitle1,
+                maxLines = 1
             )
         }
 
