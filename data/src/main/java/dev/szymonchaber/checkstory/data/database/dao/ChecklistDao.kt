@@ -10,14 +10,16 @@ interface ChecklistDao {
 
     @Query(
         "SELECT * FROM checklistEntity " +
-                "JOIN checkboxEntity ON checklistEntity.checklistId = checkboxEntity.checklistId"
+                "JOIN checkboxEntity ON checklistEntity.checklistId = checkboxEntity.checklistId " +
+                "ORDER BY checklistEntity.createdAt DESC"
     )
     fun getAll(): Flow<Map<ChecklistEntity, List<CheckboxEntity>>>
 
     @Query(
         "SELECT * FROM checklistEntity " +
                 "JOIN checkboxEntity ON checklistEntity.checklistId = checkboxEntity.checklistId " +
-                "WHERE checklistEntity.templateId=:templateId"
+                "WHERE checklistEntity.templateId=:templateId " +
+                "ORDER BY checklistEntity.createdAt DESC"
     )
     fun getAll(templateId: Long): Flow<Map<ChecklistEntity, List<CheckboxEntity>>>
 
