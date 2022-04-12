@@ -37,9 +37,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     suspend fun update(checklistTemplate: ChecklistTemplate): Long {
-        return checklistTemplateDao.insert(
-            ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
-        )
+        return insert(checklistTemplate)
     }
 
     suspend fun updateTemplateCheckbox(

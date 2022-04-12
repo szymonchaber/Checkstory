@@ -22,7 +22,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import dev.szymonchaber.checkstory.checklist.template.model.*
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 
 @Destination("edit_template_screen", start = true)
 @Composable
@@ -73,7 +72,9 @@ fun EditTemplateScreen(
                     Text("Loading")
                 }
                 is TemplateLoadingState.Success -> {
-                    EditTemplateView(loadingState.checklistTemplate, viewModel::onEvent)
+                    val checkboxes = loadingState.checklistTemplate.items.map(EditTemplateCheckbox::Existing)
+                        .plus(loadingState.newCheckboxes.map(EditTemplateCheckbox::New))
+                    EditTemplateView(loadingState.checklistTemplate, checkboxes, viewModel::onEvent)
                 }
             }
         },
@@ -91,6 +92,7 @@ fun EditTemplateScreen(
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
+    checkboxes: List<EditTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column(
@@ -119,7 +121,7 @@ fun EditTemplateView(
             style = MaterialTheme.typography.caption,
             text = "Items",
         )
-        checklistTemplate.items.forEach {
+        checkboxes.forEach {
             CheckboxItem(it, eventCollector)
         }
         AddCheckboxButton(eventCollector)
@@ -134,7 +136,7 @@ fun AddCheckboxButton(eventCollector: (EditTemplateEvent) -> Unit) {
 }
 
 @Composable
-fun CheckboxItem(checkbox: TemplateCheckbox, eventCollector: (EditTemplateEvent) -> Unit) {
+fun CheckboxItem(checkbox: EditTemplateCheckbox, eventCollector: (EditTemplateEvent) -> Unit) {
     Row(
         Modifier
             .padding(end = 16.dp)
@@ -148,7 +150,7 @@ fun CheckboxItem(checkbox: TemplateCheckbox, eventCollector: (EditTemplateEvent)
             }
         )
         TextField(
-            checkbox.title,
+            checkbox.checkbox.title,
             { eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it)) },
             modifier = Modifier.align(CenterVertically)
         )
