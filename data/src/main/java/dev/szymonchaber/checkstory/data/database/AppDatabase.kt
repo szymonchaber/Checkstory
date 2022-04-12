@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
@@ -20,13 +21,14 @@ import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
     ],
     version = 1
 )
+@TypeConverters(value = [Converters::class])
 abstract class AppDatabase : RoomDatabase() {
 
-    abstract fun checklistTemplateDao(): ChecklistTemplateDao
+    abstract val checklistTemplateDao: ChecklistTemplateDao
 
-    abstract fun templateCheckboxDao(): TemplateCheckboxDao
+    abstract val templateCheckboxDao: TemplateCheckboxDao
 
-    abstract fun checklistDao(): ChecklistDao
+    abstract val checklistDao: ChecklistDao
 
-    abstract fun checkboxDao(): CheckboxDao
+    abstract val checkboxDao: CheckboxDao
 }

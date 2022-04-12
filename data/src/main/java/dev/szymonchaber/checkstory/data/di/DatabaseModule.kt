@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
+import dev.szymonchaber.checkstory.data.database.Converters
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
@@ -33,72 +34,65 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             AppDatabase::class.java, "checkstory-database"
-        ).setQueryCallback({ sqlQuery, bindArgs ->
-            println("SQL Query: $sqlQuery SQL Args: $bindArgs")
-        }, Executors.newSingleThreadExecutor())
-            .build().also {
-                GlobalScope.launch {
-                    withContext(Dispatchers.IO) {
-                        // TODO the app without below code will crash
-                        it.checklistTemplateDao().insert(
-                            ChecklistTemplateEntity(
-                                1,
-                                "Cleaning something",
-                                "It's good to do"
-                            )
-                        )
-                        it.templateCheckboxDao().insertAll(
-                            TemplateCheckboxEntity(
-                                0,
-                                1,
-                                "Checkbox item"
-                            ),
-                            TemplateCheckboxEntity(
-                                0,
-                                1,
-                                "Checkbox item 2"
-                            )
-                        )
-                        it.insert {
-                            checklist(1, "This was an awesome session") {
-                                checkbox("Clean the table", true)
-                                checkbox("Dust the lamp shade", false)
-                                checkbox("Clean all the windows", false)
-                                checkbox("Be awesome", true)
-                            }
-                            checklist(
-                                1,
-                                "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
-                            ) {
-                                checkbox("Clean the table", false)
-                                checkbox("Dust the lamp shade", true)
-                                checkbox("Clean all the windows", true)
-                                checkbox("Be totally awesome", false)
-                            }
-                        }
-                    }
+        )
+            .addTypeConverter(Converters())
+            .setQueryCallback({ sqlQuery, bindArgs ->
+                println("SQL Query: $sqlQuery SQL Args: $bindArgs")
+            }, Executors.newSingleThreadExecutor())
+            .build()
+            .apply { insertDummyData() }
+    }
+
+    private fun AppDatabase.insertDummyData() {
+        GlobalScope.launch {
+            withContext(Dispatchers.IO) {
+                // TODO the app without below code will crash
+                checklistTemplateDao.insert(
+                    ChecklistTemplateEntity(1, "Cleaning something", "It's good to do")
+                )
+                templateCheckboxDao.insertAll(
+                    TemplateCheckboxEntity(0, 1, "Checkbox item"),
+                    TemplateCheckboxEntity(0, 1, "Checkbox item 2")
+                )
+            }
+            insert {
+                checklist(1, "This was an awesome session") {
+                    checkbox("Clean the table", true)
+                    checkbox("Dust the lamp shade", false)
+                    checkbox("Clean all the windows", false)
+                    checkbox("Be awesome", true)
+                }
+                checklist(
+                    1,
+                    "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
+                ) {
+                    checkbox("Clean the table", false)
+                    checkbox("Dust the lamp shade", true)
+                    checkbox("Clean all the windows", true)
+                    checkbox("Be totally awesome", false)
                 }
             }
+        }
     }
 
     @Provides
     fun provideChecklistTemplateDao(database: AppDatabase): ChecklistTemplateDao {
-        return database.checklistTemplateDao()
+        return database.checklistTemplateDao
     }
 
     @Provides
     fun provideTemplateCheckboxDao(database: AppDatabase): TemplateCheckboxDao {
-        return database.templateCheckboxDao()
+        return database.templateCheckboxDao
     }
 
     @Provides
     fun provideChecklistDao(database: AppDatabase): ChecklistDao {
-        return database.checklistDao()
+        return database.checklistDao
     }
 
     @Provides
     fun provideCheckboxDao(database: AppDatabase): CheckboxDao {
-        return database.checkboxDao()
+        return database.checkboxDao
     }
 }
 
@@ -127,7 +121,7 @@ class InsertDsl {
         GlobalScope.launch {
             withContext(Dispatchers.IO) {
                 items.map { (checklist, checkboxes) ->
-                    appDatabase.checklistDao().insert(
+                    appDatabase.checklistDao.insert(
                         ChecklistEntity(
                             0,
                             checklist.templateId,
@@ -135,7 +129,7 @@ class InsertDsl {
                         )
                     ) to checkboxes
                 }.forEach { (checklistId, checkboxes) ->
-                    appDatabase.checkboxDao().insertAll(
+                    appDatabase.checkboxDao.insertAll(
                         *checkboxes.map {
                             CheckboxEntity(
                                 0,
