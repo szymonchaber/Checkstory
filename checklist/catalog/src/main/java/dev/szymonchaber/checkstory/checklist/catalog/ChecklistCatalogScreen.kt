@@ -9,6 +9,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -18,6 +19,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.*
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 
 @Composable
@@ -89,7 +91,7 @@ fun RecentChecklistsView(state: ChecklistCatalogState, viewModel: ChecklistCatal
         is RecentChecklistsLoadingState.Success -> {
             LazyRow {
                 items(loadingState.checklists) {
-                    RecentChecklistItemView(it, viewModel::onEvent)
+                    RecentChecklistItem(it, viewModel::onEvent)
                 }
             }
         }
@@ -98,7 +100,7 @@ fun RecentChecklistsView(state: ChecklistCatalogState, viewModel: ChecklistCatal
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun RecentChecklistItemView(
+fun RecentChecklistItem(
     checklist: Checklist,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
@@ -126,6 +128,12 @@ fun RecentChecklistItemView(
                 text = notes,
                 style = MaterialTheme.typography.subtitle1,
                 maxLines = 1
+            )
+            DateFormatText(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .align(Alignment.End),
+                localDateTime = checklist.createdAt
             )
         }
 

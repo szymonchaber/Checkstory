@@ -6,7 +6,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -14,10 +17,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
+import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Composable
 @Destination(route = "checklist_history", start = true)
@@ -126,19 +128,12 @@ fun ChecklistHistoryItem(
                 text = notes,
                 style = MaterialTheme.typography.subtitle1
             )
-            val format = remember {
-                DateTimeFormatter.ofPattern("dd MMMM, HH:mm", Locale.getDefault())
-            }
-            Text(
+            DateFormatText(
                 modifier = Modifier
                     .padding(top = 16.dp)
                     .align(Alignment.End),
-                text = checklist.createdAt.format(format),
-                style = MaterialTheme.typography.caption,
-                maxLines = 1
+                localDateTime = checklist.createdAt
             )
         }
     }
 }
-
-
