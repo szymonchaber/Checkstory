@@ -31,7 +31,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleDescriptionChanged(),
             eventFlow.handleAddCheckboxClicked(),
             eventFlow.handleItemRemoved(),
-            eventFlow.handleItemTitleChanged()
+            eventFlow.handleItemTitleChanged(),
+            eventFlow.handleSaveTemplateClicked()
         )
     }
 
@@ -70,22 +71,22 @@ class EditTemplateViewModel @Inject constructor(
     private fun Flow<EditTemplateEvent>.handleTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.TitleChanged>()
             .withSuccessState()
-            .flatMapLatest { (loadingState, event) ->
-                updateChecklistTemplateUseCase.updateChecklistTemplate(loadingState.checklistTemplate.copy(title = event.newTitle))
-                    .map {
-                        null to null
-                    }
+            .map { (loadingState, event) ->
+                val newLoadingState = loadingState.updateTemplate {
+                    copy(title = event.newTitle)
+                }
+                EditTemplateState(newLoadingState) to null
             }
     }
 
     private fun Flow<EditTemplateEvent>.handleDescriptionChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.DescriptionChanged>()
             .withSuccessState()
-            .flatMapLatest { (loadingState, event) ->
-                updateChecklistTemplateUseCase.updateChecklistTemplate(loadingState.checklistTemplate.copy(description = event.newDescription))
-                    .map {
-                        null to null
-                    }
+            .map { (loadingState, event) ->
+                val newLoadingState = loadingState.updateTemplate {
+                    copy(description = event.newDescription)
+                }
+                EditTemplateState(newLoadingState) to null
             }
     }
 
@@ -134,6 +135,19 @@ class EditTemplateViewModel @Inject constructor(
                     }
             }
     }
+
+    private fun Flow<EditTemplateEvent>.handleSaveTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.SaveTemplateClicked>()
+            .withSuccessState()
+            .flatMapLatest { (loadingState, _) ->
+                val checklistTemplate = loadingState.checklistTemplate
+                updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
+                    .map {
+                        null to EditTemplateEffect.CloseScreen
+                    }
+            }
+    }
+
 
     private fun <T> Flow<T>.withSuccessState(): Flow<Pair<TemplateLoadingState.Success, T>> {
         return flatMapLatest { event ->

@@ -7,6 +7,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,10 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
-import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
-import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
-import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
-import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
+import dev.szymonchaber.checkstory.checklist.template.model.*
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -43,6 +41,16 @@ fun EditTemplateScreen(
     }
 
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
+
+    val effect by viewModel.effect.collectAsState(initial = null)
+    LaunchedEffect(key1 = effect) {
+        when (val value = effect) {
+            is EditTemplateEffect.CloseScreen -> {
+                navController.navigateUp()
+            }
+            null -> Unit
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -69,6 +77,14 @@ fun EditTemplateScreen(
                 }
             }
         },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                viewModel.onEvent(EditTemplateEvent.SaveTemplateClicked)
+            }) {
+                Icon(imageVector = Icons.Filled.Check, contentDescription = null)
+            }
+        }
+
     )
 }
 

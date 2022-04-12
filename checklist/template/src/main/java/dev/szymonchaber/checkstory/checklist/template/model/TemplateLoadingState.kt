@@ -4,6 +4,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 
 sealed interface TemplateLoadingState {
 
-    data class Success(val checklistTemplate: ChecklistTemplate) : TemplateLoadingState
+    data class Success(val checklistTemplate: ChecklistTemplate) : TemplateLoadingState {
+
+        fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
+            return copy(checklistTemplate = checklistTemplate.block())
+        }
+    }
+
     object Loading : TemplateLoadingState
 }
