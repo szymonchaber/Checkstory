@@ -23,10 +23,9 @@ interface ChecklistDao {
 
     @Query(
         "SELECT * FROM checklistEntity " +
-                "JOIN checkboxEntity ON checklistEntity.checklistId = checkboxEntity.checklistId " +
                 "WHERE checklistEntity.checklistId=:id"
     )
-    fun getById(id: Long): Flow<Map<ChecklistEntity, List<CheckboxEntity>>>
+    fun getById(id: Long): Flow<ChecklistEntity>
 
     @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checklistId=:checklistId")
     fun getCheckboxesForChecklist(checklistId: Long): Flow<List<CheckboxEntity>>
