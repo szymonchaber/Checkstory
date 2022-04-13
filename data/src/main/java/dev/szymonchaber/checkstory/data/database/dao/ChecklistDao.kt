@@ -10,18 +10,16 @@ interface ChecklistDao {
 
     @Query(
         "SELECT * FROM checklistEntity " +
-                "JOIN checkboxEntity ON checklistEntity.checklistId = checkboxEntity.checklistId " +
                 "ORDER BY checklistEntity.createdAt DESC"
     )
-    fun getAll(): Flow<Map<ChecklistEntity, List<CheckboxEntity>>>
+    fun getAll(): Flow<List<ChecklistEntity>>
 
     @Query(
         "SELECT * FROM checklistEntity " +
-                "JOIN checkboxEntity ON checklistEntity.checklistId = checkboxEntity.checklistId " +
                 "WHERE checklistEntity.templateId=:templateId " +
                 "ORDER BY checklistEntity.createdAt DESC"
     )
-    fun getAll(templateId: Long): Flow<Map<ChecklistEntity, List<CheckboxEntity>>>
+    fun getAll(templateId: Long): Flow<List<ChecklistEntity>>
 
     @Query(
         "SELECT * FROM checklistEntity " +
@@ -29,6 +27,9 @@ interface ChecklistDao {
                 "WHERE checklistEntity.checklistId=:id"
     )
     fun getById(id: Long): Flow<Map<ChecklistEntity, List<CheckboxEntity>>>
+
+    @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checklistId=:checklistId")
+    fun getCheckboxesForChecklist(checklistId: Long): Flow<List<CheckboxEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(checklistEntity: ChecklistEntity): Long

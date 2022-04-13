@@ -14,12 +14,19 @@ interface ChecklistTemplateDao {
     )
     fun getAll(): Flow<Map<ChecklistTemplateEntity, List<TemplateCheckboxEntity>>>
 
+
     @Query(
         "SELECT * FROM checklistTemplateEntity " +
                 "JOIN templateCheckboxEntity ON checklistTemplateEntity.id = templateCheckboxEntity.templateId " +
                 "WHERE checklistTemplateEntity.id=:id "
     )
     fun getById(id: Long): Flow<Map<ChecklistTemplateEntity, List<TemplateCheckboxEntity>>>
+
+    @Query(
+        "SELECT * FROM checklistTemplateEntity " +
+                "WHERE checklistTemplateEntity.id=:id"
+    )
+    fun getSingleById(id: Long): Flow<ChecklistTemplateEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(template: ChecklistTemplateEntity): Long
