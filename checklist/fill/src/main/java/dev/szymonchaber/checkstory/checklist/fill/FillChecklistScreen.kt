@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -64,7 +65,7 @@ fun FillChecklistScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Checklist")
+                    Text(text = stringResource(R.string.checklist))
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -133,7 +134,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
         Text(
             modifier = Modifier.padding(start = 24.dp, top = 16.dp),
             style = MaterialTheme.typography.caption,
-            text = "Items",
+            text = stringResource(R.string.items),
         )
         checklist.items.forEach {
             CheckboxItem(it, eventCollector)
@@ -141,7 +142,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
         Text(
             modifier = Modifier.padding(start = 24.dp, top = 16.dp),
             style = MaterialTheme.typography.caption,
-            text = "Notes",
+            text = stringResource(R.string.notes),
         )
         TextField(
             modifier = Modifier

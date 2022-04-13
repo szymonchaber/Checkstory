@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -29,7 +30,7 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Checkstory")
+                    Text(text = stringResource(R.string.checkstory))
                 },
                 elevation = 12.dp
             )
@@ -83,10 +84,10 @@ private fun ChecklistCatalogView(
 
 @Composable
 fun RecentChecklistsView(state: ChecklistCatalogState, viewModel: ChecklistCatalogViewModel) {
-    Text("Recent checklists", style = MaterialTheme.typography.h5)
+    Text(stringResource(R.string.recent_checklists), style = MaterialTheme.typography.h5)
     when (val loadingState = state.recentChecklistsLoadingState) {
         RecentChecklistsLoadingState.Loading -> {
-            Text(text = "Loading")
+            Text(text = stringResource(R.string.loading))
         }
         is RecentChecklistsLoadingState.Success -> {
             LazyRow {
@@ -147,12 +148,12 @@ private fun TemplatesList(
 ) {
     Text(
         modifier = Modifier.padding(top = 24.dp),
-        text = "Templates",
+        text = stringResource(R.string.templates),
         style = MaterialTheme.typography.h5
     )
     when (val loadingState = state.templatesLoadingState) {
         ChecklistCatalogLoadingState.Loading -> {
-            Text(text = "Loading")
+            Text(stringResource(R.string.loading))
         }
         is ChecklistCatalogLoadingState.Success -> {
             loadingState.checklistTemplates.forEach {

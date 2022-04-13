@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="checkstory">Checkstory</string>
+    <string name="recent_checklists">Recent checklists</string>
+    <string name="loading">Loading</string>
+    <string name="templates">Templates</string>
+</resources>
