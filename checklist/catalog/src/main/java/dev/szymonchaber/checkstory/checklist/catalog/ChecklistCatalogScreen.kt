@@ -1,14 +1,15 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -17,11 +18,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.catalog.model.*
+import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
-import dev.szymonchaber.checkstory.design.views.DateFormatText
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 
 @Composable
 @Destination(route = "home_screen", start = true)
@@ -53,7 +53,9 @@ private fun ChecklistCatalogView(
     navigator: DestinationsNavigator
 ) {
     Column(
-        modifier = Modifier.padding(top = 16.dp, start = 16.dp, end = 16.dp)
+        modifier = Modifier
+            .padding(top = 16.dp)
+            .fillMaxSize()
     ) {
         val state by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
 
@@ -77,87 +79,40 @@ private fun ChecklistCatalogView(
                 null -> Unit
             }
         }
-        RecentChecklistsView(state, viewModel)
-        TemplatesList(state, viewModel)
+        RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
+        TemplatesList(state, viewModel::onEvent)
     }
 }
 
 @Composable
-fun RecentChecklistsView(state: ChecklistCatalogState, viewModel: ChecklistCatalogViewModel) {
-    Text(stringResource(R.string.recent_checklists), style = MaterialTheme.typography.h5)
-    when (val loadingState = state.recentChecklistsLoadingState) {
-        RecentChecklistsLoadingState.Loading -> {
-            Text(text = stringResource(R.string.loading))
-        }
-        is RecentChecklistsLoadingState.Success -> {
-            LazyRow {
-                items(loadingState.checklists) {
-                    RecentChecklistItem(it, viewModel::onEvent)
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun RecentChecklistItem(
-    checklist: Checklist,
+private fun ColumnScope.TemplatesList(
+    state: ChecklistCatalogState,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
-    Card(
-        modifier = Modifier
-            .padding(top = 16.dp, end = 8.dp)
-            .widthIn(max = 160.dp),
-        elevation = 4.dp,
-        onClick = {
-            eventListener(ChecklistCatalogEvent.RecentChecklistClicked(checklist.id))
-        }
-    ) {
-        val notes by remember {
-            mutableStateOf(checklist.notes.takeUnless(String::isBlank)?.let { "\"$it\"" } ?: "🙊")
-        }
-        Column(
-            modifier = Modifier.padding(all = 16.dp)
-        ) {
-            Text(
-                text = checklist.title,
-                style = MaterialTheme.typography.subtitle1
-            )
-            Text(
-                modifier = Modifier.padding(top = 16.dp),
-                text = notes,
-                style = MaterialTheme.typography.subtitle1,
-                maxLines = 1
-            )
-            DateFormatText(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .align(Alignment.End),
-                localDateTime = checklist.createdAt
-            )
-        }
-
-    }
-}
-
-@Composable
-private fun TemplatesList(
-    state: ChecklistCatalogState,
-    viewModel: ChecklistCatalogViewModel
-) {
     Text(
-        modifier = Modifier.padding(top = 24.dp),
+        modifier = Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp),
         text = stringResource(R.string.templates),
         style = MaterialTheme.typography.h5
     )
     when (val loadingState = state.templatesLoadingState) {
         ChecklistCatalogLoadingState.Loading -> {
-            Text(stringResource(R.string.loading))
+            Row(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .align(alignment = Alignment.CenterHorizontally)
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(top = 24.dp)
+                        .align(alignment = Alignment.CenterVertically)
+                )
+            }
         }
         is ChecklistCatalogLoadingState.Success -> {
-            loadingState.checklistTemplates.forEach {
-                ChecklistTemplateView(it, viewModel::onEvent)
+            LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
+                items(loadingState.checklistTemplates) {
+                    ChecklistTemplateView(it, eventListener)
+                }
             }
         }
     }
