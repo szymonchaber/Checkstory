@@ -11,8 +11,8 @@ import java.util.*
 
 @Composable
 fun DateFormatText(
-    modifier: Modifier,
-    localDateTime: LocalDateTime
+    localDateTime: LocalDateTime,
+    modifier: Modifier = Modifier
 ) {
     val format = remember {
         DateTimeFormatter.ofPattern("dd MMMM, HH:mm", Locale.getDefault())

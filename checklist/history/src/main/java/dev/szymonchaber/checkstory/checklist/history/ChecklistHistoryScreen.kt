@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -18,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
+import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -130,12 +130,15 @@ fun ChecklistHistoryItem(
                 text = notes,
                 style = MaterialTheme.typography.subtitle1
             )
-            DateFormatText(
+            Row(
                 modifier = Modifier
-                    .padding(top = 16.dp)
-                    .align(Alignment.End),
-                localDateTime = checklist.createdAt
-            )
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                CheckedItemsRatio(checklist)
+                DateFormatText(checklist.createdAt)
+            }
         }
     }
 }

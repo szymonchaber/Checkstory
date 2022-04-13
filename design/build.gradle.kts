@@ -20,6 +20,7 @@ android {
 }
 
 dependencies {
+    implementation(project(mapOf("path" to ":domain")))
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
 

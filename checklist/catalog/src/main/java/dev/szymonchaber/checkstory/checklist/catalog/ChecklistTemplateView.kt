@@ -43,11 +43,11 @@ fun ChecklistTemplateView(
                 style = MaterialTheme.typography.subtitle1
             )
             DateFormatText(
+                localDateTime = checklistTemplate.createdAt,
                 modifier = Modifier
                     .align(Alignment.End)
                     .padding(horizontal = 16.dp)
-                    .padding(top = 16.dp, bottom = 8.dp),
-                localDateTime = checklistTemplate.createdAt
+                    .padding(top = 16.dp, bottom = 8.dp)
             )
             Row(
                 modifier = Modifier.align(Alignment.End),
