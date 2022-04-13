@@ -128,7 +128,7 @@ class InsertDsl {
                 items.map { (checklist, checkboxes) ->
                     appDatabase.checklistDao.insert(
                         ChecklistEntity(
-                            0,
+                            checklist.checklistId,
                             checklist.templateId,
                             checklist.notes,
                             LocalDateTime.now().minusDays(2)
@@ -138,7 +138,7 @@ class InsertDsl {
                     appDatabase.checkboxDao.insertAll(
                         *checkboxes.map {
                             CheckboxEntity(
-                                0,
+                                it.id.id,
                                 checklistId,
                                 it.title,
                                 it.isChecked

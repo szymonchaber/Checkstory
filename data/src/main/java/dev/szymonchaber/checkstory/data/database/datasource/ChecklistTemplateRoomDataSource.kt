@@ -10,6 +10,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
@@ -22,6 +23,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 
     fun getById(id: Long): Flow<ChecklistTemplate> {
         return checklistTemplateDao.getById(id)
+            .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklistTemplate)
     }
 
@@ -57,8 +59,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         )
     }
 
-    suspend fun getTemplateCheckbox(id: TemplateCheckboxId): TemplateCheckbox {
-        return toDomainTemplateCheckbox(checkboxDao.getById(id.id))
+    suspend fun getTemplateCheckbox(checkboxId: TemplateCheckboxId): TemplateCheckbox {
+        return toDomainTemplateCheckbox(checkboxDao.getById(checkboxId.id))
     }
 
     suspend fun insert(checklistTemplate: ChecklistTemplate): Long {

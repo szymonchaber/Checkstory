@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
@@ -22,6 +23,7 @@ class ChecklistRoomDataSource @Inject constructor(
 
     fun getById(id: Long): Flow<Checklist> {
         return checklistDao.getById(id)
+            .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklist)
     }
 
@@ -74,6 +76,7 @@ class ChecklistRoomDataSource @Inject constructor(
 
     private fun combineIntoDomainChecklist(checklist: ChecklistEntity): Flow<Checklist> {
         return checklistTemplateDao.getById(checklist.templateId)
+            .filterNotNull()
             .combine(getCheckboxes(checklist.checklistId)) { template, checkboxes ->
                 checklist.toDomainChecklist(
                     template.title,
@@ -81,5 +84,9 @@ class ChecklistRoomDataSource @Inject constructor(
                     checkboxes.map(CheckboxEntity::toDomainCheckbox)
                 )
             }
+    }
+
+    suspend fun delete(checklist: Checklist) {
+        return checklistDao.delete(ChecklistEntity.fromDomainChecklist(checklist))
     }
 }

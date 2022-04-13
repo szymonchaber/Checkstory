@@ -2,10 +2,7 @@ package dev.szymonchaber.checkstory.checklist.fill.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateCheckboxUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistUseCase
+import dev.szymonchaber.checkstory.domain.usecase.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -15,6 +12,7 @@ class FillChecklistViewModel @Inject constructor(
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
     private val updateChecklistUseCase: UpdateChecklistUseCase,
     private val updateCheckboxUseCase: UpdateCheckboxUseCase,
+    private val deleteChecklistUseCase: DeleteChecklistUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
         FillChecklistState.initial
@@ -27,7 +25,8 @@ class FillChecklistViewModel @Inject constructor(
             eventFlow.handleCheckChanged(),
             eventFlow.handleNotesChanged(),
             eventFlow.handleEditClicked(),
-            eventFlow.handleSaveClicked()
+            eventFlow.handleSaveClicked(),
+            eventFlow.handleDeleteClicked()
         )
     }
 
@@ -85,6 +84,15 @@ class FillChecklistViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, _) ->
                 updateChecklistUseCase.updateChecklist(success.checklist)
+                null to FillChecklistEffect.CloseScreen
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleDeleteClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.DeleteChecklistClicked>()
+            .withSuccessState()
+            .map { (success, _) ->
+                deleteChecklistUseCase.deleteChecklist(success.checklist)
                 null to FillChecklistEffect.CloseScreen
             }
     }

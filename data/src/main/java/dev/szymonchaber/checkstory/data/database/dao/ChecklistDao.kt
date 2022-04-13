@@ -25,7 +25,7 @@ interface ChecklistDao {
         "SELECT * FROM checklistEntity " +
                 "WHERE checklistEntity.checklistId=:id"
     )
-    fun getById(id: Long): Flow<ChecklistEntity>
+    fun getById(id: Long): Flow<ChecklistEntity?>
 
     @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checklistId=:checklistId")
     fun getCheckboxesForChecklist(checklistId: Long): Flow<List<CheckboxEntity>>
@@ -35,4 +35,7 @@ interface ChecklistDao {
 
     @Update
     suspend fun update(checklist: ChecklistEntity)
+
+    @Delete
+    suspend fun delete(checklistEntity: ChecklistEntity)
 }

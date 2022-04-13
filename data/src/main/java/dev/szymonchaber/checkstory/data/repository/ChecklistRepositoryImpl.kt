@@ -58,4 +58,8 @@ class ChecklistRepositoryImpl @Inject constructor(
     override fun getChecklists(basedOn: ChecklistTemplateId): Flow<List<Checklist>> {
         return dataSource.getBasedOn(basedOn)
     }
+
+    override suspend fun delete(checklist: Checklist) {
+        dataSource.delete(checklist)
+    }
 }
