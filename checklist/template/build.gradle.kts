@@ -10,6 +10,26 @@ plugins {
     id("library-config")
 }
 
+android {
+    libraryVariants.all {
+        kotlin.sourceSets {
+            getByName(name) {
+                kotlin.srcDir("build/generated/ksp/$name/kotlin")
+            }
+        }
+    }
+}
+
+android {
+    libraryVariants.all {
+        kotlin.sourceSets {
+            getByName(name) {
+                kotlin.srcDir("build/generated/ksp/$name/kotlin")
+            }
+        }
+    }
+}
+
 dependencies {
     implementation(project(":common"))
     implementation(project(":domain"))
