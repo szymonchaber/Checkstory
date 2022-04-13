@@ -12,7 +12,12 @@ data class FillChecklistState(val checklistLoadingState: ChecklistLoadingState) 
 
 sealed interface ChecklistLoadingState {
 
-    data class Success(val checklist: Checklist) : ChecklistLoadingState
+    data class Success(val checklist: Checklist) : ChecklistLoadingState {
+
+        fun updateChecklist(block: Checklist.() -> Checklist): Success {
+            return copy(checklist = checklist.block())
+        }
+    }
 
     object Loading : ChecklistLoadingState
 }

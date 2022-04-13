@@ -6,10 +6,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -32,24 +34,27 @@ fun FillChecklistScreen(
     checklistId: ChecklistId?,
     createChecklistFrom: ChecklistTemplateId?
 ) {
-    val fillChecklistViewModel = hiltViewModel<FillChecklistViewModel>()
+    val viewModel = hiltViewModel<FillChecklistViewModel>()
     checklistId?.let {
-        LaunchedEffect(key1 = it) {
-            fillChecklistViewModel.onEvent(FillChecklistEvent.LoadChecklist(it))
+        LaunchedEffect(it) {
+            viewModel.onEvent(FillChecklistEvent.LoadChecklist(it))
         }
     }
     createChecklistFrom?.let {
-        LaunchedEffect(key1 = it) {
-            fillChecklistViewModel.onEvent(FillChecklistEvent.CreateChecklistFromTemplate(it))
+        LaunchedEffect(it) {
+            viewModel.onEvent(FillChecklistEvent.CreateChecklistFromTemplate(it))
         }
     }
-    val state = fillChecklistViewModel.state.collectAsState(initial = FillChecklistState.initial)
+    val state = viewModel.state.collectAsState(initial = FillChecklistState.initial)
 
-    val effect = fillChecklistViewModel.effect.collectAsState(initial = null)
-    LaunchedEffect(key1 = effect) {
-        when (val value = effect.value) {
+    val effect by viewModel.effect.collectAsState(initial = null)
+    LaunchedEffect(effect) {
+        when (val value = effect) {
             is FillChecklistEffect.NavigateToEditTemplate -> {
                 navigator.navigate(EditTemplateScreenDestination(value.templateId))
+            }
+            FillChecklistEffect.CloseScreen -> {
+                navigator.navigateUp()
             }
             null -> Unit
         }
@@ -71,7 +76,7 @@ fun FillChecklistScreen(
                 elevation = 12.dp,
                 actions = {
                     IconButton(onClick = {
-                        fillChecklistViewModel.onEvent(FillChecklistEvent.EditTemplateClicked)
+                        viewModel.onEvent(FillChecklistEvent.EditTemplateClicked)
                     }) {
                         Icon(Icons.Filled.Edit, "")
                     }
@@ -83,10 +88,18 @@ fun FillChecklistScreen(
                     FillChecklistLoadingView()
                 }
                 is ChecklistLoadingState.Success -> {
-                    FillChecklistView(loadingState.checklist, fillChecklistViewModel::onEvent)
+                    FillChecklistView(loadingState.checklist, viewModel::onEvent)
                 }
             }
-        })
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                viewModel.onEvent(FillChecklistEvent.SaveChecklistClicked)
+            }) {
+                Icon(imageVector = Icons.Filled.Check, contentDescription = null)
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)

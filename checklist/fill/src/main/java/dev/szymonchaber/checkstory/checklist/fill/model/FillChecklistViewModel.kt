@@ -20,18 +20,14 @@ class FillChecklistViewModel @Inject constructor(
         FillChecklistState.initial
     ) {
 
-    override fun buildMviFlow(eventFlow: Flow<FillChecklistEvent>): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
-        val handleCreateChecklist = eventFlow.handleCreateChecklist()
-        val handleLoadChecklist = eventFlow.handleLoadChecklist()
-        val handleCheckChanged = eventFlow.handleCheckChanged()
-        val handleNotesChanged = eventFlow.handleNotesChanged()
-        val handleEditClicked = eventFlow.handleEditClicked()
+    override fun buildMviFlow(eventFlow: Flow<FillChecklistEvent>): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
         return merge(
-            handleCreateChecklist,
-            handleLoadChecklist,
-            handleCheckChanged,
-            handleNotesChanged,
-            handleEditClicked
+            eventFlow.handleCreateChecklist(),
+            eventFlow.handleLoadChecklist(),
+            eventFlow.handleCheckChanged(),
+            eventFlow.handleNotesChanged(),
+            eventFlow.handleEditClicked(),
+            eventFlow.handleSaveClicked()
         )
     }
 
@@ -64,16 +60,12 @@ class FillChecklistViewModel @Inject constructor(
 
     private fun Flow<FillChecklistEvent>.handleNotesChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
         return filterIsInstance<FillChecklistEvent.NotesChanged>()
-            .mapLatest { notesChanged ->
-                val originalState = state.first()
-                val state = state
-                    .map {
-                        it.checklistLoadingState
-                    }
-                    .filterIsInstance<ChecklistLoadingState.Success>()
-                    .first()
-                updateChecklistUseCase.updateChecklist(state.checklist.copy(notes = notesChanged.notes))
-                originalState to null
+            .withSuccessState()
+            .map { (success, event) ->
+                val updatedLoadingState = success.updateChecklist {
+                    copy(notes = event.notes)
+                }
+                state.first().copy(checklistLoadingState = updatedLoadingState) to null
             }
     }
 
@@ -86,5 +78,23 @@ class FillChecklistViewModel @Inject constructor(
             .map {
                 state.first() to FillChecklistEffect.NavigateToEditTemplate(it.checklist.checklistTemplateId)
             }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleSaveClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.SaveChecklistClicked>()
+            .withSuccessState()
+            .map { (success, _) ->
+                updateChecklistUseCase.updateChecklist(success.checklist)
+                null to FillChecklistEffect.CloseScreen
+            }
+    }
+
+    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<ChecklistLoadingState.Success, T>> {
+        return flatMapLatest { event ->
+            state.map { it.checklistLoadingState }
+                .filterIsInstance<ChecklistLoadingState.Success>()
+                .map { it to event }
+                .take(1)
+        }
     }
 }

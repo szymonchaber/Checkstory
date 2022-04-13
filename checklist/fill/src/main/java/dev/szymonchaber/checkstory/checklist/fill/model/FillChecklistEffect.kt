@@ -5,4 +5,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 sealed interface FillChecklistEffect {
 
     data class NavigateToEditTemplate(val templateId: ChecklistTemplateId) : FillChecklistEffect
+
+    object CloseScreen : FillChecklistEffect
 }

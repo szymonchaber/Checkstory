@@ -42,7 +42,7 @@ fun EditTemplateScreen(
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
-    LaunchedEffect(key1 = effect) {
+    LaunchedEffect(effect) {
         when (val value = effect) {
             is EditTemplateEffect.CloseScreen -> {
                 navController.navigateUp()
@@ -85,7 +85,6 @@ fun EditTemplateScreen(
                 Icon(imageVector = Icons.Filled.Check, contentDescription = null)
             }
         }
-
     )
 }
 
