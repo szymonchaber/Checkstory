@@ -12,17 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.model.*
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
@@ -86,7 +85,7 @@ fun FillChecklistScreen(
         }, content = {
             when (val loadingState = state.value.checklistLoadingState) {
                 ChecklistLoadingState.Loading -> {
-                    FillChecklistLoadingView()
+                    FullSizeLoadingView()
                 }
                 is ChecklistLoadingState.Success -> {
                     FillChecklistView(loadingState.checklist, viewModel::onEvent)
@@ -101,18 +100,6 @@ fun FillChecklistScreen(
             }
         }
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun FillChecklistLoadingView() {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        CircularProgressIndicator()
-    }
 }
 
 @Composable
