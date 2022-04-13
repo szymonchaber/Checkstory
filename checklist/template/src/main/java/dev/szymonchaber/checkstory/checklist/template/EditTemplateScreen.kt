@@ -20,6 +20,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import dev.szymonchaber.checkstory.checklist.template.model.*
+import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 
@@ -69,7 +70,7 @@ fun EditTemplateScreen(
         content = {
             when (val loadingState = state.templateLoadingState) {
                 TemplateLoadingState.Loading -> {
-                    Text("Loading")
+                    FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
                     val checkboxes = loadingState.checklistTemplate.items.map(EditTemplateCheckbox::Existing)
