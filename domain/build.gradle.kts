@@ -9,15 +9,9 @@ plugins {
     id("library-config")
 }
 
-android {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-}
-
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
     Dependencies.common.forEach(::implementation)
+    Dependencies.ui.forEach(::implementation)
 
     kapt(Dependencies.hiltKapt)
 
