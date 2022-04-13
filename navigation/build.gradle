@@ -5,7 +5,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
-    id 'dev.szymonchaber.checkstory.dependencies'
+    id "dependencies"
 }
 
 android {
