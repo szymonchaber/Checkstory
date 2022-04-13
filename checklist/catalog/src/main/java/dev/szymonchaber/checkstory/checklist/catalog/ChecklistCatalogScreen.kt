@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -22,6 +21,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.design.views.LoadingView
 
 @Composable
 @Destination(route = "home_screen", start = true)
@@ -96,17 +96,7 @@ private fun ColumnScope.TemplatesList(
     )
     when (val loadingState = state.templatesLoadingState) {
         ChecklistCatalogLoadingState.Loading -> {
-            Row(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .align(alignment = Alignment.CenterHorizontally)
-            ) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .padding(top = 24.dp)
-                        .align(alignment = Alignment.CenterVertically)
-                )
-            }
+            LoadingView()
         }
         is ChecklistCatalogLoadingState.Success -> {
             LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {

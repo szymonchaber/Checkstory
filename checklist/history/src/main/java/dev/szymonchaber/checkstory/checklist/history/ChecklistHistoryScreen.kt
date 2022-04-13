@@ -19,6 +19,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.design.views.DateFormatText
+import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 
@@ -72,32 +73,32 @@ private fun ChecklistHistoryView(
             null -> Unit
         }
     }
-    RecentChecklistsView(state = state, viewModel = viewModel)
+    RecentChecklistsView(state = state, eventListener = viewModel::onEvent)
 }
 
 @Composable
-fun RecentChecklistsView(state: ChecklistHistoryState, viewModel: ChecklistHistoryViewModel) {
+fun RecentChecklistsView(state: ChecklistHistoryState, eventListener: (ChecklistHistoryEvent) -> Unit) {
     when (val loadingState = state.historyLoadingState) {
         HistoryLoadingState.Loading -> {
-            Text(text = "Loading")
+            FullSizeLoadingView()
         }
         is HistoryLoadingState.Success -> {
-            ChecklistHistoryList(viewModel, loadingState.checklists)
+            ChecklistHistoryList(loadingState.checklists, eventListener)
         }
     }
 }
 
 @Composable
 private fun ChecklistHistoryList(
-    viewModel: ChecklistHistoryViewModel,
-    checklists: List<Checklist>
+    checklists: List<Checklist>,
+    eventListener: (ChecklistHistoryEvent) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(checklists) {
-            ChecklistHistoryItem(it, viewModel::onEvent)
+            ChecklistHistoryItem(it, eventListener)
         }
     }
 }
