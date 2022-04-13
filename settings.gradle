@@ -14,13 +14,13 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Checkstory"
 includeBuild("gradlePlugins")
-include ':app'
-include ':common'
-include ':domain'
-include ':checklist:catalog'
-include ':checklist:template'
-include ':checklist:fill'
-include ':checklist:history'
-include ':design'
-include ':data'
-include ':navigation'
+include ":app"
+include ":common"
+include ":domain"
+include ":checklist:catalog"
+include ":checklist:template"
+include ":checklist:fill"
+include ":checklist:history"
+include ":design"
+include ":data"
+include ":navigation"
