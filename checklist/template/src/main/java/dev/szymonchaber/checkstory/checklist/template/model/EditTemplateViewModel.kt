@@ -4,6 +4,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.checklist.template.EditTemplateCheckbox
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.CreateTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
@@ -150,7 +151,7 @@ class EditTemplateViewModel @Inject constructor(
             .flatMapLatest { (loadingState, _) ->
                 val checklistTemplate = loadingState
                     .updateTemplate {
-                        copy(items = items.plus(loadingState.newCheckboxes))
+                        copy(items = items.plus(loadingState.newCheckboxes.map { it.copy(id = TemplateCheckboxId(0)) }))
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)

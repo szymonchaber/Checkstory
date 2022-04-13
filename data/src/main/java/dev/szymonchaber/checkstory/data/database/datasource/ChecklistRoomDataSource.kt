@@ -30,8 +30,6 @@ class ChecklistRoomDataSource @Inject constructor(
             .toDomainChecklistFlow()
     }
 
-    private fun getTemplate(templateId: Long) = checklistTemplateDao.getSingleById(templateId)
-
     private fun getCheckboxes(checklistId: Long) = checklistDao.getCheckboxesForChecklist(checklistId)
 
     suspend fun update(checklist: Checklist) {
@@ -75,7 +73,7 @@ class ChecklistRoomDataSource @Inject constructor(
     }
 
     private fun combineIntoDomainChecklist(checklist: ChecklistEntity): Flow<Checklist> {
-        return getTemplate(checklist.templateId)
+        return checklistTemplateDao.getById(checklist.templateId)
             .combine(getCheckboxes(checklist.checklistId)) { template, checkboxes ->
                 checklist.toDomainChecklist(
                     template.title,
