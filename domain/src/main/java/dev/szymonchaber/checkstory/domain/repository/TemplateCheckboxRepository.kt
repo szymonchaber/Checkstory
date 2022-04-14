@@ -15,4 +15,6 @@ interface TemplateCheckboxRepository {
     fun createTemplateCheckbox(templateId: ChecklistTemplateId): Flow<TemplateCheckbox>
 
     suspend fun deleteFromTemplate(checklistTemplate: ChecklistTemplate)
+
+    suspend fun deleteTemplateCheckbox(templateCheckbox: TemplateCheckbox)
 }

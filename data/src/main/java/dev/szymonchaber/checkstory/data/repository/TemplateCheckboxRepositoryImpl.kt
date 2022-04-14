@@ -46,4 +46,8 @@ class TemplateCheckboxRepositoryImpl @Inject constructor(
     override suspend fun deleteFromTemplate(checklistTemplate: ChecklistTemplate) {
         dataSource.deleteCheckboxesFromTemplate(checklistTemplate)
     }
+
+    override suspend fun deleteTemplateCheckbox(templateCheckbox: TemplateCheckbox) {
+        dataSource.deleteTemplateCheckbox(templateCheckbox)
+    }
 }

@@ -14,7 +14,7 @@ class EditTemplateViewModel @Inject constructor(
     private val createChecklistTemplateUseCase: CreateChecklistTemplateUseCase,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
     private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
-    private val createTemplateCheckboxUseCase: CreateTemplateCheckboxUseCase,
+    private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
     private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase
 ) : BaseViewModel<
         EditTemplateEvent,
@@ -96,6 +96,12 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ItemRemoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
+                when (event.checkbox) {
+                    is EditTemplateCheckbox.Existing -> {
+                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.checkbox)
+                    }
+                    is EditTemplateCheckbox.New -> Unit
+                }
                 val newLoadingState = loadingState.updateTemplate {
                     copy(items = items.minus(event.checkbox.checkbox))
                 }.copy(newCheckboxes = loadingState.newCheckboxes.minus(event.checkbox.checkbox))

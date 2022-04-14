@@ -20,7 +20,10 @@ interface TemplateCheckboxDao {
     suspend fun insertAll(vararg templateCheckboxes: TemplateCheckboxEntity)
 
     @Delete
-    suspend fun delete(templateCheckboxDao: TemplateCheckboxEntity)
+    suspend fun delete(templateCheckbox: TemplateCheckboxEntity)
+
+    @Query("DELETE FROM templateCheckboxEntity WHERE templateCheckboxEntity.checkboxId = :templateCheckboxId")
+    suspend fun delete(templateCheckboxId: Long)
 
     @Query("DELETE FROM templateCheckboxEntity WHERE templateCheckboxEntity.templateId = :templateId")
     suspend fun deleteAllFromTemplate(templateId: Long)
