@@ -87,6 +87,10 @@ class ChecklistRoomDataSource @Inject constructor(
     }
 
     suspend fun delete(checklist: Checklist) {
-        return checklistDao.delete(ChecklistEntity.fromDomainChecklist(checklist))
+        val checkboxEntities = checklist.items.map {
+            CheckboxEntity.fromDomainCheckbox(it, checklist.id.id)
+        }
+        checkboxDao.delete(*checkboxEntities.toTypedArray())
+        checklistDao.delete(ChecklistEntity.fromDomainChecklist(checklist))
     }
 }

@@ -19,5 +19,5 @@ interface CheckboxDao {
     suspend fun insertAll(vararg checkboxes: CheckboxEntity)
 
     @Delete
-    suspend fun delete(checkbox: CheckboxEntity)
+    suspend fun delete(vararg checkbox: CheckboxEntity)
 }
