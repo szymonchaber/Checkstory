@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 class ChecklistTemplateRoomDataSource @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
-    private val checkboxDao: TemplateCheckboxDao
+    private val templateCheckboxDao: TemplateCheckboxDao
 ) {
 
     fun getById(id: Long): Flow<ChecklistTemplate> {
@@ -42,7 +42,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         templateCheckbox: TemplateCheckbox,
         templateId: ChecklistTemplateId
     ) {
-        checkboxDao.insert(
+        templateCheckboxDao.insert(
             TemplateCheckboxEntity.fromDomainTemplateCheckbox(
                 templateCheckbox,
                 templateId.id
@@ -54,20 +54,20 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         templateCheckbox: TemplateCheckbox,
         templateId: ChecklistTemplateId
     ): Long {
-        return checkboxDao.insert(
+        return templateCheckboxDao.insert(
             TemplateCheckboxEntity.fromDomainTemplateCheckbox(templateCheckbox, templateId.id)
         )
     }
 
     suspend fun getTemplateCheckbox(checkboxId: TemplateCheckboxId): TemplateCheckbox {
-        return toDomainTemplateCheckbox(checkboxDao.getById(checkboxId.id))
+        return toDomainTemplateCheckbox(templateCheckboxDao.getById(checkboxId.id))
     }
 
     suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
         val checklistTemplateId = checklistTemplateDao.insert(
             ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
         )
-        checkboxDao.insertAll(
+        templateCheckboxDao.insertAll(
             *checklistTemplate.items.map {
                 TemplateCheckboxEntity.fromDomainTemplateCheckbox(
                     it,
@@ -79,7 +79,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     private fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {
-        return checkboxDao.getAllForChecklistTemplate(entity.id).map { checkboxes ->
+        return templateCheckboxDao.getAllForChecklistTemplate(entity.id).map { checkboxes ->
             mapChecklistTemplate(entity, checkboxes)
         }
     }
@@ -106,5 +106,13 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             TemplateCheckboxId(templateCheckboxEntity.checkboxId),
             templateCheckboxEntity.checkboxTitle
         )
+    }
+
+    suspend fun delete(checklistTemplate: ChecklistTemplate) {
+        checklistTemplateDao.delete(ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate))
+    }
+
+    suspend fun deleteCheckboxesFromTemplate(checklistTemplate: ChecklistTemplate) {
+        templateCheckboxDao.deleteAllFromTemplate(checklistTemplate.id.id)
     }
 }

@@ -8,9 +8,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -61,5 +64,15 @@ class ChecklistRepositoryImpl @Inject constructor(
 
     override suspend fun delete(checklist: Checklist) {
         dataSource.delete(checklist)
+    }
+
+    override suspend fun deleteBasedOnTemplate(checklistTemplate: ChecklistTemplate) {
+        dataSource.getBasedOn(checklistTemplate.id)
+            .first()
+            .forEach {
+                withContext(Dispatchers.IO) {
+                    dataSource.delete(it)
+                }
+            }
     }
 }

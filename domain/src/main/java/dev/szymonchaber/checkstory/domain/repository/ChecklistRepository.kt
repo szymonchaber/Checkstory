@@ -19,4 +19,6 @@ interface ChecklistRepository {
     fun getChecklists(basedOn: ChecklistTemplateId): Flow<List<Checklist>>
 
     suspend fun delete(checklist: Checklist)
+
+    suspend fun deleteBasedOnTemplate(checklistTemplate: ChecklistTemplate)
 }

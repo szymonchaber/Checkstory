@@ -10,6 +10,6 @@ class GetChecklistTemplatesUseCase @Inject constructor(
 ) {
 
     fun getChecklistTemplates(): Flow<List<ChecklistTemplate>> {
-        return checklistRepository.getAllChecklistTemplates()
+        return checklistRepository.getAll()
     }
 }

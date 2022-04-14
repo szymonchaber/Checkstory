@@ -10,6 +10,6 @@ class UpdateChecklistTemplateUseCase @Inject constructor(
 ) {
 
     fun updateChecklistTemplate(checklistTemplate: ChecklistTemplate): Flow<Unit> {
-        return templateRepository.updateChecklistTemplate(checklistTemplate)
+        return templateRepository.update(checklistTemplate)
     }
 }

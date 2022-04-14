@@ -6,11 +6,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChecklistTemplateRepository {
 
-    fun getAllChecklistTemplates(): Flow<List<ChecklistTemplate>>
+    fun getAll(): Flow<List<ChecklistTemplate>>
 
-    fun getChecklistTemplate(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate>
+    fun get(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate>
 
-    fun updateChecklistTemplate(checklistTemplate: ChecklistTemplate): Flow<Unit>
+    fun update(checklistTemplate: ChecklistTemplate): Flow<Unit>
 
-    fun createChecklistTemplate(): Flow<ChecklistTemplate>
+    fun create(): Flow<ChecklistTemplate>
+
+    suspend fun delete(checklistTemplate: ChecklistTemplate)
 }

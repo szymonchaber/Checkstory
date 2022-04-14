@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.database.datasource.ChecklistTemplateRoomDataSource
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -40,5 +41,9 @@ class TemplateCheckboxRepositoryImpl @Inject constructor(
             .map {
                 dataSource.getTemplateCheckbox(TemplateCheckboxId(it))
             }
+    }
+
+    override suspend fun deleteFromTemplate(checklistTemplate: ChecklistTemplate) {
+        dataSource.deleteCheckboxesFromTemplate(checklistTemplate)
     }
 }

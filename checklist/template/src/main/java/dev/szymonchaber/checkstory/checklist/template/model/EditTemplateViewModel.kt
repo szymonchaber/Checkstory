@@ -5,10 +5,7 @@ import dev.szymonchaber.checkstory.checklist.template.EditTemplateCheckbox
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
-import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.CreateTemplateCheckboxUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.*
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
@@ -17,7 +14,8 @@ class EditTemplateViewModel @Inject constructor(
     private val createChecklistTemplateUseCase: CreateChecklistTemplateUseCase,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
     private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
-    private val createTemplateCheckboxUseCase: CreateTemplateCheckboxUseCase
+    private val createTemplateCheckboxUseCase: CreateTemplateCheckboxUseCase,
+    private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase
 ) : BaseViewModel<
         EditTemplateEvent,
         EditTemplateState,
@@ -35,7 +33,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleAddCheckboxClicked(),
             eventFlow.handleItemRemoved(),
             eventFlow.handleItemTitleChanged(),
-            eventFlow.handleSaveTemplateClicked()
+            eventFlow.handleSaveTemplateClicked(),
+            eventFlow.handleDeleteTemplateClicked()
         )
     }
 
@@ -158,6 +157,15 @@ class EditTemplateViewModel @Inject constructor(
                     .map {
                         null to EditTemplateEffect.CloseScreen
                     }
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.DeleteTemplateClicked>()
+            .withSuccessState()
+            .map { (loadingState, _) ->
+                deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
+                null to EditTemplateEffect.CloseScreen
             }
     }
 

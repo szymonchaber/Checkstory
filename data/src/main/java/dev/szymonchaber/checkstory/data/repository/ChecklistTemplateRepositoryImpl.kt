@@ -17,15 +17,15 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     private val dataSource: ChecklistTemplateRoomDataSource
 ) : ChecklistTemplateRepository {
 
-    override fun getAllChecklistTemplates(): Flow<List<ChecklistTemplate>> {
+    override fun getAll(): Flow<List<ChecklistTemplate>> {
         return dataSource.getAll()
     }
 
-    override fun getChecklistTemplate(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
+    override fun get(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
         return dataSource.getById(checklistTemplateId.id)
     }
 
-    override fun createChecklistTemplate(): Flow<ChecklistTemplate> {
+    override fun create(): Flow<ChecklistTemplate> {
         return flow {
             val newChecklistTemplate = ChecklistTemplate(
                 ChecklistTemplateId(0),
@@ -41,15 +41,19 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
         }
             .flowOn(Dispatchers.IO)
             .flatMapLatest {
-                getChecklistTemplate(ChecklistTemplateId(it))
+                get(ChecklistTemplateId(it))
             }
     }
 
-    override fun updateChecklistTemplate(checklistTemplate: ChecklistTemplate): Flow<Unit> {
+    override fun update(checklistTemplate: ChecklistTemplate): Flow<Unit> {
         return flow {
             dataSource.update(checklistTemplate)
             emit(Unit)
         }
+    }
+
+    override suspend fun delete(checklistTemplate: ChecklistTemplate) {
+        dataSource.delete(checklistTemplate)
     }
 
     companion object {

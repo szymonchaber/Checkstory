@@ -10,6 +10,6 @@ class CreateChecklistTemplateUseCase @Inject constructor(
 ) {
 
     fun createChecklistTemplate(): Flow<ChecklistTemplate> {
-        return templateRepository.createChecklistTemplate()
+        return templateRepository.create()
     }
 }

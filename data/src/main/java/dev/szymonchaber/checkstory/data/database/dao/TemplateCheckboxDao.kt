@@ -21,4 +21,7 @@ interface TemplateCheckboxDao {
 
     @Delete
     suspend fun delete(templateCheckboxDao: TemplateCheckboxEntity)
+
+    @Query("DELETE FROM templateCheckboxEntity WHERE templateCheckboxEntity.templateId = :templateId")
+    suspend fun deleteAllFromTemplate(templateId: Long)
 }

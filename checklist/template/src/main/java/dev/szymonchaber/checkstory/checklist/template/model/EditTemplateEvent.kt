@@ -20,4 +20,6 @@ sealed interface EditTemplateEvent {
     object AddCheckboxClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent
+
+    object DeleteTemplateClicked : EditTemplateEvent
 }

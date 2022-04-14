@@ -14,7 +14,7 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
 ) {
 
     fun createChecklistFromTemplate(checklistTemplateId: ChecklistTemplateId): Flow<Checklist> {
-        return checklistTemplateRepository.getChecklistTemplate(checklistTemplateId)
+        return checklistTemplateRepository.get(checklistTemplateId)
             .flatMapConcat {
                 checklistRepository.createAndGet(it)
             }
