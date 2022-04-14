@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -24,12 +22,12 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.model.*
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.checklist.fill.R
 
 @Destination(route = "fill_checklist_screen", start = true)
 @Composable
@@ -143,16 +141,13 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
                 eventCollector(FillChecklistEvent.NotesChanged(it))
             }
         )
-        Text(
+        DeleteButton(
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
                 .padding(top = 16.dp, bottom = 96.dp)
-                .clickable {
-                    eventCollector(FillChecklistEvent.DeleteChecklistClicked)
-                },
-            text = stringResource(R.string.delete),
-            color = Color.Red // TODO decide on my own colors
-        )
+        ) {
+            eventCollector(FillChecklistEvent.DeleteChecklistClicked)
+        }
     }
 }
 
