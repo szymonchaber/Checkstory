@@ -96,13 +96,9 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ItemRemoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val checklistTemplate = loadingState.checklistTemplate
-                val newItems = checklistTemplate.items.filterNot {
-                    it == event.checkbox.checkbox
-                }
                 val newLoadingState = loadingState.updateTemplate {
-                    copy(items = newItems)
-                }
+                    copy(items = items.minus(event.checkbox.checkbox))
+                }.copy(newCheckboxes = loadingState.newCheckboxes.minus(event.checkbox.checkbox))
                 EditTemplateState(newLoadingState) to null
             }
     }
