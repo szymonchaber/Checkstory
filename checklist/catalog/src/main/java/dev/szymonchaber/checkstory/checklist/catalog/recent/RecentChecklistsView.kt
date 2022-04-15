@@ -66,8 +66,8 @@ fun RecentChecklistsLoadingPreview() {
 fun RecentChecklistsSuccessPreview() {
     Column {
         val items = listOf(
-            Checkbox(CheckboxId(0), "Check this", true),
-            Checkbox(CheckboxId(0), "Do not check that", false)
+            Checkbox(CheckboxId(0), ChecklistId(0), "Check this", true),
+            Checkbox(CheckboxId(0), ChecklistId(0), "Do not check that", false)
         )
         val checklists = listOf(
             Checklist(

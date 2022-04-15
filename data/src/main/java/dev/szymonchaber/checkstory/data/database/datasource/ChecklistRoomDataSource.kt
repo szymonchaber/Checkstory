@@ -8,7 +8,6 @@ import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -40,26 +39,17 @@ class ChecklistRoomDataSource @Inject constructor(
     }
 
     suspend fun updateCheckbox(checkbox: Checkbox) {
-        val checklistId = checkboxDao.getById(checkbox.id.id).checklistId // TODO could be baked into Checkbox
-        checkboxDao.update(
-            CheckboxEntity.fromDomainCheckbox(
-                checkbox,
-                checklistId
-            )
-        )
+        checkboxDao.update(CheckboxEntity.fromDomainCheckbox(checkbox))
     }
 
     suspend fun insert(checklist: Checklist): Long {
-        val checklistId = checklistDao.insert(
-            ChecklistEntity.fromDomainChecklist(checklist)
-        )
+        val checklistId = checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
         checkboxDao.insertAll(
-            *checklist.items.map {
-                CheckboxEntity.fromDomainCheckbox(
-                    it,
-                    checklistId
-                )
-            }.toTypedArray()
+            *checklist.items
+                .map(CheckboxEntity::fromDomainCheckbox).map {
+                    it.copy(checklistId = checklistId)
+                }
+                .toTypedArray()
         )
         return checklistId
     }
@@ -88,9 +78,7 @@ class ChecklistRoomDataSource @Inject constructor(
     }
 
     suspend fun delete(checklist: Checklist) {
-        val checkboxEntities = checklist.items.map {
-            CheckboxEntity.fromDomainCheckbox(it, checklist.id.id)
-        }
+        val checkboxEntities = checklist.items.map(CheckboxEntity::fromDomainCheckbox)
         checkboxDao.delete(*checkboxEntities.toTypedArray())
         checklistDao.delete(ChecklistEntity.fromDomainChecklist(checklist))
     }

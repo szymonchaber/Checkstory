@@ -32,7 +32,7 @@ class ChecklistRepositoryImpl @Inject constructor(
                     title,
                     description,
                     items.map {
-                        Checkbox(CheckboxId(0), it.title, false)
+                        Checkbox(CheckboxId(0), ChecklistId(0), it.title, false)
                     },
                     "",
                     LocalDateTime.now()

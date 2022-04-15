@@ -18,6 +18,7 @@ import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -114,7 +115,7 @@ class InsertDsl {
         val checkboxes = mutableListOf<Checkbox>()
 
         fun checkbox(id: Long, title: String, isChecked: Boolean = false) {
-            checkboxes.add(Checkbox(CheckboxId(id), title, isChecked))
+            checkboxes.add(Checkbox(CheckboxId(id), ChecklistId(0), title, isChecked))
         }
     }
 
