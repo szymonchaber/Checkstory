@@ -19,9 +19,13 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
 @Composable
-fun CheckboxItem(checkbox: EditTemplateCheckbox, eventCollector: (EditTemplateEvent) -> Unit) {
+fun CheckboxItem(
+    modifier: Modifier = Modifier,
+    checkbox: EditTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
     Row(
-        Modifier
+        modifier
             .padding(end = 16.dp)
             .fillMaxWidth()
     ) {

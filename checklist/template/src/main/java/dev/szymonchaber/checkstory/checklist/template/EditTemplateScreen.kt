@@ -1,8 +1,12 @@
 package dev.szymonchaber.checkstory.checklist.template
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -89,54 +93,67 @@ fun EditTemplateScreen(
     )
 }
 
+
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
     checkboxes: List<EditTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .fillMaxHeight()
-            .padding(start = 24.dp, end = 24.dp)
-    ) {
-        TextField(
-            value = checklistTemplate.title,
-            onValueChange = {
-                eventCollector(EditTemplateEvent.TitleChanged(it))
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 24.dp),
-            textStyle = MaterialTheme.typography.h4,
-        )
-        TextField(
-            value = checklistTemplate.description,
-            onValueChange = {
-                eventCollector(EditTemplateEvent.DescriptionChanged(it))
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp, bottom = 8.dp),
-        )
-        Text(
-            modifier = Modifier.padding(top = 16.dp),
-            style = MaterialTheme.typography.caption,
-            text = "Items",
-        )
-        checkboxes.forEach {
-            CheckboxItem(it, eventCollector)
+    LazyColumn(contentPadding = PaddingValues(24.dp)) {
+        item {
+            ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
-        AddCheckboxButton(eventCollector)
-        DeleteButton(
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .align(Alignment.CenterHorizontally)
-        ) {
-            eventCollector(EditTemplateEvent.DeleteTemplateClicked)
+        items(checkboxes, key = EditTemplateCheckbox::id) {
+            CheckboxItem(Modifier.animateItemPlacement(), it, eventCollector)
+        }
+        item {
+            AddCheckboxButton(eventCollector)
+        }
+        item {
+            Box(Modifier.fillMaxWidth()) {
+                DeleteButton(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .align(Alignment.TopCenter)
+                ) {
+                    eventCollector(EditTemplateEvent.DeleteTemplateClicked)
+                }
+            }
         }
     }
+}
+
+@Composable
+private fun ChecklistTemplateDetails(
+    checklistTemplate: ChecklistTemplate,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    TextField(
+        value = checklistTemplate.title,
+        onValueChange = {
+            eventCollector(EditTemplateEvent.TitleChanged(it))
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 24.dp),
+        textStyle = MaterialTheme.typography.h4,
+    )
+    TextField(
+        value = checklistTemplate.description,
+        onValueChange = {
+            eventCollector(EditTemplateEvent.DescriptionChanged(it))
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp, bottom = 8.dp),
+    )
+    Text(
+        modifier = Modifier.padding(top = 16.dp),
+        style = MaterialTheme.typography.caption,
+        text = "Items",
+    )
 }
 
 @Composable
