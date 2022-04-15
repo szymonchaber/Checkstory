@@ -17,6 +17,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
+import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
@@ -33,7 +34,7 @@ fun ChecklistHistoryScreen(
     LaunchedEffect(templateId) {
         viewModel.onEvent(ChecklistHistoryEvent.LoadChecklistHistory(templateId!!))
     }
-    Scaffold(
+    AdvertScaffold(
         topBar = {
             TopAppBar(
                 title = {

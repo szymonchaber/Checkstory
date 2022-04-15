@@ -21,12 +21,14 @@ import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.design.views.AdvertScaffold
+import dev.szymonchaber.checkstory.design.views.AdvertView
 import dev.szymonchaber.checkstory.design.views.LoadingView
 
 @Composable
 @Destination(route = "home_screen", start = true)
 fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
-    Scaffold(
+    AdvertScaffold(
         topBar = {
             TopAppBar(
                 title = {

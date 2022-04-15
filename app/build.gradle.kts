@@ -80,6 +80,8 @@ dependencies {
 
     kapt(Dependencies.hiltKapt)
 
+    implementation(Dependencies.ads)
+
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }

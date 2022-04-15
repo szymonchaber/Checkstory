@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import dev.szymonchaber.checkstory.checklist.template.model.*
+import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
@@ -55,7 +56,7 @@ fun EditTemplateScreen(
             null -> Unit
         }
     }
-    Scaffold(
+    AdvertScaffold(
         topBar = {
             TopAppBar(
                 title = {

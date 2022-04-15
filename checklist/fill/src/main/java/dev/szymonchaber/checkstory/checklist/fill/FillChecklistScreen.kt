@@ -22,6 +22,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.model.*
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
@@ -62,7 +63,7 @@ fun FillChecklistScreen(
         }
     }
 
-    Scaffold(
+    AdvertScaffold(
         topBar = {
             TopAppBar(
                 title = {

@@ -56,6 +56,8 @@ class Dependencies : Plugin<Project> {
 
         val ui = listOf(androidXCore, appCompat) + compose + lifecycle
 
+        val ads = "com.google.android.gms:play-services-ads:20.6.0"
+
         val unitTest = listOf(
             "junit:junit:4.13.2"
         )

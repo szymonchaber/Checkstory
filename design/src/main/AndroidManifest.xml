@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="dev.szymonchaber.checkstory.design" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="dev.szymonchaber.checkstory.design">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>
