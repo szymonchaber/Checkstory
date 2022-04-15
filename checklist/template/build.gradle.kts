@@ -42,7 +42,7 @@ dependencies {
 
     kapt(Dependencies.hiltKapt)
 
-    implementation(Dependencies.composeDestinations)
+    Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)
 
     Dependencies.unitTest.forEach(::testImplementation)

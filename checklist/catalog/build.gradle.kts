@@ -33,7 +33,7 @@ dependencies {
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
 
-    implementation(Dependencies.composeDestinations)
+    Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)
 
     kapt(Dependencies.hiltKapt)

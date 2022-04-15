@@ -38,8 +38,10 @@ class Dependencies : Plugin<Project> {
         )
 
         private val composeDestinationsVersion = "1.4.2-beta"
-        val composeDestinations =
-            "io.github.raamcosta.compose-destinations:core:$composeDestinationsVersion"
+        val composeDestinations = listOf(
+            "io.github.raamcosta.compose-destinations:core:$composeDestinationsVersion",
+            "io.github.raamcosta.compose-destinations:animations-core:$composeDestinationsVersion"
+        )
         val composeDestinationsKsp =
             "io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion"
 

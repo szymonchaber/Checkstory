@@ -24,6 +24,8 @@ dependencies {
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
 
+    Dependencies.composeDestinations.forEach(::implementation)
+
     kapt(Dependencies.hiltKapt)
 
     Dependencies.unitTest.forEach(::testImplementation)
