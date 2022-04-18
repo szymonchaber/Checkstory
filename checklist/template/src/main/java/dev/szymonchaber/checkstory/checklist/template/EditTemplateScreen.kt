@@ -1,10 +1,8 @@
 package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
@@ -17,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -161,7 +160,13 @@ private fun ChecklistTemplateDetails(
 
 @Composable
 fun AddCheckboxButton(eventCollector: (EditTemplateEvent) -> Unit) {
-    IconButton(onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) }) {
-        Icon(Icons.Filled.Add, null)
+    Row(Modifier.clickable { eventCollector(EditTemplateEvent.AddCheckboxClicked) }) {
+        IconButton({}) {
+            Icon(Icons.Filled.Add, null)
+        }
+        Text(
+            modifier = Modifier.align(CenterVertically),
+            text = "New checkbox"
+        )
     }
 }
