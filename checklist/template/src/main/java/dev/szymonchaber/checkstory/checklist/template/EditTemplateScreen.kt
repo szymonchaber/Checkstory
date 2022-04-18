@@ -133,6 +133,7 @@ private fun ChecklistTemplateDetails(
 ) {
     TextField(
         value = checklistTemplate.title,
+        label = { Text(text = "Title") },
         onValueChange = {
             eventCollector(EditTemplateEvent.TitleChanged(it))
         },
@@ -143,6 +144,7 @@ private fun ChecklistTemplateDetails(
     )
     TextField(
         value = checklistTemplate.description,
+        label = { Text(text = "Description") },
         onValueChange = {
             eventCollector(EditTemplateEvent.DescriptionChanged(it))
         },
