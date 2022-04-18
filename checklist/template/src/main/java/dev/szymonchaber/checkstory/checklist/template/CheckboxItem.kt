@@ -8,7 +8,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,7 +44,7 @@ fun CheckboxItem(
             trailingIcon = {
                 IconButton(
                     onClick = { eventCollector(EditTemplateEvent.ItemRemoved(checkbox)) }) {
-                    Icon(Icons.Filled.Close, "")
+                    Icon(Icons.Filled.Delete, "")
                 }
             }
         )
