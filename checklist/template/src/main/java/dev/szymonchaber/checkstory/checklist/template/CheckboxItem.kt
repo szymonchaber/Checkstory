@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -13,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -25,9 +23,7 @@ fun CheckboxItem(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Row(
-        modifier
-            .padding(end = 16.dp)
-            .fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Checkbox(
             modifier = Modifier.align(Alignment.CenterVertically),
@@ -38,6 +34,7 @@ fun CheckboxItem(
         )
         TextField(
             modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.CenterVertically),
             value = checkbox.checkbox.title,
             onValueChange = { eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it)) },
