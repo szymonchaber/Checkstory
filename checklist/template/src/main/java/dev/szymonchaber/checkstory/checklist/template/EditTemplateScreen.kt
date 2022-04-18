@@ -101,7 +101,7 @@ fun EditTemplateView(
     checkboxes: List<EditTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    LazyColumn(contentPadding = PaddingValues(24.dp)) {
+    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
@@ -136,9 +136,7 @@ private fun ChecklistTemplateDetails(
         onValueChange = {
             eventCollector(EditTemplateEvent.TitleChanged(it))
         },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp),
+        modifier = Modifier.fillMaxWidth(),
         textStyle = MaterialTheme.typography.h4,
     )
     TextField(
