@@ -58,6 +58,13 @@ class Dependencies : Plugin<Project> {
 
         val ads = "com.google.android.gms:play-services-ads:20.6.0"
 
+        val firebasePlatform = "com.google.firebase:firebase-bom:29.3.1"
+
+        val analytics = "com.google.firebase:firebase-analytics-ktx"
+        val crashlytics = "com.google.firebase:firebase-crashlytics"
+        val performance = "com.google.firebase:firebase-perf"
+
+
         val unitTest = listOf(
             "junit:junit:4.13.2"
         )

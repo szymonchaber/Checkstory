@@ -7,6 +7,9 @@ plugins {
     id("dagger.hilt.android.plugin")
     id("dependencies")
     id("com.google.devtools.ksp") version "1.6.10-1.0.4"
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
+    id("com.google.firebase.firebase-perf")
 }
 
 android {
@@ -81,6 +84,11 @@ dependencies {
     kapt(Dependencies.hiltKapt)
 
     implementation(Dependencies.ads)
+
+    implementation(platform(Dependencies.firebasePlatform))
+    implementation(Dependencies.analytics)
+    implementation(Dependencies.crashlytics)
+    implementation(Dependencies.performance)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
