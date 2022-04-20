@@ -7,11 +7,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface TemplateCheckboxRepository {
 
-    fun updateTemplateCheckbox(
-        templateCheckbox: TemplateCheckbox,
-        templateId: ChecklistTemplateId
-    ): Flow<Unit>
-
     fun createTemplateCheckbox(templateId: ChecklistTemplateId): Flow<TemplateCheckbox>
 
     suspend fun deleteFromTemplate(checklistTemplate: ChecklistTemplate)

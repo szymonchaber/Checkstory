@@ -38,18 +38,6 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         return insert(checklistTemplate)
     }
 
-    suspend fun updateTemplateCheckbox(
-        templateCheckbox: TemplateCheckbox,
-        templateId: ChecklistTemplateId
-    ) {
-        templateCheckboxDao.insert(
-            TemplateCheckboxEntity.fromDomainTemplateCheckbox(
-                templateCheckbox,
-                templateId.id
-            )
-        )
-    }
-
     suspend fun createTemplateCheckbox(
         templateCheckbox: TemplateCheckbox,
         templateId: ChecklistTemplateId
@@ -68,14 +56,22 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
         )
         templateCheckboxDao.insertAll(
-            *checklistTemplate.items.map {
-                TemplateCheckboxEntity.fromDomainTemplateCheckbox(
-                    it,
-                    checklistTemplateId
-                )
-            }.toTypedArray()
+            *flattenWithChildren(checklistTemplate)
+                .map {
+                    TemplateCheckboxEntity.fromDomainTemplateCheckbox(
+                        it,
+                        checklistTemplateId
+                    )
+                }
+                .toTypedArray()
         )
         return checklistTemplateId
+    }
+
+    private fun flattenWithChildren(checklistTemplate: ChecklistTemplate): List<TemplateCheckbox> {
+        return checklistTemplate.items.flatMap {
+            listOf(it).plus(it.children)
+        }
     }
 
     private fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {

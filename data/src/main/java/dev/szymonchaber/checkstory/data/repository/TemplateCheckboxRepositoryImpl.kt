@@ -19,16 +19,6 @@ class TemplateCheckboxRepositoryImpl @Inject constructor(
     private val dataSource: ChecklistTemplateRoomDataSource
 ) : TemplateCheckboxRepository {
 
-    override fun updateTemplateCheckbox(
-        templateCheckbox: TemplateCheckbox,
-        templateId: ChecklistTemplateId
-    ): Flow<Unit> {
-        return flow {
-            dataSource.updateTemplateCheckbox(templateCheckbox, templateId)
-            emit(Unit)
-        }
-    }
-
     override fun createTemplateCheckbox(templateId: ChecklistTemplateId): Flow<TemplateCheckbox> {
         return flow {
             emit(
