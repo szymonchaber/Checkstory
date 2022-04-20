@@ -38,19 +38,6 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         return insert(checklistTemplate)
     }
 
-    suspend fun createTemplateCheckbox(
-        templateCheckbox: TemplateCheckbox,
-        templateId: ChecklistTemplateId
-    ): Long {
-        return templateCheckboxDao.insert(
-            TemplateCheckboxEntity.fromDomainTemplateCheckbox(templateCheckbox, templateId.id)
-        )
-    }
-
-    suspend fun getTemplateCheckbox(checkboxId: TemplateCheckboxId): TemplateCheckbox {
-        return toDomainTemplateCheckbox(templateCheckboxDao.getById(checkboxId.id), null, listOf())
-    }
-
     suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
         val checklistTemplateId = checklistTemplateDao.insert(
             ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
