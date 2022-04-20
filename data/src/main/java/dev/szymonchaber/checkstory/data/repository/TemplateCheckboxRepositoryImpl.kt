@@ -33,7 +33,7 @@ class TemplateCheckboxRepositoryImpl @Inject constructor(
         return flow {
             emit(
                 dataSource.createTemplateCheckbox(
-                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1"), templateId
+                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1", listOf()), templateId
                 )
             )
         }

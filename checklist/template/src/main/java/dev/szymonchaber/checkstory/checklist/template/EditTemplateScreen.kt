@@ -1,13 +1,11 @@
 package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.Composable
@@ -15,18 +13,20 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
 import dev.szymonchaber.checkstory.checklist.template.model.*
+import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
 @Destination("edit_template_screen", start = true)
 @Composable
@@ -77,7 +77,10 @@ fun EditTemplateScreen(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    val checkboxes = loadingState.checklistTemplate.items.map(EditTemplateCheckbox::Existing)
+                    val items = loadingState.checklistTemplate.items.map {
+                        it.copy(children = listOf(TemplateCheckbox(TemplateCheckboxId(0), "injected child", listOf())))
+                    }
+                    val checkboxes = items.map(EditTemplateCheckbox::Existing)
                         .plus(loadingState.newCheckboxes.map(EditTemplateCheckbox::New))
                     EditTemplateView(loadingState.checklistTemplate, checkboxes, viewModel::onEvent)
                 }
@@ -106,10 +109,10 @@ fun EditTemplateView(
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
         items(checkboxes, key = EditTemplateCheckbox::id) {
-            CheckboxItem(Modifier.animateItemPlacement(), it, eventCollector)
+            ParentCheckboxItem(Modifier.animateItemPlacement(), it, eventCollector)
         }
         item {
-            AddCheckboxButton(eventCollector)
+            AddCheckboxButton(onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) })
         }
         item {
             Box(Modifier.fillMaxWidth()) {
@@ -154,17 +157,4 @@ private fun ChecklistTemplateDetails(
         style = MaterialTheme.typography.caption,
         text = "Items",
     )
-}
-
-@Composable
-fun AddCheckboxButton(eventCollector: (EditTemplateEvent) -> Unit) {
-    Row(Modifier.clickable { eventCollector(EditTemplateEvent.AddCheckboxClicked) }) {
-        IconButton({}) {
-            Icon(Icons.Filled.Add, null)
-        }
-        Text(
-            modifier = Modifier.align(CenterVertically),
-            text = "New checkbox"
-        )
-    }
 }

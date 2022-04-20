@@ -104,7 +104,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     private fun toDomainTemplateCheckbox(templateCheckboxEntity: TemplateCheckboxEntity): TemplateCheckbox {
         return TemplateCheckbox(
             TemplateCheckboxId(templateCheckboxEntity.checkboxId),
-            templateCheckboxEntity.checkboxTitle
+            templateCheckboxEntity.checkboxTitle,
+            listOf()
         )
     }
 

@@ -86,7 +86,8 @@ fun ChecklistTemplateViewPreview() {
             listOf(
                 TemplateCheckbox(
                     TemplateCheckboxId(0),
-                    "Checkbox 1"
+                    "Checkbox 1",
+                    listOf()
                 )
             ),
             LocalDateTime.now()

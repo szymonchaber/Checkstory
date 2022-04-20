@@ -16,7 +16,7 @@ sealed interface TemplateLoadingState {
         fun plusCheckbox(title: String): Success {
             return copy(
                 newCheckboxes = newCheckboxes.plus(
-                    TemplateCheckbox(TemplateCheckboxId(newCheckboxes.size.toLong()), title)
+                    TemplateCheckbox(TemplateCheckboxId(newCheckboxes.size.toLong()), title, listOf())
                 )
             )
         }

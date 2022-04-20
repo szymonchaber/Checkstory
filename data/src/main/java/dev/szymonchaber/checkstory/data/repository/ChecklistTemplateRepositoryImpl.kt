@@ -1,7 +1,10 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.database.datasource.ChecklistTemplateRoomDataSource
-import dev.szymonchaber.checkstory.domain.model.checklist.template.*
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,8 +35,8 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
                 "New checklist template",
                 "Checklist description",
                 listOf(
-                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1"),
-                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 2")
+                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1", listOf()),
+                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 2", listOf())
                 ),
                 LocalDateTime.now()
             )
@@ -54,35 +57,5 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
 
     override suspend fun delete(checklistTemplate: ChecklistTemplate) {
         dataSource.delete(checklistTemplate)
-    }
-
-    companion object {
-
-        val templates = listOf(
-            ChecklistFactory.createChecklistTemplate(
-                "Cleaning living room",
-                "I love to have a clean living room, but tend to forget about some hard-to-reach places",
-                "Table",
-                "Desk",
-                "Floor",
-                "Windows",
-                "Couch",
-                "Chairs",
-                "Shelves",
-            ),
-            ChecklistFactory.createChecklistTemplate(
-                "Cleaning kitchen",
-                "Mise en place is my style, so let's make sure that kitchen is always ready to roll",
-                "Wash the dishes",
-                "Clean the worktop",
-                "Clean the sink",
-                "Clean cupboard fronts",
-                "Arrange the pantry",
-                "Clean windows",
-                "Clean the floor",
-                "Clear the fridge out",
-                "Clean the induction cooker",
-            )
-        )
     }
 }

@@ -10,24 +10,4 @@ data class ChecklistTemplate(
     val createdAt: LocalDateTime
 )
 
-data class TemplateCheckbox(val id: TemplateCheckboxId, val title: String)
-
-object ChecklistFactory {
-
-    fun createChecklistTemplate(
-        title: String,
-        description: String,
-        vararg checkboxes: String,
-        id: ChecklistTemplateId = ChecklistTemplateId(0),
-    ): ChecklistTemplate {
-        return ChecklistTemplate(
-            id,
-            title,
-            description,
-            checkboxes.map {
-                TemplateCheckbox(TemplateCheckboxId(0), it)
-            },
-            LocalDateTime.now()
-        )
-    }
-}
+data class TemplateCheckbox(val id: TemplateCheckboxId, val title: String, val children: List<TemplateCheckbox>)
