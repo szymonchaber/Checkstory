@@ -115,7 +115,7 @@ class InsertDsl {
         val checkboxes = mutableListOf<Checkbox>()
 
         fun checkbox(id: Long, title: String, isChecked: Boolean = false) {
-            checkboxes.add(Checkbox(CheckboxId(id), ChecklistId(0), title, isChecked))
+            checkboxes.add(Checkbox(CheckboxId(id), null, ChecklistId(0), title, isChecked, listOf()))
         }
     }
 

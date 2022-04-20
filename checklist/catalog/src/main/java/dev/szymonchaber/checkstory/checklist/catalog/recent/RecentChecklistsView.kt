@@ -1,6 +1,10 @@
 package dev.szymonchaber.checkstory.checklist.catalog.recent
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.CircularProgressIndicator
@@ -66,8 +70,8 @@ fun RecentChecklistsLoadingPreview() {
 fun RecentChecklistsSuccessPreview() {
     Column {
         val items = listOf(
-            Checkbox(CheckboxId(0), ChecklistId(0), "Check this", true),
-            Checkbox(CheckboxId(0), ChecklistId(0), "Do not check that", false)
+            Checkbox(CheckboxId(0), null, ChecklistId(0), "Check this", true, listOf()),
+            Checkbox(CheckboxId(0), null, ChecklistId(0), "Do not check that", false, listOf())
         )
         val checklists = listOf(
             Checklist(

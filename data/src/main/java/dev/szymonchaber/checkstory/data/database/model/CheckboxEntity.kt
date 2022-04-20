@@ -18,9 +18,11 @@ data class CheckboxEntity(
     fun toDomainCheckbox(): Checkbox {
         return Checkbox(
             CheckboxId(checkboxId),
+            null,
             ChecklistId(checklistId),
             checkboxTitle,
-            isChecked
+            isChecked,
+            listOf()
         )
     }
 

@@ -1,9 +1,18 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -13,19 +22,23 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.szymonchaber.checkstory.checklist.fill.model.*
+import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistLoadingState
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEffect
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
@@ -126,8 +139,21 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             style = MaterialTheme.typography.caption,
             text = stringResource(R.string.items),
         )
-        checklist.items.forEach {
-            CheckboxItem(it, eventCollector)
+        checklist.items.map {
+            it.copy(
+                children = listOf(
+                    Checkbox(
+                        CheckboxId(0),
+                        it.parentId,
+                        it.checklistId,
+                        "injected",
+                        false,
+                        listOf()
+                    )
+                )
+            )
+        }.forEach {
+            CheckboxSection(checkbox = it, eventCollector = eventCollector)
         }
         Text(
             modifier = Modifier.padding(start = 24.dp, top = 16.dp),
@@ -153,15 +179,13 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
 }
 
 @Composable
-fun CheckboxItem(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> Unit) {
-    Row(Modifier.padding(start = 16.dp, end = 16.dp)) {
-        Checkbox(
-            modifier = Modifier.align(CenterVertically),
-            checked = checkbox.isChecked,
-            onCheckedChange = {
-                eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
-            }
-        )
-        Text(modifier = Modifier.align(CenterVertically), text = checkbox.title)
+fun CheckboxSection(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> Unit) {
+    CheckboxItem(checkbox = checkbox) {
+        eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+    }
+    checkbox.children.forEach { child ->
+        CheckboxItem(modifier = Modifier.padding(start = 32.dp), checkbox = child) {
+            eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
+        }
     }
 }
