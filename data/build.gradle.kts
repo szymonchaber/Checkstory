@@ -11,6 +11,11 @@ plugins {
 }
 
 android {
+
+    ksp {
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
+
     libraryVariants.all {
         kotlin.sourceSets {
             getByName(name) {
