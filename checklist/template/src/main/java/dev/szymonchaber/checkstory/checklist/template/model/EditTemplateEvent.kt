@@ -18,6 +18,8 @@ sealed interface EditTemplateEvent {
 
     data class ItemTitleChanged(val checkbox: EditTemplateCheckbox, val newTitle: String) : EditTemplateEvent
 
+    data class ChildItemAdded(val parent: EditTemplateCheckbox) : EditTemplateEvent
+
     data class ChildItemTitleChanged(
         val checkbox: EditTemplateCheckbox,
         val child: TemplateCheckbox,

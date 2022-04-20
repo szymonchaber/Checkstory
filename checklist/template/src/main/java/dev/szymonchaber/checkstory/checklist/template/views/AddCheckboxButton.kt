@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 @Composable
 fun AddCheckboxButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(modifier.clickable(onClick = onClick)) {
-        IconButton({}) {
+        IconButton(onClick) {
             Icon(Icons.Filled.Add, null)
         }
         Text(

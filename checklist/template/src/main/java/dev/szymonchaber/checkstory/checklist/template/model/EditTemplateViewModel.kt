@@ -34,7 +34,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleItemRemoved(),
             eventFlow.handleItemTitleChanged(),
             eventFlow.handleSaveTemplateClicked(),
-            eventFlow.handleDeleteTemplateClicked()
+            eventFlow.handleDeleteTemplateClicked(),
+            eventFlow.handleChildItemAdded()
         )
     }
 
@@ -110,27 +111,79 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private fun Flow<EditTemplateEvent>.handleItemTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ItemTitleChanged>()
+        return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = when (event.checkbox) {
+                val newLoadingState = when (event.parent) {
                     is EditTemplateCheckbox.Existing -> {
                         loadingState.updateTemplate {
-                            copy(items = loadingState.checklistTemplate.items.updateById(event))
+                            copy(items = loadingState.checklistTemplate.items.updateById(
+                                event.parent.checkbox.id
+                            ) {
+                                it.copy(
+                                    children = it.children.plus(
+                                        TemplateCheckbox(
+                                            TemplateCheckboxId(0),
+                                            event.parent.checkbox.id,
+                                            "New checkbox",
+                                            listOf()
+                                        )
+                                    )
+                                )
+                            }
+                            )
                         }
                     }
                     is EditTemplateCheckbox.New -> {
-                        loadingState.copy(newCheckboxes = loadingState.newCheckboxes.updateById(event))
+                        loadingState.copy(newCheckboxes = loadingState.newCheckboxes.updateById(
+                            event.parent.checkbox.id
+                        ) {
+                            it.copy(
+                                children = it.children.plus(
+                                    TemplateCheckbox(
+                                        TemplateCheckboxId(0),
+                                        event.parent.checkbox.id,
+                                        "New checkbox",
+                                        listOf()
+                                    )
+                                )
+                            )
+                        })
                     }
                 }
                 EditTemplateState(newLoadingState) to null
             }
     }
 
-    private fun List<TemplateCheckbox>.updateById(event: EditTemplateEvent.ItemTitleChanged): List<TemplateCheckbox> {
+    private fun Flow<EditTemplateEvent>.handleChildItemAdded(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ItemTitleChanged>()
+            .withSuccessState()
+            .map { (loadingState, event) ->
+                val newLoadingState = when (event.checkbox) {
+                    is EditTemplateCheckbox.Existing -> {
+                        loadingState.updateTemplate {
+                            copy(items = loadingState.checklistTemplate.items.updateById(
+                                event.checkbox.checkbox.id
+                            ) { it.copy(title = event.newTitle) })
+                        }
+                    }
+                    is EditTemplateCheckbox.New -> {
+                        loadingState.copy(
+                            newCheckboxes = loadingState.newCheckboxes.updateById(
+                                event.checkbox.checkbox.id
+                            ) { it.copy(title = event.newTitle) })
+                    }
+                }
+                EditTemplateState(newLoadingState) to null
+            }
+    }
+
+    private fun List<TemplateCheckbox>.updateById(
+        id: TemplateCheckboxId, map: (TemplateCheckbox) -> TemplateCheckbox
+    ): List<TemplateCheckbox> {
         return map {
-            if (it.id == event.checkbox.checkbox.id) {
-                it.copy(title = event.newTitle)
+            if (it.id == id) {
+                map(it)
             } else {
                 it
             }

@@ -44,7 +44,9 @@ fun ParentCheckboxItem(
                 { eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, child)) }
             )
         }
-        AddCheckboxButton(modifier = Modifier.padding(start = 32.dp, top = 4.dp), onClick = {}) // TODO
+        AddCheckboxButton(modifier = Modifier.padding(start = 32.dp, top = 4.dp), onClick = {
+            eventCollector(EditTemplateEvent.ChildItemAdded(checkbox))
+        }) // TODO
     }
 }
 
