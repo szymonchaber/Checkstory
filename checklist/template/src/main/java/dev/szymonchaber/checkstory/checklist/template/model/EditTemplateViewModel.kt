@@ -35,7 +35,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleItemTitleChanged(),
             eventFlow.handleSaveTemplateClicked(),
             eventFlow.handleDeleteTemplateClicked(),
-            eventFlow.handleChildItemAdded()
+            eventFlow.handleChildItemAdded(),
+            eventFlow.handleChildItemDeleted()
         )
     }
 
@@ -172,6 +173,33 @@ class EditTemplateViewModel @Inject constructor(
                             newCheckboxes = loadingState.newCheckboxes.updateById(
                                 event.checkbox.checkbox.id
                             ) { it.copy(title = event.newTitle) })
+                    }
+                }
+                EditTemplateState(newLoadingState) to null
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleChildItemDeleted(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ChildItemDeleted>()
+            .withSuccessState()
+            .map { (loadingState, event) ->
+                val newLoadingState = when (event.checkbox) {
+                    is EditTemplateCheckbox.Existing -> {
+                        loadingState.updateTemplate {
+                            copy(items = loadingState.checklistTemplate.items.updateById(
+                                event.checkbox.checkbox.id
+                            ) {
+                                it.copy(children = it.children.minus(event.child))
+                            })
+                        }
+                    }
+                    is EditTemplateCheckbox.New -> {
+                        loadingState.copy(
+                            newCheckboxes = loadingState.newCheckboxes.updateById(
+                                event.checkbox.checkbox.id
+                            ) {
+                                it.copy(children = it.children.minus(event.child))
+                            })
                     }
                 }
                 EditTemplateState(newLoadingState) to null
