@@ -149,16 +149,14 @@ class EditTemplateViewModel @Inject constructor(
     private fun Flow<EditTemplateEvent>.handleSaveTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.SaveTemplateClicked>()
             .withSuccessState()
-            .flatMapLatest { (loadingState, _) ->
+            .mapLatest { (loadingState, _) ->
                 val checklistTemplate = loadingState
                     .updateTemplate {
                         copy(items = items.plus(loadingState.newCheckboxes.map { it.copy(id = TemplateCheckboxId(0)) }))
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
-                    .map {
-                        null to EditTemplateEffect.CloseScreen
-                    }
+                null to EditTemplateEffect.CloseScreen
             }
     }
 

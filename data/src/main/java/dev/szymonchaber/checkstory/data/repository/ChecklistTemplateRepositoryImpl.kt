@@ -48,11 +48,8 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
             }
     }
 
-    override fun update(checklistTemplate: ChecklistTemplate): Flow<Unit> {
-        return flow {
-            dataSource.update(checklistTemplate)
-            emit(Unit)
-        }
+    override suspend fun update(checklistTemplate: ChecklistTemplate) {
+        dataSource.update(checklistTemplate)
     }
 
     override suspend fun delete(checklistTemplate: ChecklistTemplate) {

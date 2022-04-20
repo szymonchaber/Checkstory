@@ -10,7 +10,7 @@ interface ChecklistTemplateRepository {
 
     fun get(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate>
 
-    fun update(checklistTemplate: ChecklistTemplate): Flow<Unit>
+    suspend fun update(checklistTemplate: ChecklistTemplate)
 
     fun create(): Flow<ChecklistTemplate>
 
