@@ -2,16 +2,13 @@ package dev.szymonchaber.checkstory.checklist.catalog.recent
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -19,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.R
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.model.RecentChecklistsLoadingState
+import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -27,22 +25,18 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import java.time.LocalDateTime
 
 @Composable
-fun ColumnScope.RecentChecklistsView(
+fun RecentChecklistsView(
     loadingState: RecentChecklistsLoadingState,
     eventListener: (ChecklistCatalogEvent) -> Unit = {}
 ) {
     Text(
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+        modifier = Modifier.padding(horizontal = 16.dp),
         text = stringResource(R.string.recent_checklists),
         style = MaterialTheme.typography.h5
     )
     when (val state = loadingState) {
         RecentChecklistsLoadingState.Loading -> {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .align(alignment = Alignment.CenterHorizontally)
-                    .padding(top = 24.dp)
-            )
+            LoadingView()
         }
         is RecentChecklistsLoadingState.Success -> {
             LazyRow(

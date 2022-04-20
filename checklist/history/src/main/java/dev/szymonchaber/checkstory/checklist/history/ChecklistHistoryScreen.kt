@@ -1,9 +1,20 @@
 package dev.szymonchaber.checkstory.checklist.history
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -74,17 +85,12 @@ private fun ChecklistHistoryView(
             null -> Unit
         }
     }
-    RecentChecklistsView(state = state, eventListener = viewModel::onEvent)
-}
-
-@Composable
-fun RecentChecklistsView(state: ChecklistHistoryState, eventListener: (ChecklistHistoryEvent) -> Unit) {
     when (val loadingState = state.historyLoadingState) {
         HistoryLoadingState.Loading -> {
             FullSizeLoadingView()
         }
         is HistoryLoadingState.Success -> {
-            ChecklistHistoryList(loadingState.checklists, eventListener)
+            ChecklistHistoryList(loadingState.checklists) { it: ChecklistHistoryEvent -> viewModel.onEvent(it) }
         }
     }
 }
