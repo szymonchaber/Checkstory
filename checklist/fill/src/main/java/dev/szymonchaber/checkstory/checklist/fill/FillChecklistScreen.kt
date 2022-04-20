@@ -38,7 +38,6 @@ import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
@@ -139,20 +138,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             style = MaterialTheme.typography.caption,
             text = stringResource(R.string.items),
         )
-        checklist.items.map {
-            it.copy(
-                children = listOf(
-                    Checkbox(
-                        CheckboxId(0),
-                        it.parentId,
-                        it.checklistId,
-                        "injected",
-                        false,
-                        listOf()
-                    )
-                )
-            )
-        }.forEach {
+        checklist.items.forEach {
             CheckboxSection(checkbox = it, eventCollector = eventCollector)
         }
         Text(

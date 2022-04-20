@@ -72,9 +72,20 @@ class ChecklistRoomDataSource @Inject constructor(
                 checklist.toDomainChecklist(
                     template.title,
                     template.description,
-                    checkboxes.map(CheckboxEntity::toDomainCheckbox)
+                    toRelation(checkboxes)
                 )
             }
+    }
+
+    private fun toRelation(checkboxes: List<CheckboxEntity>): List<Checkbox> {
+        val parentToChildren: Map<Long?, List<CheckboxEntity>> = checkboxes.groupBy {
+            it.parentId
+        }
+        return parentToChildren[null]?.map { parent ->
+            parent.toDomainCheckbox(parentToChildren[parent.checkboxId]?.map {
+                it.toDomainCheckbox(listOf())
+            }.orEmpty())
+        }.orEmpty()
     }
 
     suspend fun delete(checklist: Checklist) {

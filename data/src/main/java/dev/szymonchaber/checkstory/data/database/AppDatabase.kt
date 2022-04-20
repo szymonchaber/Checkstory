@@ -20,9 +20,10 @@ import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
         ChecklistEntity::class,
         CheckboxEntity::class
     ],
-    version = 2,
+    version = 3,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2)
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3)
     ]
 )
 @TypeConverters(value = [Converters::class])

@@ -142,7 +142,8 @@ class InsertDsl {
                                 it.id.id,
                                 checklistId,
                                 it.title,
-                                it.isChecked
+                                it.isChecked,
+                                it.parentId?.id
                             )
                         }.toTypedArray()
                     )
