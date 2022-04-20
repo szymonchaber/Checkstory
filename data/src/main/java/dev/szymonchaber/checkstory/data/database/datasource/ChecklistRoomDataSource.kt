@@ -35,7 +35,12 @@ class ChecklistRoomDataSource @Inject constructor(
     private fun getCheckboxes(checklistId: Long) = checklistDao.getCheckboxesForChecklist(checklistId)
 
     suspend fun update(checklist: Checklist) {
-        return checklistDao.update(ChecklistEntity.fromDomainChecklist(checklist))
+        val checkboxes = checklist.items.flatMap {
+            listOf(it) + it.children
+        }.map(CheckboxEntity.Companion::fromDomainCheckbox)
+        checkboxDao.insertAll(*checkboxes.toTypedArray())
+
+        checklistDao.update(ChecklistEntity.fromDomainChecklist(checklist))
     }
 
     suspend fun updateCheckbox(checkbox: Checkbox) {

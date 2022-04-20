@@ -2,8 +2,18 @@ package dev.szymonchaber.checkstory.checklist.fill.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.usecase.*
-import kotlinx.coroutines.flow.*
+import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
+import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 @HiltViewModel
@@ -11,7 +21,6 @@ class FillChecklistViewModel @Inject constructor(
     private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
     private val updateChecklistUseCase: UpdateChecklistUseCase,
-    private val updateCheckboxUseCase: UpdateCheckboxUseCase,
     private val deleteChecklistUseCase: DeleteChecklistUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
@@ -26,15 +35,52 @@ class FillChecklistViewModel @Inject constructor(
             eventFlow.handleNotesChanged(),
             eventFlow.handleEditClicked(),
             eventFlow.handleSaveClicked(),
-            eventFlow.handleDeleteClicked()
+            eventFlow.handleDeleteClicked(),
+            eventFlow.handleChildCheckChanged()
         )
     }
 
     private fun Flow<FillChecklistEvent>.handleCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
         return filterIsInstance<FillChecklistEvent.CheckChanged>()
-            .mapLatest {
-                updateCheckboxUseCase.updateCheckbox(it.item.copy(isChecked = it.newCheck))
-                state.first() to null
+            .withSuccessState()
+            .mapLatest { (success, event) ->
+                val updated = success.updateChecklist {
+                    copy(items = items.map {
+                        if (it.id == event.item.id) {
+                            it.copy(isChecked = event.newCheck)
+                        } else {
+                            it
+                        }
+                    }
+                    )
+                }
+                state.first().copy(checklistLoadingState = updated) to null
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleChildCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
+        return filterIsInstance<FillChecklistEvent.ChildCheckChanged>()
+            .withSuccessState()
+            .mapLatest { (success, event) ->
+                val (checkbox, child, newCheck) = event
+                val updated = success.updateChecklist {
+                    copy(items = items.map {
+                        if (it.id == checkbox.id) {
+                            it.copy(children = it.children.map {
+                                if (it.id == child.id) {
+                                    it.copy(isChecked = newCheck)
+                                } else {
+                                    it
+                                }
+                            }
+                            )
+                        } else {
+                            it
+                        }
+                    }
+                    )
+                }
+                state.first().copy(checklistLoadingState = updated) to null
             }
     }
 
