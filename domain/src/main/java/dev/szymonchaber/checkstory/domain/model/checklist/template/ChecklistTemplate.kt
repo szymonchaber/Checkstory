@@ -10,4 +10,9 @@ data class ChecklistTemplate(
     val createdAt: LocalDateTime
 )
 
-data class TemplateCheckbox(val id: TemplateCheckboxId, val title: String, val children: List<TemplateCheckbox>)
+data class TemplateCheckbox(
+    val id: TemplateCheckboxId,
+    val parentId: TemplateCheckboxId?,
+    val title: String,
+    val children: List<TemplateCheckbox>
+)

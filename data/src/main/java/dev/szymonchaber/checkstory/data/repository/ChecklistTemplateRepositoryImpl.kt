@@ -35,8 +35,8 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
                 "New checklist template",
                 "Checklist description",
                 listOf(
-                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1", listOf()),
-                    TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 2", listOf())
+                    TemplateCheckbox(TemplateCheckboxId(0), null, "Checkbox 1", listOf()),
+                    TemplateCheckbox(TemplateCheckboxId(0), null, "Checkbox 2", listOf())
                 ),
                 LocalDateTime.now()
             )

@@ -60,7 +60,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     suspend fun getTemplateCheckbox(checkboxId: TemplateCheckboxId): TemplateCheckbox {
-        return toDomainTemplateCheckbox(templateCheckboxDao.getById(checkboxId.id))
+        return toDomainTemplateCheckbox(templateCheckboxDao.getById(checkboxId.id), null, listOf())
     }
 
     suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
@@ -93,19 +93,33 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 ChecklistTemplateId(id),
                 title,
                 description,
-                checkboxes.map {
-                    toDomainTemplateCheckbox(it)
-                },
+                groupToDomain(checkboxes),
                 LocalDateTime.now()
             )
         }
     }
 
-    private fun toDomainTemplateCheckbox(templateCheckboxEntity: TemplateCheckboxEntity): TemplateCheckbox {
+    private fun groupToDomain(checkboxes: List<TemplateCheckboxEntity>): List<TemplateCheckbox> {
+        val parentToChildren: Map<Long?, List<TemplateCheckboxEntity>> = checkboxes.groupBy {
+            it.parentId
+        }
+        return parentToChildren[null]?.map { parent ->
+            toDomainTemplateCheckbox(parent, null, parentToChildren[parent.checkboxId]?.map {
+                toDomainTemplateCheckbox(it, TemplateCheckboxId(parent.checkboxId), listOf())
+            }.orEmpty())
+        }.orEmpty()
+    }
+
+    private fun toDomainTemplateCheckbox(
+        templateCheckboxEntity: TemplateCheckboxEntity,
+        parentId: TemplateCheckboxId?,
+        children: List<TemplateCheckbox>
+    ): TemplateCheckbox {
         return TemplateCheckbox(
             TemplateCheckboxId(templateCheckboxEntity.checkboxId),
+            parentId,
             templateCheckboxEntity.checkboxTitle,
-            listOf()
+            children
         )
     }
 

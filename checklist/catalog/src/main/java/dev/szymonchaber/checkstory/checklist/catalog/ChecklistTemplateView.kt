@@ -86,6 +86,7 @@ fun ChecklistTemplateViewPreview() {
             listOf(
                 TemplateCheckbox(
                     TemplateCheckboxId(0),
+                    null,
                     "Checkbox 1",
                     listOf()
                 )

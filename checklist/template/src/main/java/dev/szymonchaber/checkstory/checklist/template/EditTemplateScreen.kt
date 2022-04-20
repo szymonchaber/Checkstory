@@ -25,8 +25,6 @@ import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
 @Destination("edit_template_screen", start = true)
 @Composable
@@ -77,10 +75,7 @@ fun EditTemplateScreen(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    val items = loadingState.checklistTemplate.items.map {
-                        it.copy(children = listOf(TemplateCheckbox(TemplateCheckboxId(0), "injected child", listOf())))
-                    }
-                    val checkboxes = items.map(EditTemplateCheckbox::Existing)
+                    val checkboxes = loadingState.checklistTemplate.items.map(EditTemplateCheckbox::Existing)
                         .plus(loadingState.newCheckboxes.map(EditTemplateCheckbox::New))
                     EditTemplateView(loadingState.checklistTemplate, checkboxes, viewModel::onEvent)
                 }

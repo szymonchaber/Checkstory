@@ -83,6 +83,13 @@ private fun CheckboxItem(
 @Preview(showBackground = true)
 @Composable
 fun CheckboxItemPreview() {
-    val checkbox = EditTemplateCheckbox.Existing(TemplateCheckbox(TemplateCheckboxId(0), "Checkbox 1", listOf()))
+    val checkbox = EditTemplateCheckbox.Existing(
+        TemplateCheckbox(
+            TemplateCheckboxId(0),
+            null,
+            "Checkbox 1",
+            listOf()
+        )
+    )
     ParentCheckboxItem(checkbox = checkbox, eventCollector = {})
 }
