@@ -36,7 +36,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleSaveTemplateClicked(),
             eventFlow.handleDeleteTemplateClicked(),
             eventFlow.handleChildItemAdded(),
-            eventFlow.handleChildItemDeleted()
+            eventFlow.handleChildItemDeleted(),
+            eventFlow.handleChildItemChanged()
         )
     }
 
@@ -199,6 +200,45 @@ class EditTemplateViewModel @Inject constructor(
                                 event.checkbox.checkbox.id
                             ) {
                                 it.copy(children = it.children.minus(event.child))
+                            })
+                    }
+                }
+                EditTemplateState(newLoadingState) to null
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleChildItemChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ChildItemTitleChanged>()
+            .withSuccessState()
+            .map { (loadingState, event) ->
+                val newLoadingState = when (event.checkbox) {
+                    is EditTemplateCheckbox.Existing -> {
+                        loadingState.updateTemplate {
+                            copy(items = loadingState.checklistTemplate.items.updateById(
+                                event.checkbox.checkbox.id
+                            ) {
+                                it.copy(children = it.children.map {
+                                    if (it.id == event.child.id) {
+                                        it.copy(title = event.newTitle)
+                                    } else {
+                                        it
+                                    }
+                                })
+                            })
+                        }
+                    }
+                    is EditTemplateCheckbox.New -> {
+                        loadingState.copy(
+                            newCheckboxes = loadingState.newCheckboxes.updateById(
+                                event.checkbox.checkbox.id
+                            ) {
+                                it.copy(children = it.children.map {
+                                    if (it.id == event.child.id) {
+                                        it.copy(title = event.newTitle)
+                                    } else {
+                                        it
+                                    }
+                                })
                             })
                     }
                 }
