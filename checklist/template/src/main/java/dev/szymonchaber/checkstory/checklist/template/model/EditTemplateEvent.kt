@@ -1,8 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.checklist.template.EditTemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 
 sealed interface EditTemplateEvent {
 
@@ -14,19 +12,19 @@ sealed interface EditTemplateEvent {
 
     data class DescriptionChanged(val newDescription: String) : EditTemplateEvent
 
-    data class ItemRemoved(val checkbox: EditTemplateCheckbox) : EditTemplateEvent
+    data class ItemRemoved(val checkbox: ViewTemplateCheckbox) : EditTemplateEvent
 
-    data class ItemTitleChanged(val checkbox: EditTemplateCheckbox, val newTitle: String) : EditTemplateEvent
+    data class ItemTitleChanged(val checkbox: ViewTemplateCheckbox, val newTitle: String) : EditTemplateEvent
 
-    data class ChildItemAdded(val parent: EditTemplateCheckbox) : EditTemplateEvent
+    data class ChildItemAdded(val parent: ViewTemplateCheckbox) : EditTemplateEvent
 
     data class ChildItemTitleChanged(
-        val checkbox: EditTemplateCheckbox,
-        val child: TemplateCheckbox,
+        val checkbox: ViewTemplateCheckbox,
+        val child: ViewTemplateCheckbox,
         val newTitle: String
     ) : EditTemplateEvent
 
-    data class ChildItemDeleted(val checkbox: EditTemplateCheckbox, val child: TemplateCheckbox) : EditTemplateEvent
+    data class ChildItemDeleted(val checkbox: ViewTemplateCheckbox, val child: ViewTemplateCheckbox) : EditTemplateEvent
 
     object AddCheckboxClicked : EditTemplateEvent
 

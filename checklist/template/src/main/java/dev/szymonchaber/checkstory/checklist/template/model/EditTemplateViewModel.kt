@@ -1,12 +1,20 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.szymonchaber.checkstory.checklist.template.EditTemplateCheckbox
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
-import dev.szymonchaber.checkstory.domain.usecase.*
-import kotlinx.coroutines.flow.*
+import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,7 +54,7 @@ class EditTemplateViewModel @Inject constructor(
             .flatMapLatest {
                 createChecklistTemplateUseCase.createChecklistTemplate()
                     .map {
-                        TemplateLoadingState.Success(it)
+                        TemplateLoadingState.Success.fromTemplate(it)
                     }
                     .onStart<TemplateLoadingState> {
                         emit(TemplateLoadingState.Loading)
@@ -62,7 +70,7 @@ class EditTemplateViewModel @Inject constructor(
             .flatMapLatest { event ->
                 getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
                     .map {
-                        TemplateLoadingState.Success(it)
+                        TemplateLoadingState.Success.fromTemplate(it)
                     }
                     .onStart<TemplateLoadingState> {
                         emit(TemplateLoadingState.Loading)
@@ -100,83 +108,29 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 when (event.checkbox) {
-                    is EditTemplateCheckbox.Existing -> {
-                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.checkbox)
+                    is ViewTemplateCheckbox.Existing -> {
+                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
                     }
-                    is EditTemplateCheckbox.New -> Unit
+                    is ViewTemplateCheckbox.New -> Unit
                 }
-                val newLoadingState = loadingState.updateTemplate {
-                    copy(items = items.minus(event.checkbox.checkbox))
-                }.copy(newCheckboxes = loadingState.newCheckboxes.minus(event.checkbox.checkbox))
-                EditTemplateState(newLoadingState) to null
-            }
-    }
-
-    private fun Flow<EditTemplateEvent>.handleItemTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
-            .withSuccessState()
-            .map { (loadingState, event) ->
-                val newLoadingState = when (event.parent) {
-                    is EditTemplateCheckbox.Existing -> {
-                        loadingState.updateTemplate {
-                            copy(items = loadingState.checklistTemplate.items.updateById(
-                                event.parent.checkbox.id
-                            ) {
-                                it.copy(
-                                    children = it.children.plus(
-                                        TemplateCheckbox(
-                                            TemplateCheckboxId(0),
-                                            event.parent.checkbox.id,
-                                            "New checkbox",
-                                            listOf()
-                                        )
-                                    )
-                                )
-                            }
-                            )
-                        }
-                    }
-                    is EditTemplateCheckbox.New -> {
-                        loadingState.copy(newCheckboxes = loadingState.newCheckboxes.updateById(
-                            event.parent.checkbox.id
-                        ) {
-                            it.copy(
-                                children = it.children.plus(
-                                    TemplateCheckbox(
-                                        TemplateCheckboxId(0),
-                                        event.parent.checkbox.id,
-                                        "New checkbox",
-                                        listOf()
-                                    )
-                                )
-                            )
-                        })
-                    }
-                }
+                val newLoadingState = loadingState.minusCheckbox(event.checkbox)
                 EditTemplateState(newLoadingState) to null
             }
     }
 
     private fun Flow<EditTemplateEvent>.handleChildItemAdded(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
+            .withSuccessState()
+            .map { (loadingState, event) ->
+                EditTemplateState(loadingState.plusChildCheckbox(event.parent, "Checkbox")) to null
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleItemTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.ItemTitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = when (event.checkbox) {
-                    is EditTemplateCheckbox.Existing -> {
-                        loadingState.updateTemplate {
-                            copy(items = loadingState.checklistTemplate.items.updateById(
-                                event.checkbox.checkbox.id
-                            ) { it.copy(title = event.newTitle) })
-                        }
-                    }
-                    is EditTemplateCheckbox.New -> {
-                        loadingState.copy(
-                            newCheckboxes = loadingState.newCheckboxes.updateById(
-                                event.checkbox.checkbox.id
-                            ) { it.copy(title = event.newTitle) })
-                    }
-                }
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)) to null
             }
     }
 
@@ -184,26 +138,13 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ChildItemDeleted>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = when (event.checkbox) {
-                    is EditTemplateCheckbox.Existing -> {
-                        loadingState.updateTemplate {
-                            copy(items = loadingState.checklistTemplate.items.updateById(
-                                event.checkbox.checkbox.id
-                            ) {
-                                it.copy(children = it.children.minus(event.child))
-                            })
-                        }
+                when (event.child) {
+                    is ViewTemplateCheckbox.Existing -> {
+                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
                     }
-                    is EditTemplateCheckbox.New -> {
-                        loadingState.copy(
-                            newCheckboxes = loadingState.newCheckboxes.updateById(
-                                event.checkbox.checkbox.id
-                            ) {
-                                it.copy(children = it.children.minus(event.child))
-                            })
-                    }
+                    is ViewTemplateCheckbox.New -> Unit
                 }
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.minusChildCheckbox(event.checkbox, event.child)) to null
             }
     }
 
@@ -211,58 +152,17 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ChildItemTitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = when (event.checkbox) {
-                    is EditTemplateCheckbox.Existing -> {
-                        loadingState.updateTemplate {
-                            copy(items = loadingState.checklistTemplate.items.updateById(
-                                event.checkbox.checkbox.id
-                            ) {
-                                it.copy(children = it.children.map {
-                                    if (it.id == event.child.id) {
-                                        it.copy(title = event.newTitle)
-                                    } else {
-                                        it
-                                    }
-                                })
-                            })
-                        }
-                    }
-                    is EditTemplateCheckbox.New -> {
-                        loadingState.copy(
-                            newCheckboxes = loadingState.newCheckboxes.updateById(
-                                event.checkbox.checkbox.id
-                            ) {
-                                it.copy(children = it.children.map {
-                                    if (it.id == event.child.id) {
-                                        it.copy(title = event.newTitle)
-                                    } else {
-                                        it
-                                    }
-                                })
-                            })
-                    }
-                }
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(
+                    loadingState.changeChildCheckboxTitle(event.checkbox, event.child, event.newTitle)
+                ) to null
             }
-    }
-
-    private fun List<TemplateCheckbox>.updateById(
-        id: TemplateCheckboxId, map: (TemplateCheckbox) -> TemplateCheckbox
-    ): List<TemplateCheckbox> {
-        return map {
-            if (it.id == id) {
-                map(it)
-            } else {
-                it
-            }
-        }
     }
 
     private fun Flow<EditTemplateEvent>.handleAddCheckboxClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
-                val newLoadingState = loadingState.plusCheckbox("Checkbox")
+                val newLoadingState = loadingState.plusNewCheckbox("Checkbox")
                 EditTemplateState(newLoadingState) to null
             }
     }
@@ -273,7 +173,7 @@ class EditTemplateViewModel @Inject constructor(
             .mapLatest { (loadingState, _) ->
                 val checklistTemplate = loadingState
                     .updateTemplate {
-                        copy(items = items.plus(loadingState.newCheckboxes.map { it.copy(id = TemplateCheckboxId(0)) }))
+                        copy(items = loadingState.checkboxes.map(ViewTemplateCheckbox::toDomainModel))
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)

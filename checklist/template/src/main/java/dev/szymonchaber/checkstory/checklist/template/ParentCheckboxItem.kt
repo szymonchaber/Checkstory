@@ -16,44 +16,47 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
+import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
 @Composable
 fun ParentCheckboxItem(
     modifier: Modifier = Modifier,
-    checkbox: EditTemplateCheckbox,
+    checkbox: ViewTemplateCheckbox,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column {
         CheckboxItem(
             modifier = modifier,
-            checkbox = checkbox,
+            checkbox.title,
             onTitleChange = {
                 eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-            },
-            onDeleteClick = {
-                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
             }
-        )
-        checkbox.checkbox.children.forEach { child ->
-            CheckboxItem(Modifier.padding(start = 32.dp, top = 8.dp),
-                EditTemplateCheckbox.Existing(child),
-                { eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox, child, it)) },
-                { eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, child)) }
-            )
+        ) {
+            eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+        }
+        checkbox.children.forEach { child ->
+            CheckboxItem(
+                Modifier.padding(start = 32.dp, top = 8.dp),
+                child.title,
+                {
+                    eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox, child, it))
+                }
+            ) {
+                eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, child))
+            }
         }
         AddCheckboxButton(modifier = Modifier.padding(start = 32.dp, top = 4.dp), onClick = {
             eventCollector(EditTemplateEvent.ChildItemAdded(checkbox))
-        }) // TODO
+        })
     }
 }
 
 @Composable
 private fun CheckboxItem(
     modifier: Modifier,
-    checkbox: EditTemplateCheckbox,
+    title: String,
     onTitleChange: (String) -> Unit,
     onDeleteClick: () -> Unit
 ) {
@@ -71,7 +74,7 @@ private fun CheckboxItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.CenterVertically),
-            value = checkbox.checkbox.title,
+            value = title,
             onValueChange = onTitleChange,
             trailingIcon = {
                 IconButton(onClick = onDeleteClick) {
@@ -85,13 +88,11 @@ private fun CheckboxItem(
 @Preview(showBackground = true)
 @Composable
 fun CheckboxItemPreview() {
-    val checkbox = EditTemplateCheckbox.Existing(
-        TemplateCheckbox(
-            TemplateCheckboxId(0),
-            null,
-            "Checkbox 1",
-            listOf()
-        )
+    val checkbox = ViewTemplateCheckbox.Existing(
+        TemplateCheckboxId(0),
+        null,
+        "Checkbox 1",
+        listOf()
     )
     ParentCheckboxItem(checkbox = checkbox, eventCollector = {})
 }

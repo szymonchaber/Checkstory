@@ -1,10 +1,20 @@
 package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -18,7 +28,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
-import dev.szymonchaber.checkstory.checklist.template.model.*
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEffect
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
+import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
+import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
@@ -75,9 +90,7 @@ fun EditTemplateScreen(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    val checkboxes = loadingState.checklistTemplate.items.map(EditTemplateCheckbox::Existing)
-                        .plus(loadingState.newCheckboxes.map(EditTemplateCheckbox::New))
-                    EditTemplateView(loadingState.checklistTemplate, checkboxes, viewModel::onEvent)
+                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent)
                 }
             }
         },
@@ -96,14 +109,14 @@ fun EditTemplateScreen(
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
-    checkboxes: List<EditTemplateCheckbox>,
+    checkboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
-        items(checkboxes, key = EditTemplateCheckbox::id) {
+        items(checkboxes, key = { it.id.id }) {
             ParentCheckboxItem(Modifier.animateItemPlacement(), it, eventCollector)
         }
         item {
