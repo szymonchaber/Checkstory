@@ -43,6 +43,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
         )
         templateCheckboxDao.insertAll(
+            // TODO how does it know its parent id?
             *flattenWithChildren(checklistTemplate)
                 .map {
                     TemplateCheckboxEntity.fromDomainTemplateCheckbox(

@@ -9,10 +9,14 @@ import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ChecklistRoomDataSource @Inject constructor(
@@ -43,20 +47,28 @@ class ChecklistRoomDataSource @Inject constructor(
         checklistDao.update(ChecklistEntity.fromDomainChecklist(checklist))
     }
 
-    suspend fun updateCheckbox(checkbox: Checkbox) {
-        checkboxDao.update(CheckboxEntity.fromDomainCheckbox(checkbox))
-    }
-
     suspend fun insert(checklist: Checklist): Long {
         val checklistId = checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        checkboxDao.insertAll(
-            *checklist.items
-                .map(CheckboxEntity::fromDomainCheckbox).map {
-                    it.copy(checklistId = checklistId)
-                }
-                .toTypedArray()
-        )
+        insertCheckboxes(checklist.items, checklistId)
         return checklistId
+    }
+
+    private suspend fun insertCheckboxes(checkboxes: List<Checkbox>, checklistId: Long) {
+        checkboxes.forEach {
+            coroutineScope {
+                withContext(Dispatchers.Default) {
+                    launch {
+                        val parentId =
+                            checkboxDao.insert(CheckboxEntity.fromDomainCheckbox(it).copy(checklistId = checklistId))
+                        val children = it.children.map { child ->
+                            CheckboxEntity.fromDomainCheckbox(child)
+                                .copy(parentId = parentId, checklistId = checklistId)
+                        }
+                        checkboxDao.insertAll(*children.toTypedArray())
+                    }
+                }
+            }
+        }
     }
 
     fun getBasedOn(basedOn: ChecklistTemplateId): Flow<List<Checklist>> {

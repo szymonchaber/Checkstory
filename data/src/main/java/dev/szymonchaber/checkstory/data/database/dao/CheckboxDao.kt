@@ -1,6 +1,10 @@
 package dev.szymonchaber.checkstory.data.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 
 @Dao
@@ -11,9 +15,6 @@ interface CheckboxDao {
 
     @Insert
     suspend fun insert(checkbox: CheckboxEntity): Long
-
-    @Update
-    suspend fun update(checkbox: CheckboxEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg checkboxes: CheckboxEntity)
