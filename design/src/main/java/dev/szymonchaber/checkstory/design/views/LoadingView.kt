@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -22,6 +23,7 @@ fun FullSizeLoadingView() {
 fun LoadingView() {
     Box(
         modifier = Modifier
+            .fillMaxWidth()
             .fillMaxHeight()
     ) {
         CircularProgressIndicator(
