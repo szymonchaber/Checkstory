@@ -109,7 +109,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 when (event.checkbox) {
                     is ViewTemplateCheckbox.Existing -> {
-                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
+//                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
                     }
                     is ViewTemplateCheckbox.New -> Unit
                 }
@@ -140,7 +140,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 when (event.child) {
                     is ViewTemplateCheckbox.Existing -> {
-                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
+//                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
                     }
                     is ViewTemplateCheckbox.New -> Unit
                 }
@@ -177,6 +177,7 @@ class EditTemplateViewModel @Inject constructor(
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
+                deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 null to EditTemplateEffect.CloseScreen
             }
     }

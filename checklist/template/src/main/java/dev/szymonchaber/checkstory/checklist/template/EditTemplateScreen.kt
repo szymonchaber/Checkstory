@@ -116,7 +116,10 @@ fun EditTemplateView(
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
-        items(checkboxes, key = { it.id.id }) {
+        items(
+            checkboxes,
+//            key = { it.id.id } // TODO causes crashes & animations don't work anyways - fix at some point
+        ) {
             ParentCheckboxItem(Modifier.animateItemPlacement(), it, eventCollector)
         }
         item {

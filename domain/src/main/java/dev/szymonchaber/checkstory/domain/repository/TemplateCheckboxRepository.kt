@@ -8,4 +8,6 @@ interface TemplateCheckboxRepository {
     suspend fun deleteFromTemplate(checklistTemplate: ChecklistTemplate)
 
     suspend fun deleteTemplateCheckbox(templateCheckbox: TemplateCheckbox)
+
+    suspend fun deleteTemplateCheckboxes(templateCheckboxes: List<TemplateCheckbox>)
 }
