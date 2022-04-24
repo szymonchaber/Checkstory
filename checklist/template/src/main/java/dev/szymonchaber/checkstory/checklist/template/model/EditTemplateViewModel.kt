@@ -2,7 +2,10 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
@@ -15,11 +18,11 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
-    private val createChecklistTemplateUseCase: CreateChecklistTemplateUseCase,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
     private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
     private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
@@ -51,17 +54,18 @@ class EditTemplateViewModel @Inject constructor(
 
     private fun Flow<EditTemplateEvent>.handleCreateChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.CreateChecklistTemplate>()
-            .flatMapLatest {
-                createChecklistTemplateUseCase.createChecklistTemplate()
-                    .map {
-                        TemplateLoadingState.Success.fromTemplate(it)
-                    }
-                    .onStart<TemplateLoadingState> {
-                        emit(TemplateLoadingState.Loading)
-                    }
-                    .map {
-                        EditTemplateState(it) to null
-                    }
+            .map {
+                val newChecklistTemplate = ChecklistTemplate(
+                    ChecklistTemplateId(0),
+                    "New checklist template",
+                    "Checklist description",
+                    listOf(
+                        TemplateCheckbox(TemplateCheckboxId(0), null, "Checkbox 1", listOf()),
+                        TemplateCheckbox(TemplateCheckboxId(0), null, "Checkbox 2", listOf())
+                    ),
+                    LocalDateTime.now()
+                )
+                EditTemplateState(TemplateLoadingState.Success.fromTemplate(newChecklistTemplate)) to null
             }
     }
 
@@ -173,7 +177,9 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.DeleteTemplateClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
-                deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
+                if (loadingState.checklistTemplate.isStored) {
+                    deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
+                }
                 null to EditTemplateEffect.CloseScreen
             }
     }

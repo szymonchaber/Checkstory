@@ -8,7 +8,11 @@ data class ChecklistTemplate(
     val description: String,
     val items: List<TemplateCheckbox>,
     val createdAt: LocalDateTime
-)
+) {
+
+    val isStored: Boolean
+        get() = id.id != 0L
+}
 
 data class TemplateCheckbox(
     val id: TemplateCheckboxId,

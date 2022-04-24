@@ -12,7 +12,5 @@ interface ChecklistTemplateRepository {
 
     suspend fun update(checklistTemplate: ChecklistTemplate)
 
-    fun create(): Flow<ChecklistTemplate>
-
     suspend fun delete(checklistTemplate: ChecklistTemplate)
 }
