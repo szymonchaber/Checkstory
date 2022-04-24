@@ -116,6 +116,6 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     suspend fun deleteTemplateCheckbox(templateCheckbox: TemplateCheckbox) {
-        templateCheckboxDao.delete(templateCheckbox.id.id)
+        templateCheckboxDao.deleteCascading(templateCheckbox.id.id)
     }
 }
