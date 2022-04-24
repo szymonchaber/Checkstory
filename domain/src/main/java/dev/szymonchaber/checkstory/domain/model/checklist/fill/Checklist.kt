@@ -11,4 +11,8 @@ data class Checklist(
     val items: List<Checkbox>,
     val notes: String,
     val createdAt: LocalDateTime
-)
+) {
+
+    val isStored: Boolean
+        get() = id.id != 0L
+}

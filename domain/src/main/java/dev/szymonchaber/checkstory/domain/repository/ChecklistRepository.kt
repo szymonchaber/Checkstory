@@ -8,9 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChecklistRepository {
 
-    fun createAndGet(basedOn: ChecklistTemplate): Flow<Checklist>
-
-    suspend fun update(checklist: Checklist)
+    suspend fun save(checklist: Checklist)
 
     fun getChecklist(checklistId: ChecklistId): Flow<Checklist>
 

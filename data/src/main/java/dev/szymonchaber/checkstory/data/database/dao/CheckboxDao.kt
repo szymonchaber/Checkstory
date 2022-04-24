@@ -13,7 +13,7 @@ interface CheckboxDao {
     @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checkboxId = :checkboxId")
     suspend fun getById(checkboxId: Long): CheckboxEntity
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(checkbox: CheckboxEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

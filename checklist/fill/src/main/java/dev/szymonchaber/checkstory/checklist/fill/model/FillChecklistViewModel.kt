@@ -2,10 +2,11 @@ package dev.szymonchaber.checkstory.checklist.fill.model
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistUseCase
+import dev.szymonchaber.checkstory.domain.usecase.SaveChecklistUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -20,7 +21,7 @@ import javax.inject.Inject
 class FillChecklistViewModel @Inject constructor(
     private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
-    private val updateChecklistUseCase: UpdateChecklistUseCase,
+    private val saveChecklistUseCase: SaveChecklistUseCase,
     private val deleteChecklistUseCase: DeleteChecklistUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
@@ -129,7 +130,20 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.SaveChecklistClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                updateChecklistUseCase.updateChecklist(success.checklist)
+                val checklistToStore = if (success.checklist.isStored) {
+                    success.checklist
+                } else {
+                    val itemsWithoutTemporaryIds = success.checklist.items.map { checkbox ->
+                        checkbox.copy(
+                            id = CheckboxId(0),
+                            children = checkbox.children.map {
+                                it.copy(id = CheckboxId(0))
+                            }
+                        )
+                    }
+                    success.checklist.copy(items = itemsWithoutTemporaryIds)
+                }
+                saveChecklistUseCase.saveChecklist(checklistToStore)
                 null to FillChecklistEffect.CloseScreen
             }
     }
@@ -138,7 +152,9 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.DeleteChecklistClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                deleteChecklistUseCase.deleteChecklist(success.checklist)
+                if (success.checklist.isStored) {
+                    deleteChecklistUseCase.deleteChecklist(success.checklist)
+                }
                 null to FillChecklistEffect.CloseScreen
             }
     }

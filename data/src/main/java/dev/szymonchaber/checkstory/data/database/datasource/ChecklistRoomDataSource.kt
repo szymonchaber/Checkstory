@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -29,6 +30,7 @@ class ChecklistRoomDataSource @Inject constructor(
         return checklistDao.getById(id)
             .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklist)
+            .take(1)
     }
 
     fun getAll(): Flow<List<Checklist>> {
@@ -37,15 +39,6 @@ class ChecklistRoomDataSource @Inject constructor(
     }
 
     private fun getCheckboxes(checklistId: Long) = checklistDao.getCheckboxesForChecklist(checklistId)
-
-    suspend fun update(checklist: Checklist) {
-        val checkboxes = checklist.items.flatMap {
-            listOf(it) + it.children
-        }.map(CheckboxEntity.Companion::fromDomainCheckbox)
-        checkboxDao.insertAll(*checkboxes.toTypedArray())
-
-        checklistDao.update(ChecklistEntity.fromDomainChecklist(checklist))
-    }
 
     suspend fun insert(checklist: Checklist): Long {
         val checklistId = checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
