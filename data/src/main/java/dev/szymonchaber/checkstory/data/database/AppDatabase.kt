@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.data.database
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -19,7 +20,11 @@ import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
         ChecklistEntity::class,
         CheckboxEntity::class
     ],
-    version = 1
+    version = 3,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3)
+    ]
 )
 @TypeConverters(value = [Converters::class])
 abstract class AppDatabase : RoomDatabase() {

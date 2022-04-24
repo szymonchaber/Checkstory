@@ -1,6 +1,11 @@
 package dev.szymonchaber.checkstory.checklist.catalog.recent
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -69,8 +74,8 @@ fun RecentChecklistItem(
 @Composable
 fun RecentChecklistItemPreview() {
     val items = listOf(
-        Checkbox(CheckboxId(0), ChecklistId(0), "Check this", true),
-        Checkbox(CheckboxId(0), ChecklistId(0), "Do not check that", false)
+        Checkbox(CheckboxId(0), null, ChecklistId(0), "Check this", true, listOf()),
+        Checkbox(CheckboxId(0), null, ChecklistId(0), "Do not check that", false, listOf())
     )
     val checklist = Checklist(
         ChecklistId(0),

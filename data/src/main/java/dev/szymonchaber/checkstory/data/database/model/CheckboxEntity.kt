@@ -12,15 +12,18 @@ data class CheckboxEntity(
     val checkboxId: Long,
     val checklistId: Long,
     val checkboxTitle: String,
-    val isChecked: Boolean
+    val isChecked: Boolean,
+    val parentId: Long?
 ) {
 
-    fun toDomainCheckbox(): Checkbox {
+    fun toDomainCheckbox(children: List<Checkbox>): Checkbox {
         return Checkbox(
             CheckboxId(checkboxId),
+            parentId?.let(::CheckboxId),
             ChecklistId(checklistId),
             checkboxTitle,
-            isChecked
+            isChecked,
+            children
         )
     }
 
@@ -32,7 +35,8 @@ data class CheckboxEntity(
                     checkboxId = id.id,
                     checklistId = checklistId.id,
                     checkboxTitle = title,
-                    isChecked = isChecked
+                    isChecked = isChecked,
+                    parentId = parentId?.id
                 )
             }
         }

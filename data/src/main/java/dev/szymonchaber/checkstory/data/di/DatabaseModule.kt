@@ -58,8 +58,8 @@ object DatabaseModule {
                     )
                 )
                 templateCheckboxDao.insertAll(
-                    TemplateCheckboxEntity(1, 1, "Checkbox item"),
-                    TemplateCheckboxEntity(2, 1, "Checkbox item 2")
+                    TemplateCheckboxEntity(1, 1, "Checkbox item", null),
+                    TemplateCheckboxEntity(2, 1, "Checkbox item 2", null)
                 )
                 insert {
                     checklist(1, 1, "This was an awesome session") {
@@ -115,7 +115,7 @@ class InsertDsl {
         val checkboxes = mutableListOf<Checkbox>()
 
         fun checkbox(id: Long, title: String, isChecked: Boolean = false) {
-            checkboxes.add(Checkbox(CheckboxId(id), ChecklistId(0), title, isChecked))
+            checkboxes.add(Checkbox(CheckboxId(id), null, ChecklistId(0), title, isChecked, listOf()))
         }
     }
 
@@ -142,7 +142,8 @@ class InsertDsl {
                                 it.id.id,
                                 checklistId,
                                 it.title,
-                                it.isChecked
+                                it.isChecked,
+                                it.parentId?.id
                             )
                         }.toTypedArray()
                     )

@@ -16,6 +16,9 @@ sealed class FillChecklistEvent {
 
     data class NotesChanged(val notes: String) : FillChecklistEvent()
 
+    data class ChildCheckChanged(val checkbox: Checkbox, val child: Checkbox, val newCheck: Boolean) :
+        FillChecklistEvent()
+
     object SaveChecklistClicked : FillChecklistEvent()
 
     object DeleteChecklistClicked : FillChecklistEvent()
