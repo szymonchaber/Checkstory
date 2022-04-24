@@ -107,14 +107,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ItemRemoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                when (event.checkbox) {
-                    is ViewTemplateCheckbox.Existing -> {
-//                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
-                    }
-                    is ViewTemplateCheckbox.New -> Unit
-                }
-                val newLoadingState = loadingState.minusCheckbox(event.checkbox)
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.minusCheckbox(event.checkbox)) to null
             }
     }
 
@@ -138,12 +131,6 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ChildItemDeleted>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                when (event.child) {
-                    is ViewTemplateCheckbox.Existing -> {
-//                        deleteTemplateCheckboxUseCase.deleteTemplateCheckbox(event.checkbox.toDomainModel())
-                    }
-                    is ViewTemplateCheckbox.New -> Unit
-                }
                 EditTemplateState(loadingState.minusChildCheckbox(event.checkbox, event.child)) to null
             }
     }

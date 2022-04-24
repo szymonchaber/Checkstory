@@ -44,7 +44,7 @@ sealed interface TemplateLoadingState {
 
         fun plusChildCheckbox(parent: ViewTemplateCheckbox, title: String): Success {
             return copy(
-                checkboxes = checkboxes.updateById(parent.id) {
+                checkboxes = checkboxes.update(parent) {
                     it.plusChildCheckbox(title)
                 }
             )
@@ -52,7 +52,7 @@ sealed interface TemplateLoadingState {
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
             return copy(
-                checkboxes = checkboxes.updateById(checkbox.id) {
+                checkboxes = checkboxes.update(checkbox) {
                     it.withUpdatedTitle(title)
                 }
             )
@@ -64,7 +64,7 @@ sealed interface TemplateLoadingState {
             title: String
         ): Success {
             return copy(
-                checkboxes = checkboxes.updateById(parent.id) {
+                checkboxes = checkboxes.update(parent) {
                     it.editChildCheckboxTitle(child, title)
                 }
             )
@@ -78,7 +78,7 @@ sealed interface TemplateLoadingState {
                 checkboxesToDelete
             }
             return copy(
-                checkboxes = checkboxes.updateById(parent.id) {
+                checkboxes = checkboxes.update(parent) {
                     it.minusChildCheckbox(viewTemplateCheckbox)
                 },
                 checkboxesToDelete = updatedCheckboxesToDelete

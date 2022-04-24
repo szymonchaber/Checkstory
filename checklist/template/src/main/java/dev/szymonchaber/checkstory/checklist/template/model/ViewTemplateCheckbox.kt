@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.common.extensions.updateById
+import dev.szymonchaber.checkstory.common.extensions.update
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
@@ -59,7 +59,7 @@ sealed interface ViewTemplateCheckbox {
 
         override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
             return copy(
-                children = children.updateById(child.id) {
+                children = children.update(child) {
                     it.withUpdatedTitle(title)
                 }
             )
@@ -104,7 +104,7 @@ sealed interface ViewTemplateCheckbox {
 
         override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
             return copy(
-                children = children.updateById(child.id) {
+                children = children.update(child) {
                     it.withUpdatedTitle(title)
                 }
             )
@@ -126,9 +126,9 @@ sealed interface ViewTemplateCheckbox {
     }
 }
 
-fun List<ViewTemplateCheckbox>.updateById(
-    id: TemplateCheckboxId,
+fun List<ViewTemplateCheckbox>.update(
+    viewTemplateCheckbox: ViewTemplateCheckbox,
     updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
 ): List<ViewTemplateCheckbox> {
-    return updateById(id, ViewTemplateCheckbox::id, updater)
+    return update(viewTemplateCheckbox, { it }, updater)
 }
