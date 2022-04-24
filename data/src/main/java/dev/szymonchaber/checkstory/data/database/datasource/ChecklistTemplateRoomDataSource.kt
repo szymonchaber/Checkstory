@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
@@ -28,6 +29,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         return checklistTemplateDao.getById(id)
             .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklistTemplate)
+            .take(1)
     }
 
     fun getAll(): Flow<List<ChecklistTemplate>> {
