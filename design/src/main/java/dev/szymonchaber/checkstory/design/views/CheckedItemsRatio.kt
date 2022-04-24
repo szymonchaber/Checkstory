@@ -22,8 +22,11 @@ fun CheckedItemsRatio(
     Row(
         modifier = modifier
     ) {
-        val checkedCount = checklist.items.count { it.isChecked }
-        val allCount = checklist.items.count()
+        val flattenedItems = checklist.items.flatMap {
+            listOf(it) + it.children
+        }
+        val checkedCount = flattenedItems.count { it.isChecked }
+        val allCount = flattenedItems.count()
         val ratio = "$checkedCount/$allCount"
         Text(
             modifier = Modifier.align(Alignment.CenterVertically),
