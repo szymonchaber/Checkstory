@@ -112,7 +112,10 @@ fun EditTemplateView(
     checkboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyColumn(
+        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 144.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
