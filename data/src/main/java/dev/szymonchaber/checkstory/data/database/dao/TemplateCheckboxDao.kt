@@ -16,7 +16,7 @@ interface TemplateCheckboxDao {
     @Query("SELECT * FROM templateCheckboxEntity WHERE templateCheckboxEntity.templateId=:templateId")
     fun getAllForChecklistTemplate(templateId: Long): Flow<List<TemplateCheckboxEntity>>
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(templateCheckbox: TemplateCheckboxEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

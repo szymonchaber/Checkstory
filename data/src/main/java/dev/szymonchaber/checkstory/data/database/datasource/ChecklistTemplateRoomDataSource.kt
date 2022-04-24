@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -44,23 +45,28 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         val checklistTemplateId = checklistTemplateDao.insert(
             ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
         )
-        templateCheckboxDao.insertAll(
-            // TODO how does it know its parent id?
-            *flattenWithChildren(checklistTemplate)
-                .map {
-                    TemplateCheckboxEntity.fromDomainTemplateCheckbox(
-                        it,
-                        checklistTemplateId
-                    )
-                }
-                .toTypedArray()
-        )
+        insertTemplateCheckboxes(checklistTemplate.items, checklistTemplateId)
         return checklistTemplateId
     }
 
-    private fun flattenWithChildren(checklistTemplate: ChecklistTemplate): List<TemplateCheckbox> {
-        return checklistTemplate.items.flatMap {
-            listOf(it).plus(it.children)
+    private suspend fun insertTemplateCheckboxes(checkboxes: List<TemplateCheckbox>, checklistTemplateId: Long) {
+        checkboxes.forEach {
+            withContext(Dispatchers.Default) {
+                launch {
+                    val parentId =
+                        templateCheckboxDao.insert(
+                            TemplateCheckboxEntity.fromDomainTemplateCheckbox(
+                                it,
+                                checklistTemplateId
+                            )
+                        )
+                    val children = it.children.map { child ->
+                        TemplateCheckboxEntity.fromDomainTemplateCheckbox(child, checklistTemplateId)
+                            .copy(parentId = parentId)
+                    }
+                    templateCheckboxDao.insertAll(*children.toTypedArray())
+                }
+            }
         }
     }
 
