@@ -92,7 +92,7 @@ private fun ChecklistCatalogView(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            RecentChecklistsView(state.recentChecklistsLoadingState) { viewModel.onEvent(it) }
+            RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
         }
         item {
             Text(
