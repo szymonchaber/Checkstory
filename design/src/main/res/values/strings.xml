@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="delete">Delete</string>
+    <string name="checkstory">Checkstory</string>
+    <string name="recent_checklists">Recent checklists</string>
+    <string name="loading">Loading</string>
+    <string name="templates">Templates</string>
+    <string name="recent_checklists_empty">No checklists filled yet.\nPick something below 👇</string>
+    <string name="templates_empty">No checklists templates created yet.\nCreate one by clicking \"+\" button</string>
+    <string name="checklist_history">Checklist history</string>
+    <string name="checklist_history_empty">No checklists filled for this template yet</string>
+    <string name="checklist">Checklist</string>
+    <string name="items">Items</string>
+    <string name="notes">Notes</string>
+    <string name="edit_template">Edit template</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="new_checkbox">New checkbox</string>
 </resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="delete">Usuń</string>
+    <string name="checkstory">Checkstory</string>
+    <string name="recent_checklists">Ostatnie listy kontrolne</string>
+    <string name="loading">Ładowanie</string>
+    <string name="templates">Szablony</string>
+    <string name="templates_empty">Nie masz utworzonych szablonów.\nStwórz nowy klikając przycisk \"+\"</string>
+    <string name="checklist_history">Historia list kontrolnych</string>
+    <string name="checklist_history_empty">Niew masz list kontrolnych dla tego szablonu</string>
+    <string name="checklist">Lista kontrol</string>
+    <string name="items">Elementy</string>
+    <string name="notes">Notatki</string>
+    <string name="recent_checklists_empty">Nie masz żadnej wypełnionej listy kontrolnej.\nWybierz coś poniżej 👇</string>
+    <string name="edit_template">Edytuj szablon</string>
+    <string name="title">Tytuł</string>
+    <string name="description">Opis</string>
+    <string name="new_checkbox">Nowe pole wyboru</string>
+</resources>

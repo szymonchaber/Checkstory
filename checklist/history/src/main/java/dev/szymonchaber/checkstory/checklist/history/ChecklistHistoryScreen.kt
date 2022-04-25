@@ -26,6 +26,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -113,7 +114,8 @@ fun NoChecklistsInHistoryView() {
             modifier = Modifier
                 .padding(all = 24.dp)
                 .align(alignment = Alignment.Center),
-            text = "No checklists filled for this template yet"
+            textAlign = TextAlign.Center,
+            text = stringResource(R.string.checklist_history_empty)
         )
     }
 }

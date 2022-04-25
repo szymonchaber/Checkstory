@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.R
@@ -63,7 +64,8 @@ fun NoRecentChecklistsView() {
             modifier = Modifier
                 .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 8.dp)
                 .align(alignment = Alignment.Center),
-            text = "No checklists filled yet.\nPick something below 👇"
+            textAlign = TextAlign.Center,
+            text = stringResource(id = R.string.recent_checklists_empty)
         )
     }
 }

@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -72,7 +73,7 @@ fun EditTemplateScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = "Edit template")
+                    Text(text = stringResource(R.string.edit_template))
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -149,7 +150,7 @@ private fun ChecklistTemplateDetails(
 ) {
     TextField(
         value = checklistTemplate.title,
-        label = { Text(text = "Title") },
+        label = { Text(text = stringResource(R.string.title)) },
         onValueChange = {
             eventCollector(EditTemplateEvent.TitleChanged(it))
         },
@@ -158,7 +159,7 @@ private fun ChecklistTemplateDetails(
     )
     TextField(
         value = checklistTemplate.description,
-        label = { Text(text = "Description") },
+        label = { Text(text = stringResource(R.string.description)) },
         onValueChange = {
             eventCollector(EditTemplateEvent.DescriptionChanged(it))
         },
@@ -169,6 +170,6 @@ private fun ChecklistTemplateDetails(
     Text(
         modifier = Modifier.padding(top = 16.dp),
         style = MaterialTheme.typography.caption,
-        text = "Items",
+        text = stringResource(R.string.items),
     )
 }

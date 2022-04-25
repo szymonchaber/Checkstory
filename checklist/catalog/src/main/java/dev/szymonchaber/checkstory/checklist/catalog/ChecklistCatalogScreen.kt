@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -147,7 +148,8 @@ fun NoChecklistTemplatesView() {
             modifier = Modifier
                 .padding(all = 24.dp)
                 .align(alignment = Alignment.Center),
-            text = "No checklists templates created yet.\nCreate one by clicking \"+\" button"
+            textAlign = TextAlign.Center,
+            text = stringResource(id = R.string.templates_empty)
         )
     }
 }
