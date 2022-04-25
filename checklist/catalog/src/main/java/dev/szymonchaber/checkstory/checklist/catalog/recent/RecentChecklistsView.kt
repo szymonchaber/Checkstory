@@ -61,9 +61,9 @@ fun NoRecentChecklistsView() {
     ) {
         Text(
             modifier = Modifier
-                .padding(all = 24.dp)
+                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 8.dp)
                 .align(alignment = Alignment.Center),
-            text = "No checklists filled yet. Pick something below 👇"
+            text = "No checklists filled yet.\nPick something below 👇"
         )
     }
 }

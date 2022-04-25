@@ -1,10 +1,14 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -17,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -103,17 +108,46 @@ private fun ChecklistCatalogView(
                 style = MaterialTheme.typography.h5
             )
         }
-        when (val loadingState = state.templatesLoadingState) {
-            ChecklistCatalogLoadingState.Loading -> {
-                item {
-                    LoadingView()
-                }
+        checklistTemplates(state, viewModel)
+    }
+}
+
+private fun LazyListScope.checklistTemplates(
+    state: ChecklistCatalogState,
+    viewModel: ChecklistCatalogViewModel
+) {
+    when (val loadingState = state.templatesLoadingState) {
+        ChecklistCatalogLoadingState.Loading -> {
+            item {
+                LoadingView()
             }
-            is ChecklistCatalogLoadingState.Success -> {
+        }
+        is ChecklistCatalogLoadingState.Success -> {
+            if (loadingState.checklistTemplates.isEmpty()) {
+                item {
+                    NoChecklistTemplatesView()
+                }
+            } else {
                 items(loadingState.checklistTemplates) {
                     ChecklistTemplateView(it, viewModel::onEvent)
                 }
             }
         }
+    }
+}
+
+@Composable
+fun NoChecklistTemplatesView() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+    ) {
+        Text(
+            modifier = Modifier
+                .padding(all = 24.dp)
+                .align(alignment = Alignment.Center),
+            text = "No checklists templates created yet.\nCreate one by clicking \"+\" button"
+        )
     }
 }
