@@ -40,7 +40,8 @@ class TemplateLoadingStateTest {
                 "Template",
                 "Description",
                 list,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                listOf()
             )
         )
     }

@@ -47,7 +47,7 @@ fun RecentChecklistsView(
             if (state.checklists.isEmpty()) {
                 NoRecentChecklistsView()
             } else {
-                RecentChecklists(state, eventListener)
+                RecentChecklists(state.checklists, eventListener)
             }
         }
     }
@@ -71,15 +71,15 @@ fun NoRecentChecklistsView() {
 }
 
 @Composable
-private fun RecentChecklists(
-    state: RecentChecklistsLoadingState.Success,
+fun RecentChecklists(
+    checklists: List<Checklist>,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     LazyRow(
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(state.checklists) {
+        items(checklists) {
             RecentChecklistItem(it, eventListener)
         }
     }
