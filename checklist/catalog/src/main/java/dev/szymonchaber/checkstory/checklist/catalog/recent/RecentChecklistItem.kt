@@ -30,11 +30,12 @@ import java.time.LocalDateTime
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun RecentChecklistItem(
+    modifier: Modifier = Modifier,
     checklist: Checklist,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .widthIn(max = 200.dp),
         elevation = 4.dp,
         onClick = {
@@ -86,5 +87,5 @@ fun RecentChecklistItemPreview() {
         "Awesome session!",
         LocalDateTime.now()
     )
-    RecentChecklistItem(checklist = checklist, eventListener = {})
+    RecentChecklistItem(checklist = checklist) {}
 }

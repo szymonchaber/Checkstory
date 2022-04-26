@@ -1,9 +1,12 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
@@ -11,14 +14,20 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
+import dev.szymonchaber.checkstory.checklist.catalog.recent.ChecklistsCarousel
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
@@ -32,6 +41,7 @@ fun ChecklistTemplateView(
     checklistTemplate: ChecklistTemplate,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
+    var isCollapsed by remember { mutableStateOf(true) }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -39,10 +49,13 @@ fun ChecklistTemplateView(
             .padding(top = 8.dp),
         elevation = 4.dp,
         onClick = {
-            eventListener(ChecklistCatalogEvent.TemplateClicked(checklistTemplate.id))
+            isCollapsed = !isCollapsed
         }
     ) {
-        Column {
+        Column(
+            modifier = Modifier
+                .animateContentSize()
+        ) {
             Text(
                 modifier = Modifier.padding(16.dp),
                 text = checklistTemplate.title,
@@ -77,6 +90,29 @@ fun ChecklistTemplateView(
                     Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
                 }
             }
+            if (!isCollapsed) {
+                ChecklistsCarousel(checklistTemplate.checklists, eventListener) {
+                    Box {
+                        Card(
+                            modifier = Modifier
+                                .size(width = 90.dp, height = 134.dp)
+                                .align(Alignment.Center),
+                            elevation = 4.dp,
+                            onClick = { eventListener(ChecklistCatalogEvent.TemplateClicked(checklistTemplate.id)) }
+                        ) {
+                            Box {
+                                Icon(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .align(Alignment.Center),
+                                    imageVector = Icons.Filled.Add,
+                                    contentDescription = "Add"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -97,7 +133,8 @@ fun ChecklistTemplateViewPreview() {
                     listOf()
                 )
             ),
-            LocalDateTime.now()
+            LocalDateTime.now(),
+            listOf()
         ),
         eventListener = {}
     )

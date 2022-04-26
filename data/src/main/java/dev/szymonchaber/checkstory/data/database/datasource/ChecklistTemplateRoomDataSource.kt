@@ -5,15 +5,16 @@ import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -22,7 +23,8 @@ import javax.inject.Inject
 
 class ChecklistTemplateRoomDataSource @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
-    private val templateCheckboxDao: TemplateCheckboxDao
+    private val templateCheckboxDao: TemplateCheckboxDao,
+    private val checklistRoomDataSource: ChecklistRoomDataSource
 ) {
 
     fun getById(id: Long): Flow<ChecklistTemplate> {
@@ -73,14 +75,17 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     private fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {
-        return templateCheckboxDao.getAllForChecklistTemplate(entity.id).map { checkboxes ->
-            mapChecklistTemplate(entity, checkboxes)
+        val checkboxesFlow = templateCheckboxDao.getAllForChecklistTemplate(entity.id)
+        val checklistsFlow = checklistRoomDataSource.getBasedOn(ChecklistTemplateId(entity.id))
+        return checkboxesFlow.combine(checklistsFlow) { checkboxes, checklists ->
+            mapChecklistTemplate(entity, checkboxes, checklists)
         }
     }
 
     private fun mapChecklistTemplate(
         template: ChecklistTemplateEntity,
-        checkboxes: List<TemplateCheckboxEntity>
+        checkboxes: List<TemplateCheckboxEntity>,
+        checklists: List<Checklist>
     ): ChecklistTemplate {
         return with(template) {
             ChecklistTemplate(
@@ -88,7 +93,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 title,
                 description,
                 groupToDomain(checkboxes),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                checklists
             )
         }
     }
