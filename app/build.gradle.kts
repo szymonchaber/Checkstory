@@ -77,6 +77,7 @@ dependencies {
     implementation(project(":checklist:template"))
     implementation(project(":checklist:fill"))
     implementation(project(":checklist:history"))
+    implementation(project(":notifications"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)

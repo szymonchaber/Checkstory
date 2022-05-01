@@ -63,7 +63,7 @@ class Dependencies : Plugin<Project> {
         val analytics = "com.google.firebase:firebase-analytics-ktx"
         val crashlytics = "com.google.firebase:firebase-crashlytics"
         val performance = "com.google.firebase:firebase-perf"
-
+        val messaging = "com.google.firebase:firebase-messaging-ktx"
 
         val unitTest = listOf(
             "junit:junit:4.13.2",
