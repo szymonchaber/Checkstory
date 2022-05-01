@@ -12,8 +12,8 @@ import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -148,7 +148,8 @@ private fun ChecklistTemplateDetails(
     checklistTemplate: ChecklistTemplate,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    TextField(
+    OutlinedTextField(
+
         value = checklistTemplate.title,
         label = { Text(text = stringResource(R.string.title)) },
         onValueChange = {
@@ -157,7 +158,7 @@ private fun ChecklistTemplateDetails(
         modifier = Modifier.fillMaxWidth(),
         textStyle = MaterialTheme.typography.h4,
     )
-    TextField(
+    OutlinedTextField(
         value = checklistTemplate.description,
         label = { Text(text = stringResource(R.string.description)) },
         onValueChange = {
