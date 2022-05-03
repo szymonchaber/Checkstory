@@ -61,6 +61,7 @@ import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -142,11 +143,7 @@ private fun EditTemplateScaffold(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent) {
-                        scope.launch {
-                            modalBottomSheetState.show()
-                        }
-                    }
+                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent)
                 }
             }
         },
@@ -166,8 +163,7 @@ private fun EditTemplateScaffold(
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
     checkboxes: List<ViewTemplateCheckbox>,
-    eventCollector: (EditTemplateEvent) -> Unit,
-    onReminderClicked: () -> Unit
+    eventCollector: (EditTemplateEvent) -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 144.dp),
@@ -186,7 +182,7 @@ fun EditTemplateView(
             AddCheckboxButton(onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) })
         }
         item {
-            RemindersSection(eventCollector)
+            RemindersSection(checklistTemplate, eventCollector)
         }
         item {
             Box(Modifier.fillMaxWidth()) {
@@ -204,10 +200,14 @@ fun EditTemplateView(
 
 @Composable
 private fun RemindersSection(
+    checklistTemplate: ChecklistTemplate,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(stringResource(id = R.string.reminders_label))
+        checklistTemplate.reminders.forEach {
+            ReminderItem(it, eventCollector)
+        }
         AddButton(
             modifier = Modifier.padding(top = 8.dp),
             onClick = {
@@ -215,6 +215,20 @@ private fun RemindersSection(
             },
             text = stringResource(R.string.new_reminder)
         )
+    }
+}
+
+@Composable
+fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit) {
+    when (reminder) {
+        is Reminder.Exact -> {
+            Text(
+                modifier = Modifier.clickable {
+                    eventCollector(EditTemplateEvent.AddReminderClicked)
+                },
+                text = reminder.dateTime.toString()
+            )
+        }
     }
 }
 
