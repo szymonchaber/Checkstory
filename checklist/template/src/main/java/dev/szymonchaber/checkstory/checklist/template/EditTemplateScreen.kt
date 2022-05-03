@@ -1,29 +1,49 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package dev.szymonchaber.checkstory.checklist.template
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -41,6 +61,8 @@ import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Destination("edit_template_screen", start = true)
 @Composable
@@ -69,6 +91,29 @@ fun EditTemplateScreen(
             null -> Unit
         }
     }
+    val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
+    ModalBottomSheetLayout(
+        sheetContent = {
+            BottomSheetContent()
+        },
+        sheetState = modalBottomSheetState,
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetBackgroundColor = Color.White,
+        // scrimColor = Color.Red,  // Color for the fade background when you open/close the drawer
+    ) {
+        EditTemplateScaffold(navController, state, viewModel, scope, modalBottomSheetState)
+    }
+}
+
+@Composable
+private fun EditTemplateScaffold(
+    navController: NavController,
+    state: EditTemplateState,
+    viewModel: EditTemplateViewModel,
+    scope: CoroutineScope,
+    modalBottomSheetState: ModalBottomSheetState
+) {
     AdvertScaffold(
         topBar = {
             TopAppBar(
@@ -91,7 +136,11 @@ fun EditTemplateScreen(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent)
+                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent) {
+                        scope.launch {
+                            modalBottomSheetState.show()
+                        }
+                    }
                 }
             }
         },
@@ -111,7 +160,8 @@ fun EditTemplateScreen(
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
     checkboxes: List<ViewTemplateCheckbox>,
-    eventCollector: (EditTemplateEvent) -> Unit
+    eventCollector: (EditTemplateEvent) -> Unit,
+    onReminderClicked: () -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 144.dp),
@@ -128,6 +178,20 @@ fun EditTemplateView(
         }
         item {
             AddCheckboxButton(onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) })
+        }
+        item {
+            Box(Modifier.fillMaxWidth()) {
+                Button(
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .align(Alignment.TopCenter),
+                    onClick = {
+                        onReminderClicked()
+                    }
+                ) {
+                    Text("Reminder")
+                }
+            }
         }
         item {
             Box(Modifier.fillMaxWidth()) {
@@ -149,7 +213,6 @@ private fun ChecklistTemplateDetails(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     OutlinedTextField(
-
         value = checklistTemplate.title,
         label = { Text(text = stringResource(R.string.title)) },
         onValueChange = {
@@ -173,4 +236,35 @@ private fun ChecklistTemplateDetails(
         style = MaterialTheme.typography.caption,
         text = stringResource(R.string.items),
     )
+}
+
+@Composable
+fun BottomSheetListItem(title: String, onItemClick: (String) -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = { onItemClick(title) })
+            .height(55.dp)
+            .background(color = MaterialTheme.colors.primary)
+            .padding(start = 15.dp), verticalAlignment = Alignment.CenterVertically
+    ) {
+        Spacer(modifier = Modifier.width(20.dp))
+        Text(text = title, color = Color.White)
+    }
+}
+
+@Composable
+fun BottomSheetContent() {
+    val context = LocalContext.current
+    Column {
+        BottomSheetListItem(
+            title = "Share",
+            onItemClick = { title ->
+                Toast.makeText(
+                    context,
+                    title,
+                    Toast.LENGTH_SHORT
+                ).show()
+            })
+    }
 }
