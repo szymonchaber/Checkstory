@@ -80,6 +80,9 @@ fun EditTemplateScreen(
         }
     }
 
+    val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
+
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
@@ -88,11 +91,14 @@ fun EditTemplateScreen(
             is EditTemplateEffect.CloseScreen -> {
                 navController.navigateUp()
             }
+            EditTemplateEffect.ShowAddReminderSheet -> {
+                scope.launch {
+                    modalBottomSheetState.show()
+                }
+            }
             null -> Unit
         }
     }
-    val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val scope = rememberCoroutineScope()
     ModalBottomSheetLayout(
         sheetContent = {
             BottomSheetContent()
@@ -180,18 +186,7 @@ fun EditTemplateView(
             AddCheckboxButton(onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) })
         }
         item {
-            Box(Modifier.fillMaxWidth()) {
-                Button(
-                    modifier = Modifier
-                        .padding(top = 16.dp)
-                        .align(Alignment.TopCenter),
-                    onClick = {
-                        onReminderClicked()
-                    }
-                ) {
-                    Text("Reminder")
-                }
-            }
+            RemindersSection(eventCollector)
         }
         item {
             Box(Modifier.fillMaxWidth()) {
@@ -203,6 +198,24 @@ fun EditTemplateView(
                     eventCollector(EditTemplateEvent.DeleteTemplateClicked)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RemindersSection(
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    Box(Modifier.fillMaxWidth()) {
+        Button(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .align(Alignment.TopCenter),
+            onClick = {
+                eventCollector(EditTemplateEvent.AddReminderClicked)
+            }
+        ) {
+            Text("Reminder")
         }
     }
 }

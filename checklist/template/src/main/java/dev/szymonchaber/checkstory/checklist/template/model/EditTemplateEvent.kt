@@ -26,6 +26,8 @@ sealed interface EditTemplateEvent {
 
     data class ChildItemDeleted(val checkbox: ViewTemplateCheckbox, val child: ViewTemplateCheckbox) : EditTemplateEvent
 
+    object AddReminderClicked : EditTemplateEvent
+
     object AddCheckboxClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent

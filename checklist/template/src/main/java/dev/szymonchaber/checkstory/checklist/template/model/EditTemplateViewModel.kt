@@ -48,7 +48,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleDeleteTemplateClicked(),
             eventFlow.handleChildItemAdded(),
             eventFlow.handleChildItemDeleted(),
-            eventFlow.handleChildItemChanged()
+            eventFlow.handleChildItemChanged(),
+            eventFlow.handleAddReminderClicked()
         )
     }
 
@@ -182,6 +183,14 @@ class EditTemplateViewModel @Inject constructor(
                     deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
                 }
                 null to EditTemplateEffect.CloseScreen
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleAddReminderClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.AddReminderClicked>()
+            .withSuccessState()
+            .map {
+                null to EditTemplateEffect.ShowAddReminderSheet
             }
     }
 
