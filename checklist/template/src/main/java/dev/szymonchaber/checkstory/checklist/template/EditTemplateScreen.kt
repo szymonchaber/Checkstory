@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
@@ -55,6 +54,7 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
 import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
+import dev.szymonchaber.checkstory.checklist.template.views.AddButton
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
@@ -206,17 +206,15 @@ fun EditTemplateView(
 private fun RemindersSection(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    Box(Modifier.fillMaxWidth()) {
-        Button(
-            modifier = Modifier
-                .padding(top = 16.dp)
-                .align(Alignment.TopCenter),
+    Column(Modifier.fillMaxWidth()) {
+        Text(stringResource(id = R.string.reminders_label))
+        AddButton(
+            modifier = Modifier.padding(top = 8.dp),
             onClick = {
                 eventCollector(EditTemplateEvent.AddReminderClicked)
-            }
-        ) {
-            Text("Reminder")
-        }
+            },
+            text = stringResource(R.string.new_reminder)
+        )
     }
 }
 

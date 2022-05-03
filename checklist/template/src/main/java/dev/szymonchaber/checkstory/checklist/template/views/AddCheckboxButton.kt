@@ -15,13 +15,19 @@ import dev.szymonchaber.checkstory.checklist.template.R
 
 @Composable
 fun AddCheckboxButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val text = stringResource(R.string.new_checkbox)
+    AddButton(modifier, onClick, text)
+}
+
+@Composable
+fun AddButton(modifier: Modifier, onClick: () -> Unit, text: String) {
     Row(modifier.clickable(onClick = onClick)) {
         IconButton(onClick) {
             Icon(Icons.Filled.Add, null)
         }
         Text(
             modifier = Modifier.align(Alignment.CenterVertically),
-            text = stringResource(R.string.new_checkbox)
+            text = text
         )
     }
 }

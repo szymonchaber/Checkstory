@@ -16,4 +16,6 @@
     <string name="title">Tytuł</string>
     <string name="description">Opis</string>
     <string name="new_checkbox">Nowe pole wyboru</string>
+    <string name="reminders_label">Przypomnienia</string>
+    <string name="new_reminder">Nowe przypomnienie</string>
 </resources>
