@@ -19,13 +19,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import java.util.*
 
 @Composable
 fun <T> MultiToggleButton(
-    currentSelection: ToggleOption<T>,
+    currentSelection: T,
     toggleStates: List<ToggleOption<T>>,
-    onToggleChange: (ToggleOption<T>) -> Unit,
+    onToggleChange: (T) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val shape = RoundedCornerShape(64.dp, 0.dp, 0.dp, 64.dp)
@@ -37,7 +36,7 @@ fun <T> MultiToggleButton(
             .height(IntrinsicSize.Min)
     ) {
         toggleStates.forEachIndexed { index, toggleState ->
-            val isSelected = currentSelection.text.lowercase() == toggleState.text.lowercase()
+            val isSelected = currentSelection == toggleState.tag
             val backgroundTint = if (isSelected) selectedTint else unselectedTint
             val textColor = if (isSelected) Color.White else Color.Unspecified
 
@@ -66,12 +65,12 @@ fun <T> MultiToggleButton(
                         enabled = true,
                         onValueChange = { selected ->
                             if (selected) {
-                                onToggleChange(toggleState)
+                                onToggleChange(toggleState.tag)
                             }
                         })
             ) {
                 Text(
-                    toggleState.text.capitalize(Locale.ROOT),
+                    toggleState.text,
                     textAlign = TextAlign.Center,
                     color = textColor,
                     modifier = Modifier.fillMaxWidth()

@@ -8,6 +8,7 @@ sealed class Reminder {
 
     abstract val id: ReminderId
     abstract val forTemplate: ChecklistTemplateId
+    abstract var reminderType: ReminderType
 
     val isStored: Boolean
         get() = id.id != 0L
@@ -15,9 +16,15 @@ sealed class Reminder {
     data class Exact(
         override val id: ReminderId,
         override val forTemplate: ChecklistTemplateId,
-        val dateTime: LocalDateTime
+        val dateTime: LocalDateTime,
+        override var reminderType: ReminderType = ReminderType.RECURRING
     ) : Reminder()
 }
 
 @JvmInline
 value class ReminderId(val id: Long) : Serializable
+
+enum class ReminderType {
+
+    EXACT, RECURRING
+}

@@ -46,7 +46,7 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewMode
 import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
-import dev.szymonchaber.checkstory.checklist.template.reminders.edit.BottomSheetContent
+import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
@@ -93,7 +93,7 @@ fun EditTemplateScreen(
     }
     ModalBottomSheetLayout(
         sheetContent = {
-            BottomSheetContent()
+            EditReminderScreen()
         },
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
