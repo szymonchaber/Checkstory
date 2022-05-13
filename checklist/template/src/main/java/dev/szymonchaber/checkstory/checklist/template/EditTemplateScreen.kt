@@ -2,20 +2,12 @@
 
 package dev.szymonchaber.checkstory.checklist.template
 
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,7 +34,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -54,14 +45,14 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
 import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
-import dev.szymonchaber.checkstory.checklist.template.views.AddButton
+import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
+import dev.szymonchaber.checkstory.checklist.template.reminders.edit.BottomSheetContent
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -199,40 +190,6 @@ fun EditTemplateView(
 }
 
 @Composable
-private fun RemindersSection(
-    checklistTemplate: ChecklistTemplate,
-    eventCollector: (EditTemplateEvent) -> Unit
-) {
-    Column(Modifier.fillMaxWidth()) {
-        Text(stringResource(id = R.string.reminders_label))
-        checklistTemplate.reminders.forEach {
-            ReminderItem(it, eventCollector)
-        }
-        AddButton(
-            modifier = Modifier.padding(top = 8.dp),
-            onClick = {
-                eventCollector(EditTemplateEvent.AddReminderClicked)
-            },
-            text = stringResource(R.string.new_reminder)
-        )
-    }
-}
-
-@Composable
-fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit) {
-    when (reminder) {
-        is Reminder.Exact -> {
-            Text(
-                modifier = Modifier.clickable {
-                    eventCollector(EditTemplateEvent.AddReminderClicked)
-                },
-                text = reminder.dateTime.toString()
-            )
-        }
-    }
-}
-
-@Composable
 private fun ChecklistTemplateDetails(
     checklistTemplate: ChecklistTemplate,
     eventCollector: (EditTemplateEvent) -> Unit
@@ -261,35 +218,4 @@ private fun ChecklistTemplateDetails(
         style = MaterialTheme.typography.caption,
         text = stringResource(R.string.items),
     )
-}
-
-@Composable
-fun BottomSheetListItem(title: String, onItemClick: (String) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = { onItemClick(title) })
-            .height(55.dp)
-            .background(color = MaterialTheme.colors.primary)
-            .padding(start = 15.dp), verticalAlignment = Alignment.CenterVertically
-    ) {
-        Spacer(modifier = Modifier.width(20.dp))
-        Text(text = title, color = Color.White)
-    }
-}
-
-@Composable
-fun BottomSheetContent() {
-    val context = LocalContext.current
-    Column {
-        BottomSheetListItem(
-            title = "Share",
-            onItemClick = { title ->
-                Toast.makeText(
-                    context,
-                    title,
-                    Toast.LENGTH_SHORT
-                ).show()
-            })
-    }
 }
