@@ -11,15 +11,14 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Inte
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.DayOfWeek
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
+import java.time.LocalDateTime
 
 @Entity
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true)
     val reminderId: Long,
     val templateId: Long,
-    val startDateUtc: ZonedDateTime,
+    val startDateUtc: LocalDateTime,
     val isRecurring: Boolean,
     val recurrencePattern: String?
 ) {
@@ -29,14 +28,14 @@ data class ReminderEntity(
             Reminder.Recurring(
                 ReminderId(reminderId),
                 ChecklistTemplateId(templateId),
-                startDateUtc.toLocalDateTime(), // TODO check if storage works correctly
+                startDateUtc, // TODO check if storage works correctly
                 parseInterval()
             )
         } else {
             Reminder.Exact(
                 ReminderId(reminderId),
                 ChecklistTemplateId(templateId),
-                startDateUtc.toLocalDateTime(), // TODO check if storage works correctly
+                startDateUtc, // TODO check if storage works correctly
             )
         }
     }
@@ -66,13 +65,13 @@ data class ReminderEntity(
 
     companion object {
 
-        fun fromDomainReminder(reminder: Reminder): ReminderEntity {
+        fun fromDomainReminder(reminder: Reminder, templateId: Long): ReminderEntity {
             return when (reminder) {
                 is Reminder.Exact -> {
                     ReminderEntity(
                         reminder.id.id,
-                        reminder.forTemplate.id,
-                        reminder.startDateTime.atZone(ZoneOffset.UTC), // TODO check if storage works correctly
+                        templateId,
+                        reminder.startDateTime, // TODO check if storage works correctly
                         false,
                         null
                     )
@@ -80,8 +79,8 @@ data class ReminderEntity(
                 is Reminder.Recurring -> {
                     ReminderEntity(
                         reminder.id.id,
-                        reminder.forTemplate.id,
-                        reminder.startDateTime.atZone(ZoneOffset.UTC), // TODO check if storage works correctly
+                        templateId,
+                        reminder.startDateTime, // TODO check if storage works correctly
                         true,
                         toRecurrencePattern(reminder.interval)
                     )

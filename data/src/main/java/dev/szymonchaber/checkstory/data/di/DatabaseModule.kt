@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.data.database.AppDatabase
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
@@ -101,6 +102,11 @@ object DatabaseModule {
     @Provides
     fun provideCheckboxDao(database: AppDatabase): CheckboxDao {
         return database.checkboxDao
+    }
+
+    @Provides
+    fun provideReminderDao(database: AppDatabase): ReminderDao {
+        return database.reminderDao
     }
 }
 

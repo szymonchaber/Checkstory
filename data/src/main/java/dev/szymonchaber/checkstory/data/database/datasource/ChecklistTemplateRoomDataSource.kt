@@ -1,15 +1,18 @@
 package dev.szymonchaber.checkstory.data.database.datasource
 
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
+import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -24,6 +27,7 @@ import javax.inject.Inject
 class ChecklistTemplateRoomDataSource @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
     private val templateCheckboxDao: TemplateCheckboxDao,
+    private val reminderDao: ReminderDao,
     private val checklistRoomDataSource: ChecklistRoomDataSource
 ) {
 
@@ -50,7 +54,19 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
         )
         insertTemplateCheckboxes(checklistTemplate.items, checklistTemplateId)
+        insertReminders(checklistTemplate.reminders, checklistTemplateId)
         return checklistTemplateId
+    }
+
+    private suspend fun insertReminders(reminders: List<Reminder>, checklistTemplateId: Long) {
+        withContext(Dispatchers.Default) {
+            launch {
+                val reminderEntities = reminders.map {
+                    ReminderEntity.fromDomainReminder(it, checklistTemplateId)
+                }
+                reminderDao.insertAll(*reminderEntities.toTypedArray())
+            }
+        }
     }
 
     private suspend fun insertTemplateCheckboxes(checkboxes: List<TemplateCheckbox>, checklistTemplateId: Long) {
@@ -77,15 +93,17 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     private fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {
         val checkboxesFlow = templateCheckboxDao.getAllForChecklistTemplate(entity.id)
         val checklistsFlow = checklistRoomDataSource.getBasedOn(ChecklistTemplateId(entity.id))
-        return checkboxesFlow.combine(checklistsFlow) { checkboxes, checklists ->
-            mapChecklistTemplate(entity, checkboxes, checklists)
+        val remindersFlow = reminderDao.getAllForChecklistTemplate(entity.id)
+        return combine(checkboxesFlow, checklistsFlow, remindersFlow) { checkboxes, checklists, reminders ->
+            mapChecklistTemplate(entity, checkboxes, checklists, reminders)
         }
     }
 
     private fun mapChecklistTemplate(
         template: ChecklistTemplateEntity,
         checkboxes: List<TemplateCheckboxEntity>,
-        checklists: List<Checklist>
+        checklists: List<Checklist>,
+        reminders: List<ReminderEntity>
     ): ChecklistTemplate {
         return with(template) {
             ChecklistTemplate(
@@ -94,7 +112,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 description,
                 groupToDomain(checkboxes),
                 LocalDateTime.now(),
-                checklists
+                checklists,
+                reminders.map(ReminderEntity::toDomainReminder)
             )
         }
     }
@@ -125,6 +144,15 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 
     suspend fun delete(checklistTemplate: ChecklistTemplate) {
         checklistTemplateDao.delete(ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate))
+        deleteTemplateReminders(checklistTemplate.reminders)
+    }
+
+    private suspend fun deleteTemplateReminders(reminders: List<Reminder>) {
+        reminders.forEach {
+            withContext(Dispatchers.IO) {
+                reminderDao.deleteAllFromTemplate(it.id.id)
+            }
+        }
     }
 
     suspend fun deleteCheckboxesFromTemplate(checklistTemplate: ChecklistTemplate) {
