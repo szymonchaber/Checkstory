@@ -20,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.vanpra.composematerialdialogs.MaterialDialog
+import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import dev.szymonchaber.checkstory.checklist.template.R
@@ -32,6 +33,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Exact
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Recurring
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -112,10 +114,8 @@ fun ReminderTypeSelector(reminder: Reminder, onEvent: (EditReminderEvent) -> Uni
 
 @Composable
 fun ExactReminderView(reminder: Exact, onEvent: (EditReminderEvent) -> Unit) {
-    val dateFormatter = remember {
-        DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
-    }
     ReminderTimeSection(reminder, onEvent)
+    ReminderDateSection(reminder, onEvent)
 }
 
 @Composable
@@ -147,6 +147,43 @@ private fun ReminderTimeSection(
             },
         value = reminder.startDateTime.format(timeFormatter),
         label = { Text(text = "Time") }, // TODO string resource
+        onValueChange = {},
+        readOnly = true
+    )
+}
+
+@Composable
+private fun ReminderDateSection(
+    reminder: Exact,
+    onEvent: (EditReminderEvent) -> Unit
+) {
+    val dateFormatter = remember {
+        DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault())
+    }
+    val dialogState = rememberMaterialDialogState()
+    MaterialDialog(
+        dialogState = dialogState,
+        buttons = {
+            positiveButton("Ok")
+            negativeButton("Cancel")
+        }
+    ) {
+        datepicker(
+            allowedDateValidator = { it.isAfter(LocalDate.now().minusDays(1)) },
+            initialDate = reminder.startDateTime.toLocalDate()
+        ) { date ->
+            onEvent(EditReminderEvent.ReminderDateSet(date))
+        }
+    }
+    OutlinedTextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp)
+            .clickable {
+                dialogState.show()
+            },
+        value = reminder.startDateTime.format(dateFormatter),
+        label = { Text(text = "Date") }, // TODO string resource
         onValueChange = {},
         readOnly = true
     )

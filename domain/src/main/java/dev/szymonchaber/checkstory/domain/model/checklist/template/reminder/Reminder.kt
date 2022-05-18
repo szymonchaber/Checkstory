@@ -30,11 +30,11 @@ sealed interface Reminder {
     ) : Reminder
 
     fun updateTime(startTime: LocalTime): Reminder {
-        return updateDateTime(startDateTime.toLocalDate().atTime(startTime))
+        return updateDateTime(startDateTime.with(startTime))
     }
 
     fun updateDate(startDate: LocalDate): Reminder {
-        return updateDateTime(startDateTime.toLocalTime().atDate(startDate))
+        return updateDateTime(startDateTime.with(startDate))
     }
 
     fun updateDateTime(startDateTime: LocalDateTime): Reminder {

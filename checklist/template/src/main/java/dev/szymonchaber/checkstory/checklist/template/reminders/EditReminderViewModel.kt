@@ -33,7 +33,8 @@ class EditReminderViewModel @Inject constructor() :
         return merge(
             eventFlow.handleCreateReminder(),
             eventFlow.handleTypeSelected(),
-            eventFlow.handleTimeSet()
+            eventFlow.handleTimeSet(),
+            eventFlow.handleDateSet(),
         )
     }
 
@@ -72,7 +73,18 @@ class EditReminderViewModel @Inject constructor() :
             .withSuccessState()
             .map { (success, event) ->
                 val newState = success.updateReminder {
-                    updateTime(event.localTime)
+                    updateTime(event.time)
+                }
+                EditReminderState(newState) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleDateSet(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.ReminderDateSet>()
+            .withSuccessState()
+            .map { (success, event) ->
+                val newState = success.updateReminder {
+                    updateDate(event.date)
                 }
                 EditReminderState(newState) to null
             }
