@@ -7,6 +7,7 @@ import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderLoa
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderState
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import kotlinx.coroutines.flow.Flow
@@ -50,14 +51,14 @@ class EditReminderViewModel @Inject constructor() :
     private fun Flow<EditReminderEvent>.handleTypeSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.ReminderTypeSelected>()
             .withSuccessState()
-            .map { (success, event) ->
+            .map { (success, _) ->
                 val newState = success.updateReminder {
                     when (this) {
                         is Reminder.Exact -> {
-                            val copy = this.copy()
-
-                            copy.reminderType = event.reminderType
-                            copy
+                            Reminder.Recurring(id, forTemplate, dateTime, Interval.Daily)
+                        }
+                        is Reminder.Recurring -> {
+                            Reminder.Exact(id, forTemplate, startDateTime)
                         }
                     }
                 }

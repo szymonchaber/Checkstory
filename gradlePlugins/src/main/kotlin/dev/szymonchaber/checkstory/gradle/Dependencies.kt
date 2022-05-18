@@ -65,6 +65,8 @@ class Dependencies : Plugin<Project> {
         val performance = "com.google.firebase:firebase-perf"
         val messaging = "com.google.firebase:firebase-messaging-ktx"
 
+        val rrule = "com.github.PhilJay:RRule:1.0.3"
+
         val unitTest = listOf(
             "junit:junit:4.13.2",
             "com.google.truth:truth:1.1.3"

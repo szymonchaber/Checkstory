@@ -24,7 +24,6 @@ import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderSta
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderType
 
 @Composable
 @Preview(showBackground = true)
@@ -82,7 +81,10 @@ fun ReminderTypeSelector(reminder: Reminder, onEvent: (EditReminderEvent) -> Uni
             ReminderType.RECURRING -> ToggleOption(it, "Recurring")
         }
     }
-    val currentSelection = reminder.reminderType
+    val currentSelection = when (reminder) {
+        is Reminder.Exact -> ReminderType.EXACT
+        is Reminder.Recurring -> ReminderType.RECURRING
+    }
     MultiToggleButton(
         currentSelection,
         options,
@@ -91,4 +93,9 @@ fun ReminderTypeSelector(reminder: Reminder, onEvent: (EditReminderEvent) -> Uni
         },
         Modifier.padding(horizontal = 8.dp)
     )
+}
+
+enum class ReminderType {
+
+    EXACT, RECURRING
 }

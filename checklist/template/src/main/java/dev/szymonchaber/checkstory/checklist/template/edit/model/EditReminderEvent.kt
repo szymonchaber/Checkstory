@@ -1,8 +1,8 @@
 package dev.szymonchaber.checkstory.checklist.template.edit.model
 
+import dev.szymonchaber.checkstory.checklist.template.reminders.edit.ReminderType
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderType
 
 sealed interface EditReminderEvent {
 
@@ -10,7 +10,8 @@ sealed interface EditReminderEvent {
 
     data class EditReminder(val checklistTemplateId: ReminderId) : EditReminderEvent
 
-    data class ReminderTypeSelected(val reminderType: ReminderType) : EditReminderEvent
+    data class ReminderTypeSelected(val reminderType: ReminderType) :
+        EditReminderEvent
 
     object SaveReminderClicked : EditReminderEvent
 
