@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.reminders.edit
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -141,9 +142,15 @@ private fun ReminderTimeSection(
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp)
-            .clickable {
-                dialogState.show()
+            .padding(top = 16.dp), interactionSource = remember { MutableInteractionSource() }
+            .also { interactionSource ->
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect {
+                        if (it is PressInteraction.Release) {
+                            dialogState.show()
+                        }
+                    }
+                }
             },
         value = reminder.startDateTime.format(timeFormatter),
         label = { Text(text = "Time") }, // TODO string resource
@@ -178,9 +185,16 @@ private fun ReminderDateSection(
     OutlinedTextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp)
-            .clickable {
-                dialogState.show()
+            .padding(top = 16.dp),
+        interactionSource = remember { MutableInteractionSource() }
+            .also { interactionSource ->
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect {
+                        if (it is PressInteraction.Release) {
+                            dialogState.show()
+                        }
+                    }
+                }
             },
         value = reminder.startDateTime.format(dateFormatter),
         label = { Text(text = "Date") }, // TODO string resource
