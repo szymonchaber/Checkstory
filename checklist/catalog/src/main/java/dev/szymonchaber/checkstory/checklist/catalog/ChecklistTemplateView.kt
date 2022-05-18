@@ -134,6 +134,7 @@ fun ChecklistTemplateViewPreview() {
                 )
             ),
             LocalDateTime.now(),
+            listOf(),
             listOf()
         ),
         eventListener = {}

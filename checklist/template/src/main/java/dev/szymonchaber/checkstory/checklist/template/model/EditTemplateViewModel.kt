@@ -66,6 +66,7 @@ class EditTemplateViewModel @Inject constructor(
                         TemplateCheckbox(TemplateCheckboxId(0), null, "Checkbox 2", listOf())
                     ),
                     LocalDateTime.now(),
+                    listOf(),
                     listOf()
                 )
                 EditTemplateState(TemplateLoadingState.Success.fromTemplate(newChecklistTemplate)) to null
