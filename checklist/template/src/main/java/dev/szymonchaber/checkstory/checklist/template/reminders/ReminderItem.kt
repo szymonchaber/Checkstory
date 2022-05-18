@@ -15,7 +15,7 @@ fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit
                 modifier = Modifier.clickable {
                     eventCollector(EditTemplateEvent.AddReminderClicked)
                 },
-                text = reminder.dateTime.toString()
+                text = reminder.startDateTime.toString()
             )
         }
     }

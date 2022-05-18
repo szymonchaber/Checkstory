@@ -72,7 +72,7 @@ data class ReminderEntity(
                     ReminderEntity(
                         reminder.id.id,
                         reminder.forTemplate.id,
-                        reminder.dateTime.atZone(ZoneOffset.UTC), // TODO check if storage works correctly
+                        reminder.startDateTime.atZone(ZoneOffset.UTC), // TODO check if storage works correctly
                         false,
                         null
                     )

@@ -32,7 +32,8 @@ class EditReminderViewModel @Inject constructor() :
     override fun buildMviFlow(eventFlow: Flow<EditReminderEvent>): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return merge(
             eventFlow.handleCreateReminder(),
-            eventFlow.handleTypeSelected()
+            eventFlow.handleTypeSelected(),
+            eventFlow.handleTimeSet()
         )
     }
 
@@ -55,12 +56,23 @@ class EditReminderViewModel @Inject constructor() :
                 val newState = success.updateReminder {
                     when (this) {
                         is Reminder.Exact -> {
-                            Reminder.Recurring(id, forTemplate, dateTime, Interval.Daily)
+                            Reminder.Recurring(id, forTemplate, startDateTime, Interval.Daily)
                         }
                         is Reminder.Recurring -> {
                             Reminder.Exact(id, forTemplate, startDateTime)
                         }
                     }
+                }
+                EditReminderState(newState) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleTimeSet(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.ReminderTimeSet>()
+            .withSuccessState()
+            .map { (success, event) ->
+                val newState = success.updateReminder {
+                    updateTime(event.localTime)
                 }
                 EditReminderState(newState) to null
             }
