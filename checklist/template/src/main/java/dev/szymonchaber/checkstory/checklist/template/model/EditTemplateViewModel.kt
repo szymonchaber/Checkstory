@@ -49,7 +49,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleChildItemAdded(),
             eventFlow.handleChildItemDeleted(),
             eventFlow.handleChildItemChanged(),
-            eventFlow.handleAddReminderClicked()
+            eventFlow.handleAddReminderClicked(),
+            eventFlow.handleReminderSaved()
         )
     }
 
@@ -191,6 +192,14 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map {
                 null to EditTemplateEffect.ShowAddReminderSheet
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleReminderSaved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ReminderSaved>()
+            .withSuccessState()
+            .map { (success, event) ->
+                EditTemplateState(success.plusReminder(event.reminder)) to null
             }
     }
 

@@ -56,6 +56,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterialApi::class)
 @Destination("edit_template_screen", start = true)
 @Composable
 fun EditTemplateScreen(
@@ -93,7 +94,12 @@ fun EditTemplateScreen(
     }
     ModalBottomSheetLayout(
         sheetContent = {
-            EditReminderScreen()
+            EditReminderScreen {
+                scope.launch {
+                    modalBottomSheetState.hide()
+                }
+                viewModel.onEvent(EditTemplateEvent.ReminderSaved(it))
+            }
         },
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),

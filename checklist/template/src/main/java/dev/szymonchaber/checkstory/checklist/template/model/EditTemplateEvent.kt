@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 
 sealed interface EditTemplateEvent {
 
@@ -27,6 +28,8 @@ sealed interface EditTemplateEvent {
     data class ChildItemDeleted(val checkbox: ViewTemplateCheckbox, val child: ViewTemplateCheckbox) : EditTemplateEvent
 
     object AddReminderClicked : EditTemplateEvent
+
+    data class ReminderSaved(val reminder: Reminder) : EditTemplateEvent
 
     object AddCheckboxClicked : EditTemplateEvent
 

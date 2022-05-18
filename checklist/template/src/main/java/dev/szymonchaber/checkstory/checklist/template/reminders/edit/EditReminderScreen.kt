@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -41,7 +42,8 @@ import java.util.*
 @Composable
 @Preview(showBackground = true)
 fun EditReminderScreen(
-    reminderId: ReminderId? = null
+    reminderId: ReminderId? = null,
+    onReminderSaved: (Reminder) -> Unit = {}
 ) {
     val viewModel = hiltViewModel<EditReminderViewModel>()
     LaunchedEffect(reminderId) {
@@ -60,6 +62,7 @@ fun EditReminderScreen(
             is EditReminderEffect.CloseScreen -> {
 //                navController.navigateUp() TODO close bottom sheet
             }
+            is EditReminderEffect.RelayReminderToSave -> onReminderSaved(value.reminder)
             null -> Unit
         }
     }
@@ -109,7 +112,10 @@ fun ReminderTypeSelector(reminder: Reminder, onEvent: (EditReminderEvent) -> Uni
     when (reminder) {
         is Exact -> ExactReminderView(reminder, onEvent)
         is Recurring -> {
-        }// TODO
+        }
+    }
+    Button(onClick = { onEvent(EditReminderEvent.SaveReminderClicked) }) {
+        Text("Save")
     }
 }
 

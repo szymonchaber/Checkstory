@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.checklist.template.model
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 
 sealed interface TemplateLoadingState {
 
@@ -83,6 +84,12 @@ sealed interface TemplateLoadingState {
                 },
                 checkboxesToDelete = updatedCheckboxesToDelete
             )
+        }
+
+        fun plusReminder(reminder: Reminder): Success {
+            return updateTemplate {
+                copy(reminders = reminders.plus(reminder))
+            } // Do the same new / old discrimination
         }
 
         companion object {

@@ -58,4 +58,6 @@ sealed interface EditReminderLoadingState {
 sealed interface EditReminderEffect {
 
     object CloseScreen : EditReminderEffect
+
+    data class RelayReminderToSave(val reminder: Reminder) : EditReminderEffect
 }

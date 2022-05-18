@@ -35,6 +35,7 @@ class EditReminderViewModel @Inject constructor() :
             eventFlow.handleTypeSelected(),
             eventFlow.handleTimeSet(),
             eventFlow.handleDateSet(),
+            eventFlow.handleSaveClicked()
         )
     }
 
@@ -87,6 +88,14 @@ class EditReminderViewModel @Inject constructor() :
                     updateDate(event.date)
                 }
                 EditReminderState(newState) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleSaveClicked(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.SaveReminderClicked>()
+            .withSuccessState()
+            .map { (success, _) ->
+                null to EditReminderEffect.RelayReminderToSave(success.reminder)
             }
     }
 
