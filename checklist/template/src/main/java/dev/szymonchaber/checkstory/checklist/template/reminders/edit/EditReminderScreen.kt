@@ -1,13 +1,19 @@
 package dev.szymonchaber.checkstory.checklist.template.reminders.edit
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.Button
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -15,8 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +40,7 @@ import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEve
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderLoadingState
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderState
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Exact
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Recurring
@@ -111,8 +121,7 @@ fun ReminderTypeSelector(reminder: Reminder, onEvent: (EditReminderEvent) -> Uni
     )
     when (reminder) {
         is Exact -> ExactReminderView(reminder, onEvent)
-        is Recurring -> {
-        }
+        is Recurring -> RecurringReminderView(reminder, onEvent)
     }
     Button(onClick = { onEvent(EditReminderEvent.SaveReminderClicked) }) {
         Text("Save")
@@ -126,8 +135,14 @@ fun ExactReminderView(reminder: Exact, onEvent: (EditReminderEvent) -> Unit) {
 }
 
 @Composable
+fun RecurringReminderView(reminder: Recurring, onEvent: (EditReminderEvent) -> Unit) {
+    ReminderTimeSection(reminder, onEvent)
+    IntervalSection(reminder.interval, onEvent)
+}
+
+@Composable
 private fun ReminderTimeSection(
-    reminder: Exact,
+    reminder: Reminder,
     onEvent: (EditReminderEvent) -> Unit
 ) {
     val timeFormatter = remember {
@@ -212,4 +227,81 @@ private fun ReminderDateSection(
 enum class ReminderType {
 
     EXACT, RECURRING
+}
+
+@Composable
+fun IntervalSection(interval: Interval, onEvent: (EditReminderEvent) -> Unit) {
+    val intervalOptions = listOf(
+        // TODO resources
+        ToggleOption(IntervalType.DAILY, "Daily"),
+        ToggleOption(IntervalType.WEEKLY, "Weekly"),
+        ToggleOption(IntervalType.MONTHLY, "Monthly"),
+        ToggleOption(IntervalType.YEARLY, "Yearly"),
+    )
+    val intervalType = when (interval) {
+        Interval.Daily -> IntervalType.DAILY
+        is Interval.Weekly -> IntervalType.WEEKLY
+        is Interval.Monthly -> IntervalType.MONTHLY
+        is Interval.Yearly -> IntervalType.YEARLY
+    }
+    var isOpen by remember { mutableStateOf(false) }
+    Box(modifier = Modifier.padding(top = 16.dp)) {
+        Column {
+            OutlinedTextField(
+                value = intervalOptions.first { it.tag == intervalType }.text,
+                onValueChange = { },
+                label = { Text(text = "Interval") },
+                modifier = Modifier.fillMaxWidth(),
+                readOnly = true
+            )
+            DropDownList(
+                requestToOpen = isOpen,
+                list = intervalOptions,
+                {
+                    isOpen = it
+                }
+            ) {
+                onEvent(EditReminderEvent.IntervalSelected(it))
+            }
+        }
+        Spacer(
+            modifier = Modifier
+                .matchParentSize()
+                .background(Color.Transparent)
+                .padding(10.dp)
+                .clickable(
+                    onClick = { isOpen = true }
+                )
+        )
+    }
+}
+
+@Composable
+fun <T> DropDownList(
+    requestToOpen: Boolean = false,
+    list: List<ToggleOption<T>>,
+    request: (Boolean) -> Unit,
+    onItemSelected: (T) -> Unit
+) {
+    DropdownMenu(
+        modifier = Modifier.fillMaxWidth(),
+        expanded = requestToOpen,
+        onDismissRequest = { request(false) },
+    ) {
+        list.forEach {
+            DropdownMenuItem(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    request(false)
+                    onItemSelected(it.tag)
+                }
+            ) {
+                Text(it.text, modifier = Modifier.wrapContentWidth())
+            }
+        }
+    }
+}
+
+enum class IntervalType {
+    DAILY, WEEKLY, MONTHLY, YEARLY
 }

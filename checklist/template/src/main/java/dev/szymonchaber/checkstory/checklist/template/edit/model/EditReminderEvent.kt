@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.edit.model
 
+import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalType
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.ReminderType
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -18,6 +19,8 @@ sealed interface EditReminderEvent {
     data class ReminderTimeSet(val time: LocalTime) : EditReminderEvent
 
     data class ReminderDateSet(val date: LocalDate) : EditReminderEvent
+
+    data class IntervalSelected(val intervalType: IntervalType) : EditReminderEvent
 
     object SaveReminderClicked : EditReminderEvent
 

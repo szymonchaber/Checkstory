@@ -5,12 +5,14 @@ import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEff
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEvent
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderLoadingState
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderState
+import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalType
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -35,6 +37,7 @@ class EditReminderViewModel @Inject constructor() :
             eventFlow.handleTypeSelected(),
             eventFlow.handleTimeSet(),
             eventFlow.handleDateSet(),
+            eventFlow.handleIntervalSelected(),
             eventFlow.handleSaveClicked()
         )
     }
@@ -88,6 +91,24 @@ class EditReminderViewModel @Inject constructor() :
                     updateDate(event.date)
                 }
                 EditReminderState(newState) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleIntervalSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.IntervalSelected>()
+            .withSuccessState()
+            .filter {
+                it.first.reminder is Reminder.Recurring
+            }
+            .map { (success, event) ->
+                val newInterval = when (event.intervalType) {
+                    IntervalType.DAILY -> Interval.Daily
+                    IntervalType.WEEKLY -> Interval.Weekly(listOf())
+                    IntervalType.MONTHLY -> Interval.Monthly(1)
+                    IntervalType.YEARLY -> Interval.Yearly(1)
+                }
+                val newReminder = (success.reminder as Reminder.Recurring).copy(interval = newInterval)
+                EditReminderState(success.copy(reminder = newReminder)) to null
             }
     }
 
