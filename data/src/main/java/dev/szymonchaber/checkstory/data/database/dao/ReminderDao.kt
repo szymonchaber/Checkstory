@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface ReminderDao {
 
+    @Query("SELECT * FROM reminderEntity")
+    fun getAll(): Flow<List<ReminderEntity>>
+
     @Query("SELECT * FROM reminderEntity WHERE reminderEntity.templateId=:templateId")
     fun getAllForChecklistTemplate(templateId: Long): Flow<List<ReminderEntity>>
 
