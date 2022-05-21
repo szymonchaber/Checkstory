@@ -11,4 +11,8 @@ object Routes {
     fun editChecklistTemplateScreen(templateId: ChecklistTemplateId): String {
         return "edit_template_screen?templateId=${templateId.id}"
     }
+
+    fun checklistHistoryScreen(templateId: ChecklistTemplateId): String {
+        return "checklist_history?templateId=${templateId.id}"
+    }
 }

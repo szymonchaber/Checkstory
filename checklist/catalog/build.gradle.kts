@@ -30,7 +30,6 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":navigation"))
     implementation(project(":checklist:fill"))
-    implementation(project(":checklist:history"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)

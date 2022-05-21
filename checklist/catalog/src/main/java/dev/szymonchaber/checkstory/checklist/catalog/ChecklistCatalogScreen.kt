@@ -25,7 +25,6 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
-import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.navigation.Routes
@@ -76,7 +75,7 @@ private fun ChecklistCatalogView(
                 navigator.navigate(Routes.editChecklistTemplateScreen(value.templateId))
             }
             is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
-                navigator.navigate(ChecklistHistoryScreenDestination(value.templateId))
+                navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
             }
             null -> Unit
         }
