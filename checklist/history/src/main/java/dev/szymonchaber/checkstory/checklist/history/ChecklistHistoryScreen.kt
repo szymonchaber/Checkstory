@@ -1,22 +1,9 @@
 package dev.szymonchaber.checkstory.checklist.history
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
@@ -31,13 +18,13 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.navigation.Routes
 
 @Composable
 @Destination(route = "checklist_history", start = true)
@@ -81,11 +68,9 @@ private fun ChecklistHistoryView(
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {
         when (val value = effect) {
-            is ChecklistHistoryEffect.NavigateToFillChecklistScreen -> navigator.navigate(
-                FillChecklistScreenDestination(
-                    value.checklistId
-                )
-            )
+            is ChecklistHistoryEffect.NavigateToFillChecklistScreen -> {
+                navigator.navigate(Routes.editChecklistScreen(value.checklistId))
+            }
             null -> Unit
         }
     }
