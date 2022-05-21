@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import java.time.Instant
+import java.time.LocalDateTime
 import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -47,6 +48,11 @@ class ReminderScheduler @Inject constructor(
     }
 
     private fun scheduleExactReminder(reminder: Reminder.Exact) {
+        val startDateTime = reminder.startDateTime
+        if (startDateTime.isBefore(LocalDateTime.now())) {
+            return
+        }
+
         val alarmIntent = ReminderReceiver.newIntent(context, reminder.forTemplate)
             .let {
                 PendingIntent.getBroadcast(
@@ -57,10 +63,9 @@ class ReminderScheduler @Inject constructor(
                 )
             }
 
-
         // TODO How to cancel these on removal?
         val toEpochMilli =
-            reminder.startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
+            startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
                 .toEpochMilli()
         alarmManager.set(
             AlarmManager.RTC_WAKEUP,
