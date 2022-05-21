@@ -21,6 +21,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":checklist:catalog"))
     implementation(project(":common"))
     implementation(project(":domain"))
     implementation(project(":design"))
