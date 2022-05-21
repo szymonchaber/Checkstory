@@ -18,4 +18,5 @@
     <string name="new_checkbox">New checkbox</string>
     <string name="reminders_label">Reminders</string>
     <string name="new_reminder">New reminder</string>
+    <string name="name">Checkbox name</string>
 </resources>

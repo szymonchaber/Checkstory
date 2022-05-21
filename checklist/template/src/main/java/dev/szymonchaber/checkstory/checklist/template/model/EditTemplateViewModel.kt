@@ -10,14 +10,7 @@ import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.*
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -59,11 +52,10 @@ class EditTemplateViewModel @Inject constructor(
             .map {
                 val newChecklistTemplate = ChecklistTemplate(
                     ChecklistTemplateId(0),
-                    "New checklist template",
-                    "Checklist description",
+                    "",
+                    "",
                     listOf(
-                        TemplateCheckbox(TemplateCheckboxId(0), null, "Checkbox 1", listOf()),
-                        TemplateCheckbox(TemplateCheckboxId(0), null, "Checkbox 2", listOf())
+                        TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf()),
                     ),
                     LocalDateTime.now(),
                     listOf(),
@@ -123,7 +115,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                EditTemplateState(loadingState.plusChildCheckbox(event.parent, "Checkbox")) to null
+                EditTemplateState(loadingState.plusChildCheckbox(event.parent, "")) to null
             }
     }
 
@@ -157,7 +149,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
-                val newLoadingState = loadingState.plusNewCheckbox("Checkbox")
+                val newLoadingState = loadingState.plusNewCheckbox("")
                 EditTemplateState(newLoadingState) to null
             }
     }

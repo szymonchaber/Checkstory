@@ -15,7 +15,8 @@
     <string name="edit_template">Edytuj szablon</string>
     <string name="title">Tytuł</string>
     <string name="description">Opis</string>
-    <string name="new_checkbox">Nowe pole wyboru</string>
+    <string name="new_checkbox">Nowy element</string>
     <string name="reminders_label">Przypomnienia</string>
     <string name="new_reminder">Nowe przypomnienie</string>
+    <string name="name">Nazwa elementu</string>
 </resources>

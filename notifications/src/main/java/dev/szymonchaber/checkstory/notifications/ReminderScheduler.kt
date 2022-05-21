@@ -64,7 +64,7 @@ class ReminderScheduler @Inject constructor(
                 .toEpochMilli()
         alarmManager.set(
             AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis() + 10000,
+            toEpochMilli,
             alarmIntent
         )
     }
