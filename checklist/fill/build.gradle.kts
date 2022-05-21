@@ -29,7 +29,6 @@ dependencies {
     implementation(project(":design"))
     implementation(project(":data"))
     implementation(project(":navigation"))
-    implementation(project(":checklist:template"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)

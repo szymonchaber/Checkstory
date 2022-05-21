@@ -24,7 +24,6 @@ import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.model.*
-import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
@@ -32,6 +31,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.navigation.Routes
 
 @Destination(
     route = "fill_checklist_screen",
@@ -65,7 +65,7 @@ fun FillChecklistScreen(
     LaunchedEffect(effect) {
         when (val value = effect) {
             is FillChecklistEffect.NavigateToEditTemplate -> {
-                navigator.navigate(EditTemplateScreenDestination(value.templateId))
+                navigator.navigate(Routes.editChecklistTemplateScreen(value.templateId))
             }
             FillChecklistEffect.CloseScreen -> {
                 navigator.navigateUp()
