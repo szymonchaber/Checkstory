@@ -31,6 +31,8 @@ sealed interface EditTemplateEvent {
 
     data class ReminderSaved(val reminder: Reminder) : EditTemplateEvent
 
+    data class DeleteReminderClicked(val reminder: Reminder) : EditTemplateEvent
+
     object AddCheckboxClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent

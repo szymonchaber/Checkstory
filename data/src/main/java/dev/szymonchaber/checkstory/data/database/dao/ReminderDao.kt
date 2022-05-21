@@ -1,9 +1,6 @@
 package dev.szymonchaber.checkstory.data.database.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room.*
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -24,4 +21,7 @@ interface ReminderDao {
 
     @Query("DELETE FROM reminderEntity WHERE reminderEntity.templateId = :templateId")
     suspend fun deleteAllFromTemplate(templateId: Long)
+
+    @Delete
+    suspend fun delete(vararg reminders: ReminderEntity)
 }

@@ -23,4 +23,14 @@ class TemplateReminderRepositoryImpl @Inject constructor(
                 }
             }
     }
+
+    override suspend fun deleteReminders(reminders: List<Reminder>) {
+        withContext(Dispatchers.Default) {
+            reminders.map {
+                ReminderEntity.fromDomainReminder(it, it.forTemplate.id)
+            }.let {
+                reminderDao.delete(*it.toTypedArray())
+            }
+        }
+    }
 }

@@ -10,7 +10,8 @@ sealed interface TemplateLoadingState {
     data class Success(
         val checklistTemplate: ChecklistTemplate,
         val checkboxes: List<ViewTemplateCheckbox>,
-        val checkboxesToDelete: List<TemplateCheckbox>
+        val checkboxesToDelete: List<TemplateCheckbox>,
+        val remindersToDelete: List<Reminder>
     ) : TemplateLoadingState {
 
         fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
@@ -89,7 +90,18 @@ sealed interface TemplateLoadingState {
         fun plusReminder(reminder: Reminder): Success {
             return updateTemplate {
                 copy(reminders = reminders.plus(reminder))
-            } // Do the same new / old discrimination
+            } // Do the same new / old discrimination (or not?)
+        }
+
+        fun minusReminder(reminder: Reminder): TemplateLoadingState {
+            val updatedRemindersToDelete = if (reminder.isStored) {
+                remindersToDelete.plus(reminder)
+            } else {
+                remindersToDelete
+            }
+            return updateTemplate {
+                copy(reminders = reminders.minus(reminder))
+            }.copy(remindersToDelete = updatedRemindersToDelete)
         }
 
         companion object {
@@ -98,6 +110,7 @@ sealed interface TemplateLoadingState {
                 return Success(
                     checklistTemplate,
                     checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) },
+                    listOf(),
                     listOf()
                 )
             }

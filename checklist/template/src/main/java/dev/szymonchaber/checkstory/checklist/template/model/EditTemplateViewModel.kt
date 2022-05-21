@@ -6,10 +6,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
-import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -19,7 +16,8 @@ class EditTemplateViewModel @Inject constructor(
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
     private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
     private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
-    private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase
+    private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
+    private val deleteRemindersUseCase: DeleteRemindersUseCase
 ) : BaseViewModel<
         EditTemplateEvent,
         EditTemplateState,
@@ -43,7 +41,8 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleChildItemDeleted(),
             eventFlow.handleChildItemChanged(),
             eventFlow.handleAddReminderClicked(),
-            eventFlow.handleReminderSaved()
+            eventFlow.handleReminderSaved(),
+            eventFlow.handleReminderDeleted()
         )
     }
 
@@ -165,6 +164,7 @@ class EditTemplateViewModel @Inject constructor(
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
+                deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
                 null to EditTemplateEffect.CloseScreen
             }
     }
@@ -193,6 +193,14 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 EditTemplateState(success.plusReminder(event.reminder)) to null
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleReminderDeleted(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.DeleteReminderClicked>()
+            .withSuccessState()
+            .map { (success, event) ->
+                EditTemplateState(success.minusReminder(event.reminder)) to null
             }
     }
 
