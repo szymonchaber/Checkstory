@@ -16,6 +16,9 @@ android {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
 
+    hilt {
+        enableAggregatingTask = true
+    }
     libraryVariants.all {
         kotlin.sourceSets {
             getByName(name) {

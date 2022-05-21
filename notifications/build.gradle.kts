@@ -11,6 +11,9 @@ plugins {
 }
 
 android {
+    hilt {
+        enableAggregatingTask = true
+    }
     libraryVariants.all {
         kotlin.sourceSets {
             getByName(name) {
