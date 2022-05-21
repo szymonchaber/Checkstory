@@ -8,7 +8,7 @@
     <string name="templates_empty">Nie masz utworzonych szablonów.\nStwórz nowy klikając przycisk \"+\"</string>
     <string name="checklist_history">Historia list kontrolnych</string>
     <string name="checklist_history_empty">Niew masz list kontrolnych dla tego szablonu</string>
-    <string name="checklist">Lista kontrol</string>
+    <string name="checklist">Lista kontrolna</string>
     <string name="items">Elementy</string>
     <string name="notes">Notatki</string>
     <string name="recent_checklists_empty">Nie masz żadnej wypełnionej listy kontrolnej.\nWybierz coś poniżej 👇</string>
