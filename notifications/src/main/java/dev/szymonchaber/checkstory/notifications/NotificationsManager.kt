@@ -16,22 +16,19 @@ class NotificationsManager @Inject constructor(@ApplicationContext val context: 
 
     private val id = AtomicInteger(1)
 
-    fun sendNotification(body: String) {
-        val intent = Intent("dev.szymonchaber.checkstory.catalog").apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-        val pendingIntent: PendingIntent =
-            PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    fun sendNotification(body: String, intent: Intent) {
+        val requestCode = id.getAndIncrement()
+        val pendingIntent = PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.checkbox_marked)
-            .setContentTitle("New reminder")
+            .setContentTitle("Checklist reminder") // TODO Extract to strings
             .setContentText(body)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
         createNotificationChannel()
         with(NotificationManagerCompat.from(context)) {
-            notify(id.getAndIncrement(), builder.build())
+            notify(requestCode, builder.build())
         }
     }
 
@@ -56,6 +53,7 @@ class NotificationsManager @Inject constructor(@ApplicationContext val context: 
     }
 
     companion object {
+
         private const val CHANNEL_ID = "general"
     }
 }

@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.notifications
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
@@ -30,7 +31,15 @@ class ReminderReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.Main)
             .launch {
                 val template = getChecklistTemplateUseCase.getChecklistTemplate(templateId).first()
-                notificationsManager.sendNotification("Time to fill out ${template.title} checklist!")
+                val taskDetailIntent = Intent(
+                    Intent.ACTION_VIEW,
+                    "app://checkstory/checklist/new/${template.id.id}".toUri()
+                )
+
+                notificationsManager.sendNotification(
+                    "Time to fill out ${template.title} checklist!", // TODO strings
+                    taskDetailIntent
+                )
             }
     }
 
