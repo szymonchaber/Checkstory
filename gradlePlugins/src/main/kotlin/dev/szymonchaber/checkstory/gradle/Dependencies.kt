@@ -12,10 +12,11 @@ class Dependencies : Plugin<Project> {
         const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0"
 
         private const val hiltVersion = "2.41"
-        const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
+        private const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
         const val hiltKapt = "com.google.dagger:hilt-compiler:$hiltVersion"
+        private const val timber = "com.jakewharton.timber:timber:5.0.1"
 
-        val common = listOf(coroutines, hiltLibrary)
+        val common = listOf(coroutines, hiltLibrary, timber)
 
         const val androidXCore = "androidx.core:core-ktx:1.7.0"
         const val appCompat = "androidx.appcompat:appcompat:1.4.1"
