@@ -20,29 +20,35 @@ import java.util.*
 
 @Composable
 fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit) {
-
     val dateTimeFormatter = remember {
         DateTimeFormatter.ofPattern("dd MMMM yyy, HH:mm", Locale.getDefault())
     }
+    val timeFormatter = remember {
+        DateTimeFormatter.ofPattern("HH:mm", Locale.getDefault())
+    }
 
-    when (reminder) {
+    val text = when (reminder) {
         is Reminder.Exact -> {
-            Row(
-                modifier = Modifier.padding(start = 16.dp)
-            ) {
-                Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .align(Alignment.CenterVertically)
-                        .clickable {
-                            eventCollector(EditTemplateEvent.AddReminderClicked)
-                        },
-                    text = reminder.startDateTime.format(dateTimeFormatter)
-                )
-                IconButton(onClick = { eventCollector(EditTemplateEvent.DeleteReminderClicked(reminder)) }) {
-                    Icon(Icons.Filled.Delete, "")
-                }
-            }
+            "One time on ${reminder.startDateTime.format(dateTimeFormatter)}"
+        }
+        is Reminder.Recurring -> {
+            "Daily at ${reminder.startDateTime.format(timeFormatter)}"
+        }
+    }
+    Row(
+        modifier = Modifier.padding(start = 16.dp)
+    ) {
+        Text(
+            modifier = Modifier
+                .weight(1f)
+                .align(Alignment.CenterVertically)
+                .clickable {
+                    eventCollector(EditTemplateEvent.AddReminderClicked)
+                },
+            text = text
+        )
+        IconButton(onClick = { eventCollector(EditTemplateEvent.DeleteReminderClicked(reminder)) }) {
+            Icon(Icons.Filled.Delete, "")
         }
     }
 }
