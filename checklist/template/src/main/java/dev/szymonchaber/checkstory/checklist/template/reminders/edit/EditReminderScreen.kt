@@ -217,9 +217,9 @@ fun IntervalSection(interval: Interval, onEvent: (EditReminderEvent) -> Unit) {
     val intervalOptions = listOf(
         // TODO resources
         ToggleOption(IntervalType.DAILY, "Daily"),
-//        ToggleOption(IntervalType.WEEKLY, "Weekly"),
-//        ToggleOption(IntervalType.MONTHLY, "Monthly"),
-//        ToggleOption(IntervalType.YEARLY, "Yearly"),
+        ToggleOption(IntervalType.WEEKLY, "Weekly"),
+        ToggleOption(IntervalType.MONTHLY, "Monthly"),
+        ToggleOption(IntervalType.YEARLY, "Yearly"),
     )
     val intervalType = when (interval) {
         Interval.Daily -> IntervalType.DAILY

@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
 import kotlinx.coroutines.FlowPreview
@@ -70,14 +71,38 @@ class ReminderScheduler @Inject constructor(
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
             toEpochMilli,
-            TimeUnit.DAYS.toMillis(1),
+            findCorrectInterval(reminder.interval),
             createIntent(reminder)
         )
     }
 
+    private fun findCorrectInterval(interval: Interval): Long {
+        // TODO this should possibly only be used to schedule actual alarms for monthly and yearly
+        return when (interval) {
+            Interval.Daily -> TimeUnit.DAYS.toMillis(1)
+            is Interval.Monthly -> TimeUnit.DAYS.toMillis(7)
+            is Interval.Weekly -> TimeUnit.DAYS.toMillis(30)
+            is Interval.Yearly -> TimeUnit.DAYS.toMillis(365)
+        }
+    }
+
     private fun findCorrectStartDateTime(reminder: Reminder.Recurring): LocalDateTime {
         return if (reminder.startDateTime.isBefore(LocalDateTime.now())) {
-            reminder.startDateTime.plusDays(1) // TODO This only covers a daily reminder
+            when (reminder.interval) {
+                Interval.Daily -> {
+                    reminder.startDateTime.plusDays(1)
+                }
+                is Interval.Weekly -> {
+                    reminder.startDateTime.plusWeeks(1)
+                }
+                is Interval.Monthly -> {
+                    reminder.startDateTime.plusMonths(1).withDayOfMonth(reminder.startDateTime.dayOfMonth)
+                }
+                is Interval.Yearly -> {
+                    val dateTime = reminder.startDateTime
+                    dateTime.plusYears(1).withDayOfYear(dateTime.dayOfYear)
+                }
+            }
         } else {
             reminder.startDateTime
         }

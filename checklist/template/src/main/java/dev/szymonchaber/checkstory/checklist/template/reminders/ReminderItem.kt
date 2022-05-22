@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -32,7 +33,18 @@ fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit
             "One time on ${reminder.startDateTime.format(dateTimeFormatter)}"
         }
         is Reminder.Recurring -> {
-            "Daily at ${reminder.startDateTime.format(timeFormatter)}"
+            when (val interval = reminder.interval) {
+                Interval.Daily -> "Daily at ${reminder.startDateTime.format(timeFormatter)}"
+                is Interval.Monthly -> "Monthly on ${interval.dayOfMonth}th day at ${
+                    reminder.startDateTime.format(
+                        timeFormatter
+                    )
+                }"
+                is Interval.Weekly -> "Weekly on ${interval.daysOfWeek} at ${reminder.startDateTime.format(timeFormatter)}"
+                is Interval.Yearly -> "Yearly on ${interval.dayOfYear}th day at ${
+                    reminder.startDateTime.format(timeFormatter)
+                }"
+            }
         }
     }
     Row(
