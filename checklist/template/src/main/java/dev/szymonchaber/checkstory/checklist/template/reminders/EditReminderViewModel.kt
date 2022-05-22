@@ -11,13 +11,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.*
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -38,6 +32,8 @@ class EditReminderViewModel @Inject constructor() :
             eventFlow.handleTimeSet(),
             eventFlow.handleDateSet(),
             eventFlow.handleIntervalSelected(),
+            eventFlow.handleDayOfMonthSelected(),
+            eventFlow.handleDayOfYearSelected(),
             eventFlow.handleSaveClicked()
         )
     }
@@ -108,6 +104,38 @@ class EditReminderViewModel @Inject constructor() :
                     IntervalType.YEARLY -> Interval.Yearly(1)
                 }
                 val newReminder = (success.reminder as Reminder.Recurring).copy(interval = newInterval)
+                EditReminderState(success.copy(reminder = newReminder)) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleDayOfMonthSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.DayOfMonthSelected>()
+            .withSuccessState()
+            .filter {
+                (it.first.reminder is Reminder.Recurring)
+            }
+            .map { (success, event) ->
+                val newInterval = when (val interval = (success.reminder as Reminder.Recurring).interval) {
+                    is Interval.Monthly -> interval.copy(dayOfMonth = event.dayOfMonth)
+                    else -> interval
+                }
+                val newReminder = success.reminder.copy(interval = newInterval)
+                EditReminderState(success.copy(reminder = newReminder)) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleDayOfYearSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.DayOfYearSelected>()
+            .withSuccessState()
+            .filter {
+                (it.first.reminder is Reminder.Recurring)
+            }
+            .map { (success, event) ->
+                val newInterval = when (val interval = (success.reminder as Reminder.Recurring).interval) {
+                    is Interval.Yearly -> interval.copy(dayOfYear = event.dayOfYear)
+                    else -> interval
+                }
+                val newReminder = success.reminder.copy(interval = newInterval)
                 EditReminderState(success.copy(reminder = newReminder)) to null
             }
     }

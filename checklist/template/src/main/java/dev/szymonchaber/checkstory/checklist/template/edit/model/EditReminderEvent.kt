@@ -13,14 +13,17 @@ sealed interface EditReminderEvent {
 
     data class EditReminder(val checklistTemplateId: ReminderId) : EditReminderEvent
 
-    data class ReminderTypeSelected(val reminderType: ReminderType) :
-        EditReminderEvent
+    data class ReminderTypeSelected(val reminderType: ReminderType) : EditReminderEvent
 
     data class ReminderTimeSet(val time: LocalTime) : EditReminderEvent
 
     data class ReminderDateSet(val date: LocalDate) : EditReminderEvent
 
     data class IntervalSelected(val intervalType: IntervalType) : EditReminderEvent
+
+    data class DayOfMonthSelected(val dayOfMonth: Int) : EditReminderEvent
+
+    data class DayOfYearSelected(val dayOfYear: Int) : EditReminderEvent
 
     object SaveReminderClicked : EditReminderEvent
 
