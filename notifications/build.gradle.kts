@@ -39,6 +39,8 @@ dependencies {
     implementation(platform(Dependencies.firebasePlatform))
     implementation(Dependencies.messaging)
 
+    implementation(Dependencies.work)
+
     kapt(Dependencies.hiltKapt)
 
     Dependencies.unitTest.forEach(::testImplementation)

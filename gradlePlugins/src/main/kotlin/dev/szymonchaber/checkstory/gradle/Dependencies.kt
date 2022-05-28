@@ -68,6 +68,10 @@ class Dependencies : Plugin<Project> {
 
         val rrule = "com.github.PhilJay:RRule:1.0.3"
 
+        const val workVersion = "2.7.1"
+
+        val work = "androidx.work:work-runtime-ktx:$workVersion"
+
         val unitTest = listOf(
             "junit:junit:4.13.2",
             "com.google.truth:truth:1.1.3"
