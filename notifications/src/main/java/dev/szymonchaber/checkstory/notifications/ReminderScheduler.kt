@@ -16,6 +16,7 @@ import timber.log.Timber
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -63,7 +64,22 @@ class ReminderScheduler @Inject constructor(
     }
 
     private fun scheduleRecurringReminder(reminder: Reminder.Recurring) {
-        Timber.d("scheduling recurring reminder: $reminder") // TODO
+        Timber.d("scheduling recurring reminder: $reminder")
+        if (reminder.interval is Interval.Daily) {
+            scheduleDailyReminder(reminder)
+        } else {
+            val startDateTime = findCorrectStartDateTime(reminder)
+            val toEpochMilli = startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
+                .toEpochMilli()
+            alarmManager.set(
+                AlarmManager.RTC_WAKEUP,
+                toEpochMilli,
+                createIntent(reminder)
+            )
+        }
+    }
+
+    private fun scheduleDailyReminder(reminder: Reminder.Recurring) {
         val startDateTime = findCorrectStartDateTime(reminder)
 
         val toEpochMilli = startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
@@ -71,29 +87,19 @@ class ReminderScheduler @Inject constructor(
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
             toEpochMilli,
-            findCorrectInterval(reminder.interval),
+            TimeUnit.DAYS.toMillis(1),
             createIntent(reminder)
         )
     }
 
-    private fun findCorrectInterval(interval: Interval): Long {
-        // TODO this should possibly only be used to schedule actual alarms for monthly and yearly
-        return when (interval) {
-            Interval.Daily -> TimeUnit.DAYS.toMillis(1)
-            is Interval.Monthly -> TimeUnit.DAYS.toMillis(7)
-            is Interval.Weekly -> TimeUnit.DAYS.toMillis(30)
-            is Interval.Yearly -> TimeUnit.DAYS.toMillis(365)
-        }
-    }
-
     private fun findCorrectStartDateTime(reminder: Reminder.Recurring): LocalDateTime {
         return if (reminder.startDateTime.isBefore(LocalDateTime.now())) {
-            when (reminder.interval) {
+            when (val interval = reminder.interval) {
                 Interval.Daily -> {
                     reminder.startDateTime.plusDays(1)
                 }
                 is Interval.Weekly -> {
-                    reminder.startDateTime.plusWeeks(1)
+                    reminder.startDateTime.with(TemporalAdjusters.next(interval.daysOfWeek.first()))
                 }
                 is Interval.Monthly -> {
                     reminder.startDateTime.plusMonths(1).withDayOfMonth(reminder.startDateTime.dayOfMonth)

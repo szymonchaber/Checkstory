@@ -11,7 +11,9 @@ import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class NotificationsManager @Inject constructor(@ApplicationContext val context: Context) {
 
     private val id = AtomicInteger(1)
