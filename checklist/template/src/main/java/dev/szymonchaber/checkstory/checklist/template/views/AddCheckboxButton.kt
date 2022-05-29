@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.checklist.template.views
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -21,7 +22,11 @@ fun AddCheckboxButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 
 @Composable
 fun AddButton(modifier: Modifier, onClick: () -> Unit, text: String) {
-    Row(modifier.clickable(onClick = onClick)) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
         IconButton(onClick) {
             Icon(Icons.Filled.Add, null)
         }
