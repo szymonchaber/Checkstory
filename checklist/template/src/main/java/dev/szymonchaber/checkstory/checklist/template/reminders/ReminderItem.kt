@@ -61,7 +61,7 @@ fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit
                 .weight(1f)
                 .align(Alignment.CenterVertically)
                 .clickable {
-                    eventCollector(EditTemplateEvent.AddReminderClicked)
+                    eventCollector(EditTemplateEvent.ReminderClicked(reminder))
                 },
             text = text
         )

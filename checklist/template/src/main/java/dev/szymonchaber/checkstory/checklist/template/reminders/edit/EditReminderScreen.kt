@@ -13,9 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
@@ -30,7 +28,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Inte
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Exact
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Recurring
-import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -38,20 +35,10 @@ import java.time.format.TextStyle
 import java.util.*
 
 @Composable
-@Preview(showBackground = true)
 fun EditReminderScreen(
-    reminderId: ReminderId? = null,
+    viewModel: EditReminderViewModel,
     onReminderSaved: (Reminder) -> Unit = {}
 ) {
-    val viewModel = hiltViewModel<EditReminderViewModel>()
-    LaunchedEffect(reminderId) {
-        reminderId?.let {
-            viewModel.onEvent(EditReminderEvent.EditReminder(it))
-        } ?: run {
-            viewModel.onEvent(EditReminderEvent.CreateReminder)
-        }
-    }
-
     val state by viewModel.state.collectAsState(initial = EditReminderState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)

@@ -26,7 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.ramcosta.composedestinations.annotation.Destination
+import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEvent
 import dev.szymonchaber.checkstory.checklist.template.model.*
+import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
@@ -45,6 +47,7 @@ fun EditTemplateScreen(
     templateId: ChecklistTemplateId?
 ) {
     val viewModel = hiltViewModel<EditTemplateViewModel>()
+    val editReminderViewModel = hiltViewModel<EditReminderViewModel>()
 
     LaunchedEffect(templateId) {
         templateId?.let {
@@ -66,6 +69,13 @@ fun EditTemplateScreen(
                 navController.navigateUp()
             }
             is EditTemplateEffect.ShowAddReminderSheet -> {
+                editReminderViewModel.onEvent(EditReminderEvent.CreateReminder)
+                scope.launch {
+                    modalBottomSheetState.show()
+                }
+            }
+            is EditTemplateEffect.ShowEditReminderSheet -> {
+                editReminderViewModel.onEvent(EditReminderEvent.EditReminder(value.reminder))
                 scope.launch {
                     modalBottomSheetState.show()
                 }
@@ -75,7 +85,7 @@ fun EditTemplateScreen(
     }
     ModalBottomSheetLayout(
         sheetContent = {
-            EditReminderScreen {
+            EditReminderScreen(viewModel = editReminderViewModel) {
                 scope.launch {
                     modalBottomSheetState.hide()
                 }

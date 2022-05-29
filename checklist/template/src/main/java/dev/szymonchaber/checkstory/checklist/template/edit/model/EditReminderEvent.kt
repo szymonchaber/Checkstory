@@ -3,7 +3,6 @@ package dev.szymonchaber.checkstory.checklist.template.edit.model
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalType
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.ReminderType
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
@@ -12,7 +11,7 @@ sealed interface EditReminderEvent {
 
     object CreateReminder : EditReminderEvent
 
-    data class EditReminder(val checklistTemplateId: ReminderId) : EditReminderEvent
+    data class EditReminder(val reminder: Reminder) : EditReminderEvent
 
     data class ReminderTypeSelected(val reminderType: ReminderType) : EditReminderEvent
 
@@ -29,8 +28,6 @@ sealed interface EditReminderEvent {
     data class DayOfYearSelected(val dayOfYear: Int) : EditReminderEvent
 
     object SaveReminderClicked : EditReminderEvent
-
-    object DeleteReminderClicked : EditReminderEvent
 }
 
 data class EditReminderState(

@@ -28,6 +28,7 @@ class EditReminderViewModel @Inject constructor() :
     override fun buildMviFlow(eventFlow: Flow<EditReminderEvent>): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return merge(
             eventFlow.handleCreateReminder(),
+            eventFlow.handleEditReminder(),
             eventFlow.handleTypeSelected(),
             eventFlow.handleTimeSet(),
             eventFlow.handleDateSet(),
@@ -48,6 +49,13 @@ class EditReminderViewModel @Inject constructor() :
                     LocalDateTime.now()
                 )
                 EditReminderState(EditReminderLoadingState.Success.fromReminder(newReminder)) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleEditReminder(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.EditReminder>()
+            .map {
+                EditReminderState(EditReminderLoadingState.Success.fromReminder(it.reminder)) to null
             }
     }
 
