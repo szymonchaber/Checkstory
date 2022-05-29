@@ -86,8 +86,8 @@ fun EditReminderScreen(
 private fun ColumnScope.EditReminderView(reminder: Reminder, onEvent: (EditReminderEvent) -> Unit) {
     val options = ReminderType.values().map {
         when (it) {
-            ReminderType.EXACT -> ToggleOption(it, "One time")
-            ReminderType.RECURRING -> ToggleOption(it, "Recurring")
+            ReminderType.EXACT -> ToggleOption(it, stringResource(R.string.one_time))
+            ReminderType.RECURRING -> ToggleOption(it, stringResource(R.string.recurring))
         }
     }
     val currentSelection = when (reminder) {
@@ -111,7 +111,7 @@ private fun ColumnScope.EditReminderView(reminder: Reminder, onEvent: (EditRemin
             .align(CenterHorizontally)
             .padding(top = 16.dp),
         onClick = { onEvent(EditReminderEvent.SaveReminderClicked) }) {
-        Text("Save")
+        Text(stringResource(R.string.save))
     }
 }
 
@@ -140,7 +140,7 @@ fun IntervalSpecificSection(reminder: Recurring, onEvent: (EditReminderEvent) ->
         }
         is Interval.Monthly -> {
             var textInput by remember { mutableStateOf(interval.dayOfMonth.toString()) }
-            DayOfUnitInput("Day of month", textInput) {
+            DayOfUnitInput(stringResource(R.string.day_of_month), textInput) {
                 val filteredInput = it.filter(Char::isDigit).take(2)
                 textInput = filteredInput
                 if (filteredInput.isNotEmpty()) {
@@ -150,7 +150,7 @@ fun IntervalSpecificSection(reminder: Recurring, onEvent: (EditReminderEvent) ->
         }
         is Interval.Yearly -> {
             var textInput by remember { mutableStateOf(interval.dayOfYear.toString()) }
-            DayOfUnitInput("Day of year", textInput) {
+            DayOfUnitInput(stringResource(R.string.day_of_year), textInput) {
                 val filteredInput = it.filter(Char::isDigit).take(3)
                 textInput = filteredInput
                 if (filteredInput.isNotEmpty()) {
@@ -174,7 +174,7 @@ private fun DayOfUnitInput(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         singleLine = true,
         value = value,
-        label = { Text(text = label) }, // TODO string resource
+        label = { Text(text = label) },
         onValueChange = onValueChange,
     )
 }
@@ -191,8 +191,8 @@ private fun ReminderTimeSection(
     MaterialDialog(
         dialogState = dialogState,
         buttons = {
-            positiveButton("Ok")
-            negativeButton("Cancel")
+            positiveButton(stringResource(R.string.ok))
+            negativeButton(stringResource(R.string.cancel))
         }
     ) {
         timepicker(is24HourClock = true, initialTime = reminder.startDateTime.toLocalTime()) { time ->
@@ -213,7 +213,7 @@ private fun ReminderTimeSection(
                 }
             },
         value = reminder.startDateTime.format(timeFormatter),
-        label = { Text(text = "Time") }, // TODO string resource
+        label = { Text(text = stringResource(R.string.time)) },
         onValueChange = {},
         readOnly = true
     )
@@ -231,8 +231,8 @@ private fun ReminderDateSection(
     MaterialDialog(
         dialogState = dialogState,
         buttons = {
-            positiveButton("Ok")
-            negativeButton("Cancel")
+            positiveButton(stringResource(R.string.ok))
+            negativeButton(stringResource(R.string.cancel))
         }
     ) {
         datepicker(
@@ -257,7 +257,7 @@ private fun ReminderDateSection(
                 }
             },
         value = reminder.startDateTime.format(dateFormatter),
-        label = { Text(text = "Date") }, // TODO string resource
+        label = { Text(text = stringResource(R.string.date)) },
         onValueChange = {},
         readOnly = true
     )
@@ -271,11 +271,10 @@ enum class ReminderType {
 @Composable
 fun IntervalSection(interval: Interval, onEvent: (EditReminderEvent) -> Unit) {
     val intervalOptions = listOf(
-        // TODO resources
-        ToggleOption(IntervalType.DAILY, "Daily"),
-        ToggleOption(IntervalType.WEEKLY, "Weekly"),
-        ToggleOption(IntervalType.MONTHLY, "Monthly"),
-        ToggleOption(IntervalType.YEARLY, "Yearly"),
+        ToggleOption(IntervalType.DAILY, stringResource(R.string.interval_daily)),
+        ToggleOption(IntervalType.WEEKLY, stringResource(R.string.interval_weekly)),
+        ToggleOption(IntervalType.MONTHLY, stringResource(R.string.interval_monthly)),
+        ToggleOption(IntervalType.YEARLY, stringResource(R.string.interval_yearly)),
     )
     val intervalType = when (interval) {
         Interval.Daily -> IntervalType.DAILY
@@ -289,7 +288,7 @@ fun IntervalSection(interval: Interval, onEvent: (EditReminderEvent) -> Unit) {
             OutlinedTextField(
                 value = intervalOptions.first { it.tag == intervalType }.text,
                 onValueChange = { },
-                label = { Text(text = "Interval") },
+                label = { Text(text = stringResource(R.string.interval)) },
                 modifier = Modifier.fillMaxWidth(),
                 readOnly = true
             )
