@@ -1,20 +1,10 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
@@ -34,11 +24,9 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadi
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
-import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
-import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
-import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
+import dev.szymonchaber.checkstory.navigation.Routes
 
 @Composable
 @Destination(route = "home_screen", start = true)
@@ -56,7 +44,7 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                navigator.navigate(EditTemplateScreenDestination())
+                navigator.navigate(Routes.newChecklistTemplateScreen())
             }) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = null)
             }
@@ -75,18 +63,16 @@ private fun ChecklistCatalogView(
     LaunchedEffect(effect) {
         when (val value = effect) {
             is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
-                navigator.navigate(
-                    FillChecklistScreenDestination(createChecklistFrom = value.basedOn)
-                )
+                navigator.navigate(Routes.newChecklistScreen(value.basedOn))
             }
             is ChecklistCatalogEffect.NavigateToChecklist -> {
-                navigator.navigate(FillChecklistScreenDestination(checklistId = value.checklistId))
+                navigator.navigate(Routes.editChecklistScreen(value.checklistId))
             }
             is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
-                navigator.navigate(EditTemplateScreenDestination(value.templateId))
+                navigator.navigate(Routes.editChecklistTemplateScreen(value.templateId))
             }
             is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
-                navigator.navigate(ChecklistHistoryScreenDestination(value.templateId))
+                navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
             }
             null -> Unit
         }

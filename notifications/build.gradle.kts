@@ -11,6 +11,9 @@ plugins {
 }
 
 android {
+    hilt {
+        enableAggregatingTask = true
+    }
     libraryVariants.all {
         kotlin.sourceSets {
             getByName(name) {
@@ -35,6 +38,8 @@ dependencies {
 
     implementation(platform(Dependencies.firebasePlatform))
     implementation(Dependencies.messaging)
+
+    implementation(Dependencies.work)
 
     kapt(Dependencies.hiltKapt)
 

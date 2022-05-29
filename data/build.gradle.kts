@@ -16,6 +16,9 @@ android {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
 
+    hilt {
+        enableAggregatingTask = true
+    }
     libraryVariants.all {
         kotlin.sourceSets {
             getByName(name) {
@@ -36,6 +39,8 @@ dependencies {
 
     Dependencies.room.forEach(::implementation)
     ksp(Dependencies.roomKsp)
+
+    implementation(Dependencies.rrule)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

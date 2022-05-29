@@ -6,13 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TopAppBar
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -26,14 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistLoadingState
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEffect
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
-import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
-import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.checklist.fill.model.*
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
@@ -41,8 +31,17 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.navigation.Routes
 
-@Destination(route = "fill_checklist_screen", start = true)
+@Destination(
+    route = "fill_checklist_screen",
+    start = true,
+    deepLinks = [
+        DeepLink(
+            uriPattern = "app://checkstory/checklist/new/{createChecklistFrom}"
+        )
+    ]
+)
 @Composable
 fun FillChecklistScreen(
     navigator: DestinationsNavigator,
@@ -66,7 +65,7 @@ fun FillChecklistScreen(
     LaunchedEffect(effect) {
         when (val value = effect) {
             is FillChecklistEffect.NavigateToEditTemplate -> {
-                navigator.navigate(EditTemplateScreenDestination(value.templateId))
+                navigator.navigate(Routes.editChecklistTemplateScreen(value.templateId))
             }
             FillChecklistEffect.CloseScreen -> {
                 navigator.navigateUp()

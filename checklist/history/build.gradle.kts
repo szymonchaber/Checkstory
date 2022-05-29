@@ -11,6 +11,9 @@ plugins {
 }
 
 android {
+    hilt {
+        enableAggregatingTask = true
+    }
     libraryVariants.all {
         kotlin.sourceSets {
             getByName(name) {
@@ -26,7 +29,6 @@ dependencies {
     implementation(project(":design"))
     implementation(project(":data"))
     implementation(project(":navigation"))
-    implementation(project(":checklist:fill"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)

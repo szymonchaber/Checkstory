@@ -3,13 +3,15 @@ package dev.szymonchaber.checkstory.checklist.template.model
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 
 sealed interface TemplateLoadingState {
 
     data class Success(
         val checklistTemplate: ChecklistTemplate,
         val checkboxes: List<ViewTemplateCheckbox>,
-        val checkboxesToDelete: List<TemplateCheckbox>
+        val checkboxesToDelete: List<TemplateCheckbox>,
+        val remindersToDelete: List<Reminder>
     ) : TemplateLoadingState {
 
         fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
@@ -85,12 +87,30 @@ sealed interface TemplateLoadingState {
             )
         }
 
+        fun plusReminder(reminder: Reminder): Success {
+            return updateTemplate {
+                copy(reminders = reminders.plus(reminder))
+            } // Do the same new / old discrimination (or not?)
+        }
+
+        fun minusReminder(reminder: Reminder): TemplateLoadingState {
+            val updatedRemindersToDelete = if (reminder.isStored) {
+                remindersToDelete.plus(reminder)
+            } else {
+                remindersToDelete
+            }
+            return updateTemplate {
+                copy(reminders = reminders.minus(reminder))
+            }.copy(remindersToDelete = updatedRemindersToDelete)
+        }
+
         companion object {
 
             fun fromTemplate(checklistTemplate: ChecklistTemplate): Success {
                 return Success(
                     checklistTemplate,
                     checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) },
+                    listOf(),
                     listOf()
                 )
             }
