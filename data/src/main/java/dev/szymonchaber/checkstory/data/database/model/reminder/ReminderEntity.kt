@@ -44,7 +44,7 @@ data class ReminderEntity(
         return with(RRule(recurrencePattern!!)) {
             when (freq) {
                 Frequency.Daily -> Interval.Daily
-                Frequency.Weekly -> Interval.Weekly(byDay.map { toDayOfWeek(it) })
+                Frequency.Weekly -> Interval.Weekly(byDay.first().let(::toDayOfWeek))
                 Frequency.Monthly -> Interval.Monthly(byMonthDay.first())
                 Frequency.Yearly -> Interval.Yearly(byYearDay.first())
             }
@@ -96,7 +96,7 @@ data class ReminderEntity(
                         Frequency.Daily
                     }
                     is Interval.Weekly -> {
-                        byDay.addAll(toWeekdays(interval.daysOfWeek))
+                        byDay.add(interval.dayOfWeek.toWeekdayNum())
                         Frequency.Weekly
                     }
                     is Interval.Monthly -> {
@@ -111,18 +111,17 @@ data class ReminderEntity(
             }.toRFC5545String()
         }
 
-        private fun toWeekdays(daysOfWeek: List<DayOfWeek>): List<WeekdayNum> {
-            return daysOfWeek.map {
-                val weekday = when (it) {
-                    DayOfWeek.MONDAY -> Weekday.Monday
-                    DayOfWeek.TUESDAY -> Weekday.Tuesday
-                    DayOfWeek.WEDNESDAY -> Weekday.Wednesday
-                    DayOfWeek.THURSDAY -> Weekday.Thursday
-                    DayOfWeek.FRIDAY -> Weekday.Friday
-                    DayOfWeek.SATURDAY -> Weekday.Saturday
-                    DayOfWeek.SUNDAY -> Weekday.Sunday
-                }
-                WeekdayNum(0, weekday)
+        private fun DayOfWeek.toWeekdayNum(): WeekdayNum {
+            return when (this) {
+                DayOfWeek.MONDAY -> Weekday.Monday
+                DayOfWeek.TUESDAY -> Weekday.Tuesday
+                DayOfWeek.WEDNESDAY -> Weekday.Wednesday
+                DayOfWeek.THURSDAY -> Weekday.Thursday
+                DayOfWeek.FRIDAY -> Weekday.Friday
+                DayOfWeek.SATURDAY -> Weekday.Saturday
+                DayOfWeek.SUNDAY -> Weekday.Sunday
+            }.let {
+                WeekdayNum(0, it)
             }
         }
     }

@@ -40,7 +40,7 @@ fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit
                         timeFormatter
                     )
                 }"
-                is Interval.Weekly -> "Weekly on ${interval.daysOfWeek} at ${reminder.startDateTime.format(timeFormatter)}"
+                is Interval.Weekly -> "Weekly on ${interval.dayOfWeek} at ${reminder.startDateTime.format(timeFormatter)}"
                 is Interval.Yearly -> "Yearly on ${interval.dayOfYear}th day at ${
                     reminder.startDateTime.format(timeFormatter)
                 }"

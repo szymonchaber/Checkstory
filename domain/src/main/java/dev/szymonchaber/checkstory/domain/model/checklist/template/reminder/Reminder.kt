@@ -52,7 +52,7 @@ sealed interface Interval {
 
     object Daily : Interval
 
-    data class Weekly(val daysOfWeek: List<DayOfWeek>) : Interval
+    data class Weekly(val dayOfWeek: DayOfWeek) : Interval
 
     data class Monthly(val dayOfMonth: Int) : Interval
 

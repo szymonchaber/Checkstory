@@ -99,9 +99,9 @@ class EditReminderViewModel @Inject constructor() :
             .map { (success, event) ->
                 val newInterval = when (event.intervalType) {
                     IntervalType.DAILY -> Interval.Daily
-                    IntervalType.WEEKLY -> Interval.Weekly(listOf())
-                    IntervalType.MONTHLY -> Interval.Monthly(1)
-                    IntervalType.YEARLY -> Interval.Yearly(1)
+                    IntervalType.WEEKLY -> Interval.Weekly(LocalDateTime.now().dayOfWeek)
+                    IntervalType.MONTHLY -> Interval.Monthly(1) // TODO from UI
+                    IntervalType.YEARLY -> Interval.Yearly(1) // TODO from UI
                 }
                 val newReminder = (success.reminder as Reminder.Recurring).copy(interval = newInterval)
                 EditReminderState(success.copy(reminder = newReminder)) to null

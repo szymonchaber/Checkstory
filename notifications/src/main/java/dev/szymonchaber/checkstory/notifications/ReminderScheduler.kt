@@ -64,13 +64,13 @@ class ReminderScheduler @Inject constructor(
     }
 
     private fun scheduleRecurringReminder(reminder: Reminder.Recurring) {
-        Timber.d("scheduling recurring reminder: $reminder")
         if (reminder.interval is Interval.Daily) {
             scheduleDailyReminder(reminder)
         } else {
             val startDateTime = findCorrectStartDateTime(reminder)
             val toEpochMilli = startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
                 .toEpochMilli()
+            logReminderScheduling(toEpochMilli, reminder)
             alarmManager.set(
                 AlarmManager.RTC_WAKEUP,
                 toEpochMilli,
@@ -84,12 +84,18 @@ class ReminderScheduler @Inject constructor(
 
         val toEpochMilli = startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
             .toEpochMilli()
+        logReminderScheduling(toEpochMilli, reminder)
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
             toEpochMilli,
             TimeUnit.DAYS.toMillis(1),
             createIntent(reminder)
         )
+    }
+
+    private fun logReminderScheduling(toEpochMilli: Long, reminder: Reminder.Recurring) {
+        val minuteDelta = (toEpochMilli - Instant.now().toEpochMilli()) / 1000 / 60
+        Timber.d("Scheduling recurring reminder: $reminder\nFiring in $minuteDelta minutes")
     }
 
     private fun findCorrectStartDateTime(reminder: Reminder.Recurring): LocalDateTime {
@@ -99,7 +105,7 @@ class ReminderScheduler @Inject constructor(
                     reminder.startDateTime.plusDays(1)
                 }
                 is Interval.Weekly -> {
-                    reminder.startDateTime.with(TemporalAdjusters.next(interval.daysOfWeek.first()))
+                    reminder.startDateTime.with(TemporalAdjusters.next(interval.dayOfWeek))
                 }
                 is Interval.Monthly -> {
                     reminder.startDateTime.plusMonths(1).withDayOfMonth(reminder.startDateTime.dayOfMonth)
