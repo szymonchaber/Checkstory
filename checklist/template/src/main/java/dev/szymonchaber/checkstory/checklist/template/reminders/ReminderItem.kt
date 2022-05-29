@@ -17,6 +17,7 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.*
 
 @Composable
@@ -36,11 +37,12 @@ fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit
             when (val interval = reminder.interval) {
                 Interval.Daily -> "Daily at ${reminder.startDateTime.format(timeFormatter)}"
                 is Interval.Monthly -> "Monthly on ${interval.dayOfMonth}th day at ${
-                    reminder.startDateTime.format(
-                        timeFormatter
-                    )
+                    reminder.startDateTime.format(timeFormatter)
                 }"
-                is Interval.Weekly -> "Weekly on ${interval.dayOfWeek} at ${reminder.startDateTime.format(timeFormatter)}"
+                is Interval.Weekly -> {
+                    val formattedWeekDay = interval.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
+                    "Weekly on $formattedWeekDay at ${reminder.startDateTime.format(timeFormatter)}"
+                }
                 is Interval.Yearly -> "Yearly on ${interval.dayOfYear}th day at ${
                     reminder.startDateTime.format(timeFormatter)
                 }"

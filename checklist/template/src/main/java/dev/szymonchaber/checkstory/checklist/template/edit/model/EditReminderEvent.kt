@@ -4,6 +4,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalTyp
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.ReminderType
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -20,6 +21,8 @@ sealed interface EditReminderEvent {
     data class ReminderDateSet(val date: LocalDate) : EditReminderEvent
 
     data class IntervalSelected(val intervalType: IntervalType) : EditReminderEvent
+
+    data class DaysOfWeekSelected(val daysOfWeek: List<DayOfWeek>) : EditReminderEvent
 
     data class DayOfMonthSelected(val dayOfMonth: Int) : EditReminderEvent
 

@@ -32,6 +32,7 @@ class EditReminderViewModel @Inject constructor() :
             eventFlow.handleTimeSet(),
             eventFlow.handleDateSet(),
             eventFlow.handleIntervalSelected(),
+            eventFlow.handleDaysOfWeekSelected(),
             eventFlow.handleDayOfMonthSelected(),
             eventFlow.handleDayOfYearSelected(),
             eventFlow.handleSaveClicked()
@@ -100,10 +101,26 @@ class EditReminderViewModel @Inject constructor() :
                 val newInterval = when (event.intervalType) {
                     IntervalType.DAILY -> Interval.Daily
                     IntervalType.WEEKLY -> Interval.Weekly(LocalDateTime.now().dayOfWeek)
-                    IntervalType.MONTHLY -> Interval.Monthly(1) // TODO from UI
-                    IntervalType.YEARLY -> Interval.Yearly(1) // TODO from UI
+                    IntervalType.MONTHLY -> Interval.Monthly(1)
+                    IntervalType.YEARLY -> Interval.Yearly(1)
                 }
                 val newReminder = (success.reminder as Reminder.Recurring).copy(interval = newInterval)
+                EditReminderState(success.copy(reminder = newReminder)) to null
+            }
+    }
+
+    private fun Flow<EditReminderEvent>.handleDaysOfWeekSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
+        return filterIsInstance<EditReminderEvent.DaysOfWeekSelected>()
+            .withSuccessState()
+            .filter {
+                (it.first.reminder is Reminder.Recurring)
+            }
+            .map { (success, event) ->
+                val newInterval = when (val interval = (success.reminder as Reminder.Recurring).interval) {
+                    is Interval.Weekly -> interval.copy(dayOfWeek = event.daysOfWeek.last()) // TODO some unwrapping is needed
+                    else -> interval
+                }
+                val newReminder = success.reminder.copy(interval = newInterval)
                 EditReminderState(success.copy(reminder = newReminder)) to null
             }
     }

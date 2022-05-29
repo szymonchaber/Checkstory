@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -30,8 +31,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Exact
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Recurring
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.*
 
 @Composable
@@ -80,7 +83,7 @@ fun EditReminderScreen(
 }
 
 @Composable
-private fun EditReminderView(reminder: Reminder, onEvent: (EditReminderEvent) -> Unit) {
+private fun ColumnScope.EditReminderView(reminder: Reminder, onEvent: (EditReminderEvent) -> Unit) {
     val options = ReminderType.values().map {
         when (it) {
             ReminderType.EXACT -> ToggleOption(it, "One time")
@@ -103,7 +106,11 @@ private fun EditReminderView(reminder: Reminder, onEvent: (EditReminderEvent) ->
         is Exact -> ExactReminderView(reminder, onEvent)
         is Recurring -> RecurringReminderView(reminder, onEvent)
     }
-    Button(onClick = { onEvent(EditReminderEvent.SaveReminderClicked) }) {
+    Button(
+        modifier = Modifier
+            .align(CenterHorizontally)
+            .padding(top = 16.dp),
+        onClick = { onEvent(EditReminderEvent.SaveReminderClicked) }) {
         Text("Save")
     }
 }
@@ -126,7 +133,10 @@ fun IntervalSpecificSection(reminder: Recurring, onEvent: (EditReminderEvent) ->
     when (val interval = reminder.interval) {
         Interval.Daily -> Unit
         is Interval.Weekly -> {
-            // TODO
+            DaysOfWeekSelector(
+                selectedDaysOfWeek = listOf(interval.dayOfWeek),
+                onSelectionChange = { onEvent(EditReminderEvent.DaysOfWeekSelected(it)) }
+            )
         }
         is Interval.Monthly -> {
             var textInput by remember { mutableStateOf(interval.dayOfMonth.toString()) }
@@ -333,4 +343,29 @@ fun <T> DropDownList(
 
 enum class IntervalType {
     DAILY, WEEKLY, MONTHLY, YEARLY
+}
+
+@Composable
+fun DaysOfWeekSelector(
+    selectedDaysOfWeek: List<DayOfWeek>,
+    onSelectionChange: (selectedDaysOfWeek: List<DayOfWeek>) -> Unit
+) {
+    val options = remember(::daysOfWeekToSelectOptions)
+    MultiSelectCircleRow(
+        selectedDaysOfWeek,
+        options,
+        {
+            onSelectionChange(it)
+        },
+        Modifier
+            .padding(horizontal = 8.dp)
+            .padding(top = 16.dp)
+    )
+}
+
+private fun daysOfWeekToSelectOptions(): List<SelectOption<DayOfWeek>> {
+    val locale = Locale.getDefault()
+    return DayOfWeek.values().map {
+        SelectOption(it, it.getDisplayName(TextStyle.SHORT, locale))
+    }
 }
