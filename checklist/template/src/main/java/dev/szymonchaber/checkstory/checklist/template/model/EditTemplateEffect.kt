@@ -4,5 +4,6 @@ sealed interface EditTemplateEffect {
 
     object CloseScreen : EditTemplateEffect
 
-    object ShowAddReminderSheet : EditTemplateEffect
+    @Suppress("CanSealedSubClassBeObject")
+    class ShowAddReminderSheet : EditTemplateEffect
 }

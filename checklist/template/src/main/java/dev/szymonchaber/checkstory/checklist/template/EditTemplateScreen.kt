@@ -35,7 +35,6 @@ import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -66,7 +65,7 @@ fun EditTemplateScreen(
             is EditTemplateEffect.CloseScreen -> {
                 navController.navigateUp()
             }
-            EditTemplateEffect.ShowAddReminderSheet -> {
+            is EditTemplateEffect.ShowAddReminderSheet -> {
                 scope.launch {
                     modalBottomSheetState.show()
                 }
@@ -85,9 +84,8 @@ fun EditTemplateScreen(
         },
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        // scrimColor = Color.Red,  // Color for the fade background when you open/close the drawer
     ) {
-        EditTemplateScaffold(navController, state, viewModel, scope, modalBottomSheetState)
+        EditTemplateScaffold(navController, state, viewModel)
     }
 }
 
@@ -95,9 +93,7 @@ fun EditTemplateScreen(
 private fun EditTemplateScaffold(
     navController: NavController,
     state: EditTemplateState,
-    viewModel: EditTemplateViewModel,
-    scope: CoroutineScope,
-    modalBottomSheetState: ModalBottomSheetState
+    viewModel: EditTemplateViewModel
 ) {
     AdvertScaffold(
         topBar = {

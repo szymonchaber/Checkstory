@@ -184,7 +184,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.AddReminderClicked>()
             .withSuccessState()
             .map {
-                null to EditTemplateEffect.ShowAddReminderSheet
+                null to EditTemplateEffect.ShowAddReminderSheet()
             }
     }
 
