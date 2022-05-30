@@ -24,6 +24,7 @@ android {
 }
 
 android {
+    namespace = "dev.szymonchaber.checkstory.checklist.template"
     hilt {
         enableAggregatingTask = true
     }

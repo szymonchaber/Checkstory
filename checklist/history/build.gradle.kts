@@ -11,6 +11,7 @@ plugins {
 }
 
 android {
+    namespace = "dev.szymonchaber.checkstory.checklist.history"
     hilt {
         enableAggregatingTask = true
     }

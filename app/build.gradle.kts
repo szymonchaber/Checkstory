@@ -13,6 +13,9 @@ plugins {
 }
 
 android {
+
+    namespace = "dev.szymonchaber.checkstory"
+
     compileSdk = 31
 
     defaultConfig {

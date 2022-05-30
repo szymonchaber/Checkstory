@@ -10,6 +10,7 @@ plugins {
 }
 
 android {
+    namespace = "dev.szymonchaber.checkstory.domain"
     hilt {
         enableAggregatingTask = true
     }

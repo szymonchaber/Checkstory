@@ -12,6 +12,7 @@ plugins {
 
 android {
 
+    namespace = "dev.szymonchaber.checkstory.data"
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
