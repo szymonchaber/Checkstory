@@ -8,11 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
-import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
-import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
-import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
-import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
-import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
+import dev.szymonchaber.checkstory.data.database.dao.*
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
@@ -43,7 +39,7 @@ object DatabaseModule {
                 println("SQL Query: $sqlQuery SQL Args: $bindArgs")
             }, Executors.newSingleThreadExecutor())
             .build()
-            .apply { insertDummyData() }
+//            .apply { insertDummyData() }
     }
 
     private fun AppDatabase.insertDummyData() {
