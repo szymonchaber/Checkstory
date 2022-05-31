@@ -89,7 +89,6 @@ private fun ChecklistCatalogView(
         item {
             Text(
                 modifier = Modifier
-                    .padding(top = 8.dp)
                     .padding(horizontal = 16.dp),
                 text = stringResource(R.string.templates),
                 style = MaterialTheme.typography.h5
