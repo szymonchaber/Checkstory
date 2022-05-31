@@ -12,6 +12,7 @@
     <string name="checklist">Checklist</string>
     <string name="items">Items</string>
     <string name="notes">Notes</string>
+    <string name="add_template">Add template</string>
     <string name="edit_template">Edit template</string>
     <string name="title">Title</string>
     <string name="description">Description</string>

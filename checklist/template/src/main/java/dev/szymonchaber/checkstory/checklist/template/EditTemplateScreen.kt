@@ -95,21 +95,27 @@ fun EditTemplateScreen(
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     ) {
-        EditTemplateScaffold(navController, state, viewModel)
+        EditTemplateScaffold(navController, templateId == null, state, viewModel)
     }
 }
 
 @Composable
 private fun EditTemplateScaffold(
     navController: NavController,
+    isNewTemplate: Boolean,
     state: EditTemplateState,
     viewModel: EditTemplateViewModel
 ) {
     AdvertScaffold(
         topBar = {
+            val titleText = if (isNewTemplate) {
+                R.string.add_template
+            } else {
+                R.string.edit_template
+            }
             TopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.edit_template))
+                    Text(text = stringResource(titleText))
                 },
                 navigationIcon = {
                     IconButton(onClick = {
