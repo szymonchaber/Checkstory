@@ -1,27 +1,13 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -66,7 +52,7 @@ fun ChecklistTemplateView(
                 modifier = Modifier
                     .align(Alignment.End)
                     .padding(horizontal = 16.dp)
-                    .padding(top = 16.dp, bottom = 8.dp)
+                    .padding(top = 16.dp)
             )
             Row(
                 modifier = Modifier.align(Alignment.End),
@@ -95,7 +81,7 @@ fun ChecklistTemplateView(
                     Box {
                         Card(
                             modifier = Modifier
-                                .size(width = 90.dp, height = 134.dp)
+                                .size(width = 90.dp, height = 115.dp)
                                 .align(Alignment.Center),
                             elevation = 4.dp,
                             onClick = { eventListener(ChecklistCatalogEvent.TemplateClicked(checklistTemplate.id)) }
