@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.history
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
@@ -26,12 +28,14 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 
+@SuppressLint("MissingPermission")
 @Composable
 @Destination(route = "checklist_history", start = true)
 fun ChecklistHistoryScreen(
     navigator: DestinationsNavigator,
     templateId: ChecklistTemplateId?
 ) {
+    trackScreenName("checklist_history")
     val viewModel = hiltViewModel<ChecklistHistoryViewModel>()
     LaunchedEffect(templateId) {
         viewModel.onEvent(ChecklistHistoryEvent.LoadChecklistHistory(templateId!!))

@@ -24,6 +24,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadi
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
+import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.navigation.Routes
@@ -31,6 +32,7 @@ import dev.szymonchaber.checkstory.navigation.Routes
 @Composable
 @Destination(route = "home_screen", start = true)
 fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
+    trackScreenName("checklist_catalog")
     AdvertScaffold(
         topBar = {
             TopAppBar(

@@ -32,6 +32,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderView
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
+import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
@@ -46,6 +47,7 @@ fun EditTemplateScreen(
     navController: NavController,
     templateId: ChecklistTemplateId?
 ) {
+    trackScreenName("edit_template")
     val viewModel = hiltViewModel<EditTemplateViewModel>()
     val editReminderViewModel = hiltViewModel<EditReminderViewModel>()
 

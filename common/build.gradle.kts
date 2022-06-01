@@ -27,6 +27,9 @@ dependencies {
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
 
+    implementation(platform(Dependencies.firebasePlatform))
+    implementation(Dependencies.analytics)
+
     kapt(Dependencies.hiltKapt)
 
     Dependencies.unitTest.forEach(::testImplementation)
