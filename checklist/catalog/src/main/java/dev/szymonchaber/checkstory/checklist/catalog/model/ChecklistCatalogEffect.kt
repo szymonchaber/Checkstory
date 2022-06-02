@@ -13,4 +13,7 @@ sealed interface ChecklistCatalogEffect {
     data class NavigateToTemplateEdit(val templateId: ChecklistTemplateId) : ChecklistCatalogEffect
 
     data class NavigateToTemplateHistory(val templateId: ChecklistTemplateId) : ChecklistCatalogEffect
+
+    @Suppress("CanSealedSubClassBeObject")
+    class NavigateToNewTemplate : ChecklistCatalogEffect
 }

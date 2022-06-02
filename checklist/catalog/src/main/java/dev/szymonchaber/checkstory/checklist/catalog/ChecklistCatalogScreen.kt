@@ -19,10 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
+import dev.szymonchaber.checkstory.checklist.catalog.model.*
 import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
@@ -33,6 +30,7 @@ import dev.szymonchaber.checkstory.navigation.Routes
 @Destination(route = "home_screen", start = true)
 fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     trackScreenName("checklist_catalog")
+    val viewModel = hiltViewModel<ChecklistCatalogViewModel>()
     AdvertScaffold(
         topBar = {
             TopAppBar(
@@ -42,11 +40,11 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                 elevation = 12.dp
             )
         }, content = {
-            ChecklistCatalogView(hiltViewModel(), navigator)
+            ChecklistCatalogView(viewModel, navigator)
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                navigator.navigate(Routes.newChecklistTemplateScreen())
+                viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
             }) {
                 Icon(imageVector = Icons.Filled.Add, contentDescription = null)
             }
@@ -75,6 +73,9 @@ private fun ChecklistCatalogView(
             }
             is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
                 navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
+            }
+            is ChecklistCatalogEffect.NavigateToNewTemplate -> {
+                navigator.navigate(Routes.newChecklistTemplateScreen())
             }
             null -> Unit
         }
