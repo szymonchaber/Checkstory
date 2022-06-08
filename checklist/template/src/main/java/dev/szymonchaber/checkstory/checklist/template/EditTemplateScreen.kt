@@ -22,6 +22,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -198,7 +199,10 @@ private fun ChecklistTemplateDetails(
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     OutlinedTextField(
-        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Next,
+            capitalization = KeyboardCapitalization.Sentences
+        ),
         singleLine = true,
         maxLines = 1,
         value = checklistTemplate.title,
@@ -219,6 +223,7 @@ private fun ChecklistTemplateDetails(
         focusRequester.requestFocus()
     }
     OutlinedTextField(
+        keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
         value = checklistTemplate.description,
         label = { Text(text = stringResource(R.string.description)) },
         onValueChange = {

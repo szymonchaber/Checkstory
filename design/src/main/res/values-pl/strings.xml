@@ -33,7 +33,7 @@
     <string name="interval">Częstotliwość</string>
     <string name="one_time">Jednorazowe</string>
     <string name="recurring">Powtarzalne</string>
-    <string name="save">Zapis</string>
+    <string name="save">Zapisz</string>
     <string name="reminder_one_time">Jednorazowo %s</string>
     <string name="interval_daily_at">Codziennie o %s</string>
     <string name="every_week_on_day_at">Co tydzień %s o %s</string>

@@ -6,6 +6,7 @@ import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEve
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderLoadingState
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderState
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalType
+import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
@@ -16,7 +17,9 @@ import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
-class EditReminderViewModel @Inject constructor() :
+class EditReminderViewModel @Inject constructor(
+    private val tracker: Tracker
+) :
     BaseViewModel<
             EditReminderEvent,
             EditReminderState,
