@@ -7,14 +7,7 @@ import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUse
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SaveChecklistUseCase
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -143,7 +136,7 @@ class FillChecklistViewModel @Inject constructor(
                     }
                     success.checklist.copy(items = itemsWithoutTemporaryIds)
                 }
-                saveChecklistUseCase.saveChecklist(checklistToStore)
+                saveChecklistUseCase.saveChecklist(checklistToStore.copy(notes = checklistToStore.notes.trimEnd()))
                 null to FillChecklistEffect.CloseScreen
             }
     }

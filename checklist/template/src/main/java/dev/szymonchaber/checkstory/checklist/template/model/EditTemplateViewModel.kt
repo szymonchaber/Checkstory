@@ -160,7 +160,11 @@ class EditTemplateViewModel @Inject constructor(
             .mapLatest { (loadingState, _) ->
                 val checklistTemplate = loadingState
                     .updateTemplate {
-                        copy(items = loadingState.checkboxes.map(ViewTemplateCheckbox::toDomainModel))
+                        copy(
+                            title = title.trimEnd(),
+                            description = description.trim(),
+                            items = loadingState.checkboxes.map(ViewTemplateCheckbox::toDomainModel)
+                                .map { it.copy(title = it.title.trimEnd()) })
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
