@@ -42,6 +42,9 @@ import dev.szymonchaber.checkstory.navigation.Routes
     deepLinks = [
         DeepLink(
             uriPattern = "app://checkstory/checklist/new/{createChecklistFrom}"
+        ),
+        DeepLink(
+            uriPattern = "app://checkstory/checklist/fill/{checklistId}"
         )
     ]
 )

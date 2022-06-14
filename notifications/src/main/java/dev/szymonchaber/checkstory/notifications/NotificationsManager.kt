@@ -9,23 +9,48 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.util.concurrent.atomic.AtomicInteger
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NotificationsManager @Inject constructor(@ApplicationContext val context: Context) {
 
-    private val id = AtomicInteger(1)
+    fun sendReminderNotification(
+        reminderId: ReminderId,
+        body: String,
+        newChecklistIntent: Intent,
+        recentChecklistIntent: Intent?
+    ) {
+        val requestCode = reminderId.id.toInt()
+        val newChecklistPendingIntent =
+            PendingIntent.getActivity(context, requestCode, newChecklistIntent, PendingIntent.FLAG_IMMUTABLE)
 
-    fun sendNotification(body: String, intent: Intent) {
-        val requestCode = id.getAndIncrement()
-        val pendingIntent = PendingIntent.getActivity(context, requestCode, intent, PendingIntent.FLAG_IMMUTABLE)
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val builder = NotificationCompat.Builder(context, REMINDERS_CHANNEL_ID)
             .setSmallIcon(R.drawable.checkbox_marked)
-            .setContentTitle("Checklist reminder") // TODO Extract to strings
+            .setContentTitle(context.getString(R.string.notification_reminder_title))
             .setContentText(body)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(newChecklistPendingIntent)
+            .addAction(
+                NotificationCompat.Action.Builder(
+                    null,
+                    context.getString(R.string.fill_new_checklist),
+                    newChecklistPendingIntent
+                ).build()
+            )
+            .apply {
+                recentChecklistIntent?.let {
+                    PendingIntent.getActivity(context, requestCode, it, PendingIntent.FLAG_IMMUTABLE)
+                }?.let {
+                    addAction(
+                        NotificationCompat.Action.Builder(
+                            null,
+                            context.getString(R.string.complete_recent_checklist),
+                            it
+                        ).build()
+                    )
+                }
+            }
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
         createNotificationChannel()
@@ -36,13 +61,11 @@ class NotificationsManager @Inject constructor(@ApplicationContext val context: 
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Reminders"
-//                context.getString(R.string.channel_name) // TODO Extract to strings as it's readable by the user
-            val descriptionText = "Reminders"
-//                context.getString(R.string.channel_description) // TODO Extract to strings as it's readable by the user
+            val name = context.getString(R.string.reminder_channel_name)
+            val descriptionText = context.getString(R.string.reminder_channel_description)
             val channel =
                 NotificationChannel(
-                    CHANNEL_ID,
+                    REMINDERS_CHANNEL_ID,
                     name,
                     NotificationManager.IMPORTANCE_DEFAULT
                 ).apply {
@@ -56,6 +79,6 @@ class NotificationsManager @Inject constructor(@ApplicationContext val context: 
 
     companion object {
 
-        private const val CHANNEL_ID = "general"
+        private const val REMINDERS_CHANNEL_ID = "reminders"
     }
 }

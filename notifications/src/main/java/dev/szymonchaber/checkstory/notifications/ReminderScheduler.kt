@@ -121,7 +121,7 @@ class ReminderScheduler @Inject constructor(
     }
 
     private fun createIntent(reminder: Reminder): PendingIntent {
-        return ReminderReceiver.newIntent(context, reminder.forTemplate)
+        return ReminderReceiver.newIntent(context, reminder.forTemplate, reminder.id)
             .let {
                 PendingIntent.getBroadcast(
                     context,

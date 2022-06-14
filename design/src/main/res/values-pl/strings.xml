@@ -46,4 +46,10 @@
     <string name="friday_accusative">w piątek</string>
     <string name="saturday_accusative">w sobotę</string>
     <string name="sunday_accusative">w niedzielę</string>
+    <string name="notification_reminder_title">Przypomnienie o liście kontrolnej</string>
+    <string name="notification_reminder_body">Pora wypełnić listę kontrolną %s!</string>
+    <string name="fill_new_checklist">Wypełnij nową listę</string>
+    <string name="complete_recent_checklist">Uzupełnij poprzednią listę</string>
+    <string name="reminder_channel_name">Przypomnienia</string>
+    <string name="reminder_channel_description">Przypomnienia o wypełnieniu list kontrolnych</string>
 </resources>
