@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.reminders
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,7 +18,7 @@ fun RemindersSection(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
-        Text(stringResource(id = R.string.reminders_label))
+        Text(style = MaterialTheme.typography.caption, text = stringResource(id = R.string.reminders_label))
         Spacer(modifier = Modifier.height(8.dp))
         checklistTemplate.reminders.forEach {
             ReminderItem(it, eventCollector)
