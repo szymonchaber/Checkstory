@@ -149,19 +149,16 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
         checklist.items.forEach {
             CheckboxSection(checkbox = it, eventCollector = eventCollector)
         }
-        Text(
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-            style = MaterialTheme.typography.caption,
-            text = stringResource(R.string.notes),
-        )
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 4.dp, end = 8.dp),
+                .padding(start = 16.dp, top = 8.dp, end = 8.dp),
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-            value = checklist.notes, onValueChange = {
+            label = { Text(text = stringResource(R.string.notes)) },
+            value = checklist.notes,
+            onValueChange = {
                 eventCollector(FillChecklistEvent.NotesChanged(it))
-            }
+            },
         )
         DeleteButton(
             modifier = Modifier
