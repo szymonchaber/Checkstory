@@ -152,7 +152,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             style = MaterialTheme.typography.caption,
             text = stringResource(R.string.notes),
         )
-        TextField(
+        OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 24.dp, top = 4.dp, end = 24.dp),
@@ -164,7 +164,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
         DeleteButton(
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
-                .padding(top = 16.dp, bottom = 144.dp)
+                .padding(top = 24.dp, bottom = 144.dp)
         ) {
             eventCollector(FillChecklistEvent.DeleteChecklistClicked)
         }
