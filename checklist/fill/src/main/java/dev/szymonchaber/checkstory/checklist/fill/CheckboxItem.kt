@@ -12,7 +12,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 
 @Composable
 fun CheckboxItem(modifier: Modifier = Modifier, checkbox: Checkbox, onCheckedChange: (Boolean) -> Unit) {
-    Row(modifier.padding(start = 16.dp, end = 16.dp)) {
+    Row(modifier.padding(start = 8.dp, end = 8.dp)) {
         Checkbox(
             modifier = Modifier.align(Alignment.CenterVertically),
             checked = checkbox.isChecked,

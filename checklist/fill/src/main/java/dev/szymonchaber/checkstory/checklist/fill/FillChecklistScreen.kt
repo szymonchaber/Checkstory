@@ -131,16 +131,18 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             .fillMaxHeight()
     ) {
         Text(
-            modifier = Modifier.padding(start = 24.dp, top = 24.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
             text = checklist.title,
             style = MaterialTheme.typography.h4
         )
+        if (checklist.description.isNotEmpty()) {
+            Text(
+                modifier = Modifier.padding(start = 16.dp, top = 4.dp, end = 16.dp),
+                text = checklist.description
+            )
+        }
         Text(
-            modifier = Modifier.padding(start = 24.dp, top = 8.dp, bottom = 8.dp),
-            text = checklist.description
-        )
-        Text(
-            modifier = Modifier.padding(start = 24.dp, top = 16.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp),
             style = MaterialTheme.typography.caption,
             text = stringResource(R.string.items),
         )
@@ -148,14 +150,14 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             CheckboxSection(checkbox = it, eventCollector = eventCollector)
         }
         Text(
-            modifier = Modifier.padding(start = 24.dp, top = 16.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp),
             style = MaterialTheme.typography.caption,
             text = stringResource(R.string.notes),
         )
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, top = 4.dp, end = 24.dp),
+                .padding(start = 16.dp, top = 4.dp, end = 8.dp),
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
             value = checklist.notes, onValueChange = {
                 eventCollector(FillChecklistEvent.NotesChanged(it))
@@ -177,7 +179,7 @@ fun CheckboxSection(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> 
         eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
     }
     checkbox.children.forEach { child ->
-        CheckboxItem(modifier = Modifier.padding(start = 32.dp), checkbox = child) {
+        CheckboxItem(modifier = Modifier.padding(start = 24.dp), checkbox = child) {
             eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
         }
     }
