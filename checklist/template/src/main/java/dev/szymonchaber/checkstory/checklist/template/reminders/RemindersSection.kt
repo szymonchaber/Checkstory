@@ -18,13 +18,17 @@ fun RemindersSection(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
-        Text(style = MaterialTheme.typography.caption, text = stringResource(id = R.string.reminders_label))
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = stringResource(id = R.string.reminders_label),
+            style = MaterialTheme.typography.caption,
+        )
         Spacer(modifier = Modifier.height(8.dp))
         checklistTemplate.reminders.forEach {
             ReminderItem(it, eventCollector)
         }
         AddButton(
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.padding(top = 8.dp, start = 8.dp),
             onClick = {
                 eventCollector(EditTemplateEvent.AddReminderClicked)
             },

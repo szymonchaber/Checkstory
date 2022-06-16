@@ -152,7 +152,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, top = 8.dp, end = 8.dp),
+                .padding(start = 16.dp, top = 8.dp, end = 16.dp),
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
             label = { Text(text = stringResource(R.string.notes)) },
             value = checklist.notes,

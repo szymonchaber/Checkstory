@@ -38,7 +38,7 @@ fun ParentCheckboxItem(
         }
         checkbox.children.forEach { child ->
             CheckboxItem(
-                Modifier.padding(start = 32.dp, top = 8.dp),
+                Modifier.padding(start = 32.dp, top = 8.dp, end = 16.dp),
                 child.title,
                 {
                     eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox, child, it))
@@ -47,7 +47,7 @@ fun ParentCheckboxItem(
                 eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, child))
             }
         }
-        AddCheckboxButton(modifier = Modifier.padding(start = 32.dp, top = 4.dp), onClick = {
+        AddCheckboxButton(modifier = Modifier.padding(start = 32.dp, top = 4.dp, end = 16.dp), onClick = {
             eventCollector(EditTemplateEvent.ChildItemAdded(checkbox))
         })
     }

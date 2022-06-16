@@ -159,8 +159,8 @@ fun EditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     LazyColumn(
-        contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 144.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(top = 16.dp, bottom = 144.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
@@ -169,10 +169,17 @@ fun EditTemplateView(
             checkboxes,
 //            key = { it.id.id } // TODO causes crashes & animations don't work anyways - fix at some point
         ) {
-            ParentCheckboxItem(Modifier.animateItemPlacement(), it, eventCollector)
+            ParentCheckboxItem(
+                Modifier
+                    .animateItemPlacement()
+                    .padding(start = 8.dp, end = 16.dp), it, eventCollector
+            )
         }
         item {
-            AddCheckboxButton(onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) })
+            AddCheckboxButton(
+                modifier = Modifier.padding(start = 8.dp),
+                onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) }
+            )
         }
         item {
             RemindersSection(checklistTemplate, eventCollector)
@@ -211,6 +218,7 @@ private fun ChecklistTemplateDetails(
             eventCollector(EditTemplateEvent.TitleChanged(it))
         },
         modifier = Modifier
+            .padding(horizontal = 16.dp)
             .fillMaxWidth()
             .focusRequester(focusRequester),
         keyboardActions = KeyboardActions(
@@ -231,10 +239,16 @@ private fun ChecklistTemplateDetails(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 8.dp),
+            .padding(
+                horizontal = 16.dp,
+                vertical = 8.dp,
+            ),
     )
     Text(
-        modifier = Modifier.padding(top = 16.dp),
+        modifier = Modifier.padding(
+            top = 16.dp,
+            start = 16.dp
+        ),
         style = MaterialTheme.typography.caption,
         text = stringResource(R.string.items),
     )

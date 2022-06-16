@@ -54,7 +54,7 @@ fun ReminderItem(reminder: Reminder, eventCollector: (EditTemplateEvent) -> Unit
         }
     }
     Row(
-        modifier = Modifier.padding(start = 16.dp)
+        modifier = Modifier.padding(start = 24.dp)
     ) {
         Text(
             modifier = Modifier
