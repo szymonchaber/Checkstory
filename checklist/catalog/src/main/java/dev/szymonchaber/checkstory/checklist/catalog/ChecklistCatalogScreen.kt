@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -13,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -60,6 +62,7 @@ private fun ChecklistCatalogView(
     val state by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
+    val context = LocalContext.current
     LaunchedEffect(effect) {
         when (val value = effect) {
             is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
@@ -76,6 +79,13 @@ private fun ChecklistCatalogView(
             }
             is ChecklistCatalogEffect.NavigateToNewTemplate -> {
                 navigator.navigate(Routes.newChecklistTemplateScreen())
+            }
+            is ChecklistCatalogEffect.ShowFreeTemplatesUsed -> {
+                Toast.makeText(
+                    context,
+                    "Free templates exceeded!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
             null -> Unit
         }
