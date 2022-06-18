@@ -8,31 +8,69 @@ import java.time.temporal.TemporalAdjusters
 object ReminderStartDateAdjuster {
 
     fun findCorrectStartDateTime(reminder: Reminder.Recurring, currentDateTime: LocalDateTime): LocalDateTime {
-        // TODO unit test this - it adds one day instead of TODAY + one etc.!
         val startDateTime = reminder.startDateTime
         return if (startDateTime.isBefore(currentDateTime)) {
             when (val interval = reminder.interval) {
-                Interval.Daily -> {
-                    val time = startDateTime.toLocalTime()
-                    if (time.isBefore(currentDateTime.toLocalTime())) {
-                        currentDateTime.plusDays(1)
-                    } else {
-                        currentDateTime
-                    }.with(time)
-                }
-                is Interval.Weekly -> {
-                    startDateTime.with(TemporalAdjusters.next(interval.dayOfWeek))
-                }
-                is Interval.Monthly -> {
-                    startDateTime.plusMonths(1).withDayOfMonth(startDateTime.dayOfMonth)
-                }
-                is Interval.Yearly -> {
-                    val dateTime = startDateTime
-                    dateTime.plusYears(1).withDayOfYear(dateTime.dayOfYear)
-                }
+                Interval.Daily -> adjustDailyReminder(startDateTime, currentDateTime)
+                is Interval.Weekly -> adjustWeeklyReminder(startDateTime, interval, currentDateTime)
+                is Interval.Monthly -> adjustMonthlyDate(startDateTime, interval, currentDateTime)
+                is Interval.Yearly -> adjustYearlyDate(startDateTime, interval, currentDateTime)
             }
         } else {
             startDateTime
+        }
+    }
+
+    private fun adjustDailyReminder(
+        startDateTime: LocalDateTime,
+        currentDateTime: LocalDateTime
+    ): LocalDateTime {
+        val adjustedStartDateTime = currentDateTime.with(startDateTime.toLocalTime())
+        return if (adjustedStartDateTime < currentDateTime) {
+            adjustedStartDateTime.plusDays(1)
+        } else {
+            adjustedStartDateTime
+        }
+    }
+
+    private fun adjustWeeklyReminder(
+        startDateTime: LocalDateTime,
+        interval: Interval.Weekly,
+        currentDateTime: LocalDateTime
+    ): LocalDateTime {
+        val adjustedStartDateTime =
+            currentDateTime.with(startDateTime.toLocalTime()).with(TemporalAdjusters.nextOrSame(interval.dayOfWeek))
+        return if (adjustedStartDateTime < currentDateTime) {
+            adjustedStartDateTime.with(TemporalAdjusters.next(interval.dayOfWeek))
+        } else {
+            adjustedStartDateTime
+        }
+    }
+
+    private fun adjustYearlyDate(
+        startDateTime: LocalDateTime,
+        interval: Interval.Yearly,
+        currentDateTime: LocalDateTime
+    ): LocalDateTime {
+        val adjustedStartDateTime = currentDateTime.with(startDateTime.toLocalTime()).withDayOfYear(interval.dayOfYear)
+        return if (adjustedStartDateTime < currentDateTime) {
+            adjustedStartDateTime.plusYears(1).withDayOfYear(interval.dayOfYear)
+        } else {
+            adjustedStartDateTime
+        }
+    }
+
+    private fun adjustMonthlyDate(
+        startDateTime: LocalDateTime,
+        interval: Interval.Monthly,
+        currentDateTime: LocalDateTime
+    ): LocalDateTime {
+        val adjustedStartDateTime =
+            currentDateTime.with(startDateTime.toLocalTime()).withDayOfMonth(interval.dayOfMonth)
+        return if (adjustedStartDateTime < currentDateTime) {
+            adjustedStartDateTime.plusMonths(1).withDayOfMonth(interval.dayOfMonth)
+        } else {
+            adjustedStartDateTime
         }
     }
 }
