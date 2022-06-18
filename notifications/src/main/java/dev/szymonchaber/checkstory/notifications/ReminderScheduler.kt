@@ -16,7 +16,6 @@ import timber.log.Timber
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.temporal.TemporalAdjusters
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -95,29 +94,14 @@ class ReminderScheduler @Inject constructor(
 
     private fun logReminderScheduling(toEpochMilli: Long, reminder: Reminder.Recurring) {
         val minuteDelta = (toEpochMilli - Instant.now().toEpochMilli()) / 1000 / 60
+        if (minuteDelta < 0) {
+            throw IllegalStateException("Cannot schedule reminders for past date. Attempted minute delta: $minuteDelta")
+        }
         Timber.d("Scheduling recurring reminder: $reminder\nFiring in $minuteDelta minutes")
     }
 
     private fun findCorrectStartDateTime(reminder: Reminder.Recurring): LocalDateTime {
-        return if (reminder.startDateTime.isBefore(LocalDateTime.now())) {
-            when (val interval = reminder.interval) {
-                Interval.Daily -> {
-                    reminder.startDateTime.plusDays(1)
-                }
-                is Interval.Weekly -> {
-                    reminder.startDateTime.with(TemporalAdjusters.next(interval.dayOfWeek))
-                }
-                is Interval.Monthly -> {
-                    reminder.startDateTime.plusMonths(1).withDayOfMonth(reminder.startDateTime.dayOfMonth)
-                }
-                is Interval.Yearly -> {
-                    val dateTime = reminder.startDateTime
-                    dateTime.plusYears(1).withDayOfYear(dateTime.dayOfYear)
-                }
-            }
-        } else {
-            reminder.startDateTime
-        }
+        return ReminderStartDateAdjuster.findCorrectStartDateTime(reminder, LocalDateTime.now())
     }
 
     private fun createIntent(reminder: Reminder): PendingIntent {
