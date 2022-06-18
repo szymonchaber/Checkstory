@@ -4,14 +4,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.TemplateCheckboxRepository
-import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
 class DeleteChecklistTemplateUseCase @Inject constructor(
     private val templateRepository: ChecklistTemplateRepository,
     private val checklistRepository: ChecklistRepository,
-    private val reminderRepository: TemplateReminderRepository,
     private val checkboxRepository: TemplateCheckboxRepository
 ) {
 
