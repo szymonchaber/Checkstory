@@ -13,10 +13,8 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -50,12 +48,20 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
-        val checklistTemplateId = checklistTemplateDao.insert(
-            ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
-        )
-        insertTemplateCheckboxes(checklistTemplate.items, checklistTemplateId)
-        insertReminders(checklistTemplate.reminders, checklistTemplateId)
-        return checklistTemplateId
+        return withContext(Dispatchers.Default) {
+            val checklistTemplateId = checklistTemplateDao.insert(
+                ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
+            )
+            awaitAll(
+                async {
+                    insertTemplateCheckboxes(checklistTemplate.items, checklistTemplateId)
+                },
+                async {
+                    insertReminders(checklistTemplate.reminders, checklistTemplateId)
+                }
+            )
+            checklistTemplateId
+        }
     }
 
     private suspend fun insertReminders(reminders: List<Reminder>, checklistTemplateId: Long) {
