@@ -10,6 +10,8 @@ interface ChecklistTemplateRepository {
 
     fun get(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate>
 
+    suspend fun getOrNull(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate?
+
     suspend fun update(checklistTemplate: ChecklistTemplate)
 
     suspend fun delete(checklistTemplate: ChecklistTemplate)

@@ -18,6 +18,12 @@ interface ChecklistTemplateDao {
     )
     fun getById(id: Long): Flow<ChecklistTemplateEntity?>
 
+    @Query(
+        "SELECT * FROM checklistTemplateEntity " +
+                "WHERE checklistTemplateEntity.id=:id"
+    )
+    suspend fun getByIdOrNull(id: Long): ChecklistTemplateEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(template: ChecklistTemplateEntity): Long
 

@@ -4,18 +4,30 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.TemplateCheckboxRepository
-import kotlinx.coroutines.flow.Flow
+import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
+import kotlinx.coroutines.*
 import javax.inject.Inject
 
 class DeleteChecklistTemplateUseCase @Inject constructor(
     private val templateRepository: ChecklistTemplateRepository,
     private val checklistRepository: ChecklistRepository,
+    private val reminderRepository: TemplateReminderRepository,
     private val checkboxRepository: TemplateCheckboxRepository
 ) {
 
     suspend fun deleteChecklistTemplate(checklistTemplate: ChecklistTemplate) {
-        checklistRepository.deleteBasedOnTemplate(checklistTemplate)
-        checkboxRepository.deleteFromTemplate(checklistTemplate)
-        templateRepository.delete(checklistTemplate)
+        CoroutineScope(Dispatchers.Default).launch {
+            awaitAll(
+                async {
+                    checklistRepository.deleteBasedOnTemplate(checklistTemplate)
+                },
+                async {
+                    checkboxRepository.deleteFromTemplate(checklistTemplate)
+                },
+                async {
+                    templateRepository.delete(checklistTemplate)
+                }
+            )
+        }
     }
 }

@@ -14,11 +14,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
@@ -36,6 +32,10 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklistTemplate)
             .take(1)
+    }
+
+    suspend fun getByIdOrNull(id: Long): ChecklistTemplate? {
+        return checklistTemplateDao.getByIdOrNull(id)?.let { combineIntoDomainChecklistTemplate(it) }?.firstOrNull()
     }
 
     fun getAll(): Flow<List<ChecklistTemplate>> {
@@ -144,15 +144,11 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 
     suspend fun delete(checklistTemplate: ChecklistTemplate) {
         checklistTemplateDao.delete(ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate))
-        deleteTemplateReminders(checklistTemplate.reminders)
+        deleteTemplateReminders(checklistTemplate)
     }
 
-    private suspend fun deleteTemplateReminders(reminders: List<Reminder>) {
-        reminders.forEach {
-            withContext(Dispatchers.IO) {
-                reminderDao.deleteAllFromTemplate(it.id.id)
-            }
-        }
+    private suspend fun deleteTemplateReminders(checklistTemplate: ChecklistTemplate) {
+        reminderDao.deleteAllFromTemplate(checklistTemplate.id.id)
     }
 
     suspend fun deleteCheckboxesFromTemplate(checklistTemplate: ChecklistTemplate) {

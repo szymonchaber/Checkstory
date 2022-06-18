@@ -21,6 +21,10 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
         return dataSource.getById(checklistTemplateId.id)
     }
 
+    override suspend fun getOrNull(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
+        return dataSource.getByIdOrNull(checklistTemplateId.id)
+    }
+
     override suspend fun update(checklistTemplate: ChecklistTemplate) {
         dataSource.update(checklistTemplate)
     }

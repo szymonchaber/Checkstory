@@ -10,7 +10,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,7 +32,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val reminderId = ReminderId(reminderIdLong)
         CoroutineScope(Dispatchers.Main)
             .launch {
-                val template = getChecklistTemplateUseCase.getChecklistTemplate(templateId).first()
+                val template = getChecklistTemplateUseCase.getChecklistTemplateOrNull(templateId) ?: return@launch
                 val newChecklistIntent = Intent(
                     Intent.ACTION_VIEW,
                     "app://checkstory/checklist/new/${template.id.id}".toUri()
