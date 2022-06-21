@@ -47,7 +47,7 @@
     <string name="saturday_accusative">on Saturday</string>
     <string name="sunday_accusative">on Sunday</string>
     <string name="notification_reminder_title">Checklist reminder</string>
-    <string name="notification_reminder_body">Time to fill out %s checklist!</string>
+    <string name="notification_reminder_body">Time to fill out %s!</string>
     <string name="fill_new_checklist">Fill a new checklist</string>
     <string name="complete_recent_checklist">Complete a recent one</string>
     <string name="reminder_channel_name">Reminders</string>
