@@ -17,8 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -203,7 +201,6 @@ private fun ChecklistTemplateDetails(
     checklistTemplate: ChecklistTemplate,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     OutlinedTextField(
         keyboardOptions = KeyboardOptions.Default.copy(
@@ -219,17 +216,13 @@ private fun ChecklistTemplateDetails(
         },
         modifier = Modifier
             .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .focusRequester(focusRequester),
+            .fillMaxWidth(),
         keyboardActions = KeyboardActions(
             onNext = {
                 focusManager.moveFocus(FocusDirection.Down)
             }
         )
     )
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
     OutlinedTextField(
         keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
         value = checklistTemplate.description,
