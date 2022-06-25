@@ -34,9 +34,10 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleLoadChecklist(),
             eventFlow.handleTemplateClicked(),
             eventFlow.handleRecentChecklistClicked(),
+            eventFlow.handleRecentChecklistInTemplateClicked(),
             eventFlow.handleNewTemplateClicked(),
             eventFlow.handleEditTemplateClicked(),
-            eventFlow.handleHistoryClicked()
+            eventFlow.handleHistoryClicked(),
         )
     }
 
@@ -77,6 +78,16 @@ class ChecklistCatalogViewModel @Inject constructor(
         return filterIsInstance<ChecklistCatalogEvent.RecentChecklistClicked>()
             .onEach {
                 tracker.logEvent("recent_checklist_clicked")
+            }
+            .map {
+                state.first() to ChecklistCatalogEffect.NavigateToChecklist(checklistId = it.checklistId)
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleRecentChecklistInTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.RecentChecklistClickedInTemplate>()
+            .onEach {
+                tracker.logEvent("recent_checklist_under_template_clicked")
             }
             .map {
                 state.first() to ChecklistCatalogEffect.NavigateToChecklist(checklistId = it.checklistId)

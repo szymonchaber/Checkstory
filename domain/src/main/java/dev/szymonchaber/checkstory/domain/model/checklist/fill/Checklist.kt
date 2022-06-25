@@ -15,4 +15,12 @@ data class Checklist(
 
     val isStored: Boolean
         get() = id.id != 0L
+
+    val flattenedItems: List<Checkbox>
+        get() {
+            return items.flatMap {
+                listOf(it) + it.children
+            }
+        }
+
 }

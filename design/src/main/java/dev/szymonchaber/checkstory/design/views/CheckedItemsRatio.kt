@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.design.R
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox.Companion.checkedCount
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 
 @Composable
@@ -22,10 +23,8 @@ fun CheckedItemsRatio(
     Row(
         modifier = modifier
     ) {
-        val flattenedItems = checklist.items.flatMap {
-            listOf(it) + it.children
-        }
-        val checkedCount = flattenedItems.count { it.isChecked }
+        val flattenedItems = checklist.flattenedItems
+        val checkedCount = flattenedItems.checkedCount()
         val allCount = flattenedItems.count()
         val ratio = "$checkedCount/$allCount"
         Text(

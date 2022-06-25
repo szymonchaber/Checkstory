@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.reminders
 
+import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEffect
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEvent
@@ -76,6 +77,7 @@ class EditReminderViewModel @Inject constructor(
                         }
                     }
                 }
+                tracker.logEvent("reminder_type_changed")
                 EditReminderState(newState) to null
             }
     }
@@ -87,6 +89,7 @@ class EditReminderViewModel @Inject constructor(
                 val newState = success.updateReminder {
                     updateTime(event.time)
                 }
+                tracker.logEvent("reminder_time_set", bundleOf("time" to event.time))
                 EditReminderState(newState) to null
             }
     }
@@ -98,6 +101,7 @@ class EditReminderViewModel @Inject constructor(
                 val newState = success.updateReminder {
                     updateDate(event.date)
                 }
+                tracker.logEvent("reminder_date_set", bundleOf("date" to event.date))
                 EditReminderState(newState) to null
             }
     }
@@ -115,9 +119,19 @@ class EditReminderViewModel @Inject constructor(
                     IntervalType.MONTHLY -> Interval.Monthly(1)
                     IntervalType.YEARLY -> Interval.Yearly(1)
                 }
+                tracker.logEvent("reminder_interval_selected", bundleOf("interval" to toTrackingName(newInterval)))
                 val newReminder = (success.reminder as Reminder.Recurring).copy(interval = newInterval)
                 EditReminderState(success.copy(reminder = newReminder)) to null
             }
+    }
+
+    private fun toTrackingName(interval: Interval): String {
+        return when (interval) {
+            Interval.Daily -> "daily"
+            is Interval.Monthly -> "monthly"
+            is Interval.Weekly -> "weekly"
+            is Interval.Yearly -> "yearly"
+        }
     }
 
     private fun Flow<EditReminderEvent>.handleDaysOfWeekSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
@@ -131,6 +145,10 @@ class EditReminderViewModel @Inject constructor(
                     is Interval.Weekly -> interval.copy(dayOfWeek = event.daysOfWeek.last()) // TODO some unwrapping is needed
                     else -> interval
                 }
+                tracker.logEvent(
+                    "reminder_days_of_week_selected",
+                    bundleOf("days_of_week" to event.daysOfWeek.joinToString())
+                )
                 val newReminder = success.reminder.copy(interval = newInterval)
                 EditReminderState(success.copy(reminder = newReminder)) to null
             }
@@ -147,6 +165,7 @@ class EditReminderViewModel @Inject constructor(
                     is Interval.Monthly -> interval.copy(dayOfMonth = event.dayOfMonth)
                     else -> interval
                 }
+                tracker.logEvent("reminder_day_of_month_selected", bundleOf("day_of_month" to event.dayOfMonth))
                 val newReminder = success.reminder.copy(interval = newInterval)
                 EditReminderState(success.copy(reminder = newReminder)) to null
             }
@@ -163,6 +182,7 @@ class EditReminderViewModel @Inject constructor(
                     is Interval.Yearly -> interval.copy(dayOfYear = event.dayOfYear)
                     else -> interval
                 }
+                tracker.logEvent("reminder_day_of_year_selected", bundleOf("day_of_year" to event.dayOfYear))
                 val newReminder = success.reminder.copy(interval = newInterval)
                 EditReminderState(success.copy(reminder = newReminder)) to null
             }

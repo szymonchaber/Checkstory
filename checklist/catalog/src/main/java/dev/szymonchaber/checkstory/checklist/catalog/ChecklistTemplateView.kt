@@ -77,7 +77,7 @@ fun ChecklistTemplateView(
                 }
             }
             if (!isCollapsed) {
-                ChecklistsCarousel(checklistTemplate.checklists, eventListener) {
+                ChecklistsCarousel(checklistTemplate.checklists, {
                     Box {
                         Card(
                             modifier = Modifier
@@ -97,6 +97,10 @@ fun ChecklistTemplateView(
                             }
                         }
                     }
+                }) {
+                    eventListener(
+                        ChecklistCatalogEvent.RecentChecklistClicked(it.id)
+                    )
                 }
             }
         }

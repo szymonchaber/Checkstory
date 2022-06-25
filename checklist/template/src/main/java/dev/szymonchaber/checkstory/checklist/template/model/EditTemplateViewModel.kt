@@ -1,11 +1,15 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.*
 import kotlinx.coroutines.flow.*
 import java.time.LocalDateTime
@@ -17,7 +21,8 @@ class EditTemplateViewModel @Inject constructor(
     private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
     private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
     private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
-    private val deleteRemindersUseCase: DeleteRemindersUseCase
+    private val deleteRemindersUseCase: DeleteRemindersUseCase,
+    private val tracker: Tracker
 ) : BaseViewModel<
         EditTemplateEvent,
         EditTemplateState,
@@ -107,6 +112,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ItemRemoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
+                tracker.logEvent("delete_checkbox_clicked")
                 EditTemplateState(loadingState.minusCheckbox(event.checkbox)) to null
             }
     }
@@ -115,6 +121,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
             .withSuccessState()
             .map { (loadingState, event) ->
+                tracker.logEvent("add_child_checkbox_clicked")
                 EditTemplateState(loadingState.plusChildCheckbox(event.parent, "")) to null
             }
     }
@@ -131,6 +138,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ChildItemDeleted>()
             .withSuccessState()
             .map { (loadingState, event) ->
+                tracker.logEvent("delete_child_checkbox_clicked")
                 EditTemplateState(loadingState.minusChildCheckbox(event.checkbox, event.child)) to null
             }
     }
@@ -150,6 +158,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 val newLoadingState = loadingState.plusNewCheckbox("")
+                tracker.logEvent("add_checkbox_clicked")
                 EditTemplateState(newLoadingState) to null
             }
     }
@@ -170,6 +179,14 @@ class EditTemplateViewModel @Inject constructor(
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
+                tracker.logEvent(
+                    "save_template_clicked", bundleOf(
+                        "title_length" to checklistTemplate.title.length,
+                        "description_length" to checklistTemplate.description.length,
+                        "checkbox_count" to checklistTemplate.items.flatMap { it.children + it }.count(),
+                        "reminder_count" to checklistTemplate.reminders.count()
+                    )
+                )
                 null to EditTemplateEffect.CloseScreen
             }
     }
@@ -178,6 +195,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.DeleteTemplateClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
+                tracker.logEvent("delete_template_clicked")
                 if (loadingState.checklistTemplate.isStored) {
                     deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
                 }
@@ -189,6 +207,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.AddReminderClicked>()
             .withSuccessState()
             .map {
+                tracker.logEvent("add_reminder_clicked")
                 null to EditTemplateEffect.ShowAddReminderSheet()
             }
     }
@@ -197,6 +216,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ReminderClicked>()
             .withSuccessState()
             .map { (_, event) ->
+                tracker.logEvent("reminder_clicked")
                 null to EditTemplateEffect.ShowEditReminderSheet(event.reminder)
             }
     }
@@ -205,14 +225,37 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ReminderSaved>()
             .withSuccessState()
             .map { (success, event) ->
+                trackReminderSaved(event)
                 EditTemplateState(success.plusReminder(event.reminder)) to null
             }
+    }
+
+    private fun trackReminderSaved(event: EditTemplateEvent.ReminderSaved) {
+        val reminderDetails = when (event.reminder) {
+            is Reminder.Exact -> {
+                bundleOf("type" to "exact")
+            }
+            is Reminder.Recurring -> {
+                when (val interval = event.reminder.interval) {
+                    Interval.Daily -> bundleOf("interval" to "daily")
+                    is Interval.Weekly -> bundleOf("interval" to "weekly", "days_of_week" to interval.dayOfWeek)
+                    is Interval.Monthly -> bundleOf("interval" to "monthly", "day_of_month" to interval.dayOfMonth)
+                    is Interval.Yearly -> bundleOf("interval" to "yearly", "day_of_year" to interval.dayOfYear)
+                }.apply {
+                    putString("type", "recurring")
+                }
+            }
+        }
+        reminderDetails.putString("time", event.reminder.startDateTime.toLocalTime().toString())
+        reminderDetails.putString("date", event.reminder.startDateTime.toLocalDate().toString())
+        tracker.logEvent("reminder_added", reminderDetails)
     }
 
     private fun Flow<EditTemplateEvent>.handleReminderDeleted(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.DeleteReminderClicked>()
             .withSuccessState()
             .map { (success, event) ->
+                tracker.logEvent("delete_reminder_clicked")
                 EditTemplateState(success.minusReminder(event.reminder)) to null
             }
     }

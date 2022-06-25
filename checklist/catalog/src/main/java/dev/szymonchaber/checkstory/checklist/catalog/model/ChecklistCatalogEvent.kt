@@ -11,6 +11,8 @@ sealed interface ChecklistCatalogEvent {
 
     data class RecentChecklistClicked(val checklistId: ChecklistId) : ChecklistCatalogEvent
 
+    data class RecentChecklistClickedInTemplate(val checklistId: ChecklistId) : ChecklistCatalogEvent
+
     data class EditTemplateClicked(val templateId: ChecklistTemplateId) : ChecklistCatalogEvent
 
     object NewTemplateClicked : ChecklistCatalogEvent

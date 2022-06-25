@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.history
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.usecase.LoadChecklistHistoryUseCase
 import kotlinx.coroutines.flow.*
@@ -8,7 +9,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChecklistHistoryViewModel @Inject constructor(
-    private val loadChecklistHistoryUseCase: LoadChecklistHistoryUseCase
+    private val loadChecklistHistoryUseCase: LoadChecklistHistoryUseCase,
+    private val tracker: Tracker
 ) : BaseViewModel<ChecklistHistoryEvent, ChecklistHistoryState, ChecklistHistoryEffect>(
     ChecklistHistoryState.initial
 ) {
@@ -32,6 +34,7 @@ class ChecklistHistoryViewModel @Inject constructor(
     private fun Flow<ChecklistHistoryEvent>.handleChecklistClicked(): Flow<Pair<ChecklistHistoryState?, ChecklistHistoryEffect?>> {
         return filterIsInstance<ChecklistHistoryEvent.ChecklistClicked>()
             .map { event ->
+                tracker.logEvent("checklist_history_checklist_clicked")
                 null to ChecklistHistoryEffect.NavigateToFillChecklistScreen(event.checklistId)
             }
     }

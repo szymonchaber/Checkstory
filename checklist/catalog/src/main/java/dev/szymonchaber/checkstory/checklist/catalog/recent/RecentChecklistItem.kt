@@ -1,11 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.catalog.recent
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -17,7 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
@@ -32,15 +26,13 @@ import java.time.LocalDateTime
 fun RecentChecklistItem(
     modifier: Modifier = Modifier,
     checklist: Checklist,
-    eventListener: (ChecklistCatalogEvent) -> Unit
+    onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
             .widthIn(max = 200.dp),
         elevation = 4.dp,
-        onClick = {
-            eventListener(ChecklistCatalogEvent.RecentChecklistClicked(checklist.id))
-        }
+        onClick = onClick
     ) {
         val notes by remember {
             mutableStateOf(checklist.notes.takeUnless(String::isBlank)?.let { "\"$it\"" } ?: "🙊")
@@ -87,5 +79,8 @@ fun RecentChecklistItemPreview() {
         "Awesome session!",
         LocalDateTime.now()
     )
-    RecentChecklistItem(checklist = checklist) {}
+    RecentChecklistItem(
+        checklist = checklist,
+        onClick = { }
+    )
 }

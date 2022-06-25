@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.common
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
@@ -23,6 +24,18 @@ fun trackScreenName(screenName: String) {
     }
 }
 
+@SuppressLint("MissingPermission", "ComposableNaming")
+@Composable
+fun trackEvent(eventName: String) {
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        FirebaseAnalytics.getInstance(context)
+            .logEvent(eventName) {
+
+            }
+    }
+}
+
 @SuppressLint("MissingPermission")
 @Singleton
 class Tracker @Inject constructor(
@@ -31,8 +44,7 @@ class Tracker @Inject constructor(
 
     private val analytics = FirebaseAnalytics.getInstance(context)
 
-    fun logEvent(eventName: String) {
-        analytics.logEvent(eventName) {
-        }
+    fun logEvent(eventName: String, params: Bundle = Bundle()) {
+        analytics.logEvent(eventName, params)
     }
 }

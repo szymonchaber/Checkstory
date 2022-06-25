@@ -1,12 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.catalog.recent
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -48,7 +42,9 @@ fun RecentChecklistsView(
             if (state.checklists.isEmpty()) {
                 NoRecentChecklistsView()
             } else {
-                ChecklistsCarousel(state.checklists, eventListener)
+                ChecklistsCarousel(state.checklists) {
+                    eventListener(ChecklistCatalogEvent.RecentChecklistClicked(it.id))
+                }
             }
         }
     }
@@ -74,8 +70,8 @@ fun NoRecentChecklistsView() {
 @Composable
 fun ChecklistsCarousel(
     checklists: List<Checklist>,
-    eventListener: (ChecklistCatalogEvent) -> Unit,
-    header: @Composable (LazyItemScope.() -> Unit)? = null
+    header: @Composable (LazyItemScope.() -> Unit)? = null,
+    onChecklistClicked: (Checklist) -> Unit
 ) {
     LazyRow(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
@@ -87,7 +83,12 @@ fun ChecklistsCarousel(
             }
         }
         items(checklists) {
-            RecentChecklistItem(checklist = it, eventListener = eventListener)
+            RecentChecklistItem(
+                checklist = it,
+                onClick = {
+                    onChecklistClicked(it)
+                }
+            )
         }
     }
 }

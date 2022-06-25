@@ -1,7 +1,10 @@
 package dev.szymonchaber.checkstory.checklist.fill.model
 
+import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox.Companion.checkedCount
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
@@ -15,7 +18,8 @@ class FillChecklistViewModel @Inject constructor(
     private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
     private val saveChecklistUseCase: SaveChecklistUseCase,
-    private val deleteChecklistUseCase: DeleteChecklistUseCase
+    private val deleteChecklistUseCase: DeleteChecklistUseCase,
+    private val tracker: Tracker
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
         FillChecklistState.initial
@@ -38,6 +42,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.CheckChanged>()
             .withSuccessState()
             .mapLatest { (success, event) ->
+                tracker.logEvent("check_changed", bundleOf("checked" to event.newCheck))
                 val updated = success.updateChecklist {
                     copy(items = items.map {
                         if (it.id == event.item.id) {
@@ -56,6 +61,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.ChildCheckChanged>()
             .withSuccessState()
             .mapLatest { (success, event) ->
+                tracker.logEvent("child_check_changed", bundleOf("checked" to event.newCheck))
                 val (checkbox, child, newCheck) = event
                 val updated = success.updateChecklist {
                     copy(items = items.map {
@@ -115,6 +121,7 @@ class FillChecklistViewModel @Inject constructor(
                     .filterIsInstance<ChecklistLoadingState.Success>().take(1)
             }
             .map {
+                tracker.logEvent("checklist_edit_template_clicked")
                 state.first() to FillChecklistEffect.NavigateToEditTemplate(it.checklist.checklistTemplateId)
             }
     }
@@ -136,6 +143,10 @@ class FillChecklistViewModel @Inject constructor(
                     }
                     success.checklist.copy(items = itemsWithoutTemporaryIds)
                 }
+                val flattenedItems = checklistToStore.flattenedItems
+                val trackingParams =
+                    bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
+                tracker.logEvent("save_checklist_clicked", trackingParams)
                 saveChecklistUseCase.saveChecklist(checklistToStore.copy(notes = checklistToStore.notes.trimEnd()))
                 null to FillChecklistEffect.CloseScreen
             }
@@ -148,6 +159,7 @@ class FillChecklistViewModel @Inject constructor(
                 if (success.checklist.isStored) {
                     deleteChecklistUseCase.deleteChecklist(success.checklist)
                 }
+                tracker.logEvent("delete_checklist_clicked")
                 null to FillChecklistEffect.CloseScreen
             }
     }

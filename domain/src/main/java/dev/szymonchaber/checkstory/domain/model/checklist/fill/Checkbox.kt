@@ -7,4 +7,12 @@ data class Checkbox(
     val title: String,
     val isChecked: Boolean,
     val children: List<Checkbox>
-)
+) {
+
+    companion object {
+
+        fun List<Checkbox>.checkedCount(): Int {
+            return count { it.isChecked }
+        }
+    }
+}
