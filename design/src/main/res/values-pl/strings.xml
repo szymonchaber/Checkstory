@@ -52,4 +52,11 @@
     <string name="complete_recent_checklist">Uzupełnij poprzednią</string>
     <string name="reminder_channel_name">Przypomnienia</string>
     <string name="reminder_channel_description">Przypomnienia o wypełnieniu list kontrolnych</string>
+    <string name="delete_template_dialog_title">Czy na pewno usunąć szablon?</string>
+    <string name="delete_template_dialog_body">Spowoduje to również usunięcie powiązanych list kontrolnych</string>
+    <string name="delete_template_dialog_confirm">@string/delete</string>
+    <string name="delete_template_dialog_cancel">@string/cancel</string>
+    <string name="delete_checklist_dialog_title">Czy na pewno usunąć listę kontrolną?</string>
+    <string name="delete_checklist_dialog_confirm">@string/delete</string>
+    <string name="delete_checklist_dialog_cancel">@string/cancel</string>
 </resources>

@@ -7,4 +7,7 @@ sealed interface FillChecklistEffect {
     data class NavigateToEditTemplate(val templateId: ChecklistTemplateId) : FillChecklistEffect
 
     object CloseScreen : FillChecklistEffect
+
+    @Suppress("CanSealedSubClassBeObject")
+    class ShowConfirmDeleteDialog : FillChecklistEffect
 }

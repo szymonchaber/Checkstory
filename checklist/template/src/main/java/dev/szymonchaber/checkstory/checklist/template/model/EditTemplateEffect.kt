@@ -7,6 +7,9 @@ sealed interface EditTemplateEffect {
     object CloseScreen : EditTemplateEffect
 
     @Suppress("CanSealedSubClassBeObject")
+    class ShowConfirmDeleteDialog : EditTemplateEffect
+
+    @Suppress("CanSealedSubClassBeObject")
     class ShowAddReminderSheet : EditTemplateEffect
 
     class ShowEditReminderSheet(val reminder: Reminder) : EditTemplateEffect

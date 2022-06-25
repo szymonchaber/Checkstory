@@ -22,4 +22,6 @@ sealed class FillChecklistEvent {
     object SaveChecklistClicked : FillChecklistEvent()
 
     object DeleteChecklistClicked : FillChecklistEvent()
+
+    object ConfirmDeleteChecklistClicked : FillChecklistEvent()
 }

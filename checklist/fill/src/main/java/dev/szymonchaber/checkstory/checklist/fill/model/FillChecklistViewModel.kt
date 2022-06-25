@@ -34,7 +34,8 @@ class FillChecklistViewModel @Inject constructor(
             eventFlow.handleEditClicked(),
             eventFlow.handleSaveClicked(),
             eventFlow.handleDeleteClicked(),
-            eventFlow.handleChildCheckChanged()
+            eventFlow.handleDeleteConfirmed(),
+            eventFlow.handleChildCheckChanged(),
         )
     }
 
@@ -155,11 +156,20 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<FillChecklistEvent>.handleDeleteClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
         return filterIsInstance<FillChecklistEvent.DeleteChecklistClicked>()
             .withSuccessState()
+            .map {
+                tracker.logEvent("delete_checklist_clicked")
+                null to FillChecklistEffect.ShowConfirmDeleteDialog()
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleDeleteConfirmed(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.ConfirmDeleteChecklistClicked>()
+            .withSuccessState()
             .map { (success, _) ->
+                tracker.logEvent("delete_template_confirmation_clicked")
                 if (success.checklist.isStored) {
                     deleteChecklistUseCase.deleteChecklist(success.checklist)
                 }
-                tracker.logEvent("delete_checklist_clicked")
                 null to FillChecklistEffect.CloseScreen
             }
     }

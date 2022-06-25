@@ -42,6 +42,7 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleItemTitleChanged(),
             eventFlow.handleSaveTemplateClicked(),
             eventFlow.handleDeleteTemplateClicked(),
+            eventFlow.handleConfirmDeleteTemplateClicked(),
             eventFlow.handleChildItemAdded(),
             eventFlow.handleChildItemDeleted(),
             eventFlow.handleChildItemChanged(),
@@ -194,8 +195,17 @@ class EditTemplateViewModel @Inject constructor(
     private fun Flow<EditTemplateEvent>.handleDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.DeleteTemplateClicked>()
             .withSuccessState()
-            .map { (loadingState, _) ->
+            .map { (_, _) ->
                 tracker.logEvent("delete_template_clicked")
+                null to EditTemplateEffect.ShowConfirmDeleteDialog()
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleConfirmDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ConfirmDeleteTemplateClicked>()
+            .withSuccessState()
+            .map { (loadingState, _) ->
+                tracker.logEvent("delete_template_confirmation_clicked")
                 if (loadingState.checklistTemplate.isStored) {
                     deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
                 }

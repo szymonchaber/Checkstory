@@ -12,10 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -66,6 +63,16 @@ fun FillChecklistScreen(
             viewModel.onEvent(FillChecklistEvent.CreateChecklistFromTemplate(it))
         }
     }
+
+    val openConfirmDeleteDialog = remember { mutableStateOf(false) }
+
+    if (openConfirmDeleteDialog.value) {
+        ConfirmDeleteChecklistDialog(openConfirmDeleteDialog) {
+            viewModel.onEvent(FillChecklistEvent.ConfirmDeleteChecklistClicked)
+            openConfirmDeleteDialog.value = false
+        }
+    }
+
     val state = viewModel.state.collectAsState(initial = FillChecklistState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
@@ -76,6 +83,9 @@ fun FillChecklistScreen(
             }
             FillChecklistEffect.CloseScreen -> {
                 navigator.navigateUp()
+            }
+            is FillChecklistEffect.ShowConfirmDeleteDialog -> {
+                openConfirmDeleteDialog.value = true
             }
             null -> Unit
         }

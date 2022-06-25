@@ -60,6 +60,14 @@ fun EditTemplateScreen(
 
     val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+    val openConfirmDeleteDialog = remember { mutableStateOf(false) }
+
+    if (openConfirmDeleteDialog.value) {
+        ConfirmDeleteTemplateDialog(openConfirmDeleteDialog) {
+            viewModel.onEvent(EditTemplateEvent.ConfirmDeleteTemplateClicked)
+            openConfirmDeleteDialog.value = false
+        }
+    }
 
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
 
@@ -80,6 +88,9 @@ fun EditTemplateScreen(
                 scope.launch {
                     modalBottomSheetState.show()
                 }
+            }
+            is EditTemplateEffect.ShowConfirmDeleteDialog -> {
+                openConfirmDeleteDialog.value = true
             }
             null -> Unit
         }
