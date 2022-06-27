@@ -6,12 +6,13 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import dev.szymonchaber.checkstory.checklist.catalog.R
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
@@ -34,9 +35,6 @@ fun RecentChecklistItem(
         elevation = 4.dp,
         onClick = onClick
     ) {
-        val notes by remember {
-            mutableStateOf(checklist.notes.takeUnless(String::isBlank)?.let { "\"$it\"" } ?: "🙊")
-        }
         Column(
             modifier = Modifier.padding(all = 16.dp)
         ) {
@@ -44,16 +42,11 @@ fun RecentChecklistItem(
                 text = checklist.title,
                 style = MaterialTheme.typography.subtitle1
             )
-            Text(
-                modifier = Modifier.padding(top = 16.dp),
-                text = notes,
-                style = MaterialTheme.typography.subtitle1,
-                maxLines = 1
-            )
+            NotesTextView(checklist.notes)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 CheckedItemsRatio(checklist)
@@ -61,6 +54,23 @@ fun RecentChecklistItem(
             }
         }
     }
+}
+
+@Composable
+private fun NotesTextView(notes: String) {
+    val notesFontStyle = if (notes.isBlank()) {
+        FontStyle.Italic
+    } else {
+        FontStyle.Normal
+    }
+    val notesOrEmptyNotesText = notes.ifBlank {
+        stringResource(id = R.string.no_notes)
+    }
+    Text(
+        modifier = Modifier.padding(top = 8.dp),
+        text = notesOrEmptyNotesText,
+        style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle, fontSize = 14.sp),
+    )
 }
 
 @Preview(showBackground = true)

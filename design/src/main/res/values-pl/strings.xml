@@ -59,4 +59,5 @@
     <string name="delete_checklist_dialog_title">Czy na pewno usunąć listę kontrolną?</string>
     <string name="delete_checklist_dialog_confirm">@string/delete</string>
     <string name="delete_checklist_dialog_cancel">@string/cancel</string>
+    <string name="no_notes">Brak notatek</string>
 </resources>

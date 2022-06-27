@@ -59,4 +59,5 @@
     <string name="delete_checklist_dialog_title">Are you sure you want to delete this checklist?</string>
     <string name="delete_checklist_dialog_confirm">@string/delete</string>
     <string name="delete_checklist_dialog_cancel">@string/cancel</string>
+    <string name="no_notes">Notes empty</string>
 </resources>
