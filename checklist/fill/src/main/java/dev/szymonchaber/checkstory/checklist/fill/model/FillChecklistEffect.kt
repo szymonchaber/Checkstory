@@ -10,4 +10,7 @@ sealed interface FillChecklistEffect {
 
     @Suppress("CanSealedSubClassBeObject")
     class ShowConfirmDeleteDialog : FillChecklistEffect
+
+    @Suppress("CanSealedSubClassBeObject")
+    class ShowConfirmExitDialog : FillChecklistEffect
 }

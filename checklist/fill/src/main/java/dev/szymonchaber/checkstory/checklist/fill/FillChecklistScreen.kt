@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +26,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.model.*
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
+import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
@@ -64,12 +66,23 @@ fun FillChecklistScreen(
         }
     }
 
-    val openConfirmDeleteDialog = remember { mutableStateOf(false) }
+    BackHandler {
+        viewModel.onEvent(FillChecklistEvent.BackClicked)
+    }
 
+    val openConfirmDeleteDialog = remember { mutableStateOf(false) }
     if (openConfirmDeleteDialog.value) {
         ConfirmDeleteChecklistDialog(openConfirmDeleteDialog) {
             viewModel.onEvent(FillChecklistEvent.ConfirmDeleteChecklistClicked)
             openConfirmDeleteDialog.value = false
+        }
+    }
+
+    val openConfirmExitDialog = remember { mutableStateOf(false) }
+    if (openConfirmExitDialog.value) {
+        ConfirmExitWithoutSavingDialog(openConfirmExitDialog) {
+            viewModel.onEvent(FillChecklistEvent.ConfirmExitClicked)
+            openConfirmExitDialog.value = false
         }
     }
 
@@ -87,6 +100,9 @@ fun FillChecklistScreen(
             is FillChecklistEffect.ShowConfirmDeleteDialog -> {
                 openConfirmDeleteDialog.value = true
             }
+            is FillChecklistEffect.ShowConfirmExitDialog -> {
+                openConfirmExitDialog.value = true
+            }
             null -> Unit
         }
     }
@@ -99,7 +115,7 @@ fun FillChecklistScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navigator.navigateUp()
+                        viewModel.onEvent(FillChecklistEvent.BackClicked)
                     }) {
                         Icon(Icons.Filled.ArrowBack, "")
                     }

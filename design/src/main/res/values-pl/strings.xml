@@ -60,4 +60,8 @@
     <string name="delete_checklist_dialog_confirm">@string/delete</string>
     <string name="delete_checklist_dialog_cancel">@string/cancel</string>
     <string name="no_notes">Brak notatek</string>
+    <string name="confirm_exit_without_saving_dialog_title">Wyjść bez zapisania?</string>
+    <string name="confirm_exit_without_saving_dialog_body">Niezapisane zmiany zostaną usunięte</string>
+    <string name="confirm_exit_without_saving_dialog_confirm">Tak, wyjdź</string>
+    <string name="confirm_exit_without_saving_dialog_cancel">Zostań</string>
 </resources>

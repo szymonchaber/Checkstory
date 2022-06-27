@@ -36,6 +36,8 @@ class FillChecklistViewModel @Inject constructor(
             eventFlow.handleDeleteClicked(),
             eventFlow.handleDeleteConfirmed(),
             eventFlow.handleChildCheckChanged(),
+            eventFlow.handleBackClicked(),
+            eventFlow.confirmExitClicked()
         )
     }
 
@@ -170,6 +172,28 @@ class FillChecklistViewModel @Inject constructor(
                 if (success.checklist.isStored) {
                     deleteChecklistUseCase.deleteChecklist(success.checklist)
                 }
+                null to FillChecklistEffect.CloseScreen
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleBackClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.BackClicked>()
+            .withSuccessState()
+            .map { (success, _) ->
+                val event = if (success.isChanged() || !success.checklist.isStored) {
+                    FillChecklistEffect.ShowConfirmExitDialog()
+                } else {
+                    FillChecklistEffect.CloseScreen
+                }
+                null to event
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.confirmExitClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.ConfirmExitClicked>()
+            .withSuccessState()
+            .map {
+                tracker.logEvent("exit_without_saving_clicked")
                 null to FillChecklistEffect.CloseScreen
             }
     }
