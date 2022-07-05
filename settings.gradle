@@ -26,3 +26,4 @@ include ":design"
 include ":data"
 include ":navigation"
 include ":notifications"
+include ':payments'
