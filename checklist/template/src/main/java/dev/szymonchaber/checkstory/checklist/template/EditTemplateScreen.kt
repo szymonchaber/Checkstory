@@ -2,6 +2,7 @@
 
 package dev.szymonchaber.checkstory.checklist.template
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +34,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminde
 import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
+import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
@@ -60,6 +62,19 @@ fun EditTemplateScreen(
 
     val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+
+    BackHandler {
+        viewModel.onEvent(EditTemplateEvent.BackClicked)
+    }
+
+    val openConfirmExitDialog = remember { mutableStateOf(false) }
+    if (openConfirmExitDialog.value) {
+        ConfirmExitWithoutSavingDialog(openConfirmExitDialog) {
+            viewModel.onEvent(EditTemplateEvent.ConfirmExitClicked)
+            openConfirmExitDialog.value = false
+        }
+    }
+
     val openConfirmDeleteDialog = remember { mutableStateOf(false) }
 
     if (openConfirmDeleteDialog.value) {
@@ -92,6 +107,9 @@ fun EditTemplateScreen(
             is EditTemplateEffect.ShowConfirmDeleteDialog -> {
                 openConfirmDeleteDialog.value = true
             }
+            is EditTemplateEffect.ShowConfirmExitDialog -> {
+                openConfirmExitDialog.value = true
+            }
             null -> Unit
         }
     }
@@ -107,13 +125,12 @@ fun EditTemplateScreen(
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     ) {
-        EditTemplateScaffold(navController, templateId == null, state, viewModel)
+        EditTemplateScaffold(templateId == null, state, viewModel)
     }
 }
 
 @Composable
 private fun EditTemplateScaffold(
-    navController: NavController,
     isNewTemplate: Boolean,
     state: EditTemplateState,
     viewModel: EditTemplateViewModel
@@ -131,7 +148,7 @@ private fun EditTemplateScaffold(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigateUp()
+                        viewModel.onEvent(EditTemplateEvent.BackClicked)
                     }) {
                         Icon(Icons.Filled.ArrowBack, "")
                     }

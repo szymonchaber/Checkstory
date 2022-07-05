@@ -168,7 +168,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.ConfirmDeleteChecklistClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                tracker.logEvent("delete_template_confirmation_clicked")
+                tracker.logEvent("delete_checklist_confirmation_clicked")
                 if (success.checklist.isStored) {
                     deleteChecklistUseCase.deleteChecklist(success.checklist)
                 }
@@ -193,7 +193,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.ConfirmExitClicked>()
             .withSuccessState()
             .map {
-                tracker.logEvent("exit_without_saving_clicked")
+                tracker.logEvent("exit_without_saving_confirmation_clicked")
                 null to FillChecklistEffect.CloseScreen
             }
     }

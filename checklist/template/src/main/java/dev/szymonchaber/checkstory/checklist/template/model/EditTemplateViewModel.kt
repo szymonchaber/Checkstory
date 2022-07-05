@@ -49,7 +49,9 @@ class EditTemplateViewModel @Inject constructor(
             eventFlow.handleAddReminderClicked(),
             eventFlow.handleReminderClicked(),
             eventFlow.handleReminderSaved(),
-            eventFlow.handleReminderDeleted()
+            eventFlow.handleReminderDeleted(),
+            eventFlow.handleBackClicked(),
+            eventFlow.handleConfirmExitClicked()
         )
     }
 
@@ -209,6 +211,28 @@ class EditTemplateViewModel @Inject constructor(
                 if (loadingState.checklistTemplate.isStored) {
                     deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
                 }
+                null to EditTemplateEffect.CloseScreen
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleBackClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.BackClicked>()
+            .withSuccessState()
+            .map { (success, _) ->
+                val event = if (success.isChanged() || !success.checklistTemplate.isStored) {
+                    EditTemplateEffect.ShowConfirmExitDialog()
+                } else {
+                    EditTemplateEffect.CloseScreen
+                }
+                null to event
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleConfirmExitClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ConfirmExitClicked>()
+            .withSuccessState()
+            .map {
+                tracker.logEvent("exit_without_saving_confirmation_clicked")
                 null to EditTemplateEffect.CloseScreen
             }
     }

@@ -13,4 +13,7 @@ sealed interface EditTemplateEffect {
     class ShowAddReminderSheet : EditTemplateEffect
 
     class ShowEditReminderSheet(val reminder: Reminder) : EditTemplateEffect
+
+    @Suppress("CanSealedSubClassBeObject")
+    class ShowConfirmExitDialog : EditTemplateEffect
 }

@@ -6,7 +6,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
-import dev.szymonchaber.checkstory.checklist.fill.R
+import dev.szymonchaber.checkstory.design.R
 
 @Composable
 fun ConfirmExitWithoutSavingDialog(openDialog: MutableState<Boolean>, onConfirmClicked: () -> Unit) {

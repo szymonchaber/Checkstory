@@ -8,11 +8,19 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 sealed interface TemplateLoadingState {
 
     data class Success(
-        val checklistTemplate: ChecklistTemplate,
+        val originalChecklistTemplate: ChecklistTemplate,
         val checkboxes: List<ViewTemplateCheckbox>,
         val checkboxesToDelete: List<TemplateCheckbox>,
-        val remindersToDelete: List<Reminder>
+        val remindersToDelete: List<Reminder>,
+        val checklistTemplate: ChecklistTemplate = originalChecklistTemplate
     ) : TemplateLoadingState {
+
+        fun isChanged(): Boolean {
+            return originalChecklistTemplate != checklistTemplate
+                    || originalChecklistTemplate.items != checkboxes.map { it.toDomainModel() }
+                    || checkboxesToDelete.isNotEmpty()
+                    || remindersToDelete.isNotEmpty()
+        }
 
         fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
             return copy(checklistTemplate = checklistTemplate.block())

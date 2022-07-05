@@ -42,4 +42,8 @@ sealed interface EditTemplateEvent {
     object DeleteTemplateClicked : EditTemplateEvent
 
     object ConfirmDeleteTemplateClicked : EditTemplateEvent
+
+    object BackClicked : EditTemplateEvent
+
+    object ConfirmExitClicked : EditTemplateEvent
 }
