@@ -72,6 +72,10 @@ class Dependencies : Plugin<Project> {
 
         val work = "androidx.work:work-runtime-ktx:$workVersion"
 
+        private val billing_version = "5.0.0"
+
+        val billing = "com.android.billingclient:billing-ktx:$billing_version"
+
         val unitTest = listOf(
             "junit:junit:4.13.2",
             "com.google.truth:truth:1.1.3"

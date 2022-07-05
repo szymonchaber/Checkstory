@@ -39,6 +39,8 @@ dependencies {
 
     kapt(Dependencies.hiltKapt)
 
+    implementation(Dependencies.billing)
+
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }

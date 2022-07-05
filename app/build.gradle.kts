@@ -72,7 +72,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.2.0")
 
     implementation(project(":common"))
     implementation(project(":design"))
@@ -84,6 +84,7 @@ dependencies {
     implementation(project(":checklist:fill"))
     implementation(project(":checklist:history"))
     implementation(project(":notifications"))
+    implementation(project(":payments"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
