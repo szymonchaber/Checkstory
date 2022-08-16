@@ -104,7 +104,7 @@ private fun ChecklistCatalogView(
                 modifier = Modifier
                     .padding(horizontal = 16.dp),
                 text = stringResource(R.string.templates),
-                style = MaterialTheme.typography.h5
+                style = MaterialTheme.typography.subtitle1
             )
         }
         checklistTemplates(state, viewModel)

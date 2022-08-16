@@ -32,7 +32,7 @@ fun RecentChecklistsView(
     Text(
         modifier = Modifier.padding(horizontal = 16.dp),
         text = stringResource(R.string.recent_checklists),
-        style = MaterialTheme.typography.h5
+        style = MaterialTheme.typography.subtitle1
     )
     when (val state = loadingState) {
         RecentChecklistsLoadingState.Loading -> {
