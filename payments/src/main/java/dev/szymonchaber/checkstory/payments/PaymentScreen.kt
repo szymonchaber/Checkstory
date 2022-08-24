@@ -1,5 +1,8 @@
 package dev.szymonchaber.checkstory.payments
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -7,6 +10,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -39,10 +43,17 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
 fun PaymentView(viewModel: PaymentViewModel) {
     val state by viewModel.state.collectAsState(initial = PaymentState.initial)
 
+    val context = LocalContext.current
     Column {
         Text(text = state.result)
-        TextButton(onClick = { viewModel.onEvent(PaymentEvent.BuyClicked) }) {
+        TextButton(onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }) {
             Text(text = "Buy pro version")
         }
     }
+}
+
+fun Context.getActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.getActivity()
+    else -> null
 }

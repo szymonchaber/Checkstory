@@ -37,10 +37,14 @@ class PaymentViewModel @Inject constructor(
             .onEach {
 //                tracker.logEvent("buy_clicked")
             }
-            .map {
-                val textValue = purchaseSubscriptionUseCase.getProductDetails("pro").fold({
-                    it.toString()
-                }, { it.toString() })
+            .map { event ->
+                val textValue = purchaseSubscriptionUseCase.getProductDetails("pro")
+                    .map {
+                        purchaseSubscriptionUseCase.startPurchaseFlow(event.activity, it)
+                    }
+                    .fold({
+                        it.toString()
+                    }, { it.toString() })
                 Timber.d("Got details or error: $textValue")
                 PaymentState(result = textValue) to null
             }
