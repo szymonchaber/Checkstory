@@ -6,12 +6,18 @@ import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
+    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase
 ) : BaseViewModel<
         PaymentEvent,
         PaymentState,
@@ -32,7 +38,11 @@ class PaymentViewModel @Inject constructor(
 //                tracker.logEvent("buy_clicked")
             }
             .map {
-                state.first() to null
+                val textValue = purchaseSubscriptionUseCase.getProductDetails("pro").fold({
+                    it.toString()
+                }, { it.toString() })
+                Timber.d("Got details or error: $textValue")
+                PaymentState(result = textValue) to null
             }
     }
 }
