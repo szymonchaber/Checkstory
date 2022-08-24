@@ -4,6 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import dev.szymonchaber.checkstory.payments.PurchaseSubscriptionUseCase
 import dev.szymonchaber.checkstory.payments.PurchaseSubscriptionUseCaseImpl
 
@@ -15,4 +16,9 @@ interface PaymentsModule {
     fun bindPurchaseSubscriptionUseCase(
         purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
     ): PurchaseSubscriptionUseCase
+
+    @Binds
+    fun bindIsProUserUseCase(
+        purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
+    ): IsProUserUseCase
 }

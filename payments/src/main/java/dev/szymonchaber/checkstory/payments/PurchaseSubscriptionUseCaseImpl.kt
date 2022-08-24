@@ -14,6 +14,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
+import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +25,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingManager: BillingManager) :
-    PurchaseSubscriptionUseCase {
+    PurchaseSubscriptionUseCase, IsProUserUseCase {
 
     private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
         extraBufferCapacity = 1,
@@ -92,6 +93,15 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
         }
     }
 
+    override suspend fun isProUser(): Boolean {
+        return fetchCurrentSubscription().fold({
+            false
+        }
+        ) {
+            it != null
+        }
+    }
+
     suspend fun getPurchases() {
         billingManager.billingClient.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder()
@@ -109,16 +119,18 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
         }
     }
 
-    suspend fun fetchCurrentSubscription(): Either<BillingError, Purchase?> {
-        return suspendCoroutine { continuation ->
-            billingManager.billingClient.queryPurchasesAsync(
-                QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
-            ) { billingResult, purchases ->
-                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                    purchases.firstOrNull().right()
-                } else {
-                    mapBillingError(billingResult).left()
-                }.let(continuation::resume)
+    private suspend fun fetchCurrentSubscription(): Either<BillingError, Purchase?> {
+        return billingManager.connectBillingClient().flatMap {
+            suspendCoroutine { continuation ->
+                billingManager.billingClient.queryPurchasesAsync(
+                    QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
+                ) { billingResult, purchases ->
+                    if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                        purchases.firstOrNull().right()
+                    } else {
+                        mapBillingError(billingResult).left()
+                    }.let(continuation::resume)
+                }
             }
         }
     }
