@@ -41,6 +41,8 @@ dependencies {
 
     implementation(Dependencies.billing)
 
+    implementation(Dependencies.arrow)
+
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }
