@@ -138,8 +138,17 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
     }
 
     private fun handleSuccessfulPurchase(purchase: Purchase) {
-        // TODO call the API to confirm a purchase
-        _purchaseEvents.tryEmit(purchase.right())
+        billingManager.billingClient
+            .acknowledgePurchase(
+                AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
+            ) { billingResult ->
+                val purchaseEvent = if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    purchase.right()
+                } else {
+                    mapPurchaseError(billingResult).left()
+                }
+                _purchaseEvents.tryEmit(purchaseEvent)
+            }
     }
 
     private fun mapBillingError(billingResult: BillingResult): BillingError {
