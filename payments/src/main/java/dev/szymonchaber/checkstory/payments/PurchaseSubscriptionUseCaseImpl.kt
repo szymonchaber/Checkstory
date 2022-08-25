@@ -21,9 +21,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+@Singleton
 class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingManager: BillingManager) :
     PurchaseSubscriptionUseCase, IsProUserUseCase {
 
