@@ -64,4 +64,5 @@
     <string name="confirm_exit_without_saving_dialog_body">Niezapisane zmiany zostaną usunięte</string>
     <string name="confirm_exit_without_saving_dialog_confirm">Tak, wyjdź</string>
     <string name="confirm_exit_without_saving_dialog_cancel">Zostań</string>
+    <string name="upgrade">Ulepsz do PRO</string>
 </resources>

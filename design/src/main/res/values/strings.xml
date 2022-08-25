@@ -64,4 +64,5 @@
     <string name="confirm_exit_without_saving_dialog_body">Unsaved changes will be deleted</string>
     <string name="confirm_exit_without_saving_dialog_confirm">Yes, exit</string>
     <string name="confirm_exit_without_saving_dialog_cancel">Stay</string>
+    <string name="upgrade">Upgrade to PRO</string>
 </resources>
