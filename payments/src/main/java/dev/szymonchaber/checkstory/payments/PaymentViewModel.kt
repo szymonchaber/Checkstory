@@ -73,15 +73,6 @@ class PaymentViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState, PaymentEffect?>> {
-        return filterIsInstance<PaymentEvent.NewPurchaseResult>()
-            .withSuccessState()
-            .map { (state, event) ->
-                Timber.d("Got purchase details or error: ${event.paymentResult}")
-                PaymentState(paymentLoadingState = state.copy(result = event.paymentResult.toString())) to null
-            }
-    }
-
     private fun Flow<PaymentEvent>.handleBuyClicked(): Flow<Pair<PaymentState, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.BuyClicked>()
             .onEach {
@@ -89,15 +80,28 @@ class PaymentViewModel @Inject constructor(
             }
             .withSuccessState()
             .map { (state, event) ->
-                val textValue = purchaseSubscriptionUseCase.getProductDetails("pro")
-                    .map {
-                        purchaseSubscriptionUseCase.startPurchaseFlow(event.activity, it)
-                    }
-                    .fold({
-                        it.toString()
-                    }, { it.toString() })
-                Timber.d("Got details or error: $textValue")
-                PaymentState(paymentLoadingState = state.copy(result = textValue)) to null
+                state.selectedPlan?.let {
+                    purchaseSubscriptionUseCase.startPurchaseFlow(
+                        event.activity,
+                        it.productDetails,
+                        it.offerToken
+                    )
+                    PaymentState(paymentLoadingState = state.copy(paymentInProgress = true)) to null
+                } ?: (PaymentState(state) to null)
+            }
+    }
+
+    private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState, PaymentEffect?>> {
+        return filterIsInstance<PaymentEvent.NewPurchaseResult>()
+            .withSuccessState()
+            .map { (state, event) ->
+                Timber.d("Got purchase details or error: ${event.paymentResult}")
+                PaymentState(
+                    paymentLoadingState = state.copy(
+                        result = event.paymentResult.toString(),
+                        paymentInProgress = false
+                    )
+                ) to null
             }
     }
 

@@ -47,10 +47,16 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
         return withContext(Dispatchers.Default) {
             billingManager.connectBillingClient().flatMap {
                 fetchAllProducts(it).map { productDetails ->
-                    productDetails.drop(1).mapNotNull {
-                        it.subscriptionOfferDetails?.first()?.let {
+                    productDetails.drop(1).mapNotNull { productDetails ->
+                        productDetails.subscriptionOfferDetails?.first()?.let {
                             val price = it.pricingPhases.pricingPhaseList.first().formattedPrice
-                            SubscriptionPlan(PlanDuration(1, PlanDurationUnit.MONTH), price, "$8.99/mo")
+                            SubscriptionPlan(
+                                productDetails,
+                                it.offerToken,
+                                PlanDuration(1, PlanDurationUnit.MONTH),
+                                price,
+                                "$8.99/mo"
+                            )
                         }
 //                    listOf(
 //                        SubscriptionPlan(PlanDuration(12, PlanDurationUnit.MONTH), "$85,99", "$6.99/mo"),
@@ -70,11 +76,10 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
         }
     }
 
-    override fun startPurchaseFlow(activity: Activity, productDetails: ProductDetails) {
-        val firstOfferToken = productDetails.subscriptionOfferDetails!!.first().offerToken
+    override fun startPurchaseFlow(activity: Activity, productDetails: ProductDetails, offerToken: String) {
         val productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()
             .setProductDetails(productDetails)
-            .setOfferToken(firstOfferToken)
+            .setOfferToken(offerToken)
             .build()
         val flowParams = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(listOf(productDetailsParams))

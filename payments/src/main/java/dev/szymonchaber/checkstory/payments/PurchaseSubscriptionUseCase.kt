@@ -10,7 +10,7 @@ interface PurchaseSubscriptionUseCase {
 
     suspend fun getProductDetails(productId: String): Either<BillingError, ProductDetails>
 
-    fun startPurchaseFlow(activity: Activity, productDetails: ProductDetails)
+    fun startPurchaseFlow(activity: Activity, productDetails: ProductDetails, offerToken: String)
 
     val purchaseEvents: Flow<Either<PurchaseError, Purchase>>
 }

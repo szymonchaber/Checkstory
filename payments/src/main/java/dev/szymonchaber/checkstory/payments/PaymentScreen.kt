@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.android.billingclient.api.ProductDetails
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
@@ -178,4 +179,10 @@ enum class PlanDurationUnit {
     DAY, WEEK, YEAR, MONTH
 }
 
-data class SubscriptionPlan(val planDuration: PlanDuration, val price: String, val pricePerMonth: String)
+data class SubscriptionPlan(
+    val productDetails: ProductDetails,
+    val offerToken: String,
+    val planDuration: PlanDuration,
+    val price: String,
+    val pricePerMonth: String
+)
