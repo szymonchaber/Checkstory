@@ -109,7 +109,9 @@ fun PaymentView(viewModel: PaymentViewModel) {
         FeatureLine("Unlimited history")
         FeatureLine("Synchronization with the web app (soon)")
 
-        PaymentsPlans()
+        PaymentsPlans(
+            state.plans, state.selectedPlan
+        )
         Text(
             modifier = Modifier.padding(horizontal = 20.dp),
             text = state.result
@@ -118,26 +120,29 @@ fun PaymentView(viewModel: PaymentViewModel) {
 }
 
 @Composable
-fun PaymentsPlans() {
+fun PaymentsPlans(subscriptionPlans: List<SubscriptionPlan>, selectedPlan: SubscriptionPlan?) {
     Row(
         modifier = Modifier
             .padding(horizontal = 20.dp)
             .padding(top = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        SubscriptionPlan("1\nmonth", "$8.99", "$8.99/mo")
-        SubscriptionPlan("12\nmonths", "$85,99", "$6.99/mo") // save 20%
-        SubscriptionPlan("3\nmonths", "$25,99", "$8.69/mo") // save 3%
+        subscriptionPlans.forEach {
+            val header = with(it.planDuration) {
+                "$amount\n$duration"
+            }
+            SubscriptionPlanView(it == selectedPlan, header, it.price, it.pricePerMonth)
+        }
     }
 }
 
 @Composable
-fun RowScope.SubscriptionPlan(header: String, price: String, pricePerMonth: String) {
+fun RowScope.SubscriptionPlanView(isSelected: Boolean, header: String, price: String, pricePerMonth: String) {
     Card(
         modifier = Modifier
             .weight(1f),
         backgroundColor = Color.LightGray,
-        border = BorderStroke(2.dp, MaterialTheme.colors.primary)
+        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colors.primary) else null
     ) {
         Column(
             Modifier
@@ -209,3 +214,11 @@ fun FeatureLine(text: String) {
         }
     }
 }
+
+data class PlanDuration(val amount: Int, val duration: PlanDurationUnit)
+
+enum class PlanDurationUnit {
+    DAY, WEEK, YEAR, MONTH
+}
+
+data class SubscriptionPlan(val planDuration: PlanDuration, val price: String, val pricePerMonth: String)
