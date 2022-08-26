@@ -42,6 +42,7 @@ class PaymentViewModel @Inject constructor(
     override fun buildMviFlow(eventFlow: Flow<PaymentEvent>): Flow<Pair<PaymentState, PaymentEffect?>> {
         return merge(
             eventFlow.handleLoadSubscriptionPlans(),
+            eventFlow.handlePlanSelected(),
             eventFlow.handleBuyClicked(),
             eventFlow.handlePurchaseEvents(),
         )
@@ -65,12 +66,21 @@ class PaymentViewModel @Inject constructor(
             }
     }
 
+    private fun Flow<PaymentEvent>.handlePlanSelected(): Flow<Pair<PaymentState, PaymentEffect?>> {
+        return filterIsInstance<PaymentEvent.PlanSelected>()
+            .withSuccessState()
+            .map { (state, event) ->
+                val paymentLoadingState = state.copy(selectedPlan = event.subscriptionPlan)
+                PaymentState(paymentLoadingState = paymentLoadingState) to null
+            }
+    }
+
     private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.NewPurchaseResult>()
             .withSuccessState()
             .map { (state, event) ->
-                Timber.d("Got purchase details or error: $event")
-                PaymentState(paymentLoadingState = state.copy(result = event.toString())) to null
+                Timber.d("Got purchase details or error: ${event.paymentResult}")
+                PaymentState(paymentLoadingState = state.copy(result = event.paymentResult.toString())) to null
             }
     }
 

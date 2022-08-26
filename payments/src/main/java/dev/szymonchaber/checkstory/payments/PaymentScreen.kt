@@ -3,19 +3,14 @@ package dev.szymonchaber.checkstory.payments
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
-import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -30,11 +25,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -117,7 +109,9 @@ fun PaymentView(viewModel: PaymentViewModel) {
             is PaymentState.PaymentLoadingState.Success -> {
                 PaymentsPlans(
                     loadingState.plans, loadingState.selectedPlan
-                )
+                ) {
+                    viewModel.onEvent(PaymentEvent.PlanSelected(it))
+                }
                 Text(
                     modifier = Modifier.padding(horizontal = 20.dp),
                     text = loadingState.result
@@ -128,7 +122,11 @@ fun PaymentView(viewModel: PaymentViewModel) {
 }
 
 @Composable
-fun PaymentsPlans(subscriptionPlans: List<SubscriptionPlan>, selectedPlan: SubscriptionPlan?) {
+fun PaymentsPlans(
+    subscriptionPlans: List<SubscriptionPlan>,
+    selectedPlan: SubscriptionPlan?,
+    onPlanSelected: (SubscriptionPlan) -> Unit
+) {
     Row(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -136,57 +134,7 @@ fun PaymentsPlans(subscriptionPlans: List<SubscriptionPlan>, selectedPlan: Subsc
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         subscriptionPlans.forEach {
-            val header = with(it.planDuration) {
-                "$amount\n$duration"
-            }
-            SubscriptionPlanView(it == selectedPlan, header, it.price, it.pricePerMonth)
-        }
-    }
-}
-
-@Composable
-fun RowScope.SubscriptionPlanView(isSelected: Boolean, header: String, price: String, pricePerMonth: String) {
-    Card(
-        modifier = Modifier
-            .weight(1f),
-        backgroundColor = Color.LightGray,
-        border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colors.primary) else null
-    ) {
-        Column(
-            Modifier
-                .padding(horizontal = 16.dp)
-                .padding(top = 12.dp, bottom = 16.dp)
-        ) {
-            Text(
-                modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
-                text = header,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                modifier = Modifier
-                    .padding(top = 16.dp, bottom = 8.dp)
-                    .align(alignment = Alignment.CenterHorizontally),
-                text = price,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-            Box(
-                modifier =
-                Modifier
-                    .background(Color.Gray)
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .padding(top = 8.dp)
-            )
-            Text(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .align(alignment = Alignment.CenterHorizontally),
-                text = pricePerMonth,
-//                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
+            SubscriptionPlanView(it, it == selectedPlan, onPlanSelected)
         }
     }
 }
