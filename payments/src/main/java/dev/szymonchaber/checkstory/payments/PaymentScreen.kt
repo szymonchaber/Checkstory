@@ -109,9 +109,17 @@ fun PaymentView(viewModel: PaymentViewModel) {
         FeatureLine("Unlimited history")
         FeatureLine("Synchronization with the web app (soon)")
 
-        PaymentsPlans(
-            state.plans, state.selectedPlan
-        )
+        when (val loadingState = state.paymentLoadingState) {
+
+            is PaymentState.PaymentLoadingState.Loading -> {
+
+            }
+            is PaymentState.PaymentLoadingState.Success -> {
+                PaymentsPlans(
+                    loadingState.plans, loadingState.selectedPlan
+                )
+            }
+        }
         Text(
             modifier = Modifier.padding(horizontal = 20.dp),
             text = state.result

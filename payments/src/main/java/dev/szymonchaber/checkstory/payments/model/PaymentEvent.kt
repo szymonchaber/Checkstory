@@ -7,6 +7,8 @@ import dev.szymonchaber.checkstory.payments.PurchaseError
 
 sealed interface PaymentEvent {
 
+    object LoadSubscriptionPlans : PaymentEvent
+
     data class BuyClicked(val activity: Activity) : PaymentEvent // passing activity is cringe
 
     data class NewPurchaseResult(val paymentResult: Either<PurchaseError, Purchase>) : PaymentEvent
