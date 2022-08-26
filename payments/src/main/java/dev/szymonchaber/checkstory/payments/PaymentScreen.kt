@@ -18,6 +18,7 @@ import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
@@ -37,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
 
@@ -46,7 +46,7 @@ import dev.szymonchaber.checkstory.payments.model.PaymentState
 fun PaymentScreen(navigator: DestinationsNavigator) {
 //    trackScreenName("payment")
     val viewModel = hiltViewModel<PaymentViewModel>()
-    AdvertScaffold(
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = {
