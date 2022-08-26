@@ -118,12 +118,12 @@ fun PaymentView(viewModel: PaymentViewModel) {
                 PaymentsPlans(
                     loadingState.plans, loadingState.selectedPlan
                 )
+                Text(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    text = loadingState.result
+                )
             }
         }
-        Text(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            text = state.result
-        )
     }
 }
 

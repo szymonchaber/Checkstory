@@ -9,10 +9,12 @@ import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.take
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -65,12 +67,10 @@ class PaymentViewModel @Inject constructor(
 
     private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.NewPurchaseResult>()
-            .map { result ->
-                Timber.d("Got purchase details or error: $result")
-                PaymentState(
-                    result = result.toString(),
-                    paymentLoadingState = PaymentState.PaymentLoadingState.Loading
-                ) to null
+            .withSuccessState()
+            .map { (state, event) ->
+                Timber.d("Got purchase details or error: $event")
+                PaymentState(paymentLoadingState = state.copy(result = event.toString())) to null
             }
     }
 
@@ -79,7 +79,8 @@ class PaymentViewModel @Inject constructor(
             .onEach {
 //                tracker.logEvent("buy_clicked")
             }
-            .map { event ->
+            .withSuccessState()
+            .map { (state, event) ->
                 val textValue = purchaseSubscriptionUseCase.getProductDetails("pro")
                     .map {
                         purchaseSubscriptionUseCase.startPurchaseFlow(event.activity, it)
@@ -88,7 +89,16 @@ class PaymentViewModel @Inject constructor(
                         it.toString()
                     }, { it.toString() })
                 Timber.d("Got details or error: $textValue")
-                PaymentState(result = textValue, paymentLoadingState = PaymentState.PaymentLoadingState.Loading) to null
+                PaymentState(paymentLoadingState = state.copy(result = textValue)) to null
             }
+    }
+
+    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<PaymentState.PaymentLoadingState.Success, T>> {
+        return flatMapLatest { event ->
+            state.map { it.paymentLoadingState }
+                .filterIsInstance<PaymentState.PaymentLoadingState.Success>()
+                .map { it to event }
+                .take(1)
+        }
     }
 }
