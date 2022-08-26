@@ -117,6 +117,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
                     text = loadingState.result
                 )
             }
+            PaymentState.PaymentLoadingState.Error -> TODO()
         }
     }
 }

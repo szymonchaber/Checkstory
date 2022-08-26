@@ -21,7 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
-    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase
+    private val getPaymentPlansUseCase: GetPaymentPlansUseCase,
+    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase,
 ) : BaseViewModel<
         PaymentEvent,
         PaymentState,
@@ -51,18 +52,15 @@ class PaymentViewModel @Inject constructor(
     private fun Flow<PaymentEvent>.handleLoadSubscriptionPlans(): Flow<Pair<PaymentState, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.LoadSubscriptionPlans>()
             .map {
-                val plans = listOf(
-                    SubscriptionPlan(PlanDuration(1, PlanDurationUnit.MONTH), "$8.99", "$8.99/mo"),
-                    SubscriptionPlan(PlanDuration(12, PlanDurationUnit.MONTH), "$85,99", "$6.99/mo"),
-                    SubscriptionPlan(PlanDuration(3, PlanDurationUnit.MONTH), "$25,99", "$8.69/mo"),
-                )
-                PaymentState(
-                    paymentLoadingState = PaymentState.PaymentLoadingState.Success(
-                        "idle",
-                        plans,
-                        null
+                getPaymentPlansUseCase.getPaymentPlans().fold({
+                    PaymentState(
+                        paymentLoadingState = PaymentState.PaymentLoadingState.Error
                     )
-                ) to null
+                }, {
+                    PaymentState(
+                        paymentLoadingState = PaymentState.PaymentLoadingState.Success("idle", it, null)
+                    )
+                }) to null
             }
     }
 

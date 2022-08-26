@@ -19,6 +19,8 @@ data class PaymentState(
             val selectedPlan: SubscriptionPlan?
         ) : PaymentLoadingState
 
+        object Error : PaymentLoadingState
+
         object Loading : PaymentLoadingState
     }
 }

@@ -27,7 +27,7 @@ import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingManager: BillingManager) :
-    PurchaseSubscriptionUseCase, IsProUserUseCase {
+    PurchaseSubscriptionUseCase, IsProUserUseCase, GetPaymentPlansUseCase {
 
     private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
         extraBufferCapacity = 1,
@@ -40,6 +40,25 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
     init {
         billingManager.purchasesUpdatedListener = { billingResult, purchases ->
             handlePurchaseResult(billingResult, purchases)
+        }
+    }
+
+    override suspend fun getPaymentPlans(): Either<BillingError, List<SubscriptionPlan>> {
+        return withContext(Dispatchers.Default) {
+            billingManager.connectBillingClient().flatMap {
+                fetchAllProducts(it).map { productDetails ->
+                    productDetails.drop(1).mapNotNull {
+                        it.subscriptionOfferDetails?.first()?.let {
+                            val price = it.pricingPhases.pricingPhaseList.first().formattedPrice
+                            SubscriptionPlan(PlanDuration(1, PlanDurationUnit.MONTH), price, "$8.99/mo")
+                        }
+//                    listOf(
+//                        SubscriptionPlan(PlanDuration(12, PlanDurationUnit.MONTH), "$85,99", "$6.99/mo"),
+//                        SubscriptionPlan(PlanDuration(3, PlanDurationUnit.MONTH), "$25,99", "$8.69/mo"),
+//                    )
+                    }
+                }
+            }
         }
     }
 
@@ -90,6 +109,44 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
             detailsResult.productDetailsList?.firstOrNull {
                 it.productId == productId
             }?.right() ?: BillingError.NoProductsMatch(productId).left()
+        } else {
+            mapBillingError(billingResult).left()
+        }
+    }
+
+    private suspend fun fetchAllProducts(
+        billingClient: BillingClient
+    ): Either<BillingError, List<ProductDetails>> {
+        val queryProductDetailsParams =
+            QueryProductDetailsParams.newBuilder()
+                .setProductList(
+                    listOf(
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId("pro")
+                            .setProductType(BillingClient.ProductType.SUBS)
+                            .build(),
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId("pro_monthly")
+                            .setProductType(BillingClient.ProductType.SUBS)
+                            .build(),
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId("pro_yearly")
+                            .setProductType(BillingClient.ProductType.SUBS)
+                            .build(),
+                        QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId("pro_quarterly")
+                            .setProductType(BillingClient.ProductType.SUBS)
+                            .build()
+                    )
+                )
+                .build()
+
+        val detailsResult = withContext(Dispatchers.IO) {
+            billingClient.queryProductDetails(queryProductDetailsParams)
+        }
+        val billingResult = detailsResult.billingResult
+        return if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+            detailsResult.productDetailsList?.right() ?: BillingError.NoProductsMatch("lol").left()
         } else {
             mapBillingError(billingResult).left()
         }
