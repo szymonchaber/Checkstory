@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.payments
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
 import androidx.compose.material.Card
 import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
@@ -20,7 +22,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -65,6 +66,22 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
             )
         }, content = {
             PaymentView(viewModel)
+        },
+        bottomBar = {
+            val context = LocalContext.current
+            Box(Modifier.fillMaxWidth()) {
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .padding(bottom = 8.dp)
+                        .align(Alignment.Center),
+                    onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }
+                ) {
+                    val price = "$8.99"
+                    Text(text = "Buy pro for $price")
+                }
+            }
         }
     )
 }
@@ -72,7 +89,6 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
 @Composable
 fun PaymentView(viewModel: PaymentViewModel) {
     val state by viewModel.state.collectAsState(initial = PaymentState.initial)
-    val context = LocalContext.current
     Column {
         Text(
             modifier = Modifier
@@ -98,9 +114,6 @@ fun PaymentView(viewModel: PaymentViewModel) {
             modifier = Modifier.padding(horizontal = 20.dp),
             text = state.result
         )
-        TextButton(onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }) {
-            Text(text = "Buy pro version")
-        }
     }
 }
 
@@ -123,7 +136,8 @@ fun RowScope.SubscriptionPlan(header: String, price: String, pricePerMonth: Stri
     Card(
         modifier = Modifier
             .weight(1f),
-        backgroundColor = MaterialTheme.colors.primary
+        backgroundColor = Color.LightGray,
+        border = BorderStroke(2.dp, MaterialTheme.colors.primary)
     ) {
         Column(
             Modifier
