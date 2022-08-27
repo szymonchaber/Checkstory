@@ -4,5 +4,5 @@ import arrow.core.Either
 
 interface GetPaymentPlansUseCase {
 
-    suspend fun getPaymentPlans(): Either<BillingError, List<SubscriptionPlan>>
+    suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans>
 }

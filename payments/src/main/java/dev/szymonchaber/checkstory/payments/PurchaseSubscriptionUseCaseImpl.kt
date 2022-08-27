@@ -43,28 +43,45 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
         }
     }
 
-    override suspend fun getPaymentPlans(): Either<BillingError, List<SubscriptionPlan>> {
+    override suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
         return withContext(Dispatchers.Default) {
             billingManager.connectBillingClient().flatMap {
                 fetchAllProducts(it).map { productDetails ->
-                    productDetails.drop(1).mapNotNull { productDetails ->
-                        productDetails.subscriptionOfferDetails?.first()?.let {
-                            val price = it.pricingPhases.pricingPhaseList.first().formattedPrice
-                            SubscriptionPlan(
-                                productDetails,
-                                it.offerToken,
-                                PlanDuration(1, PlanDurationUnit.MONTH),
-                                price,
-                                "$8.99/mo"
-                            )
+                    val monthlyProduct = productDetails
+                        .first {
+                            it.productId == PRODUCT_ID_PRO_MONTHLY
                         }
-//                    listOf(
-//                        SubscriptionPlan(PlanDuration(12, PlanDurationUnit.MONTH), "$85,99", "$6.99/mo"),
-//                        SubscriptionPlan(PlanDuration(3, PlanDurationUnit.MONTH), "$25,99", "$8.69/mo"),
-//                    )
-                    }
+                        .toSubscriptionPlan(PlanDuration.MONTHLY)
+                    val quarterlyProduct = productDetails
+                        .first {
+                            it.productId == PRODUCT_ID_PRO_QUARTERLY
+                        }
+                        .toSubscriptionPlan(PlanDuration.QUARTERLY)
+                    val yearlyProduct = productDetails
+                        .first {
+                            it.productId == PRODUCT_ID_PRO_YEARLY
+                        }
+                        .toSubscriptionPlan(PlanDuration.YEARLY)
+                    SubscriptionPlans(
+                        monthlyProduct,
+                        quarterlyProduct,
+                        yearlyProduct
+                    )
                 }
             }
+        }
+    }
+
+    private fun ProductDetails.toSubscriptionPlan(planDuration: PlanDuration): SubscriptionPlan {
+        return subscriptionOfferDetails!!.first().let {
+            val price = it.pricingPhases.pricingPhaseList.first().formattedPrice
+            SubscriptionPlan(
+                this,
+                it.offerToken,
+                planDuration,
+                price,
+                "$8.99/mo"
+            )
         }
     }
 
@@ -126,20 +143,20 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
             QueryProductDetailsParams.newBuilder()
                 .setProductList(
                     listOf(
-                        QueryProductDetailsParams.Product.newBuilder()
+                        QueryProductDetailsParams.Product.newBuilder() // unused but returns empty list when not set
                             .setProductId("pro")
                             .setProductType(BillingClient.ProductType.SUBS)
                             .build(),
                         QueryProductDetailsParams.Product.newBuilder()
-                            .setProductId("pro_monthly")
+                            .setProductId(PRODUCT_ID_PRO_MONTHLY)
                             .setProductType(BillingClient.ProductType.SUBS)
                             .build(),
                         QueryProductDetailsParams.Product.newBuilder()
-                            .setProductId("pro_yearly")
+                            .setProductId(PRODUCT_ID_PRO_QUARTERLY)
                             .setProductType(BillingClient.ProductType.SUBS)
                             .build(),
                         QueryProductDetailsParams.Product.newBuilder()
-                            .setProductId("pro_quarterly")
+                            .setProductId(PRODUCT_ID_PRO_YEARLY)
                             .setProductType(BillingClient.ProductType.SUBS)
                             .build()
                     )
@@ -248,5 +265,12 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
             BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> PurchaseError.AlreadySubscribed
             else -> PurchaseError.Unhandled(billingResult.responseCode, billingResult.debugMessage)
         }
+    }
+
+    companion object {
+
+        private const val PRODUCT_ID_PRO_MONTHLY = "pro_monthly"
+        private const val PRODUCT_ID_PRO_QUARTERLY = "pro_quarterly"
+        private const val PRODUCT_ID_PRO_YEARLY = "pro_yearly"
     }
 }

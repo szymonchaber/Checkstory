@@ -125,7 +125,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
 
 @Composable
 fun PaymentsPlans(
-    subscriptionPlans: List<SubscriptionPlan>,
+    subscriptionPlans: SubscriptionPlans,
     selectedPlan: SubscriptionPlan?,
     onPlanSelected: (SubscriptionPlan) -> Unit
 ) {
@@ -135,8 +135,10 @@ fun PaymentsPlans(
             .padding(top = 24.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        subscriptionPlans.forEach {
-            SubscriptionPlanView(it, it == selectedPlan, onPlanSelected)
+        with(subscriptionPlans) {
+            SubscriptionPlanView(monthly, monthly == selectedPlan, onPlanSelected)
+            SubscriptionPlanView(yearly, yearly == selectedPlan, onPlanSelected)
+            SubscriptionPlanView(quarterly, quarterly == selectedPlan, onPlanSelected)
         }
     }
 }
@@ -173,11 +175,16 @@ fun FeatureLine(text: String) {
     }
 }
 
-data class PlanDuration(val amount: Int, val duration: PlanDurationUnit)
+enum class PlanDuration {
 
-enum class PlanDurationUnit {
-    DAY, WEEK, YEAR, MONTH
+    MONTHLY, QUARTERLY, YEARLY
 }
+
+data class SubscriptionPlans(
+    val monthly: SubscriptionPlan,
+    val quarterly: SubscriptionPlan,
+    val yearly: SubscriptionPlan
+)
 
 data class SubscriptionPlan(
     val productDetails: ProductDetails,

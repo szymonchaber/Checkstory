@@ -27,8 +27,11 @@ fun RowScope.SubscriptionPlanView(
     isSelected: Boolean,
     onClick: (SubscriptionPlan) -> Unit
 ) {
-    val header = with(subscriptionPlan.planDuration) {
-        "$amount\n$duration"
+
+    val header = when (subscriptionPlan.planDuration) {
+        PlanDuration.MONTHLY -> "1\nmonth"
+        PlanDuration.QUARTERLY -> "3\nmonths"
+        PlanDuration.YEARLY -> "12\nmonths"
     }
     Card(
         modifier = Modifier
