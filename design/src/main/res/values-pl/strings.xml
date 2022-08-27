@@ -65,4 +65,7 @@
     <string name="confirm_exit_without_saving_dialog_confirm">Tak, wyjdź</string>
     <string name="confirm_exit_without_saving_dialog_cancel">Zostań</string>
     <string name="upgrade">Ulepsz do PRO</string>
+    <string name="subscription_plan_monthly">1\\nmiesiąc</string>
+    <string name="subscription_plan_quarterly">3\\nmiesiące</string>
+    <string name="subscription_plan_yearly">12\\nmiesięcy</string>
 </resources>
