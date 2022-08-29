@@ -28,11 +28,10 @@ fun RowScope.SubscriptionPlanView(
     isSelected: Boolean,
     onClick: (SubscriptionPlan) -> Unit
 ) {
-
-    val header = when (subscriptionPlan.planDuration) {
-        PlanDuration.MONTHLY -> stringResource(id = R.string.subscription_plan_monthly)
-        PlanDuration.QUARTERLY -> stringResource(id = R.string.subscription_plan_quarterly)
-        PlanDuration.YEARLY -> stringResource(id = R.string.subscription_plan_yearly)
+    val (header, footer) = when (subscriptionPlan.planDuration) {
+        PlanDuration.MONTHLY -> R.string.subscription_plan_monthly to null
+        PlanDuration.QUARTERLY -> R.string.subscription_plan_quarterly to R.string.save_5_percent
+        PlanDuration.YEARLY -> R.string.subscription_plan_yearly to R.string.save_20_percent
     }
     Card(
         modifier = Modifier
@@ -45,26 +44,27 @@ fun RowScope.SubscriptionPlanView(
     ) {
         Column(
             Modifier
-                .padding(horizontal = 16.dp)
-                .padding(top = 12.dp, bottom = 16.dp)
+                .padding(top = 12.dp, bottom = 12.dp)
         ) {
             Text(
-                modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
-                text = header,
+                modifier = Modifier
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .padding(horizontal = 16.dp),
+                text = stringResource(id = header),
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
             Text(
                 modifier = Modifier
                     .padding(top = 16.dp, bottom = 8.dp)
+                    .padding(horizontal = 4.dp)
                     .align(alignment = Alignment.CenterHorizontally),
                 text = subscriptionPlan.price,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
             Box(
-                modifier =
-                Modifier
+                modifier = Modifier
                     .background(Color.Gray)
                     .fillMaxWidth()
                     .height(1.dp)
@@ -73,9 +73,10 @@ fun RowScope.SubscriptionPlanView(
             Text(
                 modifier = Modifier
                     .padding(top = 8.dp)
+                    .padding(horizontal = 16.dp)
                     .align(alignment = Alignment.CenterHorizontally),
-                text = subscriptionPlan.pricePerMonth,
-//                fontWeight = FontWeight.Bold,
+                text = footer?.let { stringResource(id = it) } ?: "",
+                fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
         }

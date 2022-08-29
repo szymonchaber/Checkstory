@@ -68,4 +68,6 @@
     <string name="subscription_plan_monthly">1\\nmiesiąc</string>
     <string name="subscription_plan_quarterly">3\\nmiesiące</string>
     <string name="subscription_plan_yearly">12\\nmiesięcy</string>
+    <string name="save_5_percent">Zaoszczędź 5%</string>
+    <string name="save_20_percent">Zaoszczędź 20%</string>
 </resources>
