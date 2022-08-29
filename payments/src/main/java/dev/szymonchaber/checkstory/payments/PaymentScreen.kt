@@ -40,6 +40,7 @@ import dev.szymonchaber.checkstory.payments.model.PaymentState
 fun PaymentScreen(navigator: DestinationsNavigator) {
 //    trackScreenName("payment")
     val viewModel = hiltViewModel<PaymentViewModel>()
+    val state by viewModel.state.collectAsState(initial = PaymentState.initial)
     Scaffold(
         topBar = {
             TopAppBar(
@@ -62,17 +63,26 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
         },
         bottomBar = {
             val context = LocalContext.current
-            Box(Modifier.fillMaxWidth()) {
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp)
-                        .padding(bottom = 8.dp)
-                        .align(Alignment.Center),
-                    onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }
-                ) {
-                    val price = "$8.99"
-                    Text(text = "Buy pro for $price")
+            val selectedPlan = when (val loadingState = state.paymentLoadingState) {
+                is PaymentState.PaymentLoadingState.Success -> {
+                    loadingState.selectedPlan
+                }
+                else -> null
+            }
+            // TODO perhaps select something in logic right away
+            selectedPlan?.price?.let { planPrice ->
+
+                Box(Modifier.fillMaxWidth()) {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .padding(bottom = 8.dp)
+                            .align(Alignment.Center),
+                        onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }
+                    ) {
+                        Text(text = stringResource(id = R.string.subscribe_to_checkstory_pro))
+                    }
                 }
             }
         }
