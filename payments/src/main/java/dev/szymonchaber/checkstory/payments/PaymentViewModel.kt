@@ -64,7 +64,12 @@ class PaymentViewModel @Inject constructor(
                             PaymentState.PaymentLoadingState.LoadingError
                         }
                         ) {
-                            PaymentState.PaymentLoadingState.Success("idle", it, it.yearly)
+                            PaymentState.PaymentLoadingState.Success(
+                                result = "idle",
+                                plans = it,
+                                selectedPlan = it.yearly,
+                                paymentInProgress = false
+                            )
                         }
                     emit(PaymentState(paymentLoadingState = paymentLoadingState) to null)
                 }
