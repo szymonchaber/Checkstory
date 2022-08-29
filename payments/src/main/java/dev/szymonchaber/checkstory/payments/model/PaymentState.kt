@@ -15,7 +15,6 @@ data class PaymentState(
     sealed interface PaymentLoadingState {
 
         data class Success(
-            val result: String,
             val plans: SubscriptionPlans,
             val selectedPlan: SubscriptionPlan,
             val paymentInProgress: Boolean

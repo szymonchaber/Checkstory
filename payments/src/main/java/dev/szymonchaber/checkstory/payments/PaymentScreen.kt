@@ -160,10 +160,6 @@ fun PaymentView(viewModel: PaymentViewModel) {
                 ) {
                     viewModel.onEvent(PaymentEvent.PlanSelected(it))
                 }
-                Text(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    text = loadingState.result
-                )
             }
             PaymentState.PaymentLoadingState.LoadingError -> {
                 Text(

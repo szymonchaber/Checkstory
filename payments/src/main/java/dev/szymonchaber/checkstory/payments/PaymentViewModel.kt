@@ -65,7 +65,6 @@ class PaymentViewModel @Inject constructor(
                         }
                         ) {
                             PaymentState.PaymentLoadingState.Success(
-                                result = "idle",
                                 plans = it,
                                 selectedPlan = it.yearly,
                                 paymentInProgress = false
@@ -108,11 +107,8 @@ class PaymentViewModel @Inject constructor(
                 val effect = event.paymentResult.fold({ PaymentEffect.PaymentError() }, { null })
                 Timber.d("Got purchase details or error: ${event.paymentResult}")
                 PaymentState(
-                    paymentLoadingState = state.copy(
-                        result = event.paymentResult.toString(),
-                        paymentInProgress = false
-                    )
-                ) to effect
+                    paymentLoadingState = state.copy(paymentInProgress = false)
+                ) to effect // TODO create success effect
             }
     }
 
