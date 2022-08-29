@@ -71,4 +71,7 @@
     <string name="save_5_percent">Zaoszczędź 5%</string>
     <string name="save_20_percent">Zaoszczędź 20%</string>
     <string name="subscribe_to_checkstory_pro">Zasubskrybuj Checkstory Pro</string>
+    <string name="price_billed_monthly">%s naliczane co miesiąc</string>
+    <string name="price_billed_quarterly">%s naliczane co kwartał</string>
+    <string name="price_billed_yearly">%s naliczane co roku</string>
 </resources>

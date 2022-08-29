@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -70,15 +69,24 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
                 else -> null
             }
             // TODO perhaps select something in logic right away
-            selectedPlan?.price?.let { planPrice ->
-
-                Box(Modifier.fillMaxWidth()) {
+            selectedPlan?.let { plan ->
+                Column(Modifier.fillMaxWidth()) {
+                    val billingFrequency = when (plan.planDuration) {
+                        PlanDuration.MONTHLY -> R.string.price_billed_monthly
+                        PlanDuration.QUARTERLY -> R.string.price_billed_quarterly
+                        PlanDuration.YEARLY -> R.string.price_billed_yearly
+                    }
+                    Text(
+                        modifier = Modifier.padding(horizontal = 24.dp),
+                        text = stringResource(billingFrequency, plan.price),
+                        style = MaterialTheme.typography.caption
+                    )
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 24.dp)
                             .padding(bottom = 8.dp)
-                            .align(Alignment.Center),
+                            .align(Alignment.CenterHorizontally),
                         onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }
                     ) {
                         Text(text = stringResource(id = R.string.subscribe_to_checkstory_pro))

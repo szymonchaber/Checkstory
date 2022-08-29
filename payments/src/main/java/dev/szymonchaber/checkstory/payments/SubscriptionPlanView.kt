@@ -36,8 +36,11 @@ fun RowScope.SubscriptionPlanView(
     Card(
         modifier = Modifier
             .weight(1f),
-        backgroundColor = Color.LightGray,
-        border = if (isSelected) BorderStroke(3.dp, MaterialTheme.colors.primary) else null,
+//        backgroundColor = Color.LightGray,
+        border = if (isSelected) BorderStroke(3.dp, MaterialTheme.colors.primary) else BorderStroke(
+            3.dp,
+            Color.LightGray
+        ),
         onClick = {
             onClick(subscriptionPlan)
         }
