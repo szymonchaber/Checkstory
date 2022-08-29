@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -83,40 +85,51 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
         },
         scaffoldState = scaffoldState,
         bottomBar = {
-            val context = LocalContext.current
-            val selectedPlan = when (val loadingState = state.paymentLoadingState) {
-                is PaymentState.PaymentLoadingState.Success -> {
-                    loadingState.selectedPlan
-                }
-                else -> null
-            }
-            // TODO perhaps select something in logic right away
-            selectedPlan?.let { plan ->
-                Column(Modifier.fillMaxWidth()) {
-                    val billingFrequency = when (plan.planDuration) {
-                        PlanDuration.MONTHLY -> R.string.price_billed_monthly
-                        PlanDuration.QUARTERLY -> R.string.price_billed_quarterly
-                        PlanDuration.YEARLY -> R.string.price_billed_yearly
-                    }
-                    Text(
-                        modifier = Modifier.padding(horizontal = 24.dp),
-                        text = stringResource(billingFrequency, plan.price),
-                        style = MaterialTheme.typography.caption
-                    )
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                            .padding(bottom = 8.dp)
-                            .align(Alignment.CenterHorizontally),
-                        onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }
-                    ) {
-                        Text(text = stringResource(id = R.string.subscribe_to_checkstory_pro))
-                    }
-                }
+            when (val loadingState = state.paymentLoadingState) {
+                is PaymentState.PaymentLoadingState.Success -> BottomSection(loadingState, viewModel)
+                else -> Unit
             }
         }
     )
+}
+
+@Composable
+private fun BottomSection(
+    success: PaymentState.PaymentLoadingState.Success,
+    viewModel: PaymentViewModel,
+) {
+    val context = LocalContext.current
+
+    Column(Modifier.fillMaxWidth()) {
+        val billingFrequency = when (success.selectedPlan.planDuration) {
+            PlanDuration.MONTHLY -> R.string.price_billed_monthly
+            PlanDuration.QUARTERLY -> R.string.price_billed_quarterly
+            PlanDuration.YEARLY -> R.string.price_billed_yearly
+        }
+        Text(
+            modifier = Modifier.padding(horizontal = 24.dp),
+            text = stringResource(billingFrequency, success.selectedPlan.price),
+            style = MaterialTheme.typography.caption
+        )
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 8.dp)
+                .align(Alignment.CenterHorizontally),
+            onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }
+        ) {
+            if (success.paymentInProgress) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = MaterialTheme.colors.secondary,
+                    strokeWidth = 1.5.dp
+                )
+            } else {
+                Text(text = stringResource(id = R.string.subscribe_to_checkstory_pro))
+            }
+        }
+    }
 }
 
 @Composable

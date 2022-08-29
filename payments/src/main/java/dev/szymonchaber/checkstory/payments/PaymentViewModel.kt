@@ -92,14 +92,12 @@ class PaymentViewModel @Inject constructor(
             }
             .withSuccessState()
             .map { (state, event) ->
-                state.selectedPlan?.let {
-                    purchaseSubscriptionUseCase.startPurchaseFlow(
-                        event.activity,
-                        it.productDetails,
-                        it.offerToken
-                    )
-                    PaymentState(paymentLoadingState = state.copy(paymentInProgress = true)) to null
-                } ?: (PaymentState(state) to null)
+                purchaseSubscriptionUseCase.startPurchaseFlow(
+                    event.activity,
+                    state.selectedPlan.productDetails,
+                    state.selectedPlan.offerToken
+                )
+                PaymentState(paymentLoadingState = state.copy(paymentInProgress = true)) to null
             }
     }
 

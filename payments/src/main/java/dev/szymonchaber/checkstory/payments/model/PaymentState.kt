@@ -17,8 +17,8 @@ data class PaymentState(
         data class Success(
             val result: String,
             val plans: SubscriptionPlans,
-            val selectedPlan: SubscriptionPlan?,
-            val paymentInProgress: Boolean = false
+            val selectedPlan: SubscriptionPlan,
+            val paymentInProgress: Boolean
         ) : PaymentLoadingState
 
         object LoadingError : PaymentLoadingState
