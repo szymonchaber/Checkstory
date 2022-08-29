@@ -3,7 +3,7 @@ package dev.szymonchaber.checkstory.payments
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -26,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -96,12 +96,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
                 .padding(top = 8.dp),
             text = "By upgrading, you get access to the full package:"
         )
-        FeatureLine("Ads-free experience")
-        FeatureLine("Unlimited templates")
-        FeatureLine("Unlimited reminders")
-        FeatureLine("Unlimited history")
-        FeatureLine("Synchronization with the web app (soon)")
-
+        Features()
         when (val loadingState = state.paymentLoadingState) {
 
             is PaymentState.PaymentLoadingState.Loading -> {
@@ -120,6 +115,17 @@ fun PaymentView(viewModel: PaymentViewModel) {
             }
             PaymentState.PaymentLoadingState.Error -> TODO()
         }
+    }
+}
+
+@Composable
+private fun Features() {
+    Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FeatureLine("Ads-free experience")
+        FeatureLine("Unlimited templates")
+        FeatureLine("Unlimited reminders")
+        FeatureLine("Unlimited history")
+        FeatureLine("Synchronization with the web app (soon)")
     }
 }
 
@@ -151,27 +157,23 @@ fun Context.getActivity(): Activity? = when (this) {
 
 @Composable
 fun FeatureLine(text: String) {
-    Row {
-        Row(
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+    ) {
+        Image(
+            modifier = Modifier.align(Alignment.CenterVertically),
+            painter = painterResource(id = R.drawable.ic_check),
+            contentDescription = null
+        )
+        Text(
             modifier = Modifier
+                .padding(start = 8.dp)
                 .fillMaxWidth()
-                .padding(start = 4.dp, end = 20.dp)
-        ) {
-            Checkbox(
-                modifier = Modifier.align(Alignment.CenterVertically),
-                checked = true,
-                interactionSource = MutableInteractionSource(),
-                onCheckedChange = {
-                    // nop
-                }
-            )
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.CenterVertically),
-                text = text,
-            )
-        }
+                .align(Alignment.CenterVertically),
+            text = text,
+        )
     }
 }
 

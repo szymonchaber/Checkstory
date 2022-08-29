@@ -53,6 +53,7 @@ class PaymentViewModel @Inject constructor(
         return filterIsInstance<PaymentEvent.LoadSubscriptionPlans>()
             .map {
                 getPaymentPlansUseCase.getPaymentPlans().fold({
+                    Timber.e(it.toString())
                     PaymentState(
                         paymentLoadingState = PaymentState.PaymentLoadingState.Error
                     )
