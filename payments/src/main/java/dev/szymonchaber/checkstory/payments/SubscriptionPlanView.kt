@@ -66,9 +66,14 @@ fun RowScope.SubscriptionPlanView(
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
             )
+            val dividerColor = if (subscriptionPlan.planDuration == PlanDuration.MONTHLY) {
+                Color.Transparent
+            } else {
+                Color.LightGray
+            }
             Box(
                 modifier = Modifier
-                    .background(Color.Gray)
+                    .background(dividerColor)
                     .fillMaxWidth()
                     .height(1.dp)
                     .padding(top = 8.dp)

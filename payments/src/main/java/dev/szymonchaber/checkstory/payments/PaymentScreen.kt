@@ -111,8 +111,8 @@ fun PaymentView(viewModel: PaymentViewModel) {
         Text(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
-                .padding(top = 8.dp),
-            text = "By upgrading, you get access to the full package:"
+                .padding(top = 12.dp),
+            text = "Get access to the full package:"
         )
         Features()
         when (val loadingState = state.paymentLoadingState) {
@@ -138,7 +138,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
 
 @Composable
 private fun Features() {
-    Column(Modifier.padding(top = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         FeatureLine("Ads-free experience")
         FeatureLine("Unlimited templates")
         FeatureLine("Unlimited reminders")
