@@ -74,4 +74,6 @@
     <string name="price_billed_monthly">%s naliczane co miesiąc</string>
     <string name="price_billed_quarterly">%s naliczane co kwartał</string>
     <string name="price_billed_yearly">%s naliczane co roku</string>
+    <string name="try_again">Spróbuj ponownie</string>
+    <string name="could_not_load_subscription_plans">Nie udało się załadować planów subskrypcji</string>
 </resources>

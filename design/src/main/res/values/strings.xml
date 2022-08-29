@@ -74,4 +74,6 @@
     <string name="price_billed_monthly">%s, billed monthly</string>
     <string name="price_billed_quarterly">%s, billed quarterly</string>
     <string name="price_billed_yearly">%s, billed yearly</string>
+    <string name="could_not_load_subscription_plans">Could not load subscription plans</string>
+    <string name="try_again">Try again</string>
 </resources>

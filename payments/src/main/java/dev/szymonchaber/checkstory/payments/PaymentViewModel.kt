@@ -10,6 +10,7 @@ import dev.szymonchaber.checkstory.payments.model.PaymentState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -51,17 +52,22 @@ class PaymentViewModel @Inject constructor(
 
     private fun Flow<PaymentEvent>.handleLoadSubscriptionPlans(): Flow<Pair<PaymentState, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.LoadSubscriptionPlans>()
-            .map {
-                getPaymentPlansUseCase.getPaymentPlans().fold({
-                    Timber.e(it.toString())
-                    PaymentState(
-                        paymentLoadingState = PaymentState.PaymentLoadingState.Error
+            .flatMapLatest {
+                flow {
+                    emit(
+                        PaymentState(
+                            paymentLoadingState = PaymentState.PaymentLoadingState.Loading
+                        ) to null
                     )
-                }, {
-                    PaymentState(
-                        paymentLoadingState = PaymentState.PaymentLoadingState.Success("idle", it, null)
-                    )
-                }) to null
+                    val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()
+                        .fold({
+                            PaymentState.PaymentLoadingState.LoadingError
+                        }
+                        ) {
+                            PaymentState.PaymentLoadingState.Success("idle", it, null)
+                        }
+                    emit(PaymentState(paymentLoadingState = paymentLoadingState) to null)
+                }
             }
     }
 
@@ -96,13 +102,14 @@ class PaymentViewModel @Inject constructor(
         return filterIsInstance<PaymentEvent.NewPurchaseResult>()
             .withSuccessState()
             .map { (state, event) ->
+                val effect = event.paymentResult.fold({ PaymentEffect.PaymentError() }, { null })
                 Timber.d("Got purchase details or error: ${event.paymentResult}")
                 PaymentState(
                     paymentLoadingState = state.copy(
                         result = event.paymentResult.toString(),
                         paymentInProgress = false
                     )
-                ) to null
+                ) to effect
             }
     }
 

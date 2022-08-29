@@ -21,7 +21,7 @@ data class PaymentState(
             val paymentInProgress: Boolean = false
         ) : PaymentLoadingState
 
-        object Error : PaymentLoadingState
+        object LoadingError : PaymentLoadingState
 
         object Loading : PaymentLoadingState
     }

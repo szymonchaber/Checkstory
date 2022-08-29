@@ -15,12 +15,16 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,8 +35,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.billingclient.api.ProductDetails
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.szymonchaber.checkstory.design.views.LoadingView
+import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
+import kotlinx.coroutines.launch
 
 @Composable
 @Destination(route = "payment_screen", start = true)
@@ -40,6 +47,20 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
 //    trackScreenName("payment")
     val viewModel = hiltViewModel<PaymentViewModel>()
     val state by viewModel.state.collectAsState(initial = PaymentState.initial)
+    val scaffoldState = rememberScaffoldState()
+    val coroutineScope = rememberCoroutineScope()
+    val effect by viewModel.effect.collectAsState(initial = null)
+
+    LaunchedEffect(effect) {
+        when (val value = effect) {
+            is PaymentEffect.PaymentError -> {
+                coroutineScope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(message = "Something went wrong")
+                }
+            }
+            null -> Unit
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -60,6 +81,7 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
         }, content = {
             PaymentView(viewModel)
         },
+        scaffoldState = scaffoldState,
         bottomBar = {
             val context = LocalContext.current
             val selectedPlan = when (val loadingState = state.paymentLoadingState) {
@@ -116,9 +138,8 @@ fun PaymentView(viewModel: PaymentViewModel) {
         )
         Features()
         when (val loadingState = state.paymentLoadingState) {
-
             is PaymentState.PaymentLoadingState.Loading -> {
-
+                LoadingView()
             }
             is PaymentState.PaymentLoadingState.Success -> {
                 PaymentsPlans(
@@ -131,7 +152,18 @@ fun PaymentView(viewModel: PaymentViewModel) {
                     text = loadingState.result
                 )
             }
-            PaymentState.PaymentLoadingState.Error -> TODO()
+            PaymentState.PaymentLoadingState.LoadingError -> {
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(top = 32.dp), text = stringResource(id = R.string.could_not_load_subscription_plans)
+                )
+                TextButton(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = { viewModel.onEvent(PaymentEvent.LoadSubscriptionPlans) }) {
+                    Text(text = stringResource(id = R.string.try_again))
+                }
+            }
         }
     }
 }
