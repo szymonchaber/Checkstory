@@ -57,7 +57,7 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
         when (val value = effect) {
             is PaymentEffect.PaymentError -> {
                 coroutineScope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(message = "Something went wrong")
+                    scaffoldState.snackbarHostState.showSnackbar(message = "Something went wrong") // TODO add "you were not charged" to the message
                 }
             }
             null -> Unit

@@ -16,9 +16,12 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
 import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.onSubscription
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,11 +40,35 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
     override val purchaseEvents: Flow<Either<PurchaseError, Purchase>>
         get() = _purchaseEvents
 
+    private val _isProUserFlow = MutableSharedFlow<Boolean>(replay = 1)
+
+    override val isProUserFlow: Flow<Boolean>
+        get() = _isProUserFlow.onSubscription {
+            refreshSubscriptionState()
+        }
+
     init {
         billingManager.purchasesUpdatedListener = { billingResult, purchases ->
             handlePurchaseResult(billingResult, purchases)
         }
+        refreshSubscriptionState()
     }
+
+    private fun refreshSubscriptionState() {
+        GlobalScope.launch(Dispatchers.IO) {
+            _isProUserFlow.tryEmit(isProUser())
+        }
+    }
+
+    override suspend fun isProUser(): Boolean {
+        return fetchCurrentSubscription().fold({
+            false
+        }
+        ) {
+            it != null
+        }
+    }
+
 
     override suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
         return withContext(Dispatchers.Default) {
@@ -171,15 +198,6 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
             detailsResult.productDetailsList?.right() ?: BillingError.NoProductsMatch("lol").left()
         } else {
             mapBillingError(billingResult).left()
-        }
-    }
-
-    override suspend fun isProUser(): Boolean {
-        return fetchCurrentSubscription().fold({
-            false
-        }
-        ) {
-            it != null
         }
     }
 
