@@ -268,7 +268,7 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
                 throw IllegalArgumentException("OK billing result should be handled by the calling method")
             }
             BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> BillingError.BillingNotSupported
-            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> BillingError.ConnectionError
+            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> BillingError.ConnectionError(billingResult.debugMessage)
             else -> BillingError.Unhandled(billingResult.responseCode, billingResult.debugMessage)
         }
     }
@@ -279,7 +279,7 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
                 throw IllegalArgumentException("OK billing result should be handled by the calling method")
             }
             BillingClient.BillingResponseCode.USER_CANCELED -> PurchaseError.UserCancelled
-            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> PurchaseError.ConnectionError
+            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> PurchaseError.ConnectionError(billingResult.debugMessage)
             BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED -> PurchaseError.AlreadySubscribed
             else -> PurchaseError.Unhandled(billingResult.responseCode, billingResult.debugMessage)
         }

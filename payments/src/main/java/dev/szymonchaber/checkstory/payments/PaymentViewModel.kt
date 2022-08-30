@@ -61,6 +61,7 @@ class PaymentViewModel @Inject constructor(
                     )
                     val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()
                         .fold({
+                            Timber.e(it.toString())
                             PaymentState.PaymentLoadingState.LoadingError
                         }
                         ) {

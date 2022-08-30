@@ -10,5 +10,5 @@ sealed interface BillingError {
 
     data class NoProductsMatch(val sku: String) : BillingError
 
-    object ConnectionError : BillingError
+    data class ConnectionError(val debugMessage: String) : BillingError
 }

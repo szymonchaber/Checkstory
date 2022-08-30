@@ -10,7 +10,7 @@ sealed interface PurchaseError {
 
     object PurchaseListIsNullDespiteStatusOK : PurchaseError
 
-    object ConnectionError : PurchaseError
+    data class ConnectionError(val debugMessage: String) : PurchaseError
 
     object AlreadySubscribed : PurchaseError
 }

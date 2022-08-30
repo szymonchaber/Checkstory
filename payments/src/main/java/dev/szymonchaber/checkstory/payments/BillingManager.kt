@@ -52,7 +52,7 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) {
         return when (billingResult.responseCode) {
             BillingClient.BillingResponseCode.OK -> throw IllegalArgumentException("OK billing result should be handled by the calling method")
             BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> BillingError.BillingNotSupported
-            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> BillingError.ConnectionError
+            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> BillingError.ConnectionError(billingResult.debugMessage)
             else -> BillingError.Unhandled(billingResult.responseCode, billingResult.debugMessage)
         }
     }
