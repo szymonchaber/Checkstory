@@ -24,6 +24,7 @@ class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
     private val getPaymentPlansUseCase: GetPaymentPlansUseCase,
     private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase,
+    private val refreshPaymentInformationUseCase: RefreshPaymentInformationUseCase
 ) : BaseViewModel<
         PaymentEvent,
         PaymentState,
@@ -105,7 +106,14 @@ class PaymentViewModel @Inject constructor(
         return filterIsInstance<PaymentEvent.NewPurchaseResult>()
             .withSuccessState()
             .map { (state, event) ->
-                val effect = event.paymentResult.fold({ PaymentEffect.PaymentError() }, { null })
+                val effect = event.paymentResult
+                    .tap {
+                        refreshPaymentInformationUseCase.refreshPaymentInformation()
+                    }
+                    .fold({
+                        Timber.e(it.toString())
+                        PaymentEffect.PaymentError()
+                    }, { null })
                 Timber.d("Got purchase details or error: ${event.paymentResult}")
                 PaymentState(
                     paymentLoadingState = state.copy(paymentInProgress = false)

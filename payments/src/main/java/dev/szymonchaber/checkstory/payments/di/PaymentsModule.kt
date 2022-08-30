@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import dev.szymonchaber.checkstory.payments.GetPaymentPlansUseCase
 import dev.szymonchaber.checkstory.payments.PurchaseSubscriptionUseCase
 import dev.szymonchaber.checkstory.payments.PurchaseSubscriptionUseCaseImpl
+import dev.szymonchaber.checkstory.payments.RefreshPaymentInformationUseCase
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -27,4 +28,9 @@ interface PaymentsModule {
     fun bindGetPaymentPlansUseCase(
         purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
     ): GetPaymentPlansUseCase
+
+    @Binds
+    fun bindRefreshPaymentInformationUseCase(
+        purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
+    ): RefreshPaymentInformationUseCase
 }

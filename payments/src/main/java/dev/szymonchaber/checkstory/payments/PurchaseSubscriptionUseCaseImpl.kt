@@ -30,7 +30,7 @@ import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingManager: BillingManager) :
-    PurchaseSubscriptionUseCase, IsProUserUseCase, GetPaymentPlansUseCase {
+    PurchaseSubscriptionUseCase, IsProUserUseCase, RefreshPaymentInformationUseCase, GetPaymentPlansUseCase {
 
     private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
         extraBufferCapacity = 1,
@@ -44,17 +44,17 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
 
     override val isProUserFlow: Flow<Boolean>
         get() = _isProUserFlow.onSubscription {
-            refreshSubscriptionState()
+            refreshPaymentInformation()
         }
 
     init {
         billingManager.purchasesUpdatedListener = { billingResult, purchases ->
             handlePurchaseResult(billingResult, purchases)
         }
-        refreshSubscriptionState()
+        refreshPaymentInformation()
     }
 
-    private fun refreshSubscriptionState() {
+    override fun refreshPaymentInformation() {
         GlobalScope.launch(Dispatchers.IO) {
             _isProUserFlow.tryEmit(isProUser())
         }
