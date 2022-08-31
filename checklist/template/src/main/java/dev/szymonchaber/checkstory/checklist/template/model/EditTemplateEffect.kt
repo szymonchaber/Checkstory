@@ -16,4 +16,7 @@ sealed interface EditTemplateEffect {
 
     @Suppress("CanSealedSubClassBeObject")
     class ShowConfirmExitDialog : EditTemplateEffect
+
+    @Suppress("CanSealedSubClassBeObject")
+    class ShowFreeRemindersUsed : EditTemplateEffect
 }
