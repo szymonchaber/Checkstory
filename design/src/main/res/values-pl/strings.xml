@@ -77,4 +77,13 @@
     <string name="try_again">Spróbuj ponownie</string>
     <string name="could_not_load_subscription_plans">Nie udało się załadować planów subskrypcji</string>
     <string name="payment_continue">Kontynuuj</string>
+    <string name="something_went_wrong">Coś poszło nie tak</string>
+    <string name="unlock_checkstory_pro">Odblokuj Checkstory Pro</string>
+    <string name="get_access_to_full_package">Uzyskaj dostęp do pełnego pakietu:</string>
+    <string name="ads_free_experience">Doświadczenie bez reklam</string>
+    <string name="unlimited_templates">Nieograniczone szablony</string>
+    <string name="unlimited_reminders">Nieograniczone przypomnienia</string>
+    <string name="unlimited_history">Nieograniczona historia</string>
+    <string name="synchronization_with_the_web_app_soon">Synchronizacja z aplikacją internetową (wkrótce)</string>
+    <string name="subscription_successful_thanks_for_support">Subskrypcja udana!\nDziękuję za wsparcie</string>
 </resources>

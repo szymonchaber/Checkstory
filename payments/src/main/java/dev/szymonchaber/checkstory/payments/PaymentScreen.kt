@@ -63,11 +63,12 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
     val coroutineScope = rememberCoroutineScope()
     val effect by viewModel.effect.collectAsState(initial = null)
 
+    val somethingWentWrongText = stringResource(id = R.string.something_went_wrong)
     LaunchedEffect(effect) {
         when (val value = effect) {
             is PaymentEffect.PaymentError -> {
                 coroutineScope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(message = "Something went wrong") // TODO add "you were not charged" to the message
+                    scaffoldState.snackbarHostState.showSnackbar(message = somethingWentWrongText) // TODO add "you were not charged" to the message
                 }
             }
             is PaymentEffect.ExitPaymentScreen -> {
@@ -170,14 +171,14 @@ fun PaymentView(viewModel: PaymentViewModel) {
             modifier = Modifier
                 .padding(horizontal = 20.dp)
                 .padding(top = 16.dp),
-            text = "Unlock Checkstory Pro",
+            text = stringResource(id = R.string.unlock_checkstory_pro),
             style = MaterialTheme.typography.h5
         )
         Text(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
                 .padding(top = 12.dp),
-            text = "Get access to the full package:"
+            text = stringResource(id = R.string.get_access_to_full_package)
         )
         Features()
         when (val loadingState = state.paymentLoadingState) {
@@ -213,11 +214,11 @@ fun PaymentView(viewModel: PaymentViewModel) {
 @Composable
 private fun Features() {
     Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        FeatureLine("Ads-free experience")
-        FeatureLine("Unlimited templates")
-        FeatureLine("Unlimited reminders")
-        FeatureLine("Unlimited history")
-        FeatureLine("Synchronization with the web app (soon)")
+        FeatureLine(stringResource(R.string.ads_free_experience))
+        FeatureLine(stringResource(R.string.unlimited_templates))
+        FeatureLine(stringResource(R.string.unlimited_reminders))
+        FeatureLine(stringResource(R.string.unlimited_history))
+        FeatureLine(stringResource(R.string.synchronization_with_the_web_app_soon))
     }
 }
 
@@ -314,7 +315,7 @@ fun SubscriptionSuccessfulView() {
             Text(
                 color = MaterialTheme.colors.onSecondary,
                 fontWeight = FontWeight.Medium,
-                text = "Subscription successful!\nThanks for your support"
+                text = stringResource(id = R.string.subscription_successful_thanks_for_support)
             )
         }
     }
