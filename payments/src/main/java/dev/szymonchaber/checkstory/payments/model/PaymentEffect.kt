@@ -4,4 +4,5 @@ package dev.szymonchaber.checkstory.payments.model
 sealed interface PaymentEffect {
 
     class PaymentError : PaymentEffect
+    class ExitPaymentScreen : PaymentEffect
 }

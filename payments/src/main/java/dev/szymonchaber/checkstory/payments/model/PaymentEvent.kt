@@ -15,4 +15,6 @@ sealed interface PaymentEvent {
     data class NewPurchaseResult(val paymentResult: Either<PurchaseError, Purchase>) : PaymentEvent
 
     data class PlanSelected(val subscriptionPlan: SubscriptionPlan) : PaymentEvent
+
+    object ContinueClicked : PaymentEvent
 }

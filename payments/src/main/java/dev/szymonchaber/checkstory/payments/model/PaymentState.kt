@@ -14,6 +14,8 @@ data class PaymentState<LoadingState : PaymentState.PaymentLoadingState>(
 
     sealed interface PaymentLoadingState {
 
+        object Paid : PaymentLoadingState
+
         data class Success(
             val plans: SubscriptionPlans,
             val selectedPlan: SubscriptionPlan,

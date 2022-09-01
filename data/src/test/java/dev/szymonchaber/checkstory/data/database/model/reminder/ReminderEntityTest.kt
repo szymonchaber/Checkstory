@@ -29,13 +29,7 @@ class ReminderEntityTest {
         // given
         val reminder = reminder(
             Interval.Weekly(
-                listOf(
-                    DayOfWeek.MONDAY,
-                    DayOfWeek.TUESDAY,
-                    DayOfWeek.WEDNESDAY,
-                    DayOfWeek.THURSDAY,
-                    DayOfWeek.FRIDAY
-                )
+                DayOfWeek.MONDAY,
             )
         )
 
@@ -44,7 +38,8 @@ class ReminderEntityTest {
 
         // then
         Truth.assertThat(entity.isRecurring).isTrue()
-        Truth.assertThat(entity.recurrencePattern).isEqualTo("RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;WKST=MO")
+//        Truth.assertThat(entity.recurrencePattern).isEqualTo("RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;WKST=MO")
+        Truth.assertThat(entity.recurrencePattern).isEqualTo("RRULE:FREQ=WEEKLY;BYDAY=MO;WKST=MO")
     }
 
     @Test
@@ -89,7 +84,8 @@ class ReminderEntityTest {
     @Test
     fun `should restore weekly reminder correctly`() {
         // given
-        val rrule = "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;WKST=MO"
+//        val rrule = "RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;WKST=MO"
+        val rrule = "RRULE:FREQ=WEEKLY;BYDAY=MO;WKST=MO"
         val reminderEntity = reminderEntity(rrule)
 
         // when
@@ -98,13 +94,13 @@ class ReminderEntityTest {
         // then
         Truth.assertThat((reminder as Reminder.Recurring).interval).isEqualTo(
             Interval.Weekly(
-                listOf(
-                    DayOfWeek.MONDAY,
-                    DayOfWeek.TUESDAY,
-                    DayOfWeek.WEDNESDAY,
-                    DayOfWeek.THURSDAY,
-                    DayOfWeek.FRIDAY
-                )
+//                listOf(
+                DayOfWeek.MONDAY,
+//                    DayOfWeek.TUESDAY,
+//                    DayOfWeek.WEDNESDAY,
+//                    DayOfWeek.THURSDAY,
+//                    DayOfWeek.FRIDAY
+//                )
             )
         )
     }

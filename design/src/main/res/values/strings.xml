@@ -76,4 +76,5 @@
     <string name="price_billed_yearly">%s, billed yearly</string>
     <string name="could_not_load_subscription_plans">Could not load subscription plans</string>
     <string name="try_again">Try again</string>
+    <string name="payment_continue">Continue</string>
 </resources>

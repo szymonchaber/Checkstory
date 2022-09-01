@@ -4,12 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -29,9 +34,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.billingclient.api.ProductDetails
@@ -60,6 +70,9 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
                     scaffoldState.snackbarHostState.showSnackbar(message = "Something went wrong") // TODO add "you were not charged" to the message
                 }
             }
+            is PaymentEffect.ExitPaymentScreen -> {
+                navigator.popBackStack()
+            }
             null -> Unit
         }
     }
@@ -85,51 +98,68 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
         },
         scaffoldState = scaffoldState,
         bottomBar = {
-            when (val loadingState = state.paymentLoadingState) {
-                is PaymentState.PaymentLoadingState.Success -> BottomSection(loadingState, viewModel)
-                else -> Unit
+            Column(Modifier.fillMaxWidth()) {
+                when (val loadingState = state.paymentLoadingState) {
+                    is PaymentState.PaymentLoadingState.Success -> SubscribeBottomSection(loadingState, viewModel)
+                    is PaymentState.PaymentLoadingState.Paid -> PaidBottomSection(viewModel)
+                    else -> Unit
+                }
             }
         }
     )
 }
 
 @Composable
-private fun BottomSection(
+private fun ColumnScope.SubscribeBottomSection(
     success: PaymentState.PaymentLoadingState.Success,
     viewModel: PaymentViewModel,
 ) {
     val context = LocalContext.current
 
-    Column(Modifier.fillMaxWidth()) {
-        val billingFrequency = when (success.selectedPlan.planDuration) {
-            PlanDuration.MONTHLY -> R.string.price_billed_monthly
-            PlanDuration.QUARTERLY -> R.string.price_billed_quarterly
-            PlanDuration.YEARLY -> R.string.price_billed_yearly
-        }
-        Text(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            text = stringResource(billingFrequency, success.selectedPlan.price),
-            style = MaterialTheme.typography.caption
-        )
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .padding(bottom = 8.dp)
-                .align(Alignment.CenterHorizontally),
-            onClick = { viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }
-        ) {
-            if (success.paymentInProgress) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(20.dp),
-                    color = MaterialTheme.colors.secondary,
-                    strokeWidth = 1.5.dp
-                )
-            } else {
-                Text(text = stringResource(id = R.string.subscribe_to_checkstory_pro))
-            }
+    val billingFrequency = when (success.selectedPlan.planDuration) {
+        PlanDuration.MONTHLY -> R.string.price_billed_monthly
+        PlanDuration.QUARTERLY -> R.string.price_billed_quarterly
+        PlanDuration.YEARLY -> R.string.price_billed_yearly
+    }
+    Text(
+        modifier = Modifier.padding(horizontal = 24.dp),
+        text = stringResource(billingFrequency, success.selectedPlan.price),
+        style = MaterialTheme.typography.caption
+    )
+
+    MainPaymentButton({ viewModel.onEvent(PaymentEvent.BuyClicked(context.getActivity()!!)) }) {
+        if (success.paymentInProgress) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = MaterialTheme.colors.secondary,
+                strokeWidth = 1.5.dp
+            )
+        } else {
+            Text(text = stringResource(id = R.string.subscribe_to_checkstory_pro))
         }
     }
+}
+
+@Composable
+fun ColumnScope.PaidBottomSection(viewModel: PaymentViewModel) {
+    MainPaymentButton({ viewModel.onEvent(PaymentEvent.ContinueClicked) }) {
+        Text(text = stringResource(id = R.string.payment_continue))
+    }
+}
+
+@Composable
+private fun ColumnScope.MainPaymentButton(
+    onClick: () -> Unit,
+    content: @Composable (RowScope.() -> Unit)
+) {
+    Button(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp)
+            .padding(bottom = 8.dp)
+            .align(Alignment.CenterHorizontally),
+        onClick = onClick, content = content
+    )
 }
 
 @Composable
@@ -172,6 +202,9 @@ fun PaymentView(viewModel: PaymentViewModel) {
                     onClick = { viewModel.onEvent(PaymentEvent.LoadSubscriptionPlans) }) {
                     Text(text = stringResource(id = R.string.try_again))
                 }
+            }
+            PaymentState.PaymentLoadingState.Paid -> {
+                SubscriptionSuccessfulView()
             }
         }
     }
@@ -254,3 +287,35 @@ data class SubscriptionPlan(
     val price: String,
     val pricePerMonth: String
 )
+
+@Preview
+@Composable
+fun SubscriptionSuccessfulView() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 48.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .clip(RoundedCornerShape(12.dp))
+                .background(
+                    brush = Brush
+                        .verticalGradient(
+                            colors = listOf(
+                                Color(0xFFD6CFFC),
+                                Color(0xFFFDF9D8)
+                            ),
+                        )
+                )
+                .padding(30.dp)
+        ) {
+            Text(
+                color = MaterialTheme.colors.onSecondary,
+                fontWeight = FontWeight.Medium,
+                text = "Subscription successful!\nThanks for your support"
+            )
+        }
+    }
+}

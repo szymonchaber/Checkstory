@@ -48,6 +48,7 @@ class PaymentViewModel @Inject constructor(
             eventFlow.handlePlanSelected(),
             eventFlow.handleBuyClicked(),
             eventFlow.handlePurchaseEvents(),
+            eventFlow.handleContinueClicked()
         )
     }
 
@@ -107,16 +108,24 @@ class PaymentViewModel @Inject constructor(
         return filterIsInstance<PaymentEvent.NewPurchaseResult>()
             .withSuccessState()
             .map { (state, event) ->
-                val effect = event.paymentResult
+                Timber.d("Got purchase details or error: ${event.paymentResult}")
+                event.paymentResult
                     .tap {
                         refreshPaymentInformationUseCase.refreshPaymentInformation()
                     }
                     .fold({
                         Timber.e(it.toString())
-                        PaymentEffect.PaymentError()
-                    }, { null })
-                Timber.d("Got purchase details or error: ${event.paymentResult}")
-                state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to effect // TODO create success effect
+                        state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to PaymentEffect.PaymentError()
+                    }, {
+                        PaymentState(PaymentState.PaymentLoadingState.Paid) to null
+                    })
+            }
+    }
+
+    private fun Flow<PaymentEvent>.handleContinueClicked(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
+        return filterIsInstance<PaymentEvent.ContinueClicked>()
+            .map {
+                _state.value to PaymentEffect.ExitPaymentScreen()
             }
     }
 
