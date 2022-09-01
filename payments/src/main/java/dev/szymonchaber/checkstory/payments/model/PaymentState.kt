@@ -3,8 +3,8 @@ package dev.szymonchaber.checkstory.payments.model
 import dev.szymonchaber.checkstory.payments.SubscriptionPlan
 import dev.szymonchaber.checkstory.payments.SubscriptionPlans
 
-data class PaymentState(
-    val paymentLoadingState: PaymentLoadingState
+data class PaymentState<LoadingState : PaymentState.PaymentLoadingState>(
+    val paymentLoadingState: LoadingState
 ) {
 
     companion object {

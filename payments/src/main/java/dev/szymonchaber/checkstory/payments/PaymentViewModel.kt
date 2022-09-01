@@ -27,7 +27,7 @@ class PaymentViewModel @Inject constructor(
     private val refreshPaymentInformationUseCase: RefreshPaymentInformationUseCase
 ) : BaseViewModel<
         PaymentEvent,
-        PaymentState,
+        PaymentState<out PaymentState.PaymentLoadingState>,
         PaymentEffect
         >(
     PaymentState.initial
@@ -42,7 +42,7 @@ class PaymentViewModel @Inject constructor(
         onEvent(PaymentEvent.LoadSubscriptionPlans)
     }
 
-    override fun buildMviFlow(eventFlow: Flow<PaymentEvent>): Flow<Pair<PaymentState, PaymentEffect?>> {
+    override fun buildMviFlow(eventFlow: Flow<PaymentEvent>): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
         return merge(
             eventFlow.handleLoadSubscriptionPlans(),
             eventFlow.handlePlanSelected(),
@@ -51,7 +51,7 @@ class PaymentViewModel @Inject constructor(
         )
     }
 
-    private fun Flow<PaymentEvent>.handleLoadSubscriptionPlans(): Flow<Pair<PaymentState, PaymentEffect?>> {
+    private fun Flow<PaymentEvent>.handleLoadSubscriptionPlans(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.LoadSubscriptionPlans>()
             .flatMapLatest {
                 flow {
@@ -77,32 +77,33 @@ class PaymentViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<PaymentEvent>.handlePlanSelected(): Flow<Pair<PaymentState, PaymentEffect?>> {
+    private fun Flow<PaymentEvent>.handlePlanSelected(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.PlanSelected>()
             .withSuccessState()
             .map { (state, event) ->
-                val paymentLoadingState = state.copy(selectedPlan = event.subscriptionPlan)
-                PaymentState(paymentLoadingState = paymentLoadingState) to null
+                val paymentLoadingState = state.paymentLoadingState.copy(selectedPlan = event.subscriptionPlan)
+                state.copy(paymentLoadingState = paymentLoadingState) to null
             }
     }
 
-    private fun Flow<PaymentEvent>.handleBuyClicked(): Flow<Pair<PaymentState, PaymentEffect?>> {
+    private fun Flow<PaymentEvent>.handleBuyClicked(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.BuyClicked>()
             .onEach {
 //                tracker.logEvent("buy_clicked")
             }
             .withSuccessState()
             .map { (state, event) ->
+                val loadingState = state.paymentLoadingState
                 purchaseSubscriptionUseCase.startPurchaseFlow(
                     event.activity,
-                    state.selectedPlan.productDetails,
-                    state.selectedPlan.offerToken
+                    loadingState.selectedPlan.productDetails,
+                    loadingState.selectedPlan.offerToken
                 )
-                PaymentState(paymentLoadingState = state.copy(paymentInProgress = true)) to null
+                state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null
             }
     }
 
-    private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState, PaymentEffect?>> {
+    private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.NewPurchaseResult>()
             .withSuccessState()
             .map { (state, event) ->
@@ -115,16 +116,14 @@ class PaymentViewModel @Inject constructor(
                         PaymentEffect.PaymentError()
                     }, { null })
                 Timber.d("Got purchase details or error: ${event.paymentResult}")
-                PaymentState(
-                    paymentLoadingState = state.copy(paymentInProgress = false)
-                ) to effect // TODO create success effect
+                state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to effect // TODO create success effect
             }
     }
 
-    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<PaymentState.PaymentLoadingState.Success, T>> {
+    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<PaymentState<PaymentState.PaymentLoadingState.Success>, T>> {
         return flatMapLatest { event ->
-            state.map { it.paymentLoadingState }
-                .filterIsInstance<PaymentState.PaymentLoadingState.Success>()
+            state
+                .filterIsInstance<PaymentState<PaymentState.PaymentLoadingState.Success>>()
                 .map { it to event }
                 .take(1)
         }
