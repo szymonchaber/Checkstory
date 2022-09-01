@@ -81,7 +81,7 @@ fun RowScope.SubscriptionPlanView(
             Text(
                 modifier = Modifier
                     .padding(top = 8.dp)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 4.dp)
                     .align(alignment = Alignment.CenterHorizontally),
                 text = footer?.let { stringResource(id = it) } ?: "",
                 fontWeight = FontWeight.Bold,
