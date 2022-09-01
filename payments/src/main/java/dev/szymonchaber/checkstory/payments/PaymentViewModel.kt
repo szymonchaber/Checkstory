@@ -115,7 +115,12 @@ class PaymentViewModel @Inject constructor(
                     }
                     .fold({
                         Timber.e(it.toString())
-                        state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to PaymentEffect.PaymentError()
+                        val effect = if (it == PurchaseError.UserCancelled) {
+                            null
+                        } else {
+                            PaymentEffect.PaymentError()
+                        }
+                        state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to effect
                     }, {
                         PaymentState(PaymentState.PaymentLoadingState.Paid) to null
                     })
