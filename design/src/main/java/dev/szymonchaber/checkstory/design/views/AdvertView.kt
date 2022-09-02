@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -63,13 +61,12 @@ fun AdvertScaffold(
     floatingActionButton: @Composable () -> Unit = {},
 ) {
     val adViewModel = hiltViewModel<AdViewModel>(LocalContext.current as ComponentActivity)
-    val shouldEnableAds by adViewModel.shouldEnableAds.collectAsState(initial = false)
     Scaffold(
         topBar = topBar,
         content = content,
         floatingActionButton = floatingActionButton,
         bottomBar = {
-            if (shouldEnableAds) {
+            if (adViewModel.shouldEnableAds) {
                 AdvertView()
             }
         }
