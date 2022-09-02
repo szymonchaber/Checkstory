@@ -6,6 +6,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.destinations.ChecklistCatal
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
 import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHistoryScreenDestination
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
+import dev.szymonchaber.checkstory.payments.destinations.PaymentScreenDestination
 
 object NavGraph : NavGraphSpec {
 
@@ -17,6 +18,7 @@ object NavGraph : NavGraphSpec {
         ChecklistCatalogScreenDestination,
         FillChecklistScreenDestination,
         EditTemplateScreenDestination,
-        ChecklistHistoryScreenDestination
+        ChecklistHistoryScreenDestination,
+        PaymentScreenDestination
     ).associateBy { it.route }
 }

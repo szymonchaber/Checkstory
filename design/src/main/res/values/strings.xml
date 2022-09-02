@@ -64,4 +64,26 @@
     <string name="confirm_exit_without_saving_dialog_body">Unsaved changes will be deleted</string>
     <string name="confirm_exit_without_saving_dialog_confirm">Yes, exit</string>
     <string name="confirm_exit_without_saving_dialog_cancel">Stay</string>
+    <string name="upgrade">Upgrade to PRO</string>
+    <string name="subscription_plan_monthly">1\nmonth</string>
+    <string name="subscription_plan_quarterly">3\nmonths</string>
+    <string name="subscription_plan_yearly">12\nmonths</string>
+    <string name="save_5_percent">Save 5%</string>
+    <string name="save_20_percent">Save 20%</string>
+    <string name="subscribe_to_checkstory_pro">Subscribe to Checkstory Pro</string>
+    <string name="price_billed_monthly">%s, billed monthly</string>
+    <string name="price_billed_quarterly">%s, billed quarterly</string>
+    <string name="price_billed_yearly">%s, billed yearly</string>
+    <string name="could_not_load_subscription_plans">Could not load subscription plans</string>
+    <string name="try_again">Try again</string>
+    <string name="payment_continue">Continue</string>
+    <string name="something_went_wrong">Something went wrong</string>
+    <string name="unlock_checkstory_pro">Unlock Checkstory Pro</string>
+    <string name="get_access_to_full_package">Get access to the full package:</string>
+    <string name="ads_free_experience">Ads-free experience</string>
+    <string name="unlimited_templates">Unlimited templates</string>
+    <string name="unlimited_reminders">Unlimited reminders</string>
+    <string name="unlimited_history">Unlimited history</string>
+    <string name="synchronization_with_the_web_app_soon">Synchronization with the web app (soon)</string>
+    <string name="subscription_successful_thanks_for_support">Subscription successful!\nThanks for your support</string>
 </resources>

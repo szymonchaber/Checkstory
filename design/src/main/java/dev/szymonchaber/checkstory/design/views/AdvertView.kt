@@ -7,16 +7,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import dev.szymonchaber.checkstory.design.AdViewModel
 
 @Composable
 fun AdvertView(modifier: Modifier = Modifier) {
@@ -57,12 +62,16 @@ fun AdvertScaffold(
     content: @Composable (PaddingValues) -> Unit,
     floatingActionButton: @Composable () -> Unit = {},
 ) {
+    val adViewModel = hiltViewModel<AdViewModel>(LocalContext.current as ComponentActivity)
+    val shouldEnableAds by adViewModel.shouldEnableAds.collectAsState(initial = false)
     Scaffold(
         topBar = topBar,
         content = content,
         floatingActionButton = floatingActionButton,
         bottomBar = {
-            AdvertView()
+            if (shouldEnableAds) {
+                AdvertView()
+            }
         }
     )
 }

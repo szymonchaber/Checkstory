@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -81,11 +80,7 @@ private fun ChecklistCatalogView(
                 navigator.navigate(Routes.newChecklistTemplateScreen())
             }
             is ChecklistCatalogEffect.ShowFreeTemplatesUsed -> {
-                Toast.makeText(
-                    context,
-                    "Free templates exceeded!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                navigator.navigate(Routes.paymentScreen())
             }
             null -> Unit
         }

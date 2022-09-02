@@ -4,14 +4,28 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import dev.szymonchaber.checkstory.domain.usecase.*
-import kotlinx.coroutines.flow.*
+import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteRemindersUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -22,6 +36,7 @@ class EditTemplateViewModel @Inject constructor(
     private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
     private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
     private val deleteRemindersUseCase: DeleteRemindersUseCase,
+    private val getUserUseCase: GetUserUseCase,
     private val tracker: Tracker
 ) : BaseViewModel<
         EditTemplateEvent,
@@ -240,10 +255,20 @@ class EditTemplateViewModel @Inject constructor(
     private fun Flow<EditTemplateEvent>.handleAddReminderClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.AddReminderClicked>()
             .withSuccessState()
-            .map {
+            .map { (state, _) ->
                 tracker.logEvent("add_reminder_clicked")
-                null to EditTemplateEffect.ShowAddReminderSheet()
+                val user = getUserUseCase.getUser().first()
+                val effect = if (canAddReminderToTemplate(user, state.checklistTemplate)) {
+                    EditTemplateEffect.ShowAddReminderSheet()
+                } else {
+                    EditTemplateEffect.ShowFreeRemindersUsed()
+                }
+                null to effect
             }
+    }
+
+    private fun canAddReminderToTemplate(user: User, template: ChecklistTemplate): Boolean {
+        return template.reminders.count() < MAX_FREE_REMINDERS || user.isPaidUser
     }
 
     private fun Flow<EditTemplateEvent>.handleReminderClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
@@ -301,5 +326,10 @@ class EditTemplateViewModel @Inject constructor(
                 .map { it to event }
                 .take(1)
         }
+    }
+
+    companion object {
+
+        private const val MAX_FREE_REMINDERS = 3
     }
 }

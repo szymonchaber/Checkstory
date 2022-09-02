@@ -8,7 +8,17 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,12 +75,19 @@ class ChecklistCatalogViewModel @Inject constructor(
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.TemplateClicked>()
+        return filterIsInstance<ChecklistCatalogEvent.NewChecklistFromTemplateClicked>()
             .onEach {
                 tracker.logEvent("template_clicked")
             }
-            .map {
-                state.first() to ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = it.templateId)
+            .withSuccessState()
+            .mapLatest { (_, event) ->
+                val user = getUserUseCase.getUser().first()
+                val effect = if (canAddChecklistToTemplate(user, event.template)) {
+                    ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
+                } else {
+                    ChecklistCatalogEffect.ShowFreeTemplatesUsed()
+                }
+                _state.first() to effect
             }
     }
 
@@ -125,6 +142,10 @@ class ChecklistCatalogViewModel @Inject constructor(
         return list.count() < MAX_FREE_CHECKLIST_TEMPLATES || user.isPaidUser
     }
 
+    private fun canAddChecklistToTemplate(user: User, template: ChecklistTemplate): Boolean {
+        return template.checklists.count() < MAX_FREE_CHECKLISTS || user.isPaidUser
+    }
+
     private fun Flow<ChecklistCatalogEvent>.handleHistoryClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.TemplateHistoryClicked>()
             .onEach {
@@ -147,5 +168,6 @@ class ChecklistCatalogViewModel @Inject constructor(
     companion object {
 
         private const val MAX_FREE_CHECKLIST_TEMPLATES = 3
+        private const val MAX_FREE_CHECKLISTS = 10
     }
 }

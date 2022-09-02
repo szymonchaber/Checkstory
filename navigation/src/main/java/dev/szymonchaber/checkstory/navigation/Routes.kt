@@ -24,4 +24,8 @@ object Routes {
     fun editChecklistScreen(checklistId: ChecklistId): String {
         return "fill_checklist_screen?checklistId=${checklistId.id}?createChecklistFrom={createChecklistFrom}"
     }
+
+    fun paymentScreen(): String {
+        return "payment_screen"
+    }
 }
