@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -68,28 +69,7 @@ fun ChecklistTemplateView(
                     .padding(horizontal = 16.dp)
                     .padding(top = 16.dp)
             )
-            Row(
-                modifier = Modifier.align(Alignment.End),
-            ) {
-                IconButton(
-                    onClick = {
-                        eventListener(
-                            ChecklistCatalogEvent.EditTemplateClicked(checklistTemplate.id)
-                        )
-                    }
-                ) {
-                    Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
-                }
-                IconButton(
-                    onClick = {
-                        eventListener(
-                            ChecklistCatalogEvent.TemplateHistoryClicked(checklistTemplate.id)
-                        )
-                    }
-                ) {
-                    Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
-                }
-            }
+            TemplateActionButtons(checklistTemplate, eventListener)
             if (!isCollapsed) {
                 ChecklistsCarousel(checklistTemplate.checklists, {
                     Box {
@@ -120,6 +100,47 @@ fun ChecklistTemplateView(
                         ChecklistCatalogEvent.RecentChecklistClicked(it.id)
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TemplateActionButtons(
+    checklistTemplate: ChecklistTemplate,
+    eventListener: (ChecklistCatalogEvent) -> Unit
+) {
+    Row(Modifier.fillMaxWidth()) {
+        IconButton(
+            onClick = {
+                eventListener(
+                    ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate)
+                )
+            }
+        ) {
+            Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+        }
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            IconButton(
+                onClick = {
+                    eventListener(
+                        ChecklistCatalogEvent.EditTemplateClicked(checklistTemplate.id)
+                    )
+                }
+            ) {
+                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
+            }
+            IconButton(
+                onClick = {
+                    eventListener(
+                        ChecklistCatalogEvent.TemplateHistoryClicked(checklistTemplate.id)
+                    )
+                }
+            ) {
+                Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
             }
         }
     }
