@@ -19,7 +19,7 @@
     <string name="new_checkbox">New checkbox</string>
     <string name="reminders_label">Reminders</string>
     <string name="new_reminder">New reminder</string>
-    <string name="name">Checkbox name</string>
+    <string name="name">Name</string>
     <string name="day_of_month">Day of month</string>
     <string name="day_of_year">Day of year</string>
     <string name="time">Time</string>

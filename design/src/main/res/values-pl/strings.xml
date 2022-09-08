@@ -19,7 +19,7 @@
     <string name="new_checkbox">Nowy element</string>
     <string name="reminders_label">Przypomnienia</string>
     <string name="new_reminder">Nowe przypomnienie</string>
-    <string name="name">Nazwa elementu</string>
+    <string name="name">Nazwa</string>
     <string name="day_of_month">Dzień miesiąca</string>
     <string name="day_of_year">Dzień roku</string>
     <string name="time">Czas</string>
