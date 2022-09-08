@@ -16,7 +16,7 @@ android {
 
     namespace = "dev.szymonchaber.checkstory"
 
-    compileSdk = 31
+    compileSdk = 32
 
     defaultConfig {
         applicationId = "dev.szymonchaber.checkstory"

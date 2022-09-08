@@ -28,13 +28,13 @@ class Dependencies : Plugin<Project> {
             "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion"
         )
 
-        const val composeVersion = "1.1.1"
+        const val composeVersion = "1.2.1"
         val compose = listOf(
             "androidx.compose.ui:ui:$composeVersion",
             "androidx.compose.ui:ui-tooling:$composeVersion",
             "androidx.compose.material:material:$composeVersion",
-            "androidx.activity:activity-compose:1.4.0",
-            "androidx.navigation:navigation-compose:2.4.1",
+            "androidx.activity:activity-compose:1.5.1",
+            "androidx.navigation:navigation-compose:2.5.1",
             "androidx.hilt:hilt-navigation-compose:1.0.0"
         )
 
