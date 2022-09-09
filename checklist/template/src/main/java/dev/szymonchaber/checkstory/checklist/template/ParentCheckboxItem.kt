@@ -92,7 +92,7 @@ private fun CheckboxItem(
                 .align(Alignment.CenterVertically)
                 .let {
                     if (isNew) {
-                        it.focusOnEntry()
+                        it.focusOnEntry(true)
                     } else {
                         it
                     }
