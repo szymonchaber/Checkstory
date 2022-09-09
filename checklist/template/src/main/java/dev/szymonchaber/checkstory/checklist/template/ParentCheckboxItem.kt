@@ -100,7 +100,6 @@ private fun CheckboxItem(
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
             value = title,
             onValueChange = onTitleChange,
-            singleLine = true,
             label = { Text(text = stringResource(R.string.name)) },
             trailingIcon = {
                 IconButton(onClick = onDeleteClick) {
