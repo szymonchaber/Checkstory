@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
@@ -73,35 +74,51 @@ class EditTemplateViewModel @Inject constructor(
     private fun Flow<EditTemplateEvent>.handleCreateChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.CreateChecklistTemplate>()
             .map {
-                val newChecklistTemplate = ChecklistTemplate(
-                    ChecklistTemplateId(0),
-                    "",
-                    "",
-                    listOf(
-                        TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf()),
-                    ),
-                    LocalDateTime.now(),
-                    listOf(),
-                    listOf()
-                )
-                EditTemplateState(TemplateLoadingState.Success.fromTemplate(newChecklistTemplate)) to null
+                if (isTemplateAlreadyCreated()) {
+                    state.first() to null
+                } else {
+                    val newChecklistTemplate = ChecklistTemplate(
+                        ChecklistTemplateId(0),
+                        "",
+                        "",
+                        listOf(
+                            TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf()),
+                        ),
+                        LocalDateTime.now(),
+                        listOf(),
+                        listOf()
+                    )
+                    EditTemplateState(TemplateLoadingState.Success.fromTemplate(newChecklistTemplate)) to null
+                }
             }
     }
 
     private fun Flow<EditTemplateEvent>.handleEditChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.EditChecklistTemplate>()
             .flatMapLatest { event ->
-                getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
-                    .map {
-                        TemplateLoadingState.Success.fromTemplate(it)
-                    }
-                    .onStart<TemplateLoadingState> {
-                        emit(TemplateLoadingState.Loading)
-                    }
-                    .map {
-                        EditTemplateState(it) to null
-                    }
+                if (isTemplateAlreadyLoaded(event)) {
+                    flowOf(state.first() to null)
+                } else {
+                    getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
+                        .map {
+                            TemplateLoadingState.Success.fromTemplate(it)
+                        }
+                        .onStart<TemplateLoadingState> {
+                            emit(TemplateLoadingState.Loading)
+                        }
+                        .map {
+                            EditTemplateState(it) to null
+                        }
+                }
             }
+    }
+
+    private suspend fun isTemplateAlreadyLoaded(event: EditTemplateEvent.EditChecklistTemplate): Boolean {
+        return (state.first().templateLoadingState as? TemplateLoadingState.Success)?.checklistTemplate?.id == event.checklistTemplateId
+    }
+
+    private suspend fun isTemplateAlreadyCreated(): Boolean {
+        return state.first().templateLoadingState is TemplateLoadingState.Success
     }
 
     private fun Flow<EditTemplateEvent>.handleTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
