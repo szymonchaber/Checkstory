@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="onboarding">
+        <item>You can add as many items as you want|You can also nest them!</item>
+        <item>Below you can set reminders, so you get notified to start a checklist at the right time</item>
+        <item>Every template has a history of its checklists|You can access it from the main screen (calendar icon) |There, you can see which items were done |and what notes you had</item>
+        <item>Editing a template does not rewrite existing checklists|History is not rewritten |You can see how your checklist changed over time|(Checklist history -> Checkstory&#129327;)</item>
+        <item>In the free version, you can have:|3 templates |20 checklists per template |3 reminders per template</item>
+        <item>It’s all unlimited in the pro version and ads are not there!</item>
+        <item>Now delete this template, so you don’t use up your free tier</item>
+        <item>Start using Checkstory and Never Forget A Step Again ✅</item>
+    </string-array>
+</resources>

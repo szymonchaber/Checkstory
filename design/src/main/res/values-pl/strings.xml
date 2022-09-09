@@ -86,4 +86,6 @@
     <string name="unlimited_history">Nieograniczona historia</string>
     <string name="synchronization_with_the_web_app_soon">Synchronizacja z aplikacją internetową (wkrótce)</string>
     <string name="subscription_successful_thanks_for_support">Subskrypcja udana!\nDziękuję za wsparcie</string>
+    <string name="onboarding_template_title">(Kliknij ołówek) Oto Twój szablon!</string>
+    <string name="onboarding_template_description">Szablony służą do szybkiego tworzenia tej samej listy raz za razem.\nCzyszczenie starych list jest zbędne</string>
 </resources>

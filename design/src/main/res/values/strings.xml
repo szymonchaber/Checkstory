@@ -86,4 +86,6 @@
     <string name="unlimited_history">Unlimited history</string>
     <string name="synchronization_with_the_web_app_soon">Synchronization with the web app (soon)</string>
     <string name="subscription_successful_thanks_for_support">Subscription successful!\nThanks for your support</string>
+    <string name="onboarding_template_title">(Click the pencil) This is your template!</string>
+    <string name="onboarding_template_description">"Templates are used to quickly create the same checklist again and again.\nNo clearing of the old ones required"</string>
 </resources>

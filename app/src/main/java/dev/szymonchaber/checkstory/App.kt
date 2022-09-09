@@ -53,36 +53,21 @@ class App : Application() {
             return
         }
         val checkboxes = checkboxes {
-            checkbox("You can add as many items as you want") {
-                checkbox("You can also nest them!")
+            resources.getStringArray(R.array.onboarding).map { section ->
+                val sections = section.split("|")
+                val main = sections.first()
+                checkbox(main) {
+                    sections.drop(1).forEach(this::childCheckbox)
+                }
             }
-            checkbox("Below you can set reminders, so you get notified to start a checklist at the right time") {}
-            checkbox("Every template has a history of its checklists") {
-                checkbox("You can access it from the main screen (calendar icon)")
-                checkbox("There, you can see which items were done")
-                checkbox("and what notes you had")
-            }
-            checkbox("Editing a template does not rewrite existing checklists") {
-                checkbox("History is not rewritten")
-                checkbox("You can see how your checklist changed over time")
-            }
-            checkbox("In the free version, you can have:") {
-                checkbox("3 templates")
-                checkbox("20 checklists per template")
-                checkbox("3 reminders per template")
-            }
-            checkbox("It’s all unlimited in the pro version ") {}
-            checkbox("Now delete this template, so you don’t use up your free tier") {}
-            checkbox("Start using Checkstory and Never Forget A Step Again ✅") {}
         }
         GlobalScope.launch {
             withContext(Dispatchers.IO) {
                 updateChecklistTemplateUseCase.updateChecklistTemplate(
                     ChecklistTemplate(
                         ChecklistTemplateId(0),
-                        "(Click the pencil) This is your template!",
-                        "Templates are used to quickly create the same checklist again and again.\n" +
-                                "No clearing of the old ones required",
+                        resources.getString(R.string.onboarding_template_title),
+                        resources.getString(R.string.onboarding_template_description),
                         checkboxes,
                         LocalDateTime.now(),
                         listOf(),
@@ -100,7 +85,7 @@ class App : Application() {
 
         inner class ChildScope(private val parent: String) {
 
-            fun checkbox(title: String) {
+            fun childCheckbox(title: String) {
                 checkboxes[parent] = checkboxes[parent]?.plus(title)?.toMutableList() ?: mutableListOf(title)
             }
         }
