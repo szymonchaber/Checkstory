@@ -92,7 +92,8 @@ private fun CheckboxItem(
                 .align(Alignment.CenterVertically)
                 .let {
                     if (isNew) {
-                        it.focusOnEntry(true)
+                        it
+//                            .focusOnEntry(true) // TODO does not work
                     } else {
                         it
                     }
