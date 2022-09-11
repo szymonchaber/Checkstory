@@ -3,11 +3,11 @@
     <string-array name="onboarding">
         <item>Możesz dodać tyle elementów, ile chcesz|Możesz je też zagnieżdżać!</item>
         <item>Poniżej możesz dodać przypomnienia, żeby pamiętać o liście kontrolnej wtedy, kiedy jest potrzebna</item>
-        <item>Każdy szablon ma historię swoich list kontrolnych|Dostaniesz się tam z głównego ekranu (ikona kalendarza)|W środku możesz zobaczyć, które elementy zostały zrobione|i jakie były notatki</item>
+        <item>Każdy szablon ma historię swoich list kontrolnych|Dostaniesz się tam z głównego ekranu (ikona kalendarza)|W środku możesz zobaczyć, które elementy zostały wykonane|i jakie były notatki</item>
         <item>Edytowanie szablonu nie zmienia istniejących list kontrolnych|Historia nie jest nadpisywana|Możesz zobaczyć, jak Twoje listy zmieniały się w czasie</item>
         <item>W darmowej wersji możesz mieć:|3 szablony |20 list kontrolnych na szablon |3 przypomnienia na szablon</item>
         <item>W płatnej wersji wszystko jest nielimitowane, a reklam nie ma!</item>
         <item>Teraz usuń ten szablon, żeby nie zapełniać swojej darmowej wersji</item>
-        <item>Zacznij używać Checkstory i Nigdy Więcej Nie Zapomnij Kroku ✅</item>
+        <item>Zacznij używać Checkstory i Nigdy Więcej Nie Zapomnij O Kroku ✅</item>
     </string-array>
 </resources>

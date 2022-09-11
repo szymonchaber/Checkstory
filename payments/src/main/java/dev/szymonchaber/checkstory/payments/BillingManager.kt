@@ -12,7 +12,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BillingManager @Inject constructor(@ApplicationContext context: Context) {
@@ -42,7 +41,7 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) {
 
                 override fun onBillingServiceDisconnected() {
                     Timber.d("Billing service disconnected")
-                    continuation.resumeWithException(IllegalStateException("Billing service disconnected"))
+//                    continuation.resumeWithException(IllegalStateException("Billing service disconnected")) TODO see if lack of this breaks anything
                 }
             })
         }
