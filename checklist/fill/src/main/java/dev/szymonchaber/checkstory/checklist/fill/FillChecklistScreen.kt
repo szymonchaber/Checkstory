@@ -40,6 +40,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -47,7 +48,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.DeepLink
@@ -105,9 +108,16 @@ fun FillChecklistScreen(
 
     val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
+    val notesInputFocusRequester = remember { FocusRequester() }
 
     BackHandler {
-        viewModel.onEvent(FillChecklistEvent.BackClicked)
+        if (modalBottomSheetState.isVisible) {
+            scope.launch {
+                modalBottomSheetState.hide()
+            }
+        } else {
+            viewModel.onEvent(FillChecklistEvent.BackClicked)
+        }
     }
 
     val openConfirmDeleteDialog = remember { mutableStateOf(false) }
@@ -140,6 +150,7 @@ fun FillChecklistScreen(
             is FillChecklistEffect.ShowNotesEditShelf -> {
                 scope.launch {
                     modalBottomSheetState.show()
+                    notesInputFocusRequester.requestFocus()
                 }
             }
             is FillChecklistEffect.ShowConfirmDeleteDialog -> {
@@ -156,17 +167,23 @@ fun FillChecklistScreen(
         sheetContent = {
             val loadingState = state.value.checklistLoadingState
             Box(Modifier.size(1.dp))
+
             if (loadingState is ChecklistLoadingState.Success) {
+                var textFieldValue by remember {
+                    val notes = loadingState.checklist.notes
+                    mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
+                }
                 OutlinedTextField(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .focusOnEntry()
+                        .focusRequester(notesInputFocusRequester)
                         .padding(start = 16.dp, top = 8.dp, end = 16.dp),
                     keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
                     label = { Text(text = stringResource(R.string.notes)) },
-                    value = loadingState.checklist.notes,
+                    value = textFieldValue,
                     onValueChange = {
-                        viewModel.onEvent(FillChecklistEvent.NotesChanged(it))
+                        textFieldValue = it
+                        viewModel.onEvent(FillChecklistEvent.NotesChanged(it.text))
                     },
                 )
             }

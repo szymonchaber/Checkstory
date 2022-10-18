@@ -90,7 +90,13 @@ fun EditTemplateScreen(
     val scope = rememberCoroutineScope()
 
     BackHandler {
-        viewModel.onEvent(EditTemplateEvent.BackClicked)
+        if (modalBottomSheetState.isVisible) {
+            scope.launch {
+                modalBottomSheetState.hide()
+            }
+        } else {
+            viewModel.onEvent(EditTemplateEvent.BackClicked)
+        }
     }
 
     val openConfirmExitDialog = remember { mutableStateOf(false) }
