@@ -9,6 +9,9 @@ sealed interface FillChecklistEffect {
     object CloseScreen : FillChecklistEffect
 
     @Suppress("CanSealedSubClassBeObject")
+    class ShowNotesEditShelf : FillChecklistEffect
+
+    @Suppress("CanSealedSubClassBeObject")
     class ShowConfirmDeleteDialog : FillChecklistEffect
 
     @Suppress("CanSealedSubClassBeObject")

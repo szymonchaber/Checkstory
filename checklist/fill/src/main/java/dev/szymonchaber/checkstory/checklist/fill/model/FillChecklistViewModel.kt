@@ -10,7 +10,14 @@ import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUse
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SaveChecklistUseCase
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.take
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +37,7 @@ class FillChecklistViewModel @Inject constructor(
             eventFlow.handleCreateChecklist(),
             eventFlow.handleLoadChecklist(),
             eventFlow.handleCheckChanged(),
+            eventFlow.handleNotesClicked(),
             eventFlow.handleNotesChanged(),
             eventFlow.handleEditClicked(),
             eventFlow.handleSaveClicked(),
@@ -103,6 +111,14 @@ class FillChecklistViewModel @Inject constructor(
                     .map {
                         FillChecklistState(ChecklistLoadingState.Success(it)) to null
                     }
+            }
+    }
+
+    private fun Flow<FillChecklistEvent>.handleNotesClicked(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
+        return filterIsInstance<FillChecklistEvent.NotesClicked>()
+            .withSuccessState()
+            .map {
+                state.first() to FillChecklistEffect.ShowNotesEditShelf()
             }
     }
 
