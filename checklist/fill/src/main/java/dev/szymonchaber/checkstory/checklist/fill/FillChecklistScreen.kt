@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -166,18 +167,20 @@ fun FillChecklistScreen(
     ModalBottomSheetLayout(
         sheetContent = {
             val loadingState = state.value.checklistLoadingState
-            Box(Modifier.size(1.dp))
-
-            if (loadingState is ChecklistLoadingState.Success) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (loadingState !is ChecklistLoadingState.Success) {
+                    Box(Modifier.size(1.dp))
+                    return@Row
+                }
                 var textFieldValue by remember {
                     val notes = loadingState.checklist.notes
                     mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
                 }
                 OutlinedTextField(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .focusRequester(notesInputFocusRequester)
-                        .padding(start = 16.dp, top = 8.dp, end = 16.dp),
+                        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
                     keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
                     label = { Text(text = stringResource(R.string.notes)) },
                     value = textFieldValue,
@@ -186,6 +189,15 @@ fun FillChecklistScreen(
                         viewModel.onEvent(FillChecklistEvent.NotesChanged(it.text))
                     },
                 )
+                IconButton(
+                    modifier = Modifier.padding(end = 8.dp),
+                    onClick = {
+                        scope.launch {
+                            modalBottomSheetState.hide()
+                        }
+                    }) {
+                    Icon(imageVector = Icons.Default.Send, contentDescription = null)
+                }
             }
         },
         sheetState = modalBottomSheetState,
