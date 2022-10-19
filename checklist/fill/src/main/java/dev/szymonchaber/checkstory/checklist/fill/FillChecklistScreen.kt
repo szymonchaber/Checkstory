@@ -168,35 +168,35 @@ fun FillChecklistScreen(
         sheetContent = {
             val loadingState = state.value.checklistLoadingState
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (loadingState !is ChecklistLoadingState.Success) {
+                if (loadingState is ChecklistLoadingState.Success) {
+                    var textFieldValue by remember {
+                        val notes = loadingState.checklist.notes
+                        mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
+                    }
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .weight(1f)
+                            .focusRequester(notesInputFocusRequester)
+                            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+                        keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                        label = { Text(text = stringResource(R.string.notes)) },
+                        value = textFieldValue,
+                        onValueChange = {
+                            textFieldValue = it
+                            viewModel.onEvent(FillChecklistEvent.NotesChanged(it.text))
+                        },
+                    )
+                    IconButton(
+                        modifier = Modifier.padding(end = 8.dp),
+                        onClick = {
+                            scope.launch {
+                                modalBottomSheetState.hide()
+                            }
+                        }) {
+                        Icon(imageVector = Icons.Default.Send, contentDescription = null)
+                    }
+                } else {
                     Box(Modifier.size(1.dp))
-                    return@Row
-                }
-                var textFieldValue by remember {
-                    val notes = loadingState.checklist.notes
-                    mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
-                }
-                OutlinedTextField(
-                    modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(notesInputFocusRequester)
-                        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
-                    keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-                    label = { Text(text = stringResource(R.string.notes)) },
-                    value = textFieldValue,
-                    onValueChange = {
-                        textFieldValue = it
-                        viewModel.onEvent(FillChecklistEvent.NotesChanged(it.text))
-                    },
-                )
-                IconButton(
-                    modifier = Modifier.padding(end = 8.dp),
-                    onClick = {
-                        scope.launch {
-                            modalBottomSheetState.hide()
-                        }
-                    }) {
-                    Icon(imageVector = Icons.Default.Send, contentDescription = null)
                 }
             }
         },
