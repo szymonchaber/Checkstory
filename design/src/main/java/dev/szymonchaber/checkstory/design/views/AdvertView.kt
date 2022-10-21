@@ -1,5 +1,7 @@
 package dev.szymonchaber.checkstory.design.views
 
+import android.annotation.SuppressLint
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,7 +22,9 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 import dev.szymonchaber.checkstory.design.AdViewModel
+import dev.szymonchaber.checkstory.design.BuildConfig
 
+@SuppressLint("MissingPermission")
 @Composable
 fun AdvertView(modifier: Modifier = Modifier) {
     val isInEditMode = LocalInspectionMode.current
@@ -40,7 +44,7 @@ fun AdvertView(modifier: Modifier = Modifier) {
             factory = { context ->
                 AdView(context).apply {
                     adSize = AdSize.BANNER
-                    adUnitId = "ca-app-pub-3940256099942544/6300978111" // TODO test ad unit - replace with production
+                    adUnitId = BuildConfig.BANNER_AD_UNIT_ID
                     loadAd(AdRequest.Builder().build())
                 }
             }

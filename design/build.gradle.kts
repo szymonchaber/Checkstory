@@ -11,6 +11,16 @@ plugins {
 
 android {
     namespace = "dev.szymonchaber.checkstory.design"
+
+    buildTypes {
+        debug {
+            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+        }
+        release {
+            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+        }
+    }
+
     hilt {
         enableAggregatingTask = true
     }
