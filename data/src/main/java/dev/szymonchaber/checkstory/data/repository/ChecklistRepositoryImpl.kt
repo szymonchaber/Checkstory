@@ -6,8 +6,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
+import dev.szymonchaber.checkstory.domain.repository.ChecklistSaved
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -18,8 +20,14 @@ class ChecklistRepositoryImpl @Inject constructor(
     private val dataSource: ChecklistRoomDataSource
 ) : ChecklistRepository {
 
+    private val _checklistSavedEvents = MutableSharedFlow<ChecklistSaved>()
+
+    override val checklistSavedEvents: Flow<ChecklistSaved>
+        get() = _checklistSavedEvents
+
     override suspend fun save(checklist: Checklist) {
         dataSource.insert(checklist)
+        _checklistSavedEvents.tryEmit(ChecklistSaved)
     }
 
     override fun getChecklist(checklistId: ChecklistId): Flow<Checklist> {

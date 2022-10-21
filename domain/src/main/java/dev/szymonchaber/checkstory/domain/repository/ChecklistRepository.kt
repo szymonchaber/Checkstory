@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChecklistRepository {
 
+    val checklistSavedEvents: Flow<ChecklistSaved>
+
     suspend fun save(checklist: Checklist)
 
     fun getChecklist(checklistId: ChecklistId): Flow<Checklist>
@@ -20,3 +22,5 @@ interface ChecklistRepository {
 
     suspend fun deleteBasedOnTemplate(checklistTemplate: ChecklistTemplate)
 }
+
+object ChecklistSaved
