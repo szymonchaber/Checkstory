@@ -1,5 +1,7 @@
 package dev.szymonchaber.checkstory.payments
 
+import android.os.Bundle
+import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
@@ -82,19 +84,36 @@ class PaymentViewModel @Inject constructor(
         return filterIsInstance<PaymentEvent.PlanSelected>()
             .withSuccessState()
             .map { (state, event) ->
+                tracker.logEvent(
+                    "payment_plan_selected", getSelectedPlanMetadata(event.subscriptionPlan.planDuration)
+                )
                 val paymentLoadingState = state.paymentLoadingState.copy(selectedPlan = event.subscriptionPlan)
                 state.copy(paymentLoadingState = paymentLoadingState) to null
             }
     }
 
+    private fun getSelectedPlanMetadata(planDuration: PlanDuration): Bundle {
+        val selectedPlanTrackingName = when (planDuration) {
+            PlanDuration.MONTHLY -> "monthly"
+            PlanDuration.QUARTERLY -> "quarterly"
+            PlanDuration.YEARLY -> "yearly"
+        }
+        return bundleOf(
+            "plan_duration" to selectedPlanTrackingName
+        )
+    }
+
     private fun Flow<PaymentEvent>.handleBuyClicked(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
         return filterIsInstance<PaymentEvent.BuyClicked>()
             .onEach {
-//                tracker.logEvent("buy_clicked")
             }
             .withSuccessState()
             .map { (state, event) ->
                 val loadingState = state.paymentLoadingState
+                tracker.logEvent(
+                    "buy_button_clicked",
+                    getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
+                )
                 purchaseSubscriptionUseCase.startPurchaseFlow(
                     event.activity,
                     loadingState.selectedPlan.productDetails,
@@ -122,6 +141,10 @@ class PaymentViewModel @Inject constructor(
                         }
                         state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to effect
                     }, {
+                        tracker.logEvent(
+                            "subscription_success",
+                            getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
+                        )
                         PaymentState(PaymentState.PaymentLoadingState.Paid) to null
                     })
             }

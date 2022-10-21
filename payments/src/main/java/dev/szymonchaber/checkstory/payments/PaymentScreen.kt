@@ -47,6 +47,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.billingclient.api.ProductDetails
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
@@ -56,7 +57,7 @@ import kotlinx.coroutines.launch
 @Composable
 @Destination(route = "payment_screen", start = true)
 fun PaymentScreen(navigator: DestinationsNavigator) {
-//    trackScreenName("payment")
+    trackScreenName("upgrade_to_pro")
     val viewModel = hiltViewModel<PaymentViewModel>()
     val state by viewModel.state.collectAsState(initial = PaymentState.initial)
     val scaffoldState = rememberScaffoldState()
