@@ -18,5 +18,7 @@ sealed interface ChecklistCatalogEvent {
 
     object NewTemplateClicked : ChecklistCatalogEvent
 
+    object GetCheckstoryProClicked : ChecklistCatalogEvent
+
     data class TemplateHistoryClicked(val templateId: ChecklistTemplateId) : ChecklistCatalogEvent
 }

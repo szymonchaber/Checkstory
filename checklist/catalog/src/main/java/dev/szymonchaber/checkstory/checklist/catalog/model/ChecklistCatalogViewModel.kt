@@ -48,6 +48,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleNewTemplateClicked(),
             eventFlow.handleEditTemplateClicked(),
             eventFlow.handleHistoryClicked(),
+            eventFlow.handleGetProClicked()
         )
     }
 
@@ -85,7 +86,7 @@ class ChecklistCatalogViewModel @Inject constructor(
                 val effect = if (canAddChecklistToTemplate(user, event.template)) {
                     ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
                 } else {
-                    ChecklistCatalogEffect.ShowFreeTemplatesUsed()
+                    ChecklistCatalogEffect.NavigateToPaymentScreen()
                 }
                 _state.first() to effect
             }
@@ -132,9 +133,19 @@ class ChecklistCatalogViewModel @Inject constructor(
                 val effect = if (canAddTemplate(user, state.checklistTemplates)) {
                     ChecklistCatalogEffect.NavigateToNewTemplate()
                 } else {
-                    ChecklistCatalogEffect.ShowFreeTemplatesUsed()
+                    ChecklistCatalogEffect.NavigateToPaymentScreen()
                 }
                 _state.first() to effect
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleGetProClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.GetCheckstoryProClicked>()
+            .onEach {
+                tracker.logEvent("catalog_get_pro_option_clicked")
+            }
+            .mapLatest {
+                _state.first() to ChecklistCatalogEffect.NavigateToPaymentScreen()
             }
     }
 

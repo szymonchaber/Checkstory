@@ -18,5 +18,5 @@ sealed interface ChecklistCatalogEffect {
     class NavigateToNewTemplate : ChecklistCatalogEffect
 
     @Suppress("CanSealedSubClassBeObject")
-    class ShowFreeTemplatesUsed : ChecklistCatalogEffect
+    class NavigateToPaymentScreen : ChecklistCatalogEffect
 }

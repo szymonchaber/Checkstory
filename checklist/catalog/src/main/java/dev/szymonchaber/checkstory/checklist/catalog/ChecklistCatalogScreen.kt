@@ -1,16 +1,33 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,7 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.szymonchaber.checkstory.checklist.catalog.model.*
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
+import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
@@ -32,13 +53,29 @@ import dev.szymonchaber.checkstory.navigation.Routes
 fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     trackScreenName("checklist_catalog")
     val viewModel = hiltViewModel<ChecklistCatalogViewModel>()
+    var showMenu by remember { mutableStateOf(false) }
     AdvertScaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(text = stringResource(R.string.checkstory))
                 },
-                elevation = 12.dp
+                elevation = 12.dp,
+                actions = {
+                    IconButton(onClick = { showMenu = !showMenu }) {
+                        Icon(Icons.Default.MoreVert, null)
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(onClick = {
+                            viewModel.onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+                        }) {
+                            Text(text = stringResource(id = R.string.unlock_checkstory_pro))
+                        }
+                    }
+                }
             )
         }, content = {
             ChecklistCatalogView(viewModel, navigator)
@@ -79,7 +116,7 @@ private fun ChecklistCatalogView(
             is ChecklistCatalogEffect.NavigateToNewTemplate -> {
                 navigator.navigate(Routes.newChecklistTemplateScreen())
             }
-            is ChecklistCatalogEffect.ShowFreeTemplatesUsed -> {
+            is ChecklistCatalogEffect.NavigateToPaymentScreen -> {
                 navigator.navigate(Routes.paymentScreen())
             }
             null -> Unit
