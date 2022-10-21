@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import dev.szymonchaber.checkstory.domain.repository.ChecklistSaved
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
@@ -20,7 +21,8 @@ class ChecklistRepositoryImpl @Inject constructor(
     private val dataSource: ChecklistRoomDataSource
 ) : ChecklistRepository {
 
-    private val _checklistSavedEvents = MutableSharedFlow<ChecklistSaved>()
+    private val _checklistSavedEvents =
+        MutableSharedFlow<ChecklistSaved>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     override val checklistSavedEvents: Flow<ChecklistSaved>
         get() = _checklistSavedEvents

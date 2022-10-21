@@ -95,6 +95,7 @@ dependencies {
     kapt(Dependencies.hiltKapt)
 
     implementation(Dependencies.ads)
+    implementation(Dependencies.review)
 
     implementation(platform(Dependencies.firebasePlatform))
     implementation(Dependencies.analytics)

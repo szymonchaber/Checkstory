@@ -75,6 +75,9 @@ class Dependencies : Plugin<Project> {
         private val billing_version = "5.0.0"
 
         val billing = "com.android.billingclient:billing-ktx:$billing_version"
+
+        val review = "com.google.android.play:review-ktx:2.0.0"
+
         val arrow = "io.arrow-kt:arrow-core:1.0.1"
 
         val unitTest = listOf(
