@@ -23,7 +23,7 @@ class MainActivity : ComponentActivity() {
 
     private val appReviewViewModel: AppReviewViewModel by viewModels()
 
-    private val manager = ReviewManagerFactory.create(this)
+    private val manager by lazy { ReviewManagerFactory.create(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
