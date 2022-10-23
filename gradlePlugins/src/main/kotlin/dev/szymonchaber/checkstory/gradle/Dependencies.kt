@@ -59,7 +59,7 @@ class Dependencies : Plugin<Project> {
 
         val ads = "com.google.android.gms:play-services-ads:20.6.0"
 
-        val firebasePlatform = "com.google.firebase:firebase-bom:30.1.0"
+        val firebasePlatform = "com.google.firebase:firebase-bom:31.0.1"
 
         val analytics = "com.google.firebase:firebase-analytics-ktx"
         val crashlytics = "com.google.firebase:firebase-crashlytics"

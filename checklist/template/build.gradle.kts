@@ -52,7 +52,7 @@ dependencies {
     Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)
 
-    implementation("io.github.vanpra.compose-material-dialogs:datetime:0.7.1")
+    implementation("io.github.vanpra.compose-material-dialogs:datetime:0.9.0")
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
