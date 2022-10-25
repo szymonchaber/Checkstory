@@ -85,6 +85,7 @@ dependencies {
     implementation(project(":checklist:history"))
     implementation(project(":notifications"))
     implementation(project(":payments"))
+    implementation(project(":about"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
