@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.payments
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
@@ -65,6 +66,8 @@ class PaymentViewModel @Inject constructor(
                     )
                     val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()
                         .fold({
+                            FirebaseCrashlytics.getInstance()
+                                .recordException(Exception("Fetching payment plans failed!\n$it"));
                             Timber.e(it.toString())
                             PaymentState.PaymentLoadingState.LoadingError
                         }
@@ -134,6 +137,7 @@ class PaymentViewModel @Inject constructor(
                     }
                     .fold({
                         Timber.e(it.toString())
+                        FirebaseCrashlytics.getInstance().recordException(Exception("Purchase attempt failed!\n$it"))
                         val effect = if (it == PurchaseError.UserCancelled) {
                             null
                         } else {
