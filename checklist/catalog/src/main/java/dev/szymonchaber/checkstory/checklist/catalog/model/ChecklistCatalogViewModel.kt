@@ -48,7 +48,8 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleNewTemplateClicked(),
             eventFlow.handleEditTemplateClicked(),
             eventFlow.handleHistoryClicked(),
-            eventFlow.handleGetProClicked()
+            eventFlow.handleGetProClicked(),
+            eventFlow.handleAboutClicked()
         )
     }
 
@@ -146,6 +147,16 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
             .mapLatest {
                 _state.first() to ChecklistCatalogEffect.NavigateToPaymentScreen()
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleAboutClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.AboutClicked>()
+            .onEach {
+                tracker.logEvent("about_clicked")
+            }
+            .mapLatest {
+                _state.first() to ChecklistCatalogEffect.NavigateToAboutScreen()
             }
     }
 

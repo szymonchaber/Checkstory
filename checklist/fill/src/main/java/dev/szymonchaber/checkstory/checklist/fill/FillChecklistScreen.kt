@@ -230,7 +230,7 @@ private fun FillChecklistScaffold(
                     IconButton(onClick = {
                         viewModel.onEvent(FillChecklistEvent.EditTemplateClicked)
                     }) {
-                        Icon(Icons.Filled.Edit, "")
+                        Icon(Icons.Filled.Edit, "", tint = Color.White)
                     }
                 }
             )

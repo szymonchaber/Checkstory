@@ -88,4 +88,9 @@
     <string name="subscription_successful_thanks_for_support">Subscription successful!\nThanks for your support</string>
     <string name="onboarding_template_title">(Click the pencil) This is your template!</string>
     <string name="onboarding_template_description">"Templates are used to quickly create the same checklist again and again.\nNo clearing of the old ones required"</string>
+    <string name="about">About</string>
+    <string name="about_first_paragraph">A single person makes Checkstory - I’m not a faceless corporation, but an actual person happy to help.\n\nLet me know if you have any feedback or improvements for the app in mind: </string>
+    <string name="about_email">szymon@szymonchaber.dev</string>
+    <string name="about_second_paragraph">I’m also documenting my journey building this app on Twitter: </string>
+    <string name="about_twitter">\@SzymonChaber</string>
 </resources>

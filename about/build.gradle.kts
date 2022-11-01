@@ -39,6 +39,10 @@ dependencies {
 
     kapt(Dependencies.hiltKapt)
 
+    implementation(platform(Dependencies.firebasePlatform))
+    implementation(Dependencies.crashlytics)
+    implementation(Dependencies.analytics)
+
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }

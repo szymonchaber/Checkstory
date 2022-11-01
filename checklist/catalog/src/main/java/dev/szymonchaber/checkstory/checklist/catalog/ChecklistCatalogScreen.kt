@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -63,7 +64,7 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                 elevation = 12.dp,
                 actions = {
                     IconButton(onClick = { showMenu = !showMenu }) {
-                        Icon(Icons.Default.MoreVert, null)
+                        Icon(Icons.Default.MoreVert, null, tint = Color.White)
                     }
                     DropdownMenu(
                         expanded = showMenu,
@@ -73,6 +74,11 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                             viewModel.onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
                         }) {
                             Text(text = stringResource(id = R.string.unlock_checkstory_pro))
+                        }
+                        DropdownMenuItem(onClick = {
+                            viewModel.onEvent(ChecklistCatalogEvent.AboutClicked)
+                        }) {
+                            Text(text = stringResource(id = R.string.about))
                         }
                     }
                 }
@@ -118,6 +124,9 @@ private fun ChecklistCatalogView(
             }
             is ChecklistCatalogEffect.NavigateToPaymentScreen -> {
                 navigator.navigate(Routes.paymentScreen())
+            }
+            is ChecklistCatalogEffect.NavigateToAboutScreen -> {
+                navigator.navigate(Routes.aboutScreen())
             }
             null -> Unit
         }

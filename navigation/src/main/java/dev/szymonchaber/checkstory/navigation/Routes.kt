@@ -28,4 +28,8 @@ object Routes {
     fun paymentScreen(): String {
         return "payment_screen"
     }
+
+    fun aboutScreen(): String {
+        return "about_screen"
+    }
 }
