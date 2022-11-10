@@ -13,9 +13,17 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import java.time.LocalDateTime
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ChecklistTemplateRoomDataSource @Inject constructor(
@@ -117,7 +125,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 title,
                 description,
                 groupToDomain(checkboxes),
-                LocalDateTime.now(),
+                template.createdAt,
                 checklists,
                 reminders.map(ReminderEntity::toDomainReminder)
             )
