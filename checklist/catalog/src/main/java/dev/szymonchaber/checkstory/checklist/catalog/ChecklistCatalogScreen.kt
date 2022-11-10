@@ -15,7 +15,6 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -47,6 +46,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
+import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.navigation.Routes
 
 @Composable
@@ -141,11 +141,9 @@ private fun ChecklistCatalogView(
             RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
         }
         item {
-            Text(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp),
+            SectionLabel(
+                modifier = Modifier.padding(horizontal = 16.dp),
                 text = stringResource(R.string.templates),
-                style = MaterialTheme.typography.subtitle1
             )
         }
         checklistTemplates(state, viewModel)

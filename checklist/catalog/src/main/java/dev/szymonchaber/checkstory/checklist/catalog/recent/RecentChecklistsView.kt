@@ -1,10 +1,15 @@
 package dev.szymonchaber.checkstory.checklist.catalog.recent
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,6 +22,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.R
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.model.RecentChecklistsLoadingState
 import dev.szymonchaber.checkstory.design.views.LoadingView
+import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -29,10 +35,9 @@ fun RecentChecklistsView(
     loadingState: RecentChecklistsLoadingState,
     eventListener: (ChecklistCatalogEvent) -> Unit = {}
 ) {
-    Text(
+    SectionLabel(
         modifier = Modifier.padding(horizontal = 16.dp),
-        text = stringResource(R.string.recent_checklists),
-        style = MaterialTheme.typography.subtitle1
+        text = stringResource(R.string.recent_checklists)
     )
     when (val state = loadingState) {
         RecentChecklistsLoadingState.Loading -> {

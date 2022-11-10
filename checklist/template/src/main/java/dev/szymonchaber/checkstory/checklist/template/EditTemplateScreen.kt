@@ -18,7 +18,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
@@ -56,12 +55,13 @@ import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
-import dev.szymonchaber.checkstory.checklist.template.views.AddCheckboxButton
+import dev.szymonchaber.checkstory.checklist.template.views.AddButton
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
+import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
@@ -233,13 +233,14 @@ fun EditTemplateView(
             ParentCheckboxItem(
                 Modifier
                     .animateItemPlacement()
-                    .padding(start = 8.dp, end = 16.dp), it, eventCollector
+                    .padding(start = 16.dp, end = 16.dp), it, eventCollector
             )
         }
         item {
-            AddCheckboxButton(
+            AddButton(
                 modifier = Modifier.padding(start = 8.dp),
-                onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) }
+                onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
+                text = stringResource(R.string.new_checkbox)
             )
         }
         item {
@@ -300,12 +301,11 @@ private fun ChecklistTemplateDetails(
                 vertical = 8.dp,
             ),
     )
-    Text(
+    SectionLabel(
         modifier = Modifier.padding(
             top = 16.dp,
             start = 16.dp
         ),
-        style = MaterialTheme.typography.caption,
-        text = stringResource(R.string.items),
+        text = stringResource(R.string.items)
     )
 }

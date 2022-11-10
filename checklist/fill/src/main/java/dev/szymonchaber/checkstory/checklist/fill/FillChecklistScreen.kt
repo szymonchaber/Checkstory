@@ -68,6 +68,7 @@ import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.LinkifyText
+import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
@@ -216,7 +217,7 @@ private fun FillChecklistScaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.checklist))
+                    Text(text = stringResource(R.string.fill_checklist))
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -272,9 +273,8 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
                 text = checklist.description
             )
         }
-        Text(
+        SectionLabel(
             modifier = Modifier.padding(start = 16.dp, top = 16.dp),
-            style = MaterialTheme.typography.caption,
             text = stringResource(R.string.items),
         )
         checklist.items.forEach {
@@ -296,11 +296,10 @@ private fun NotesSection(
     checklist: Checklist,
     eventCollector: (FillChecklistEvent) -> Unit
 ) {
-    Text(
+    SectionLabel(
         modifier = Modifier
             .padding(top = 4.dp)
             .padding(horizontal = 16.dp),
-        style = MaterialTheme.typography.caption,
         text = stringResource(R.string.notes)
     )
     Row(

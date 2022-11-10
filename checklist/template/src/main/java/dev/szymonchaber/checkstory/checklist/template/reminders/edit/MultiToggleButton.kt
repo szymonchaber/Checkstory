@@ -1,7 +1,13 @@
 package dev.szymonchaber.checkstory.checklist.template.reminders.edit
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
@@ -23,7 +29,7 @@ fun <T> MultiToggleButton(
 ) {
     val shape = RoundedCornerShape(64.dp, 0.dp, 0.dp, 64.dp)
     val selectedTint = MaterialTheme.colors.primary
-    val unselectedTint = Color.Gray
+    val unselectedTint = Color.LightGray
 
     Row(
         modifier = modifier

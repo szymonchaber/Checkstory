@@ -9,7 +9,7 @@
     <string name="templates_empty">Nie masz utworzonych szablonów.\nStwórz nowy klikając przycisk \"+\"</string>
     <string name="checklist_history">Historia list kontrolnych</string>
     <string name="checklist_history_empty">Nie masz list kontrolnych dla tego szablonu</string>
-    <string name="checklist">Lista kontrolna</string>
+    <string name="fill_checklist">Wypełnij listę kontrolną</string>
     <string name="items">Elementy</string>
     <string name="notes">Notatki</string>
     <string name="add_template">Dodaj szablon</string>
@@ -17,6 +17,7 @@
     <string name="title">Tytuł</string>
     <string name="description">Opis</string>
     <string name="new_checkbox">Nowy element</string>
+    <string name="new_child_checkbox">Nowy pod-element</string>
     <string name="reminders_label">Przypomnienia</string>
     <string name="new_reminder">Nowe przypomnienie</string>
     <string name="name">Nazwa</string>

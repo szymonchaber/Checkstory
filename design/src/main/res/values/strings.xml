@@ -9,7 +9,7 @@
     <string name="templates_empty">No checklists templates created yet.\nCreate one by clicking \"+\" button</string>
     <string name="checklist_history">Checklist history</string>
     <string name="checklist_history_empty">No checklists filled for this template yet</string>
-    <string name="checklist">Checklist</string>
+    <string name="fill_checklist">Fill checklist</string>
     <string name="items">Items</string>
     <string name="notes">Notes</string>
     <string name="add_template">Add template</string>
@@ -17,6 +17,7 @@
     <string name="title">Title</string>
     <string name="description">Description</string>
     <string name="new_checkbox">New item</string>
+    <string name="new_child_checkbox">New sub-item</string>
     <string name="reminders_label">Reminders</string>
     <string name="new_reminder">New reminder</string>
     <string name="name">Name</string>
