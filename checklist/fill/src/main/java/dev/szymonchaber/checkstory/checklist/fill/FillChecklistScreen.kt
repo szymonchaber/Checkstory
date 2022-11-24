@@ -284,7 +284,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
         DeleteButton(
             modifier = Modifier
                 .align(alignment = Alignment.CenterHorizontally)
-                .padding(top = 24.dp, bottom = 144.dp)
+                .padding(top = 24.dp, bottom = 96.dp)
         ) {
             eventCollector(FillChecklistEvent.DeleteChecklistClicked)
         }

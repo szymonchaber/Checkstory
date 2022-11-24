@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.design.views
 import android.annotation.SuppressLint
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -67,7 +68,13 @@ fun AdvertScaffold(
     val adViewModel = hiltViewModel<AdViewModel>(LocalContext.current as ComponentActivity)
     Scaffold(
         topBar = topBar,
-        content = content,
+        content = {
+            Box(
+                Modifier.padding(it)
+            ) {
+                content(it)
+            }
+        },
         floatingActionButton = floatingActionButton,
         bottomBar = {
             if (adViewModel.shouldEnableAds) {

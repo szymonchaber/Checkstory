@@ -116,8 +116,8 @@ fun AboutView(appVersion: String? = "1.0.0", onEmailClick: () -> Unit = {}, onTw
         appVersion?.let {
             Text(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 48.dp), text = it
+                    .align(Alignment.BottomCenter),
+                text = it
             )
         }
     }

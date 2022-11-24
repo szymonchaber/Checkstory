@@ -43,7 +43,7 @@ fun CheckboxItem(
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
             value = title,
             onValueChange = onTitleChange,
-            label = { Text(text = stringResource(R.string.name)) },
+            label = { Text(text = stringResource(R.string.task_name)) },
             trailingIcon = {
                 IconButton(onClick = onDeleteClick) {
                     Icon(Icons.Filled.Delete, "")
