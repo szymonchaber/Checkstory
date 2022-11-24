@@ -2,10 +2,9 @@
 <resources>
     <string-array name="onboarding">
         <item>Add as many tasks as you want|Nest them as needed</item>
-        <item>Every template has a history of its checklists (calendar icon on the main screen)|There, you can see which items were done |and what notes you had</item>
-        <item>History is not rewritten |Editing a template affects only future checklists|You can see how your checklists changed over time|(Checklist history -> Checkstory&#129327;)</item>
-        <item>In the free version, you have:|3 templates |20 checklists per template</item>
-        <item>The pro version includes:|Unlimited templates|Unlimited checklists|Unlimited reminders 🔔|Ads-free experience|Hotline to the creator of this app for support &amp; feature requests ☎️</item>
+        <item>History is not rewritten |Editing a template affects only future checklists|You can see how your checklists changed over time in template history (calendar icon on the main screen)|There, you can also see which items were done |and what notes you had|(Checklist history -> Checkstory&#129327;)</item>
+        <item>In the free version, you have:|3 templates |1 checklist per template</item>
+        <item>The pro version includes:|Unlimited templates|Unlimited checklists with a single click to start working|Unlimited reminders 🔔|Ads-free experience|Hotline to the creator of this app for support &amp; feature requests ☎️</item>
         <item>Now delete this template, so you don’t use up your free tier</item>
         <item>Start using Checkstory and Never Forget A Step Again ✅</item>
     </string-array>

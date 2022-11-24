@@ -190,6 +190,6 @@ class ChecklistCatalogViewModel @Inject constructor(
     companion object {
 
         private const val MAX_FREE_CHECKLIST_TEMPLATES = 3
-        private const val MAX_FREE_CHECKLISTS = 10
+        private const val MAX_FREE_CHECKLISTS = 1
     }
 }
