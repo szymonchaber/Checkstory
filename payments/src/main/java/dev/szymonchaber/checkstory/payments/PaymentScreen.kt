@@ -137,7 +137,7 @@ private fun ColumnScope.SubscribeBottomSection(
                 strokeWidth = 1.5.dp
             )
         } else {
-            Text(text = stringResource(id = R.string.subscribe_to_checkstory_pro))
+            Text(text = stringResource(id = R.string.upgrade))
         }
     }
 }
@@ -172,7 +172,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
             modifier = Modifier
                 .padding(horizontal = 20.dp)
                 .padding(top = 16.dp),
-            text = stringResource(id = R.string.unlock_checkstory_pro),
+            text = stringResource(id = R.string.upgrade),
             style = MaterialTheme.typography.h5
         )
         Text(
@@ -217,9 +217,8 @@ private fun Features() {
     Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         FeatureLine(stringResource(R.string.ads_free_experience))
         FeatureLine(stringResource(R.string.unlimited_templates))
-        FeatureLine(stringResource(R.string.unlimited_reminders))
         FeatureLine(stringResource(R.string.unlimited_history))
-        FeatureLine(stringResource(R.string.synchronization_with_the_web_app_soon))
+        FeatureLine(stringResource(R.string.unlimited_reminders))
     }
 }
 

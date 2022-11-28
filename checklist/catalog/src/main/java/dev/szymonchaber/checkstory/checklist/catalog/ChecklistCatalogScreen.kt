@@ -73,7 +73,7 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                         DropdownMenuItem(onClick = {
                             viewModel.onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
                         }) {
-                            Text(text = stringResource(id = R.string.unlock_checkstory_pro))
+                            Text(text = stringResource(id = R.string.upgrade))
                         }
                         DropdownMenuItem(onClick = {
                             viewModel.onEvent(ChecklistCatalogEvent.AboutClicked)
