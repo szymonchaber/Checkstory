@@ -339,9 +339,4 @@ class EditTemplateViewModel @Inject constructor(
                 .take(1)
         }
     }
-
-    companion object {
-
-        private const val MAX_FREE_REMINDERS = 3
-    }
 }
