@@ -4,7 +4,6 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -275,17 +274,13 @@ class EditTemplateViewModel @Inject constructor(
             .map { (state, _) ->
                 tracker.logEvent("add_reminder_clicked")
                 val user = getUserUseCase.getUser().first()
-                val effect = if (canAddReminderToTemplate(user, state.checklistTemplate)) {
+                val effect = if (user.isPaidUser) {
                     EditTemplateEffect.ShowAddReminderSheet()
                 } else {
                     EditTemplateEffect.ShowFreeRemindersUsed()
                 }
                 null to effect
             }
-    }
-
-    private fun canAddReminderToTemplate(user: User, template: ChecklistTemplate): Boolean {
-        return template.reminders.count() < MAX_FREE_REMINDERS || user.isPaidUser
     }
 
     private fun Flow<EditTemplateEvent>.handleReminderClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
@@ -343,10 +338,5 @@ class EditTemplateViewModel @Inject constructor(
                 .map { it to event }
                 .take(1)
         }
-    }
-
-    companion object {
-
-        private const val MAX_FREE_REMINDERS = 3
     }
 }
