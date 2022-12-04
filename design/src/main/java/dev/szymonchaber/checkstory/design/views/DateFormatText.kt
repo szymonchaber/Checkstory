@@ -5,6 +5,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -15,7 +16,7 @@ fun DateFormatText(
     modifier: Modifier = Modifier
 ) {
     val format = remember {
-        DateTimeFormatter.ofPattern("dd MMMM, HH:mm", Locale.getDefault())
+        DateTimeFormatter.ofPattern("dd MMM, HH:mm", Locale.getDefault())
     }
     Text(
         modifier = modifier,
@@ -24,3 +25,9 @@ fun DateFormatText(
     )
 }
 
+
+@Preview(showBackground = true)
+@Composable
+fun DateFormatTextPreview() {
+    DateFormatText(localDateTime = LocalDateTime.now())
+}
