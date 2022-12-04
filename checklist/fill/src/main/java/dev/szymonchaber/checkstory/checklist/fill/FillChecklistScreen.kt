@@ -330,7 +330,7 @@ fun CheckboxSection(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> 
         eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
     }
     checkbox.children.forEach { child ->
-        CheckboxItem(modifier = Modifier.padding(start = 24.dp), checkbox = child) {
+        CheckboxItem(modifier = Modifier.padding(start = 34.dp), checkbox = child) {
             eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
         }
     }
