@@ -50,6 +50,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -262,19 +263,27 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             .verticalScroll(rememberScrollState())
             .fillMaxHeight()
     ) {
+        SectionLabel(
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp),
+            text = stringResource(R.string.title),
+        )
         Text(
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 2.dp, end = 16.dp),
             text = checklist.title,
-            style = MaterialTheme.typography.h4
+            style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Normal)
         )
         if (checklist.description.isNotEmpty()) {
+            SectionLabel(
+                modifier = Modifier.padding(start = 16.dp, top = 8.dp),
+                text = stringResource(R.string.description),
+            )
             LinkifyText(
-                modifier = Modifier.padding(start = 16.dp, top = 4.dp, end = 16.dp),
+                modifier = Modifier.padding(start = 16.dp, top = 2.dp, end = 16.dp),
                 text = checklist.description
             )
         }
         SectionLabel(
-            modifier = Modifier.padding(start = 16.dp, top = 16.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp),
             text = stringResource(R.string.items),
         )
         checklist.items.forEach {
