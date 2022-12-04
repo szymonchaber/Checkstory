@@ -326,11 +326,11 @@ private fun NotesSection(
 
 @Composable
 fun CheckboxSection(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> Unit) {
-    CheckboxItem(checkbox = checkbox) {
+    CheckboxItem(modifier = Modifier.padding(start = 8.dp, end = 16.dp), checkbox = checkbox) {
         eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
     }
     checkbox.children.forEach { child ->
-        CheckboxItem(modifier = Modifier.padding(start = 34.dp), checkbox = child) {
+        CheckboxItem(modifier = Modifier.padding(start = 42.dp, end = 16.dp), checkbox = child) {
             eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
         }
     }
