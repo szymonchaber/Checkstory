@@ -12,9 +12,10 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -87,11 +88,18 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
             ChecklistCatalogView(viewModel, navigator)
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
-            }) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = null)
-            }
+            ExtendedFloatingActionButton(
+                text = {
+                    Text(
+                        text = stringResource(R.string.new_template).uppercase(),
+                        style = MaterialTheme.typography.button
+                    )
+                },
+                onClick = {
+                    viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
+                },
+                icon = { Icon(Icons.Filled.Add, null) }
+            )
         }
     )
 }
