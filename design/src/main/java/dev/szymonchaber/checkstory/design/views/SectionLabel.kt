@@ -11,7 +11,8 @@ import androidx.compose.ui.text.font.FontWeight
 fun SectionLabel(text: String, modifier: Modifier = Modifier) {
     Text(
         modifier = modifier,
-        style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium, color = Color.Gray),
+        style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
+        color = Color.Gray,
         text = text,
     )
 }
