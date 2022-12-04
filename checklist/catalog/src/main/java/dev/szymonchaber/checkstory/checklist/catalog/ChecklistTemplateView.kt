@@ -4,6 +4,7 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,11 +26,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.recent.ChecklistsCarousel
 import dev.szymonchaber.checkstory.design.views.DateFormatText
+import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -48,7 +51,7 @@ fun ChecklistTemplateView(
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
             .padding(top = 8.dp),
-        elevation = 4.dp,
+        elevation = 2.dp,
         onClick = {
             isCollapsed = !isCollapsed
         }
@@ -71,13 +74,26 @@ fun ChecklistTemplateView(
             )
             TemplateActionButtons(checklistTemplate, eventListener)
             if (!isCollapsed) {
-                ChecklistsCarousel(checklistTemplate.checklists, {
+                SectionLabel(
+                    modifier = Modifier.padding(start = 16.dp),
+                    text = stringResource(id = R.string.checklist_history)
+                )
+                ChecklistsCarousel(
+                    checklists = checklistTemplate.checklists,
+                    paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                    cardElevation = 1.dp,
+                    onChecklistClicked = {
+                        eventListener(
+                            ChecklistCatalogEvent.RecentChecklistClicked(it.id)
+                        )
+                    }
+                ) {
                     Box {
                         Card(
                             modifier = Modifier
-                                .size(width = 90.dp, height = 115.dp)
+                                .size(width = 90.dp, height = 110.dp)
                                 .align(Alignment.Center),
-                            elevation = 4.dp,
+                            elevation = 1.dp,
                             onClick = {
                                 eventListener(
                                     ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate)
@@ -95,10 +111,6 @@ fun ChecklistTemplateView(
                             }
                         }
                     }
-                }) {
-                    eventListener(
-                        ChecklistCatalogEvent.RecentChecklistClicked(it.id)
-                    )
                 }
             }
         }

@@ -146,7 +146,7 @@ fun ChecklistHistoryItem(
     Card(
         modifier = Modifier
             .fillMaxWidth(),
-        elevation = 4.dp,
+        elevation = 2.dp,
         onClick = {
             eventListener(ChecklistHistoryEvent.ChecklistClicked(checklist.id))
         }

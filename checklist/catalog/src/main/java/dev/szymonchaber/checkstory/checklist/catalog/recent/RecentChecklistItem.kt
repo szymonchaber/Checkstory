@@ -1,6 +1,12 @@
 package dev.szymonchaber.checkstory.checklist.catalog.recent
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -9,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.szymonchaber.checkstory.checklist.catalog.R
@@ -27,12 +35,14 @@ import java.time.LocalDateTime
 fun RecentChecklistItem(
     modifier: Modifier = Modifier,
     checklist: Checklist,
+    cardElevation: Dp,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
-            .widthIn(max = 200.dp),
-        elevation = 4.dp,
+            .widthIn(max = 200.dp)
+            .heightIn(max = 110.dp),
+        elevation = cardElevation,
         onClick = onClick
     ) {
         Column(
@@ -40,7 +50,9 @@ fun RecentChecklistItem(
         ) {
             Text(
                 text = checklist.title,
-                style = MaterialTheme.typography.subtitle1
+                style = MaterialTheme.typography.subtitle1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             NotesTextView(checklist.notes)
             Row(
@@ -70,6 +82,8 @@ private fun NotesTextView(notes: String) {
         modifier = Modifier.padding(top = 8.dp),
         text = notesOrEmptyNotesText,
         style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle, fontSize = 14.sp),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
@@ -91,6 +105,6 @@ fun RecentChecklistItemPreview() {
     )
     RecentChecklistItem(
         checklist = checklist,
-        onClick = { }
-    )
+        cardElevation = 1.dp
+    ) { }
 }

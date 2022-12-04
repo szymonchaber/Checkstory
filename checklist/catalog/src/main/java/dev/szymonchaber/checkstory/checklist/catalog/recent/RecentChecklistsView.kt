@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.R
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
@@ -47,9 +48,14 @@ fun RecentChecklistsView(
             if (state.checklists.isEmpty()) {
                 NoRecentChecklistsView()
             } else {
-                ChecklistsCarousel(state.checklists) {
-                    eventListener(ChecklistCatalogEvent.RecentChecklistClicked(it.id))
-                }
+                ChecklistsCarousel(
+                    state.checklists,
+                    paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
+                    cardElevation = 2.dp,
+                    {
+                        eventListener(ChecklistCatalogEvent.RecentChecklistClicked(it.id))
+                    }
+                )
             }
         }
     }
@@ -75,11 +81,13 @@ fun NoRecentChecklistsView() {
 @Composable
 fun ChecklistsCarousel(
     checklists: List<Checklist>,
-    header: @Composable (LazyItemScope.() -> Unit)? = null,
-    onChecklistClicked: (Checklist) -> Unit
+    paddingValues: PaddingValues,
+    cardElevation: Dp,
+    onChecklistClicked: (Checklist) -> Unit,
+    header: @Composable (LazyItemScope.() -> Unit)? = null
 ) {
     LazyRow(
-        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp),
+        contentPadding = paddingValues,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         header?.let {
@@ -90,10 +98,10 @@ fun ChecklistsCarousel(
         items(checklists) {
             RecentChecklistItem(
                 checklist = it,
-                onClick = {
-                    onChecklistClicked(it)
-                }
-            )
+                cardElevation = cardElevation
+            ) {
+                onChecklistClicked(it)
+            }
         }
     }
 }
