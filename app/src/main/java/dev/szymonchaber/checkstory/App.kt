@@ -58,7 +58,6 @@ class App : Application() {
         GlobalScope.launch {
             withContext(Dispatchers.IO) {
                 val tier = if (isProUserUseCase.isProUser()) SUBSCRIPTION_TIER_PRO else SUBSCRIPTION_TIER_FREE
-                Timber.d("Tier is: $tier")
                 FirebaseAnalytics.getInstance(this@App).setUserProperty(SUBSCRIPTION_TIER, tier)
             }
         }
