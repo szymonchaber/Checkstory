@@ -91,7 +91,7 @@ fun ChecklistTemplateView(
                     Box {
                         Card(
                             modifier = Modifier
-                                .size(width = 90.dp, height = 110.dp)
+                                .size(width = 90.dp, height = 120.dp)
                                 .align(Alignment.Center),
                             elevation = 1.dp,
                             onClick = {

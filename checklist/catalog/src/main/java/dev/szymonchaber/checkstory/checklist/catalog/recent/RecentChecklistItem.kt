@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.Card
@@ -40,8 +39,7 @@ fun RecentChecklistItem(
 ) {
     Card(
         modifier = modifier
-            .widthIn(max = 200.dp)
-            .heightIn(max = 110.dp),
+            .widthIn(max = 200.dp),
         elevation = cardElevation,
         onClick = onClick
     ) {
