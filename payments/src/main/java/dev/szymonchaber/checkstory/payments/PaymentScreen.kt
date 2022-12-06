@@ -214,7 +214,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
 
 @Composable
 private fun Features() {
-    Column(Modifier.padding(top = 10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         FeatureLine(stringResource(R.string.ads_free_experience))
         FeatureLine(stringResource(R.string.unlimited_templates))
         FeatureLine(stringResource(R.string.unlimited_history))
@@ -262,12 +262,18 @@ fun FeatureLine(text: String) {
         )
         Text(
             modifier = Modifier
-                .padding(start = 8.dp)
+                .padding(start = 16.dp)
                 .fillMaxWidth()
                 .align(Alignment.CenterVertically),
             text = text,
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FeatureLinePreview() {
+    FeatureLine("Unlimited checklists per template - start filling a checklist with a single click")
 }
 
 enum class PlanDuration {
