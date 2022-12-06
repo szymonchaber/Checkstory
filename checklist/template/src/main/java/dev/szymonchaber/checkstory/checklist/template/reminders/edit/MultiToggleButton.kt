@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -27,7 +28,7 @@ fun <T> MultiToggleButton(
     onToggleChange: (T) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(64.dp, 0.dp, 0.dp, 64.dp)
+    val shape = RoundedCornerShape(4.dp, 0.dp, 0.dp, 4.dp)
     val selectedTint = MaterialTheme.colors.primary
     val unselectedTint = Color.LightGray
 
@@ -59,7 +60,7 @@ fun <T> MultiToggleButton(
                     .then(clipModifier)
                     .background(backgroundTint)
                     .weight(1f)
-                    .padding(vertical = 16.dp, horizontal = 8.dp)
+                    .padding(vertical = 8.dp, horizontal = 8.dp)
                     .toggleable(
                         value = isSelected,
                         enabled = true,
@@ -73,6 +74,7 @@ fun <T> MultiToggleButton(
                     toggleState.text,
                     textAlign = TextAlign.Center,
                     color = textColor,
+                    fontWeight = FontWeight.Medium,
                     modifier = Modifier.fillMaxWidth()
                 )
             }
