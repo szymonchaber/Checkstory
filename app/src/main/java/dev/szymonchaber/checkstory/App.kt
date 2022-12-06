@@ -5,12 +5,14 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
 import dev.szymonchaber.checkstory.notifications.ScheduleTodayRemindersReceiver
@@ -35,6 +37,9 @@ class App : Application() {
     lateinit var updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase
 
     @Inject
+    lateinit var isProUserUseCase: IsProUserUseCase
+
+    @Inject
     lateinit var onboardingPreferences: OnboardingPreferences
 
     private val alarmManager by lazy { getSystemService(Context.ALARM_SERVICE) as AlarmManager }
@@ -44,8 +49,19 @@ class App : Application() {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+        setPaymentTierProperty()
         runReminderSchedulerDaily()
         insertOnboardingTemplates()
+    }
+
+    private fun setPaymentTierProperty() {
+        GlobalScope.launch {
+            withContext(Dispatchers.IO) {
+                val tier = if (isProUserUseCase.isProUser()) SUBSCRIPTION_TIER_PRO else SUBSCRIPTION_TIER_FREE
+                Timber.d("Tier is: $tier")
+                FirebaseAnalytics.getInstance(this@App).setUserProperty(SUBSCRIPTION_TIER, tier)
+            }
+        }
     }
 
     private fun insertOnboardingTemplates() {
@@ -129,5 +145,12 @@ class App : Application() {
                     PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             }
+    }
+
+    companion object {
+
+        private const val SUBSCRIPTION_TIER = "subscription_tier"
+        private const val SUBSCRIPTION_TIER_FREE = "free"
+        private const val SUBSCRIPTION_TIER_PRO = "pro"
     }
 }
