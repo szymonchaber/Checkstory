@@ -63,8 +63,5 @@ sealed interface EditReminderLoadingState {
 
 sealed interface EditReminderEffect {
 
-    @Suppress("CanSealedSubClassBeObject")
-    class CloseScreen : EditReminderEffect
-
     data class RelayReminderToSave(val reminder: Reminder) : EditReminderEffect
 }

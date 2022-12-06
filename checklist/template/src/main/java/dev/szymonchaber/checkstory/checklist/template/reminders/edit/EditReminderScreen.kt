@@ -62,9 +62,6 @@ fun EditReminderScreen(
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {
         when (val value = effect) {
-            is EditReminderEffect.CloseScreen -> {
-//                navController.navigateUp() TODO close bottom sheet
-            }
             is EditReminderEffect.RelayReminderToSave -> onReminderSaved(value.reminder)
             null -> Unit
         }

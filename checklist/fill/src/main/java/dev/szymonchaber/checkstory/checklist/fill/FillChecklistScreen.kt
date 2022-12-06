@@ -48,6 +48,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
@@ -112,6 +113,7 @@ fun FillChecklistScreen(
     val modalBottomSheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val scope = rememberCoroutineScope()
     val notesInputFocusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
 
     BackHandler {
         if (modalBottomSheetState.isVisible) {
@@ -153,6 +155,8 @@ fun FillChecklistScreen(
             is FillChecklistEffect.ShowNotesEditShelf -> {
                 scope.launch {
                     modalBottomSheetState.show()
+                }
+                scope.launch {
                     notesInputFocusRequester.requestFocus()
                 }
             }
@@ -191,6 +195,9 @@ fun FillChecklistScreen(
                     IconButton(
                         modifier = Modifier.padding(end = 8.dp),
                         onClick = {
+                            scope.launch {
+                                focusManager.clearFocus()
+                            }
                             scope.launch {
                                 modalBottomSheetState.hide()
                             }
