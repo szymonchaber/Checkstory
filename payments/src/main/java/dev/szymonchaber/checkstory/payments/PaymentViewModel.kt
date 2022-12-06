@@ -7,6 +7,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
@@ -25,6 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
+    private val isProUserUseCase: IsProUserUseCase,
     private val getPaymentPlansUseCase: GetPaymentPlansUseCase,
     private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase,
     private val refreshPaymentInformationUseCase: RefreshPaymentInformationUseCase
@@ -64,21 +66,25 @@ class PaymentViewModel @Inject constructor(
                             paymentLoadingState = PaymentState.PaymentLoadingState.Loading
                         ) to null
                     )
-                    val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()
-                        .fold({
-                            FirebaseCrashlytics.getInstance()
-                                .recordException(Exception("Fetching payment plans failed!\n$it"));
-                            Timber.e(it.toString())
-                            PaymentState.PaymentLoadingState.LoadingError
-                        }
-                        ) {
-                            PaymentState.PaymentLoadingState.Success(
-                                plans = it,
-                                selectedPlan = it.yearly,
-                                paymentInProgress = false
-                            )
-                        }
-                    emit(PaymentState(paymentLoadingState = paymentLoadingState) to null)
+                    if (isProUserUseCase.isProUser()) {
+                        emit(PaymentState(paymentLoadingState = PaymentState.PaymentLoadingState.Paid) to null)
+                    } else {
+                        val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()
+                            .fold({
+                                FirebaseCrashlytics.getInstance()
+                                    .recordException(Exception("Fetching payment plans failed!\n$it"));
+                                Timber.e(it.toString())
+                                PaymentState.PaymentLoadingState.LoadingError
+                            }
+                            ) {
+                                PaymentState.PaymentLoadingState.Success(
+                                    plans = it,
+                                    selectedPlan = it.yearly,
+                                    paymentInProgress = false
+                                )
+                            }
+                        emit(PaymentState(paymentLoadingState = paymentLoadingState) to null)
+                    }
                 }
             }
     }
