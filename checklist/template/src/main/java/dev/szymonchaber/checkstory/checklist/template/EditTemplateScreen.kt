@@ -26,6 +26,7 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -145,6 +147,9 @@ fun EditTemplateScreen(
             is EditTemplateEffect.ShowFreeRemindersUsed -> {
                 navigator.navigate(Routes.paymentScreen())
             }
+            is EditTemplateEffect.OpenTemplateHistory -> {
+                navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
+            }
             null -> Unit
         }
     }
@@ -188,7 +193,17 @@ private fun EditTemplateScaffold(
                         Icon(Icons.Filled.ArrowBack, "")
                     }
                 },
-                elevation = 12.dp
+                elevation = 12.dp,
+                actions = {
+                    val loadingState = state.templateLoadingState
+                    if (loadingState is TemplateLoadingState.Success && loadingState.checklistTemplate.isStored) {
+                        IconButton(onClick = {
+                            viewModel.onEvent(EditTemplateEvent.TemplateHistoryClicked)
+                        }) {
+                            Icon(Icons.Filled.DateRange, "", tint = Color.White)
+                        }
+                    }
+                }
             )
         },
         content = {

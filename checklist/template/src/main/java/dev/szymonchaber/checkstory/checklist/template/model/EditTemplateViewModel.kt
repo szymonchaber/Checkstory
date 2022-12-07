@@ -47,26 +47,31 @@ class EditTemplateViewModel @Inject constructor(
 ) {
 
     override fun buildMviFlow(eventFlow: Flow<EditTemplateEvent>): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return eventFlow.buildMviFlowActual()
+    }
+
+    private fun Flow<EditTemplateEvent>.buildMviFlowActual(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return merge(
-            eventFlow.handleCreateChecklist(),
-            eventFlow.handleEditChecklist(),
-            eventFlow.handleTitleChanged(),
-            eventFlow.handleDescriptionChanged(),
-            eventFlow.handleAddCheckboxClicked(),
-            eventFlow.handleItemRemoved(),
-            eventFlow.handleItemTitleChanged(),
-            eventFlow.handleSaveTemplateClicked(),
-            eventFlow.handleDeleteTemplateClicked(),
-            eventFlow.handleConfirmDeleteTemplateClicked(),
-            eventFlow.handleChildItemAdded(),
-            eventFlow.handleChildItemDeleted(),
-            eventFlow.handleChildItemChanged(),
-            eventFlow.handleAddReminderClicked(),
-            eventFlow.handleReminderClicked(),
-            eventFlow.handleReminderSaved(),
-            eventFlow.handleReminderDeleted(),
-            eventFlow.handleBackClicked(),
-            eventFlow.handleConfirmExitClicked()
+            handleCreateChecklist(),
+            handleEditChecklist(),
+            handleTitleChanged(),
+            handleDescriptionChanged(),
+            handleAddCheckboxClicked(),
+            handleItemRemoved(),
+            handleItemTitleChanged(),
+            handleSaveTemplateClicked(),
+            handleDeleteTemplateClicked(),
+            handleConfirmDeleteTemplateClicked(),
+            handleChildItemAdded(),
+            handleChildItemDeleted(),
+            handleChildItemChanged(),
+            handleAddReminderClicked(),
+            handleReminderClicked(),
+            handleReminderSaved(),
+            handleReminderDeleted(),
+            handleBackClicked(),
+            handleConfirmExitClicked(),
+            handleTemplateHistoryClicked()
         )
     }
 
@@ -328,6 +333,19 @@ class EditTemplateViewModel @Inject constructor(
             .map { (success, event) ->
                 tracker.logEvent("delete_reminder_clicked")
                 EditTemplateState(success.minusReminder(event.reminder)) to null
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleTemplateHistoryClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.TemplateHistoryClicked>()
+            .withSuccessState()
+            .map { (success, _) ->
+                if (success.checklistTemplate.isStored) {
+                    tracker.logEvent("edit_template_history_clicked")
+                    state.first() to EditTemplateEffect.OpenTemplateHistory(success.checklistTemplate.id)
+                } else {
+                    state.first() to null
+                }
             }
     }
 

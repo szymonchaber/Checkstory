@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 
 sealed interface EditTemplateEffect {
@@ -19,4 +20,6 @@ sealed interface EditTemplateEffect {
 
     @Suppress("CanSealedSubClassBeObject")
     class ShowFreeRemindersUsed : EditTemplateEffect
+
+    data class OpenTemplateHistory(val templateId: ChecklistTemplateId) : EditTemplateEffect
 }

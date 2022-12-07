@@ -2,7 +2,7 @@
 <resources>
     <string-array name="onboarding">
         <item>Add as many tasks as you want|Nest them as needed</item>
-        <item>History is not rewritten |Editing a template affects only future checklists|You can see how your checklists changed over time in template history|There, you can also see which items were done |and what notes you had|(Checklist history -> Checkstory&#129327;)</item>
+        <item>History is not rewritten |Editing a template affects only future checklists|You can see how your checklists changed over time in template history (calendar icon)|There, you can also see which items were done|and what notes you had|(Checklist history -> Checkstory&#129327;)</item>
         <item>In the free version, you have:|1 template |1 checklist per template</item>
         <item>The pro version includes:|Unlimited templates|Unlimited checklists with a single click to start filling out|Unlimited reminders 🔔|Ads-free experience</item>
         <!--        <item>Hotline to the creator of this app for support &amp; feature requests ☎️</item>-->
