@@ -102,6 +102,7 @@ dependencies {
     implementation(Dependencies.analytics)
     implementation(Dependencies.crashlytics)
     implementation(Dependencies.performance)
+    implementation(Dependencies.messaging)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

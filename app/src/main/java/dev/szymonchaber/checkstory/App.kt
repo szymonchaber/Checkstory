@@ -5,7 +5,9 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
@@ -52,6 +54,13 @@ class App : Application() {
         setPaymentTierProperty()
         runReminderSchedulerDaily()
         insertOnboardingTemplates()
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Timber.w("Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+            Timber.d("Token: ${task.result}")
+        })
     }
 
     private fun setPaymentTierProperty() {

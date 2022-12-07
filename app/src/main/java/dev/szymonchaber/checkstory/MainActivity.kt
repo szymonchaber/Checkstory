@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -34,6 +36,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+        intent?.getStringExtra(DEEP_LINK_EXTRA)?.let {
+            val browserIntent = Intent(Intent.ACTION_VIEW, it.toUri())
+            startActivity(browserIntent)
+        }
         MobileAds.initialize(this)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -52,5 +58,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    companion object {
+
+        private const val DEEP_LINK_EXTRA = "deepLink"
     }
 }

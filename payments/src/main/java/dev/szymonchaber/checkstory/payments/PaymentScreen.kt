@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.android.billingclient.api.ProductDetails
+import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
@@ -55,7 +56,15 @@ import dev.szymonchaber.checkstory.payments.model.PaymentState
 import kotlinx.coroutines.launch
 
 @Composable
-@Destination(route = "payment_screen", start = true)
+@Destination(
+    route = "payment_screen",
+    start = true,
+    deepLinks = [
+        DeepLink(
+            uriPattern = "app://checkstory/upgrade"
+        ),
+    ]
+)
 fun PaymentScreen(navigator: DestinationsNavigator) {
     trackScreenName("upgrade_to_pro")
     val viewModel = hiltViewModel<PaymentViewModel>()
