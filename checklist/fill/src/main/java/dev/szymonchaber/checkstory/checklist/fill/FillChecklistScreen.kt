@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -45,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -342,12 +344,37 @@ private fun NotesSection(
 
 @Composable
 fun CheckboxSection(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> Unit) {
-    CheckboxItem(modifier = Modifier.padding(start = 8.dp, end = 16.dp), checkbox = checkbox) {
-        eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+    val shouldIncludeIcon = checkbox.children.isNotEmpty()
+    var isCollapsed by remember { mutableStateOf(false) }
+    val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
+    CheckboxItem(
+        modifier = Modifier.padding(start = 8.dp, end = endPadding),
+        checkbox = checkbox,
+        onCheckedChange = {
+            eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+        }
+    ) {
+        if (shouldIncludeIcon) {
+            IconButton(
+                onClick = { isCollapsed = !isCollapsed }) {
+                val rotationDegrees = if (isCollapsed) 0f else 180f
+                Icon(
+                    modifier = Modifier.rotate(rotationDegrees),
+                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    contentDescription = null
+                )
+            }
+        }
     }
-    checkbox.children.forEach { child ->
-        CheckboxItem(modifier = Modifier.padding(start = 42.dp, end = 16.dp), checkbox = child) {
-            eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
+    if (!isCollapsed) {
+        checkbox.children.forEach { child ->
+            CheckboxItem(
+                modifier = Modifier.padding(start = 42.dp, end = 16.dp),
+                checkbox = child,
+                onCheckedChange = {
+                    eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
+                }
+            )
         }
     }
 }
