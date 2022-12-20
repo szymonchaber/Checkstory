@@ -9,7 +9,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistTemplateRepositoryImpl @Inject constructor(
+class LocalChecklistTemplateRepository @Inject constructor(
     private val dataSource: ChecklistTemplateRoomDataSource
 ) : ChecklistTemplateRepository {
 

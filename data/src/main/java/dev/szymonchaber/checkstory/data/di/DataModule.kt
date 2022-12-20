@@ -37,13 +37,16 @@ import timber.log.Timber
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface DataModule {
+internal interface DataModule {
 
     @Binds
     fun bindChecklistRepository(repository: ChecklistRepositoryImpl): ChecklistRepository
 
+//    @Binds
+//    fun bindChecklistTemplateRepository(repository: LocalChecklistTemplateRepository): ChecklistTemplateRepository
+
     @Binds
-    fun bindChecklistTemplateRepository(repository: ChecklistTemplateRepositoryImpl): ChecklistTemplateRepository
+    fun bindChecklistTemplateRepository(repository: RemoteChecklistTemplateRepository): ChecklistTemplateRepository
 
     @Binds
     fun bindTemplateCheckboxRepository(repository: TemplateCheckboxRepositoryImpl): TemplateCheckboxRepository
