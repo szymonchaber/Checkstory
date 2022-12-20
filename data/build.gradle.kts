@@ -8,6 +8,7 @@ plugins {
     id("dependencies")
     id("com.google.devtools.ksp") version "1.8.10-1.0.9"
     id("library-config")
+    id("kotlinx-serialization")
 }
 
 android {
@@ -45,6 +46,8 @@ dependencies {
     implementation(Dependencies.dataStore)
 
     implementation(Dependencies.crashlytics)
+
+    Dependencies.ktor.forEach(::implementation)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

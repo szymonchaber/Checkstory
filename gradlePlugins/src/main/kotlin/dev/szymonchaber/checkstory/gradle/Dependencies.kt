@@ -96,6 +96,13 @@ class Dependencies : Plugin<Project> {
 
         val composeReorderable = "org.burnoutcrew.composereorderable:reorderable:0.9.6"
 
+        val ktor = listOf(
+            "io.ktor:ktor-client-android:1.5.0",
+            "io.ktor:ktor-client-serialization:1.5.0",
+            "org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1",
+            "io.ktor:ktor-client-logging-jvm:1.5.0"
+        )
+
         val unitTest = listOf(
             "junit:junit:4.13.2",
             "com.google.truth:truth:1.1.3"
