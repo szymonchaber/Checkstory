@@ -48,6 +48,7 @@ dependencies {
     implementation(Dependencies.crashlytics)
 
     Dependencies.ktor.forEach(::implementation)
+    implementation(Dependencies.kotlinx_datetime)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

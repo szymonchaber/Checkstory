@@ -103,6 +103,8 @@ class Dependencies : Plugin<Project> {
             "io.ktor:ktor-client-logging-jvm:1.5.0"
         )
 
+        const val kotlinx_datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
+
         val unitTest = listOf(
             "junit:junit:4.13.2",
             "com.google.truth:truth:1.1.3"

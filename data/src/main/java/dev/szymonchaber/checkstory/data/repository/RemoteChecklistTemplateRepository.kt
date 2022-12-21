@@ -8,9 +8,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import java.time.OffsetDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,8 +34,7 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
                             listOf()
                         )
                     },
-                    OffsetDateTime.parse(it.createdAt, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-                        .atZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime(),
+                    it.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
                     listOf(),
                     listOf()
                 )
