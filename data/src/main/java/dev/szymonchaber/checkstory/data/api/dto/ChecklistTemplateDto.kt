@@ -7,6 +7,6 @@ data class ChecklistTemplateDto(
     val id: Long,
     val title: String,
     val description: String,
-    val templateCheckboxes: List<TemplateCheckboxDto>
-//        val createdAt: Date?
+    val templateCheckboxes: List<TemplateCheckboxDto>,
+    val createdAt: String
 )
