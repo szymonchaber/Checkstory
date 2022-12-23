@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.catalog.model
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
@@ -9,6 +10,7 @@ import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -50,7 +52,9 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleHistoryClicked(),
             eventFlow.handleGetProClicked(),
             eventFlow.handleAboutClicked()
-        )
+        ).catch {
+            FirebaseCrashlytics.getInstance().recordException(it)
+        }
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadChecklist(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {

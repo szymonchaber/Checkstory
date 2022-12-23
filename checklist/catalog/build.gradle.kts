@@ -40,6 +40,7 @@ dependencies {
     kapt(Dependencies.hiltKapt)
 
     implementation(Dependencies.review)
+    implementation(Dependencies.crashlytics)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
