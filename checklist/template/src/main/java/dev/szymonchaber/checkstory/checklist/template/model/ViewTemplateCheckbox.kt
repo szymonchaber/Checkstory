@@ -31,7 +31,7 @@ sealed interface ViewTemplateCheckbox {
         override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
             return TemplateCheckbox(TemplateCheckboxId(0), parentId, title, children.map {
                 it.toDomainModel(id)
-            })
+            }, 0) // TODO logic here!
         }
 
         override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
@@ -76,7 +76,7 @@ sealed interface ViewTemplateCheckbox {
         override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
             return TemplateCheckbox(id, parentId, title, children.map {
                 it.toDomainModel(id)
-            })
+            }, 0) // TODO logic here as well!
         }
 
         override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {

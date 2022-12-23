@@ -125,8 +125,8 @@ class App : Application() {
         checkboxesScope.block()
         return checkboxesScope.checkboxes.map { (title, children) ->
             TemplateCheckbox(TemplateCheckboxId(0), null, title, children.map {
-                TemplateCheckbox(TemplateCheckboxId(0), null, it, listOf())
-            })
+                TemplateCheckbox(TemplateCheckboxId(0), null, it, listOf(), 0)
+            }, 0)
         }
     }
 

@@ -86,7 +86,7 @@ class EditTemplateViewModel @Inject constructor(
                         "",
                         "",
                         listOf(
-                            TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf()),
+                            TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf(), 0),
                         ),
                         LocalDateTime.now(),
                         listOf(),

@@ -22,5 +22,6 @@ data class TemplateCheckbox(
     val id: TemplateCheckboxId,
     val parentId: TemplateCheckboxId?,
     val title: String,
-    val children: List<TemplateCheckbox>
+    val children: List<TemplateCheckbox>,
+    val sortPosition: Long
 )

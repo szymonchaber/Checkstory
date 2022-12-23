@@ -152,7 +152,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             TemplateCheckboxId(templateCheckboxEntity.checkboxId),
             parentId,
             templateCheckboxEntity.checkboxTitle,
-            children
+            children,
+            templateCheckboxEntity.sortPosition
         )
     }
 
