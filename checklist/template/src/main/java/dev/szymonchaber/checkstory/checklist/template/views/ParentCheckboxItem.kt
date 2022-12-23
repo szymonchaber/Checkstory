@@ -65,9 +65,11 @@ fun ParentCheckboxItemPreview() {
                 TemplateCheckboxId(0),
                 null,
                 "Checkbox 1",
-                listOf()
+                listOf(),
+                0
             )
-        )
+        ),
+        0
     )
     ParentCheckboxItem(checkbox = checkbox, eventCollector = {})
 }

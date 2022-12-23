@@ -33,7 +33,8 @@ sealed interface TemplateLoadingState {
                         TemplateCheckboxId(checkboxes.size.toLong()),
                         null,
                         title,
-                        listOf()
+                        listOf(),
+                        checkboxes.size.toLong()
                     )
                 )
             )

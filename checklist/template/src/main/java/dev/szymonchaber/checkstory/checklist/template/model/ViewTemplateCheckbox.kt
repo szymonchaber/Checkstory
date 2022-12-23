@@ -10,6 +10,7 @@ sealed interface ViewTemplateCheckbox {
     val parentId: TemplateCheckboxId?
     val title: String
     val children: List<ViewTemplateCheckbox>
+    val sortPosition: Long
 
     fun withUpdatedTitle(title: String): ViewTemplateCheckbox
 
@@ -25,13 +26,20 @@ sealed interface ViewTemplateCheckbox {
         override val id: TemplateCheckboxId,
         override val parentId: TemplateCheckboxId?,
         override val title: String,
-        override val children: List<ViewTemplateCheckbox>
+        override val children: List<ViewTemplateCheckbox>,
+        override val sortPosition: Long
     ) : ViewTemplateCheckbox {
 
         override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
-            return TemplateCheckbox(TemplateCheckboxId(0), parentId, title, children.map {
-                it.toDomainModel(id)
-            }, 0) // TODO logic here!
+            return TemplateCheckbox(
+                id = TemplateCheckboxId(0),
+                parentId = parentId,
+                title = title,
+                children = children.map {
+                    it.toDomainModel(id)
+                },
+                sortPosition = sortPosition
+            )
         }
 
         override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
@@ -45,7 +53,8 @@ sealed interface ViewTemplateCheckbox {
                         TemplateCheckboxId(children.size.toLong()),
                         null,
                         title,
-                        listOf()
+                        listOf(),
+                        children.size.toLong()
                     )
                 )
             )
@@ -70,13 +79,20 @@ sealed interface ViewTemplateCheckbox {
         override val id: TemplateCheckboxId,
         override val parentId: TemplateCheckboxId?,
         override val title: String,
-        override val children: List<ViewTemplateCheckbox>
+        override val children: List<ViewTemplateCheckbox>,
+        override val sortPosition: Long
     ) : ViewTemplateCheckbox {
 
         override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
-            return TemplateCheckbox(id, parentId, title, children.map {
-                it.toDomainModel(id)
-            }, 0) // TODO logic here as well!
+            return TemplateCheckbox(
+                id = id,
+                parentId = parentId,
+                title = title,
+                children = children.map {
+                    it.toDomainModel(id)
+                },
+                sortPosition = sortPosition
+            )
         }
 
         override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
@@ -90,7 +106,8 @@ sealed interface ViewTemplateCheckbox {
                         TemplateCheckboxId(children.size.toLong()),
                         null,
                         title,
-                        listOf()
+                        listOf(),
+                        children.size.toLong()
                     )
                 )
             )
@@ -115,10 +132,11 @@ sealed interface ViewTemplateCheckbox {
             fun fromDomainModel(templateCheckbox: TemplateCheckbox): Existing {
                 return with(templateCheckbox) {
                     Existing(
-                        id,
-                        parentId,
-                        title,
-                        children.map { fromDomainModel(it) }
+                        id = id,
+                        parentId = parentId,
+                        title = title,
+                        children = children.map { fromDomainModel(it) },
+                        sortPosition = templateCheckbox.sortPosition
                     )
                 }
             }
