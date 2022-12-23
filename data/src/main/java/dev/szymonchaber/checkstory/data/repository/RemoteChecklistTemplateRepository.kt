@@ -1,6 +1,8 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.api.ChecklistTemplateApi
+import dev.szymonchaber.checkstory.data.api.dto.ChecklistTemplateDto
+import dev.szymonchaber.checkstory.data.api.dto.TemplateCheckboxDto
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -10,7 +12,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,24 +26,28 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
     override fun getAll(): Flow<List<ChecklistTemplate>> {
         return flow {
             emit(checklistTemplateApi.getAllChecklistTemplates().map {
-                ChecklistTemplate(
-                    ChecklistTemplateId(it.id),
-                    it.title,
-                    it.description,
-                    items = it.templateCheckboxes.map {
-                        TemplateCheckbox(
-                            TemplateCheckboxId(it.id),
-                            null,
-                            it.title,
-                            listOf()
-                        )
-                    },
-                    it.createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
-                    listOf(),
-                    listOf()
-                )
+                it.toChecklistTemplate()
             })
         }
+    }
+
+    private fun ChecklistTemplateDto.toChecklistTemplate(): ChecklistTemplate {
+        return ChecklistTemplate(
+            ChecklistTemplateId(id),
+            title,
+            description,
+            items = templateCheckboxes.map {
+                TemplateCheckbox(
+                    TemplateCheckboxId(it.id),
+                    null,
+                    it.title,
+                    listOf()
+                )
+            },
+            createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
+            listOf(),
+            listOf()
+        )
     }
 
     override fun get(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
@@ -58,4 +66,24 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
         TODO()
     }
 
+    suspend fun pushAll(checklistTemplates: List<ChecklistTemplate>): List<ChecklistTemplate> {
+        val payload = checklistTemplates.map {
+            ChecklistTemplateDto(
+                0,
+                it.title,
+                it.description,
+                it.items.map {
+                    TemplateCheckboxDto(
+                        0,
+                        it.title,
+                        0
+                    )
+                },
+                it.createdAt.toInstant(ZoneOffset.UTC).toKotlinInstant()
+            )
+        }
+        return checklistTemplateApi.pushChecklistTemplates(payload).map {
+            it.toChecklistTemplate()
+        }
+    }
 }

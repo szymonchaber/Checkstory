@@ -32,4 +32,8 @@ class LocalChecklistTemplateRepository @Inject constructor(
     override suspend fun delete(checklistTemplate: ChecklistTemplate) {
         dataSource.delete(checklistTemplate)
     }
+
+    suspend fun updateAll(checklistTemplatesWithRemoteId: List<ChecklistTemplate>) {
+        dataSource.updateAll(checklistTemplatesWithRemoteId)
+    }
 }

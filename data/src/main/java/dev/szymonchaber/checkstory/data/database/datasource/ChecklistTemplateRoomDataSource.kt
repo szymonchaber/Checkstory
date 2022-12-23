@@ -57,6 +57,18 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         return insert(checklistTemplate)
     }
 
+    suspend fun updateAll(templates: List<ChecklistTemplate>) {
+        withContext(Dispatchers.Default) {
+            awaitAll(
+                *templates.map {
+                    async {
+                        insert(it)
+                    }
+                }.toTypedArray()
+            )
+        }
+    }
+
     suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
         return withContext(Dispatchers.Default) {
             val checklistTemplateId = checklistTemplateDao.insert(

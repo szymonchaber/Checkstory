@@ -3,13 +3,31 @@ package dev.szymonchaber.checkstory.domain.usecase
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onStart
 import javax.inject.Inject
 
 class GetChecklistTemplatesUseCase @Inject constructor(
-    private val checklistRepository: ChecklistTemplateRepository
+    private val checklistRepository: ChecklistTemplateRepository,
+    private val synchronizeDataUseCase: SynchronizeDataUseCase
 ) {
 
     fun getChecklistTemplates(): Flow<List<ChecklistTemplate>> {
-        return checklistRepository.getAll()
+        return checklistRepository.getAll().onStart {
+            synchronizeDataUseCase.synchronizeData()
+        }
     }
+}
+
+class SynchronizeDataUseCase @Inject constructor(
+    private val synchronizer: Synchronizer
+) {
+
+    suspend fun synchronizeData() {
+        synchronizer.synchronize()
+    }
+}
+
+interface Synchronizer {
+
+    suspend fun synchronize()
 }
