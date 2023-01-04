@@ -52,7 +52,8 @@ dependencies {
     Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)
 
-    implementation("io.github.vanpra.compose-material-dialogs:datetime:0.9.0")
+    implementation(Dependencies.composeDialogsDateTime)
+    implementation(Dependencies.composeReorderable)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

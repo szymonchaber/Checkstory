@@ -80,6 +80,10 @@ class Dependencies : Plugin<Project> {
 
         val arrow = "io.arrow-kt:arrow-core:1.0.1"
 
+        val composeDialogsDateTime = "io.github.vanpra.compose-material-dialogs:datetime:0.9.0"
+
+        val composeReorderable = "org.burnoutcrew.composereorderable:reorderable:0.9.6"
+
         val unitTest = listOf(
             "junit:junit:4.13.2",
             "com.google.truth:truth:1.1.3"
