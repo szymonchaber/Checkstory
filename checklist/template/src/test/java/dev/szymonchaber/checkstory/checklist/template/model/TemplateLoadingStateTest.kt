@@ -14,7 +14,7 @@ class TemplateLoadingStateTest {
     fun `given existing and new item with the same id, should update item of the same type only`() {
         // given
         val commonCheckboxId = TemplateCheckboxId(1)
-        val successState = success(listOf(TemplateCheckbox(commonCheckboxId, null, "title", listOf())))
+        val successState = success(listOf(TemplateCheckbox(commonCheckboxId, null, "title", listOf(), 0)))
 
         // when
         val updatedState = successState.plusNewCheckbox("New checkbox").let {
@@ -41,6 +41,7 @@ class TemplateLoadingStateTest {
                 "Description",
                 list,
                 LocalDateTime.now(),
+                listOf(),
                 listOf()
             )
         )
