@@ -3,13 +3,18 @@
 package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -18,6 +23,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
@@ -38,9 +44,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -59,6 +67,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderView
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
+import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
 import dev.szymonchaber.checkstory.checklist.template.views.ParentCheckboxItem
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
@@ -72,6 +81,8 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.ReorderableLazyListState
+import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
@@ -239,7 +250,11 @@ fun EditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     var checkboxes by remember {
-        mutableStateOf(checkboxes())
+        mutableStateOf(
+            checkboxes().flatMap {
+                listOf(it) + it.children
+            }
+        )
     }
     val state = rememberReorderableLazyListState(onMove = { from, to ->
         checkboxes = checkboxes.toMutableList().apply {
@@ -263,16 +278,7 @@ fun EditTemplateView(
             key = { it }
         ) {
             ReorderableItem(state, key = it) { isDragging ->
-                ParentCheckboxItem(
-                    Modifier
-                        .animateItemPlacement()
-                        .padding(start = 16.dp, end = 16.dp),
-                    it,
-                    eventCollector,
-                    state,
-                    isDragging,
-                    state.draggingItemKey != null
-                )
+                WhatAmICheckboxItem(it, eventCollector, state, isDragging, checkboxes)
             }
         }
         item {
@@ -282,18 +288,54 @@ fun EditTemplateView(
                 text = stringResource(R.string.new_checkbox)
             )
         }
-        item {
-            RemindersSection(checklistTemplate, eventCollector)
-        }
-        item {
-            Box(Modifier.fillMaxWidth()) {
-                DeleteButton(
-                    modifier = Modifier
-                        .padding(top = 16.dp)
-                        .align(Alignment.TopCenter)
-                ) {
-                    eventCollector(EditTemplateEvent.DeleteTemplateClicked)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+private fun LazyItemScope.WhatAmICheckboxItem(
+    it: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit,
+    state: ReorderableLazyListState,
+    isDragging: Boolean,
+    checkboxes: List<ViewTemplateCheckbox>
+) {
+    if (it.parentId == null) {
+        ParentCheckboxItem(
+            Modifier.Companion
+                .animateItemPlacement()
+                .padding(start = 16.dp, end = 16.dp),
+            it,
+            eventCollector,
+            state,
+            isDragging,
+            state.draggingItemKey != null
+        )
+    } else {
+        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+        Row(
+            modifier = Modifier
+                .padding(start = 48.dp, top = 8.dp, end = 0.dp)
+                .animateContentSize()
+                .shadow(elevation.value)
+                .background(MaterialTheme.colors.surface)
+        ) {
+            Icon(
+                modifier = Modifier
+                    .detectReorder(state)
+                    .align(Alignment.CenterVertically),
+                painter = painterResource(id = R.drawable.drag_indicator),
+                contentDescription = null
+            )
+            CheckboxItem(
+                modifier = Modifier,
+                title = it.title,
+                it is ViewTemplateCheckbox.New,
+                onTitleChange = {
+//                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox, it, it))
                 }
+            ) {
+//            eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, it))
             }
         }
     }
@@ -307,19 +349,19 @@ private fun checkboxes() = listOf(
         listOf(
             ViewTemplateCheckbox.New(
                 TemplateCheckboxId(1),
-                null,
+                TemplateCheckboxId(0),
                 "Child 1-1",
                 listOf()
             ),
             ViewTemplateCheckbox.New(
                 TemplateCheckboxId(2),
-                null,
+                TemplateCheckboxId(0),
                 "Child 1-2",
                 listOf()
             ),
             ViewTemplateCheckbox.New(
                 TemplateCheckboxId(3),
-                null,
+                TemplateCheckboxId(0),
                 "Child 1-3",
                 listOf()
             )
@@ -332,19 +374,19 @@ private fun checkboxes() = listOf(
         listOf(
             ViewTemplateCheckbox.New(
                 TemplateCheckboxId(5),
-                null,
+                TemplateCheckboxId(4),
                 "Child 2-1",
                 listOf()
             ),
             ViewTemplateCheckbox.New(
                 TemplateCheckboxId(6),
-                null,
+                TemplateCheckboxId(4),
                 "Child 2-2",
                 listOf()
             ),
             ViewTemplateCheckbox.New(
                 TemplateCheckboxId(7),
-                null,
+                TemplateCheckboxId(4),
                 "Child 2-3",
                 listOf()
             )

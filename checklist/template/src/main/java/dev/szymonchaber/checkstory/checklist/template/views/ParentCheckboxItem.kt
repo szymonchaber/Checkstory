@@ -60,7 +60,7 @@ fun ParentCheckboxItem(
             }
         }
         if (!collapseChildren) {
-            ChildrenCheckboxes(checkbox, eventCollector)
+//            ChildrenCheckboxes(checkbox, eventCollector)
         }
     }
 }
