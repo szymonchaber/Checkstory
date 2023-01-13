@@ -261,7 +261,10 @@ fun EditTemplateView(
             add(indexOfFirst { it == to.key }, removeAt(indexOfFirst { it == from.key }))
         }
     }, canDragOver = { a, b ->
+        // TODO is a parent
+        // are children from the same parent
         checkboxes.any { it == a.key }
+                && (a.key as? ViewTemplateCheckbox)?.parentId == (b.key as? ViewTemplateCheckbox)?.parentId
     })
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
@@ -311,6 +314,8 @@ private fun LazyItemScope.WhatAmICheckboxItem(
             isDragging,
             state.draggingItemKey != null
         )
+    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckbox)?.parentId == null) {
+        // do not render if any parent is moved
     } else {
         val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
         Row(
