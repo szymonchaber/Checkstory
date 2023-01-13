@@ -257,11 +257,27 @@ fun EditTemplateView(
         )
     }
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        checkboxes = checkboxes.toMutableList().apply {
-            add(indexOfFirst { it == to.key }, removeAt(indexOfFirst { it == from.key }))
-        }
+        // if parent, then move all its children after it
+        // for both from and to
+        checkboxes = checkboxes.toMutableList()
+            .apply {
+                val newParentIndex = indexOfFirst { it == to.key }
+                add(newParentIndex, removeAt(indexOfFirst { it == from.key }))
+                val fromCheckbox = from.key as? ViewTemplateCheckbox
+                if (fromCheckbox?.parentId == null) {
+                    fromCheckbox?.children?.forEachIndexed { index, child ->
+                        add(newParentIndex + index + 1, removeAt(indexOfFirst { it == child }))
+                    }
+                }
+                val toCheckbox = to.key as? ViewTemplateCheckbox
+                if (toCheckbox?.parentId == null) {
+                    toCheckbox?.children?.forEachIndexed { index, child ->
+                        add(indexOfFirst { it == toCheckbox } + index + 1, removeAt(indexOfFirst { it == child }))
+                    }
+                }
+            }
     }, canDragOver = { a, b ->
-        // TODO is a parent
+        // is a parent
         // are children from the same parent
         checkboxes.any { it == a.key }
                 && (a.key as? ViewTemplateCheckbox)?.parentId == (b.key as? ViewTemplateCheckbox)?.parentId
