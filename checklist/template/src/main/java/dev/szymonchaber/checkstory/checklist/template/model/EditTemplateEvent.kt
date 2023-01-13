@@ -15,6 +15,8 @@ sealed interface EditTemplateEvent {
 
     data class ItemRemoved(val checkbox: ViewTemplateCheckbox) : EditTemplateEvent
 
+    data class ParentItemsSwapped(val from: ViewTemplateCheckbox, val to: ViewTemplateCheckbox) : EditTemplateEvent
+
     data class ItemTitleChanged(val checkbox: ViewTemplateCheckbox, val newTitle: String) : EditTemplateEvent
 
     data class ChildItemAdded(val parent: ViewTemplateCheckbox) : EditTemplateEvent

@@ -58,6 +58,7 @@ class EditTemplateViewModel @Inject constructor(
             handleDescriptionChanged(),
             handleAddCheckboxClicked(),
             handleItemRemoved(),
+            handleItemsSwapped(),
             handleItemTitleChanged(),
             handleSaveTemplateClicked(),
             handleDeleteTemplateClicked(),
@@ -156,6 +157,15 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
+    private fun Flow<EditTemplateEvent>.handleItemsSwapped(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ParentItemsSwapped>()
+            .withSuccessState()
+            .map { (loadingState, event) ->
+                tracker.logEvent("parent_checkbox_reordered")
+                EditTemplateState(loadingState.withSwappedCheckboxes(event.from, event.to)) to null
+            }
+    }
+
     private fun Flow<EditTemplateEvent>.handleChildItemAdded(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
             .withSuccessState()
@@ -212,7 +222,9 @@ class EditTemplateViewModel @Inject constructor(
                             title = title.trimEnd(),
                             description = description.trim(),
                             items = loadingState.checkboxes.map(ViewTemplateCheckbox::toDomainModel)
-                                .map { it.copy(title = it.title.trimEnd()) })
+                                .mapIndexed { index, it ->
+                                    it.copy(title = it.title.trimEnd(), sortPosition = index.toLong())
+                                })
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)

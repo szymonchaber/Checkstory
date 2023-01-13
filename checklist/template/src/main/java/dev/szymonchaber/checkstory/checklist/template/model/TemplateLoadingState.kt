@@ -52,6 +52,14 @@ sealed interface TemplateLoadingState {
             )
         }
 
+        fun withSwappedCheckboxes(from: ViewTemplateCheckbox, to: ViewTemplateCheckbox): TemplateLoadingState {
+            return copy(
+                checkboxes = checkboxes.toMutableList().apply {
+                    add(indexOfFirst { it == to }, removeAt(indexOfFirst { it == from }))
+                }
+            )
+        }
+
         fun plusChildCheckbox(parent: ViewTemplateCheckbox, title: String): Success {
             return copy(
                 checkboxes = checkboxes.update(parent) {

@@ -58,6 +58,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderView
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
+import dev.szymonchaber.checkstory.checklist.template.views.ParentCheckboxItem
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
@@ -68,6 +69,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination("edit_template_screen", start = true)
@@ -226,7 +230,6 @@ private fun EditTemplateScaffold(
     )
 }
 
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
@@ -234,22 +237,42 @@ fun EditTemplateView(
     checkboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
+    val state = rememberReorderableLazyListState(onMove = { from, to ->
+        eventCollector(
+            EditTemplateEvent.ParentItemsSwapped(
+                from = from.key as ViewTemplateCheckbox,
+                to = to.key as ViewTemplateCheckbox
+            )
+        )
+    }, canDragOver = { a, b ->
+        checkboxes.any { it == a.key }
+    })
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        state = state.listState,
+        modifier = Modifier
+            .reorderable(state)
     ) {
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
         items(
-            checkboxes,
-//            key = { it.id.id } // TODO causes crashes & animations don't work anyways - fix at some point
+            items = checkboxes,
+            key = { it }
         ) {
-            ParentCheckboxItem(
-                Modifier
-                    .animateItemPlacement()
-                    .padding(start = 16.dp, end = 16.dp), it, eventCollector
-            )
+            ReorderableItem(state, key = it) { isDragging ->
+                ParentCheckboxItem(
+                    Modifier
+                        .animateItemPlacement()
+                        .padding(start = 16.dp, end = 16.dp),
+                    it,
+                    eventCollector,
+                    state,
+                    isDragging,
+                    state.draggingItemKey != null
+                )
+            }
         }
         item {
             AddButton(
