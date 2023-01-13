@@ -80,6 +80,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
+import org.burnoutcrew.reorderable.ItemPosition
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.detectReorder
@@ -263,24 +264,26 @@ fun EditTemplateView(
             .apply {
                 val newParentIndex = indexOfFirst { it == to.key }
                 add(newParentIndex, removeAt(indexOfFirst { it == from.key }))
-                val fromCheckbox = from.key as? ViewTemplateCheckbox
+                val fromCheckbox = from.checkbox
                 if (fromCheckbox?.parentId == null) {
                     fromCheckbox?.children?.forEachIndexed { index, child ->
                         add(newParentIndex + index + 1, removeAt(indexOfFirst { it == child }))
                     }
                 }
-                val toCheckbox = to.key as? ViewTemplateCheckbox
+                val toCheckbox = to.checkbox
                 if (toCheckbox?.parentId == null) {
                     toCheckbox?.children?.forEachIndexed { index, child ->
                         add(indexOfFirst { it == toCheckbox } + index + 1, removeAt(indexOfFirst { it == child }))
                     }
                 }
             }
-    }, canDragOver = { a, b ->
-        // is a parent
-        // are children from the same parent
-        checkboxes.any { it == a.key }
-                && (a.key as? ViewTemplateCheckbox)?.parentId == (b.key as? ViewTemplateCheckbox)?.parentId
+    }, canDragOver = { draggedOver, dragging ->
+        checkboxes.any { it == draggedOver.key }
+//        && (((dragging.checkbox)?.isParent == true || draggedOver.index > 1)
+                // is draggedOver parent
+                // are children from the same parent
+                && (draggedOver.checkbox)?.parentId == (dragging.checkbox)?.parentId
+//        )
     })
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
@@ -532,3 +535,8 @@ private fun ChecklistTemplateDetails(
         text = stringResource(R.string.items)
     )
 }
+
+val ItemPosition.checkbox: ViewTemplateCheckbox?
+    get() {
+        return key as? ViewTemplateCheckbox
+    }
