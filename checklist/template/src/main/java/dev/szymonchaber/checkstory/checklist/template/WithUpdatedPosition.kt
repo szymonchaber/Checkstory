@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template
 
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import org.burnoutcrew.reorderable.ItemPosition
 import timber.log.Timber
 
@@ -36,13 +37,13 @@ private fun areParentsMoving(fromCheckbox: ViewTemplateCheckbox, toCheckbox: Vie
 }
 
 private fun MutableList<ViewTemplateCheckbox>.moveParent(
-    fromCheckbox: ViewTemplateCheckbox,
-    toCheckbox: ViewTemplateCheckbox
+    checkbox: ViewTemplateCheckbox,
+    toPositionOf: ViewTemplateCheckbox
 ) {
-    val toIndex = indexOfFirst { it == toCheckbox }
-    add(toIndex, removeAt(indexOfFirst { it == fromCheckbox }))
+    val toIndex = indexOfFirst { it == toPositionOf }
+    add(toIndex, removeAt(indexOfFirst { it == checkbox }))
 
-    fromCheckbox.children.forEachIndexed { index, child ->
+    checkbox.children.forEachIndexed { index, child ->
         val element = removeAt(indexOfFirst { it == child })
         val targetIndex = toIndex + index + 1
         if (targetIndex >= size) {
@@ -51,23 +52,50 @@ private fun MutableList<ViewTemplateCheckbox>.moveParent(
             add(toIndex + index + 1, element)
         }
     }
-    toCheckbox.children.forEachIndexed { index, child ->
-        add(indexOfFirst { it == toCheckbox } + index + 1, removeAt(indexOfFirst { it == child }))
+    toPositionOf.children.forEachIndexed { index, child ->
+        add(indexOfFirst { it == toPositionOf } + index + 1, removeAt(indexOfFirst { it == child }))
     }
 }
 
 private fun MutableList<ViewTemplateCheckbox>.moveChild(
-    fromCheckbox: ViewTemplateCheckbox,
-    toCheckbox: ViewTemplateCheckbox
+    child: ViewTemplateCheckbox,
+    toPositionOf: ViewTemplateCheckbox
 ) {
-    val fromIndex = indexOfFirst { it == fromCheckbox }
-    val toIndex = indexOfFirst { it == toCheckbox }
-    // TODO jak sub-task idzie w dół, to "to" jest docelowym parentem
-    // TODO ale jak sub-task idzie w górę, to "to" jest jego obecnym parentem - wtedy index -1 żeby znaleźć parenta
-    // TODO reszta tak samo
+    val fromIndex = indexOfFirst { it == child }
+    val toIndex = indexOfFirst { it == toPositionOf }
     val isMovingUp = fromIndex > toIndex
-    val toParent = if (toCheckbox.isChild) {
-        toCheckbox.parentId
+    val toParent = findNewParentId(toPositionOf, isMovingUp, toIndex)
+    add(toIndex, removeAt(fromIndex))
+    val oldParentIndex = indexOfFirst { it.id == child.parentId }
+    val oldParent = removeAt(oldParentIndex)
+    add(oldParentIndex, oldParent.minusChildCheckbox(child))
+    val newParentIndex = indexOfFirst { it.id == toParent }
+    val withUpdatedParentId = child.withUpdatedParentId(toParent)
+    val newLocalIndex = if (toPositionOf.isChild) {
+        toIndex - newParentIndex - 1
+    } else {
+        if (isMovingUp) {
+            null
+        } else {
+            0
+        }
+    }
+    val newParent = removeAt(newParentIndex)
+    add(
+        newParentIndex,
+        newParent.plusChildCheckbox(withUpdatedParentId, newLocalIndex)
+    )
+    removeAt(toIndex)
+    add(toIndex, withUpdatedParentId)
+}
+
+private fun MutableList<ViewTemplateCheckbox>.findNewParentId(
+    toIndexOf: ViewTemplateCheckbox,
+    isMovingUp: Boolean,
+    toIndex: Int
+): TemplateCheckboxId? {
+    return if (toIndexOf.isChild) {
+        toIndexOf.parentId
     } else {
         if (isMovingUp) {
             val itemThatIsParentOrChildOfTargetParent = get(toIndex - 1)
@@ -77,31 +105,9 @@ private fun MutableList<ViewTemplateCheckbox>.moveChild(
                 itemThatIsParentOrChildOfTargetParent.id
             }
         } else {
-            toCheckbox.id
+            toIndexOf.id
         }
     }
-    add(toIndex, removeAt(fromIndex))
-    val oldParentIndex = indexOfFirst { it.id == fromCheckbox.parentId }
-    val oldParent = removeAt(oldParentIndex)
-    add(oldParentIndex, oldParent.minusChildCheckbox(fromCheckbox))
-    val newParentIndex = indexOfFirst { it.id == toParent }
-    val newParent = removeAt(newParentIndex)
-    val withUpdatedParentId = fromCheckbox.withUpdatedParentId(toParent)
-    val newLocalIndex = if (toCheckbox.isChild) {
-        toIndex - newParentIndex - 1
-    } else {
-        if (isMovingUp) {
-            null
-        } else {
-            0
-        }
-    }
-    add(
-        newParentIndex,
-        newParent.plusChildCheckbox(withUpdatedParentId, newLocalIndex)
-    )
-    removeAt(toIndex)
-    add(toIndex, withUpdatedParentId)
 }
 
 fun renderList(checkboxes: MutableList<ViewTemplateCheckbox>): String {
