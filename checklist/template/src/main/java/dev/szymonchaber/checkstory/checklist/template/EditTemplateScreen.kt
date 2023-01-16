@@ -86,7 +86,6 @@ import org.burnoutcrew.reorderable.ReorderableLazyListState
 import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
-import timber.log.Timber
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination("edit_template_screen", start = true)
@@ -259,70 +258,7 @@ fun EditTemplateView(
         )
     }
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        checkboxes = checkboxes.toMutableList()
-            .apply {
-                Timber.d("Items before moving:\n${renderList(this)}")
-                val newIndex = indexOfFirst { it == to.key }
-                val fromCheckbox = from.checkbox
-                val toCheckbox = to.checkbox
-                if (fromCheckbox?.isParent == true && toCheckbox?.isParent == true) {
-                    // TODO just offset the moved one by children of the static one!
-                    add(newIndex, removeAt(indexOfFirst { it == fromCheckbox }))
-
-                    fromCheckbox.children.forEachIndexed { index, child ->
-                        add(newIndex + index + 1, removeAt(indexOfFirst { it == child }))
-                    }
-                    toCheckbox.children.forEachIndexed { index, child ->
-                        add(indexOfFirst { it == toCheckbox } + index + 1, removeAt(indexOfFirst { it == child }))
-                    }
-                }
-
-                if (fromCheckbox?.isChild == true) {
-                    // TODO jak sub-task idzie w dół, to "to" jest docelowym parentem
-                    // TODO ale jak sub-task idzie w górę, to "to" jest jego obecnym parentem - wtedy index -1 żeby znaleźć parenta
-                    // TODO reszta tak samo
-                    val isMovingUp = from.index > to.index
-                    Timber.d("Moving from: $fromCheckbox")
-                    Timber.d("Moving to: $toCheckbox")
-                    val toParent = if (toCheckbox!!.isChild == true) {
-                        toCheckbox.parentId
-                    } else {
-                        if (isMovingUp) {
-                            val itemThatIsParentOrChildOfTargetParent = get(to.index - 2) // TODO why the fuck 2?
-                            if (itemThatIsParentOrChildOfTargetParent.isChild) {
-                                itemThatIsParentOrChildOfTargetParent.parentId
-                            } else {
-                                itemThatIsParentOrChildOfTargetParent.id
-                            }
-                        } else {
-                            toCheckbox.id
-                        }
-                    }
-                    add(newIndex, removeAt(indexOfFirst { it == from.key }))
-                    val oldParentIndex = indexOfFirst { it.id == fromCheckbox.parentId }
-                    val oldParent = removeAt(oldParentIndex)
-                    add(oldParentIndex, oldParent.minusChildCheckbox(fromCheckbox))
-                    val newParentIndex = indexOfFirst { it.id == toParent }
-                    val newParent = removeAt(newParentIndex)
-                    val withUpdatedParentId = fromCheckbox.withUpdatedParentId(toParent)
-                    val newLocalIndex = if (toCheckbox.isChild) {
-                        newParent.children.indexOf(toCheckbox)
-                    } else {
-                        if (isMovingUp) {
-                            null
-                        } else {
-                            0
-                        }
-                    }
-                    add(
-                        newParentIndex,
-                        newParent.plusChildCheckbox(withUpdatedParentId, newLocalIndex)
-                    )
-                    removeAt(newIndex)
-                    add(newIndex, withUpdatedParentId)
-                }
-                Timber.d("Items after moving:\n${renderList(this)}")
-            }
+        checkboxes = withUpdatedPosition(checkboxes, to, from)
     }, canDragOver = { draggedOver, dragging ->
         checkboxes.any { it == draggedOver.key }
                 && ((dragging.checkbox)?.isParent == true || draggedOver.index > 1)
@@ -354,15 +290,6 @@ fun EditTemplateView(
                 text = stringResource(R.string.new_checkbox)
             )
         }
-    }
-}
-
-private fun renderList(checkboxes: MutableList<ViewTemplateCheckbox>): String {
-    return checkboxes.joinToString("\n") { parent ->
-        val formattedChildren = parent.children.joinToString("\n") {
-            "|       ${it.title}"
-        }
-        "${parent.title}\n$formattedChildren"
     }
 }
 
