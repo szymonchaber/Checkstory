@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template
 
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import org.burnoutcrew.reorderable.ItemPosition
@@ -7,13 +8,15 @@ import org.burnoutcrew.reorderable.ItemPosition
 fun withUpdatedPosition(
     checkboxes: List<ViewTemplateCheckbox>,
     from: ItemPosition,
-    to: ItemPosition
+    to: ItemPosition,
+    eventCollector: (EditTemplateEvent) -> Unit = {}
 ): List<ViewTemplateCheckbox> {
     return checkboxes.toMutableList()
         .apply {
             val fromCheckbox = from.checkbox!!
             val toCheckbox = to.checkbox!!
             if (areParentsMoving(fromCheckbox, toCheckbox)) {
+                eventCollector(EditTemplateEvent.ParentItemsSwapped(fromCheckbox, toCheckbox))
                 moveParent(fromCheckbox, toCheckbox)
             }
             if (isChildMoving(fromCheckbox)) {

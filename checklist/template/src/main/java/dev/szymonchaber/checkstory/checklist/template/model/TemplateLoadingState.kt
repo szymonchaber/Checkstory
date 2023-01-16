@@ -4,6 +4,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
+import timber.log.Timber
 
 sealed interface TemplateLoadingState {
 
@@ -57,7 +58,9 @@ sealed interface TemplateLoadingState {
                 checkboxes = checkboxes.toMutableList().apply {
                     add(indexOfFirst { it == to }, removeAt(indexOfFirst { it == from }))
                 }
-            )
+            ).also {
+                Timber.d("Checkboxes swapped! New state:\n${it.checkboxes.joinToString("\n") { it.title }}")
+            }
         }
 
         fun plusChildCheckbox(parent: ViewTemplateCheckbox, title: String): Success {

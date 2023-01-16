@@ -41,7 +41,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -230,7 +229,7 @@ private fun EditTemplateScaffold(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    EditTemplateView(loadingState.checklistTemplate, viewModel::onEvent)
+                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent)
                 }
             }
         },
@@ -248,17 +247,14 @@ private fun EditTemplateScaffold(
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
+    viewCheckboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    var checkboxes by remember {
-        mutableStateOf(
-            checkboxes().flatMap {
-                listOf(it) + it.children
-            }
-        )
+    val checkboxes = viewCheckboxes.flatMap {
+        listOf(it) + it.children
     }
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        checkboxes = withUpdatedPosition(checkboxes, from, to)
+        withUpdatedPosition(checkboxes, from, to, eventCollector)
     }, canDragOver = { draggedOver, dragging ->
         checkboxes.any { it == draggedOver.key }
                 && ((dragging.checkbox)?.isParent == true || draggedOver.index > 1)
