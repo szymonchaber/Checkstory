@@ -258,7 +258,7 @@ fun EditTemplateView(
         )
     }
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        checkboxes = withUpdatedPosition(checkboxes, to, from)
+        checkboxes = withUpdatedPosition(checkboxes, from, to)
     }, canDragOver = { draggedOver, dragging ->
         checkboxes.any { it == draggedOver.key }
                 && ((dragging.checkbox)?.isParent == true || draggedOver.index > 1)
@@ -345,7 +345,7 @@ private fun LazyItemScope.WhatAmICheckboxItem(
     }
 }
 
-private fun checkboxes() = listOf(
+fun checkboxes() = listOf(
     ViewTemplateCheckbox.New(
         TemplateCheckboxId(0),
         null,
