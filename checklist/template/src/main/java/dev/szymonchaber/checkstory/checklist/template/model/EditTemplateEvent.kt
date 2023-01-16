@@ -37,6 +37,13 @@ sealed interface EditTemplateEvent {
 
     data class DeleteReminderClicked(val reminder: Reminder) : EditTemplateEvent
 
+    data class ChildItemMoved(
+        val child: ViewTemplateCheckbox,
+        val oldParent: ViewTemplateCheckbox,
+        val newParent: ViewTemplateCheckbox,
+        val newLocalIndex: Int?
+    ) : EditTemplateEvent
+
     object AddCheckboxClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent

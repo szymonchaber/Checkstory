@@ -193,5 +193,11 @@ fun List<ViewTemplateCheckbox>.update(
     viewTemplateCheckbox: ViewTemplateCheckbox,
     updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
 ): List<ViewTemplateCheckbox> {
-    return update(viewTemplateCheckbox, { it }, updater)
+    return update(
+        viewTemplateCheckbox.id,
+        {
+            it.id // TODO it was "it" before - will it work still?
+        },
+        updater
+    )
 }

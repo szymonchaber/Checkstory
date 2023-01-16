@@ -17,10 +17,10 @@ fun withUpdatedPosition(
             val toCheckbox = to.checkbox!!
             if (areParentsMoving(fromCheckbox, toCheckbox)) {
                 eventCollector(EditTemplateEvent.ParentItemsSwapped(fromCheckbox, toCheckbox))
-                moveParent(fromCheckbox, toCheckbox)
+//                moveParent(fromCheckbox, toCheckbox)
             }
             if (isChildMoving(fromCheckbox)) {
-                moveChild(fromCheckbox, toCheckbox)
+                moveChild(fromCheckbox, toCheckbox, eventCollector)
             }
         }
 }
@@ -54,7 +54,8 @@ private fun MutableList<ViewTemplateCheckbox>.moveParent(
 
 private fun MutableList<ViewTemplateCheckbox>.moveChild(
     child: ViewTemplateCheckbox,
-    toPositionOf: ViewTemplateCheckbox
+    toPositionOf: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val fromIndex = indexOfFirst { it == child }
     val toIndex = indexOfFirst { it == toPositionOf }
@@ -82,6 +83,7 @@ private fun MutableList<ViewTemplateCheckbox>.moveChild(
     )
     removeAt(toIndex)
     add(toIndex, withUpdatedParentId)
+    eventCollector(EditTemplateEvent.ChildItemMoved(child, oldParent, newParent, newLocalIndex))
 }
 
 private fun MutableList<ViewTemplateCheckbox>.findNewParentId(
