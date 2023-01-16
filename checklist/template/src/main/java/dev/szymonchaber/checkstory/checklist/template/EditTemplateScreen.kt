@@ -258,31 +258,53 @@ fun EditTemplateView(
         )
     }
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        // if parent, then move all its children after it
-        // for both from and to
         checkboxes = checkboxes.toMutableList()
             .apply {
-                val newParentIndex = indexOfFirst { it == to.key }
-                add(newParentIndex, removeAt(indexOfFirst { it == from.key }))
+                val newIndex = indexOfFirst { it == to.key }
                 val fromCheckbox = from.checkbox
-                if (fromCheckbox?.parentId == null) {
-                    fromCheckbox?.children?.forEachIndexed { index, child ->
-                        add(newParentIndex + index + 1, removeAt(indexOfFirst { it == child }))
-                    }
-                }
                 val toCheckbox = to.checkbox
-                if (toCheckbox?.parentId == null) {
-                    toCheckbox?.children?.forEachIndexed { index, child ->
+                if (fromCheckbox?.isParent == true && toCheckbox?.isParent == true) {
+                    // TODO just offset the moved one by children of the static one!
+                    add(newIndex, removeAt(indexOfFirst { it == fromCheckbox }))
+
+                    fromCheckbox.children.forEachIndexed { index, child ->
+                        add(newIndex + index + 1, removeAt(indexOfFirst { it == child }))
+                    }
+                    toCheckbox.children.forEachIndexed { index, child ->
                         add(indexOfFirst { it == toCheckbox } + index + 1, removeAt(indexOfFirst { it == child }))
                     }
+                }
+
+                if (fromCheckbox?.isChild == true) {
+                    val toParent = if (toCheckbox?.isChild == true) {
+                        toCheckbox.parentId
+                    } else {
+                        toCheckbox!!.id
+                    }
+                    add(newIndex, removeAt(indexOfFirst { it == from.key }))
+                    val oldParentIndex = indexOfFirst { it.id == fromCheckbox.parentId }
+                    val oldParent = removeAt(oldParentIndex)
+                    add(oldParentIndex, oldParent.minusChildCheckbox(fromCheckbox))
+                    val newParentIndex = indexOfFirst { it.id == toParent }
+                    val newParent = removeAt(newParentIndex)
+                    val withUpdatedParentId = fromCheckbox.withUpdatedParentId(toParent)
+                    val newLocalIndex = if (toCheckbox.isChild) {
+                        newParent.children.indexOf(toCheckbox)
+                    } else {
+                        0
+                    }
+                    add(
+                        newParentIndex,
+                        newParent.plusChildCheckbox(withUpdatedParentId, newLocalIndex)
+                    )
+                    removeAt(newIndex)
+                    add(newIndex, withUpdatedParentId)
                 }
             }
     }, canDragOver = { draggedOver, dragging ->
         checkboxes.any { it == draggedOver.key }
-//        && (((dragging.checkbox)?.isParent == true || draggedOver.index > 1)
-                // is draggedOver parent
-                // are children from the same parent
-                && (draggedOver.checkbox)?.parentId == (dragging.checkbox)?.parentId
+                && ((dragging.checkbox)?.isParent == true || draggedOver.index > 1)
+                && !(draggedOver.checkbox?.isChild == true && dragging.checkbox?.isParent == true)
 //        )
     })
     LazyColumn(

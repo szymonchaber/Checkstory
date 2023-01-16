@@ -10,6 +10,11 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     val parentId: TemplateCheckboxId?
     val title: String
     val children: List<ViewTemplateCheckbox>
+    val isParent: Boolean
+        get() = parentId == null
+
+    val isChild: Boolean
+        get() = !isParent
 
     fun withUpdatedTitle(title: String): ViewTemplateCheckbox
 
@@ -17,9 +22,13 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun plusChildCheckbox(title: String): ViewTemplateCheckbox
 
+    fun plusChildCheckbox(viewTemplateCheckbox: ViewTemplateCheckbox, index: Int? = null): ViewTemplateCheckbox
+
     fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox
 
     fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox
+
+    fun withUpdatedParentId(parentId: TemplateCheckboxId?): ViewTemplateCheckbox
 
     data class New(
         override val id: TemplateCheckboxId,
@@ -44,6 +53,10 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             return copy(title = title)
         }
 
+        override fun withUpdatedParentId(parentId: TemplateCheckboxId?): ViewTemplateCheckbox {
+            return copy(parentId = parentId)
+        }
+
         override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
             return copy(
                 children = children.plus(
@@ -54,6 +67,23 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         listOf()
                     )
                 )
+            )
+        }
+
+        override fun plusChildCheckbox(
+            viewTemplateCheckbox: ViewTemplateCheckbox,
+            index: Int?
+        ): ViewTemplateCheckbox {
+            return copy(
+                children = children.toMutableList().apply {
+                    index?.let {
+                        add(it, viewTemplateCheckbox)
+                    } ?: kotlin.run {
+                        add(
+                            viewTemplateCheckbox
+                        )
+                    }
+                }
             )
         }
 
@@ -95,6 +125,10 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             return copy(title = title)
         }
 
+        override fun withUpdatedParentId(parentId: TemplateCheckboxId?): ViewTemplateCheckbox {
+            return copy(parentId = parentId)
+        }
+
         override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
             return copy(
                 children = children.plus(
@@ -105,6 +139,23 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         listOf()
                     )
                 )
+            )
+        }
+
+        override fun plusChildCheckbox(
+            viewTemplateCheckbox: ViewTemplateCheckbox,
+            index: Int?
+        ): ViewTemplateCheckbox {
+            return copy(
+                children = children.toMutableList().apply {
+                    index?.let {
+                        add(it, viewTemplateCheckbox)
+                    } ?: kotlin.run {
+                        add(
+                            viewTemplateCheckbox
+                        )
+                    }
+                }
             )
         }
 
