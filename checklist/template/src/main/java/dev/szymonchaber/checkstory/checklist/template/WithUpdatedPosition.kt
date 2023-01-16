@@ -3,7 +3,6 @@ package dev.szymonchaber.checkstory.checklist.template
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import org.burnoutcrew.reorderable.ItemPosition
-import timber.log.Timber
 
 fun withUpdatedPosition(
     checkboxes: List<ViewTemplateCheckbox>,
@@ -12,12 +11,6 @@ fun withUpdatedPosition(
 ): List<ViewTemplateCheckbox> {
     return checkboxes.toMutableList()
         .apply {
-            Timber.d(
-                "Moving:\n" +
-                        "from: ${from.key}\n" +
-                        "to: ${to.key}"
-            )
-            Timber.d("Items before moving:\n${renderList(this)}")
             val fromCheckbox = from.checkbox!!
             val toCheckbox = to.checkbox!!
             if (areParentsMoving(fromCheckbox, toCheckbox)) {
@@ -26,7 +19,6 @@ fun withUpdatedPosition(
             if (isChildMoving(fromCheckbox)) {
                 moveChild(fromCheckbox, toCheckbox)
             }
-            Timber.d("Items after moving:\n${renderList(this)}")
         }
 }
 
@@ -107,14 +99,5 @@ private fun MutableList<ViewTemplateCheckbox>.findNewParentId(
         } else {
             toIndexOf.id
         }
-    }
-}
-
-fun renderList(checkboxes: MutableList<ViewTemplateCheckbox>): String {
-    return checkboxes.joinToString("\n") { parent ->
-        val formattedChildren = parent.children.joinToString("\n") {
-            "|       ${it.title}"
-        }
-        "${parent.title}\n$formattedChildren"
     }
 }
