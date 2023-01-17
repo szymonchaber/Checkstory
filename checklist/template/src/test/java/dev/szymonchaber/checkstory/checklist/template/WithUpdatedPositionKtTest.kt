@@ -369,4 +369,25 @@ internal class WithUpdatedPositionKtTest {
         assertThat(result[1].children[3].title).isEqualTo("Child 1-3")
     }
     // endregion
+
+    private fun checkboxes(): List<ViewTemplateCheckbox.New> {
+        var globalIndex = 0L
+        return List(4) { parentIndex ->
+            ViewTemplateCheckbox.New(
+                TemplateCheckboxId(globalIndex++),
+                null,
+                true,
+                "Item ${parentIndex + 1}",
+                List(3) {
+                    ViewTemplateCheckbox.New(
+                        TemplateCheckboxId(globalIndex++),
+                        TemplateCheckboxId(0),
+                        false,
+                        "Child ${parentIndex + 1}-${it + 1}",
+                        listOf()
+                    )
+                }
+            )
+        }
+    }
 }

@@ -342,67 +342,6 @@ private fun LazyItemScope.WhatAmICheckboxItem(
     }
 }
 
-fun checkboxes() = listOf(
-    ViewTemplateCheckbox.New(
-        TemplateCheckboxId(0),
-        null,
-        true,
-        "Item 1",
-        listOf(
-            ViewTemplateCheckbox.New(
-                TemplateCheckboxId(1),
-                TemplateCheckboxId(0),
-                false,
-                "Child 1-1",
-                listOf()
-            ),
-            ViewTemplateCheckbox.New(
-                TemplateCheckboxId(2),
-                TemplateCheckboxId(0),
-                false,
-                "Child 1-2",
-                listOf()
-            ),
-            ViewTemplateCheckbox.New(
-                TemplateCheckboxId(3),
-                TemplateCheckboxId(0),
-                false,
-                "Child 1-3",
-                listOf()
-            )
-        )
-    ),
-    ViewTemplateCheckbox.New(
-        TemplateCheckboxId(4),
-        null,
-        true,
-        "Item 2",
-        listOf(
-            ViewTemplateCheckbox.New(
-                TemplateCheckboxId(5),
-                TemplateCheckboxId(4),
-                false,
-                "Child 2-1",
-                listOf()
-            ),
-            ViewTemplateCheckbox.New(
-                TemplateCheckboxId(6),
-                TemplateCheckboxId(4),
-                false,
-                "Child 2-2",
-                listOf()
-            ),
-            ViewTemplateCheckbox.New(
-                TemplateCheckboxId(7),
-                TemplateCheckboxId(4),
-                false,
-                "Child 2-3",
-                listOf()
-            )
-        )
-    )
-)
-
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun InlineBack(
