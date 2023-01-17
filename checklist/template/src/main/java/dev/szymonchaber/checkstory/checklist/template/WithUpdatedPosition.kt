@@ -59,10 +59,9 @@ private fun MutableList<ViewTemplateCheckbox>.moveChild(
     val fromIndex = indexOfFirst { it == child }
     val toIndex = indexOfFirst { it == toPositionOf }
     val isMovingUp = fromIndex > toIndex
-    add(toIndex, removeAt(fromIndex))
-    val oldParentIndex = indexOfFirst { it.id == child.parentId }
-    val oldParent = get(oldParentIndex)
+    val (oldParentIndex, oldParent) = findClosestParentBelow(fromIndex)
     replace(oldParentIndex, oldParent.minusChildCheckbox(child))
+    add(toIndex, removeAt(fromIndex))
     val (newParentIndex, newParent) = findClosestParentBelow(toIndex)
     val newLocalIndex = if (toPositionOf.isChild) {
         toIndex - newParentIndex - 1
