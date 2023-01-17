@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import dev.szymonchaber.checkstory.checklist.template.wrapReorderChanges
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -162,6 +163,11 @@ sealed interface TemplateLoadingState {
             return updateTemplate {
                 copy(reminders = reminders.minus(reminder))
             }.copy(remindersToDelete = updatedRemindersToDelete)
+        }
+
+        fun withMovedUnwrappedCheckbox(from: ViewTemplateCheckbox, to: ViewTemplateCheckbox): TemplateLoadingState {
+            val wrappedList = wrapReorderChanges(unwrappedCheckboxes, from, to)
+            return copy(checkboxes = wrappedList)
         }
 
         companion object {

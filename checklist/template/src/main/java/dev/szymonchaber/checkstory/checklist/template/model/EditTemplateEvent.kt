@@ -44,6 +44,11 @@ sealed interface EditTemplateEvent {
         val newLocalIndex: Int?
     ) : EditTemplateEvent
 
+    data class OnUnwrappedCheckboxMoved(
+        val from: ViewTemplateCheckbox,
+        val to: ViewTemplateCheckbox
+    ) : EditTemplateEvent
+
     object AddCheckboxClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent
