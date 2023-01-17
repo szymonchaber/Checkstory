@@ -98,11 +98,13 @@ fun ParentCheckboxItemPreview() {
     val checkbox = ViewTemplateCheckbox.Existing(
         TemplateCheckboxId(0),
         null,
+        true,
         "Checkbox 1",
         listOf(
             ViewTemplateCheckbox.Existing(
                 TemplateCheckboxId(0),
                 null,
+                false,
                 "Checkbox 1",
                 listOf()
             )

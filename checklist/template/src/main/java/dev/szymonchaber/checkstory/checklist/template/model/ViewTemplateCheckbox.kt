@@ -11,7 +11,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     val title: String
     val children: List<ViewTemplateCheckbox>
     val isParent: Boolean
-        get() = parentId == null
 
     val isChild: Boolean
         get() = !isParent
@@ -33,6 +32,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     data class New(
         override val id: TemplateCheckboxId,
         override val parentId: TemplateCheckboxId?,
+        override val isParent: Boolean,
         override val title: String,
         override val children: List<ViewTemplateCheckbox>
     ) : ViewTemplateCheckbox {
@@ -63,6 +63,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                     New(
                         TemplateCheckboxId(children.size.toLong()),
                         null,
+                        false,
                         title,
                         listOf()
                     )
@@ -105,6 +106,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     data class Existing(
         override val id: TemplateCheckboxId,
         override val parentId: TemplateCheckboxId?,
+        override val isParent: Boolean,
         override val title: String,
         override val children: List<ViewTemplateCheckbox>
     ) : ViewTemplateCheckbox {
@@ -135,6 +137,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                     New(
                         TemplateCheckboxId(children.size.toLong()),
                         null,
+                        false,
                         title,
                         listOf()
                     )
@@ -180,6 +183,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                     Existing(
                         id = id,
                         parentId = parentId,
+                        parentId == null,
                         title = title,
                         children = children.map { fromDomainModel(it) }
                     )

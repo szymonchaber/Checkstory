@@ -33,6 +33,7 @@ sealed interface TemplateLoadingState {
                     ViewTemplateCheckbox.New(
                         TemplateCheckboxId(checkboxes.size.toLong()),
                         null,
+                        true,
                         title,
                         listOf()
                     )
