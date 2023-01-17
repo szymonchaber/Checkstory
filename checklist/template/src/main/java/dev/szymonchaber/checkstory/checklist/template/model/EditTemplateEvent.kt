@@ -15,8 +15,6 @@ sealed interface EditTemplateEvent {
 
     data class ItemRemoved(val checkbox: ViewTemplateCheckbox) : EditTemplateEvent
 
-    data class ParentItemsSwapped(val from: ViewTemplateCheckbox, val to: ViewTemplateCheckbox) : EditTemplateEvent
-
     data class ItemTitleChanged(val checkbox: ViewTemplateCheckbox, val newTitle: String) : EditTemplateEvent
 
     data class ChildItemAdded(val parent: ViewTemplateCheckbox) : EditTemplateEvent
@@ -36,13 +34,6 @@ sealed interface EditTemplateEvent {
     data class ReminderSaved(val reminder: Reminder) : EditTemplateEvent
 
     data class DeleteReminderClicked(val reminder: Reminder) : EditTemplateEvent
-
-    data class ChildItemMoved(
-        val child: ViewTemplateCheckbox,
-        val oldParent: ViewTemplateCheckbox,
-        val newParent: ViewTemplateCheckbox,
-        val newLocalIndex: Int?
-    ) : EditTemplateEvent
 
     data class OnUnwrappedCheckboxMoved(
         val from: ViewTemplateCheckbox,

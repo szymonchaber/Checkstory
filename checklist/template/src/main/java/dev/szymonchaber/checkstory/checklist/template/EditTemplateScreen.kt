@@ -350,12 +350,12 @@ private fun InlineBack(
     checklistTemplate: ChecklistTemplate
 ) {
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        eventCollector(
-            EditTemplateEvent.ParentItemsSwapped(
-                from = from.key as ViewTemplateCheckbox,
-                to = to.key as ViewTemplateCheckbox
-            )
-        )
+//        eventCollector(
+//            EditTemplateEvent.ParentItemsSwapped(
+//                from = from.key as ViewTemplateCheckbox,
+//                to = to.key as ViewTemplateCheckbox
+//            )
+//        )
     }, canDragOver = { a, b ->
         checkboxes.any { it == a.key }
     })

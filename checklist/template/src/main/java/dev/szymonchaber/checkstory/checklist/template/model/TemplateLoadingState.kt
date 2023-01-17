@@ -59,52 +59,6 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun withSwappedCheckboxes(from: ViewTemplateCheckbox, to: ViewTemplateCheckbox): TemplateLoadingState {
-            return copy(
-                checkboxes = checkboxes.toMutableList().apply {
-                    add(indexOfFirst { it == to }, removeAt(indexOfFirst { it == from }))
-                }
-            ).also {
-                Timber.d("Checkboxes swapped! New state:\n${it.checkboxes.joinToString("\n") { it.title }}")
-            }
-        }
-
-        fun withMovedChildItem(
-            child: ViewTemplateCheckbox,
-            oldParent: ViewTemplateCheckbox,
-            newParent: ViewTemplateCheckbox,
-            newLocalIndex: Int?
-        ): TemplateLoadingState {
-            Timber.d(
-                "Child being moved! Current state:\n${renderCheckboxes(checkboxes)}"
-            )
-            val updatedCheckboxes = if (oldParent == newParent) {
-                checkboxes.update(oldParent) {
-                    it.minusChildCheckbox(child)
-                        .plusChildCheckbox(child, newLocalIndex)
-                }
-            } else {
-                checkboxes
-                    .update(oldParent) {
-                        it.minusChildCheckbox(child)
-                    }
-                    .update(newParent) {
-                        it.plusChildCheckbox(child, newLocalIndex)
-                    }
-            }
-            return copy(
-                checkboxes = updatedCheckboxes
-            ).also {
-                Timber.d("Child moved! New state:\n${renderCheckboxes(it.checkboxes)}")
-            }
-        }
-
-        private fun renderCheckboxes(templateCheckboxes: List<ViewTemplateCheckbox>): String {
-            return templateCheckboxes.joinToString("\n") {
-                it.title + "\n" + it.children.joinToString("\n") { "     " + it.title }
-            }
-        }
-
         fun plusChildCheckbox(parent: ViewTemplateCheckbox, title: String): Success {
             return copy(
                 checkboxes = checkboxes.update(parent) {
