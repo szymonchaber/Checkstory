@@ -229,7 +229,11 @@ private fun EditTemplateScaffold(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent)
+                    EditTemplateView(
+                        loadingState.checklistTemplate,
+                        loadingState.unwrappedCheckboxes,
+                        viewModel::onEvent
+                    )
                 }
             }
         },
@@ -247,12 +251,9 @@ private fun EditTemplateScaffold(
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
-    viewCheckboxes: List<ViewTemplateCheckbox>,
+    checkboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    val checkboxes = viewCheckboxes.flatMap {
-        listOf(it) + it.children
-    }
     val state = rememberReorderableLazyListState(onMove = { from, to ->
         withUpdatedPosition(checkboxes, from, to, eventCollector)
     }, canDragOver = { draggedOver, dragging ->

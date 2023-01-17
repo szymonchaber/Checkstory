@@ -16,6 +16,10 @@ sealed interface TemplateLoadingState {
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate
     ) : TemplateLoadingState {
 
+        val unwrappedCheckboxes = checkboxes.flatMap {
+            listOf(it) + it.children
+        }
+
         fun isChanged(): Boolean {
             return originalChecklistTemplate != checklistTemplate
                     || originalChecklistTemplate.items != checkboxes.map { it.toDomainModel() }
