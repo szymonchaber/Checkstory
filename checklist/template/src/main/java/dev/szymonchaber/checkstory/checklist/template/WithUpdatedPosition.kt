@@ -61,8 +61,8 @@ private fun MutableList<ViewTemplateCheckbox>.moveChild(
     val isMovingUp = fromIndex > toIndex
     add(toIndex, removeAt(fromIndex))
     val oldParentIndex = indexOfFirst { it.id == child.parentId }
-    val oldParent = removeAt(oldParentIndex)
-    add(oldParentIndex, oldParent.minusChildCheckbox(child))
+    val oldParent = get(oldParentIndex)
+    replace(oldParentIndex, oldParent.minusChildCheckbox(child))
     val (newParentIndex, newParent) = findClosestParentBelow(toIndex)
     val newLocalIndex = if (toPositionOf.isChild) {
         toIndex - newParentIndex - 1
@@ -73,11 +73,7 @@ private fun MutableList<ViewTemplateCheckbox>.moveChild(
             0
         }
     }
-    removeAt(newParentIndex)
-    add(
-        newParentIndex,
-        newParent.plusChildCheckbox(child, newLocalIndex)
-    )
+    replace(newParentIndex, newParent.plusChildCheckbox(child, newLocalIndex))
     eventCollector(EditTemplateEvent.ChildItemMoved(child, oldParent, newParent, newLocalIndex))
 }
 
@@ -89,4 +85,9 @@ fun MutableList<ViewTemplateCheckbox>.findClosestParentBelow(toIndex: Int): Pair
         }
     }
     error("No parents between indexes 0 & $toIndex")
+}
+
+fun MutableList<ViewTemplateCheckbox>.replace(index: Int, with: ViewTemplateCheckbox) {
+    removeAt(index)
+    add(index, with)
 }
