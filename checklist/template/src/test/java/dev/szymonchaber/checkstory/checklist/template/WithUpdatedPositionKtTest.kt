@@ -9,7 +9,7 @@ internal class WithUpdatedPositionKtTest {
 
     private val initialCheckboxes = checkboxes()
         .flatMap {
-            listOf(it) + it.children
+            listOf(it.replaceChildren(listOf())) + it.children
         }
 
     // region original reordering
@@ -45,14 +45,25 @@ internal class WithUpdatedPositionKtTest {
         )
 
         // then
-        assertThat(result[0].title).isEqualTo("Item 2")
-        assertThat(result[1].title).isEqualTo("Child 2-1")
-        assertThat(result[2].title).isEqualTo("Child 2-2")
-        assertThat(result[3].title).isEqualTo("Child 2-3")
-        assertThat(result[4].title).isEqualTo("Item 1")
-        assertThat(result[5].title).isEqualTo("Child 1-1")
-        assertThat(result[6].title).isEqualTo("Child 1-2")
-        assertThat(result[7].title).isEqualTo("Child 1-3")
+        val titles = result.map { it.title }
+        assertThat(titles).containsExactly(
+            "Item 2",
+            "Child 2-1",
+            "Child 2-2",
+            "Child 2-3",
+            "Item 1",
+            "Child 1-1",
+            "Child 1-2",
+            "Child 1-3",
+            "Item 3",
+            "Child 3-1",
+            "Child 3-2",
+            "Child 3-3",
+            "Item 4",
+            "Child 4-1",
+            "Child 4-2",
+            "Child 4-3"
+        ).inOrder()
     }
 
     @Test
@@ -65,14 +76,25 @@ internal class WithUpdatedPositionKtTest {
         )
 
         // then
-        assertThat(result[0].title).isEqualTo("Item 2")
-        assertThat(result[1].title).isEqualTo("Child 2-1")
-        assertThat(result[2].title).isEqualTo("Child 2-2")
-        assertThat(result[3].title).isEqualTo("Child 2-3")
-        assertThat(result[4].title).isEqualTo("Item 1")
-        assertThat(result[5].title).isEqualTo("Child 1-1")
-        assertThat(result[6].title).isEqualTo("Child 1-2")
-        assertThat(result[7].title).isEqualTo("Child 1-3")
+        val titles = result.map { it.title }
+        assertThat(titles).containsExactly(
+            "Item 2",
+            "Child 2-1",
+            "Child 2-2",
+            "Child 2-3",
+            "Item 1",
+            "Child 1-1",
+            "Child 1-2",
+            "Child 1-3",
+            "Item 3",
+            "Child 3-1",
+            "Child 3-2",
+            "Child 3-3",
+            "Item 4",
+            "Child 4-1",
+            "Child 4-2",
+            "Child 4-3"
+        ).inOrder()
     }
 
     @Test
@@ -173,28 +195,25 @@ internal class WithUpdatedPositionKtTest {
             )
         )
 
+        val actualFrom = from.replaceChildren(listOf())
+        val actualTo = to.replaceChildren(listOf())
+
         val checkboxes = listOf(from, to).flatMap {
-            listOf(it) + it.children
+            listOf(it.replaceChildren(listOf())) + it.children
         }
 
         // when
         val result = withUpdatedPosition(
             checkboxes,
-            from,
-            to
+            actualFrom,
+            actualTo
         )
 
         // then
         assertThat(result[0].title).isEqualTo("Item 1")
-        assertThat(result[0].children[0].title).isEqualTo("Child 1-1")
-        assertThat(result[0].children[1].title).isEqualTo("Child 2-1")
         assertThat(result[1].title).isEqualTo("Child 1-1")
         assertThat(result[2].title).isEqualTo("Child 2-1")
         assertThat(result[3].title).isEqualTo("Item 2")
-        assertThat(result[3].children[0].title).isEqualTo("Child 2-2")
-        assertThat(result[3].children[1].title).isEqualTo("Child 2-3")
-        assertThat(result[3].children[2].title).isEqualTo("Child 1-2")
-        assertThat(result[3].children[3].title).isEqualTo("Child 1-3")
         assertThat(result[4].title).isEqualTo("Child 2-2")
         assertThat(result[5].title).isEqualTo("Child 2-3")
         assertThat(result[6].title).isEqualTo("Child 1-2")
@@ -232,7 +251,13 @@ internal class WithUpdatedPositionKtTest {
 
         // then
         assertThat(result[0].title).isEqualTo("Item 2")
+        assertThat(result[0].children[0].title).isEqualTo("Child 2-1")
+        assertThat(result[0].children[1].title).isEqualTo("Child 2-2")
+        assertThat(result[0].children[2].title).isEqualTo("Child 2-3")
         assertThat(result[1].title).isEqualTo("Item 1")
+        assertThat(result[1].children[0].title).isEqualTo("Child 1-1")
+        assertThat(result[1].children[1].title).isEqualTo("Child 1-2")
+        assertThat(result[1].children[2].title).isEqualTo("Child 1-3")
     }
 
     @Test
@@ -348,14 +373,16 @@ internal class WithUpdatedPositionKtTest {
         )
 
         val checkboxes = listOf(from, to).flatMap {
-            listOf(it) + it.children
+            listOf(it.replaceChildren(listOf())) + it.children
         }
 
         // when
+        val actualFrom = from.replaceChildren(listOf())
+        val actualTo = to.replaceChildren(listOf())
         val result = wrapReorderChanges(
             checkboxes,
-            from,
-            to
+            actualFrom,
+            actualTo
         )
 
         // then

@@ -205,3 +205,14 @@ fun List<ViewTemplateCheckbox>.update(
         updater
     )
 }
+
+fun renderCheckboxes(templateCheckboxes: List<ViewTemplateCheckbox>): String {
+    return templateCheckboxes.joinToString("\n") {
+        val parentIndicator = if (it.isParent) "Parent " else "Child "
+        val children = it.children.takeUnless { it.isEmpty() }?.joinToString("\n") { child ->
+            val childIndicator = if (child.isParent) "Parent " else "Child "
+            "     $childIndicator ${child.title}"
+        }
+        parentIndicator + " " + it.title + children?.let { "\n" + it }.orEmpty()
+    }
+}

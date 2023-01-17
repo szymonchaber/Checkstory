@@ -76,7 +76,6 @@ import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 import org.burnoutcrew.reorderable.ItemPosition
@@ -257,9 +256,9 @@ fun EditTemplateView(
     val state = rememberReorderableLazyListState(onMove = { from, to ->
         eventCollector(EditTemplateEvent.OnUnwrappedCheckboxMoved(from.checkbox!!, to.checkbox!!))
     }, canDragOver = { draggedOver, dragging ->
-        checkboxes.any { it == draggedOver.key }
-                && ((dragging.checkbox)?.isParent == true || draggedOver.index > 1)
-                && !(draggedOver.checkbox?.isChild == true && dragging.checkbox?.isParent == true)
+        draggedOver.isCheckbox
+                && (dragging.checkbox!!.isParent || draggedOver.index > 1)
+                && !(draggedOver.checkbox!!.isChild && dragging.checkbox!!.isParent)
 //        )
     })
     LazyColumn(
@@ -310,7 +309,7 @@ private fun LazyItemScope.WhatAmICheckboxItem(
             isDragging,
             state.draggingItemKey != null
         )
-    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckbox)?.parentId == null) {
+    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckbox)?.isParent == true) {
         // do not render if any parent is moved
     } else {
         val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
@@ -463,4 +462,9 @@ private fun ChecklistTemplateDetails(
 val ItemPosition.checkbox: ViewTemplateCheckbox?
     get() {
         return key as? ViewTemplateCheckbox
+    }
+
+val ItemPosition.isCheckbox: Boolean
+    get() {
+        return key is ViewTemplateCheckbox
     }

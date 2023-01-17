@@ -18,7 +18,7 @@ sealed interface TemplateLoadingState {
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = checkboxes.flatMap {
-            listOf(it) + it.children
+            listOf(it.replaceChildren(listOf())) + it.children
         }
 
         fun isChanged(): Boolean {
@@ -121,6 +121,7 @@ sealed interface TemplateLoadingState {
 
         fun withMovedUnwrappedCheckbox(from: ViewTemplateCheckbox, to: ViewTemplateCheckbox): TemplateLoadingState {
             val wrappedList = wrapReorderChanges(unwrappedCheckboxes, from, to)
+            Timber.d("Items reordered! New state:\n${renderCheckboxes(wrappedList)}")
             return copy(checkboxes = wrappedList)
         }
 
