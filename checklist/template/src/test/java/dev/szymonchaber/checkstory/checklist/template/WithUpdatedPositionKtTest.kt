@@ -134,26 +134,31 @@ internal class WithUpdatedPositionKtTest {
         val from = ViewTemplateCheckbox.New(
             id = TemplateCheckboxId(id = 4),
             parentId = null,
+            isParent = true,
             title = "Item 2",
             children = listOf(
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 6),
                     parentId = TemplateCheckboxId(id = 4),
+                    isParent = false,
                     title = "Child 2-2",
                     children = listOf()
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 7),
                     parentId = TemplateCheckboxId(id = 4),
+                    isParent = false,
                     title = "Child 2-3",
                     children = listOf()
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 2),
                     parentId = TemplateCheckboxId(id = 4),
+                    isParent = false,
                     title = "Child 1-2",
                     children = listOf()
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 3),
                     parentId = TemplateCheckboxId(id = 4),
+                    isParent = false,
                     title = "Child 1-3",
                     children = listOf()
                 )
@@ -162,17 +167,20 @@ internal class WithUpdatedPositionKtTest {
         val to = ViewTemplateCheckbox.New(
             id = TemplateCheckboxId(id = 0),
             parentId = null,
+            isParent = true,
             title = "Item 1",
             children = listOf(
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 1),
                     parentId = TemplateCheckboxId(id = 0),
+                    isParent = false,
                     title = "Child 1-1",
                     children = listOf()
                 ),
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 5),
                     parentId = TemplateCheckboxId(id = 0),
+                    isParent = false,
                     title = "Child 2-1",
                     children = listOf()
                 )

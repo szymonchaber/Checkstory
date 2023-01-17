@@ -27,8 +27,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox
 
-    fun withUpdatedParentId(parentId: TemplateCheckboxId?): ViewTemplateCheckbox
-
     data class New(
         override val id: TemplateCheckboxId,
         override val parentId: TemplateCheckboxId?,
@@ -51,10 +49,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
             return copy(title = title)
-        }
-
-        override fun withUpdatedParentId(parentId: TemplateCheckboxId?): ViewTemplateCheckbox {
-            return copy(parentId = parentId)
         }
 
         override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
@@ -125,10 +119,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
             return copy(title = title)
-        }
-
-        override fun withUpdatedParentId(parentId: TemplateCheckboxId?): ViewTemplateCheckbox {
-            return copy(parentId = parentId)
         }
 
         override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
