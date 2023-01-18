@@ -289,25 +289,35 @@ fun EditTemplateView(
             }
         }
         item {
-            AddButton(
-                modifier = Modifier.padding(start = 8.dp),
-                onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
-                text = stringResource(R.string.new_checkbox)
-            )
+            AddTaskButton(eventCollector)
         }
         item {
             RemindersSection(checklistTemplate, eventCollector)
         }
         item {
-            Box(Modifier.fillMaxWidth()) {
-                DeleteButton(
-                    modifier = Modifier
-                        .padding(top = 16.dp)
-                        .align(Alignment.TopCenter)
-                ) {
-                    eventCollector(EditTemplateEvent.DeleteTemplateClicked)
-                }
-            }
+            DeleteTemplateButton(eventCollector)
+        }
+    }
+}
+
+@Composable
+private fun AddTaskButton(eventCollector: (EditTemplateEvent) -> Unit) {
+    AddButton(
+        modifier = Modifier.padding(start = 8.dp),
+        onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
+        text = stringResource(R.string.new_checkbox)
+    )
+}
+
+@Composable
+private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
+    Box(Modifier.fillMaxWidth()) {
+        DeleteButton(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .align(Alignment.TopCenter)
+        ) {
+            eventCollector(EditTemplateEvent.DeleteTemplateClicked)
         }
     }
 }
