@@ -19,8 +19,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = withUpdatedPosition(
             initialCheckboxes,
-            initialCheckboxes[1],
-            initialCheckboxes[2]
+            initialCheckboxes[1].viewKey,
+            initialCheckboxes[2].viewKey
         )
 
         // then
@@ -40,8 +40,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = withUpdatedPosition(
             initialCheckboxes,
-            initialCheckboxes[0],
-            initialCheckboxes[4]
+            initialCheckboxes[0].viewKey,
+            initialCheckboxes[4].viewKey
         )
 
         // then
@@ -71,8 +71,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = withUpdatedPosition(
             initialCheckboxes,
-            initialCheckboxes[4],
-            initialCheckboxes[0]
+            initialCheckboxes[4].viewKey,
+            initialCheckboxes[0].viewKey
         )
 
         // then
@@ -102,8 +102,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = withUpdatedPosition(
             initialCheckboxes,
-            initialCheckboxes[5],
-            initialCheckboxes[4]
+            initialCheckboxes[5].viewKey,
+            initialCheckboxes[4].viewKey
         )
 
         // then
@@ -122,8 +122,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = withUpdatedPosition(
             initialCheckboxes,
-            initialCheckboxes[3],
-            initialCheckboxes[4]
+            initialCheckboxes[3].viewKey,
+            initialCheckboxes[4].viewKey
         )
 
         // then
@@ -205,8 +205,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = withUpdatedPosition(
             checkboxes,
-            actualFrom,
-            actualTo
+            actualFrom.viewKey,
+            actualTo.viewKey
         )
 
         // then
@@ -227,8 +227,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = wrapReorderChanges(
             initialCheckboxes,
-            initialCheckboxes[1],
-            initialCheckboxes[2]
+            initialCheckboxes[1].viewKey,
+            initialCheckboxes[2].viewKey
         )
 
         // then
@@ -245,8 +245,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = wrapReorderChanges(
             initialCheckboxes,
-            initialCheckboxes[0],
-            initialCheckboxes[4]
+            initialCheckboxes[0].viewKey,
+            initialCheckboxes[4].viewKey
         )
 
         // then
@@ -265,8 +265,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = wrapReorderChanges(
             initialCheckboxes,
-            initialCheckboxes[4],
-            initialCheckboxes[0]
+            initialCheckboxes[4].viewKey,
+            initialCheckboxes[0].viewKey
         )
 
         // then
@@ -279,8 +279,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = wrapReorderChanges(
             initialCheckboxes,
-            initialCheckboxes[5],
-            initialCheckboxes[4]
+            initialCheckboxes[5].viewKey,
+            initialCheckboxes[4].viewKey
         )
 
         // then
@@ -299,8 +299,8 @@ internal class WithUpdatedPositionKtTest {
         // when
         val result = wrapReorderChanges(
             initialCheckboxes,
-            initialCheckboxes[3],
-            initialCheckboxes[4]
+            initialCheckboxes[3].viewKey,
+            initialCheckboxes[4].viewKey
         )
 
         // then
@@ -381,8 +381,8 @@ internal class WithUpdatedPositionKtTest {
         val actualTo = to.replaceChildren(listOf())
         val result = wrapReorderChanges(
             checkboxes,
-            actualFrom,
-            actualTo
+            actualFrom.viewKey,
+            actualTo.viewKey
         )
 
         // then

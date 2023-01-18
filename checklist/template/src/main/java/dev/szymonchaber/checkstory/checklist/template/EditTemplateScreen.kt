@@ -2,6 +2,7 @@
 
 package dev.szymonchaber.checkstory.checklist.template
 
+import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
@@ -78,6 +79,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import org.burnoutcrew.reorderable.ItemPosition
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.ReorderableLazyListState
@@ -246,7 +248,6 @@ private fun EditTemplateScaffold(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
@@ -254,11 +255,11 @@ fun EditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        eventCollector(EditTemplateEvent.OnUnwrappedCheckboxMoved(from.checkbox!!, to.checkbox!!))
+        eventCollector(EditTemplateEvent.OnUnwrappedCheckboxMoved(from.viewKey!!, to.viewKey!!))
     }, canDragOver = { draggedOver, dragging ->
         draggedOver.isCheckbox
-                && (dragging.checkbox!!.isParent || draggedOver.index > 1)
-                && !(draggedOver.checkbox!!.isChild && dragging.checkbox!!.isParent)
+                && (dragging.viewKey!!.isParent || draggedOver.index > 1)
+                && !(draggedOver.viewKey!!.isChild && dragging.viewKey!!.isParent)
     })
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
@@ -272,9 +273,9 @@ fun EditTemplateView(
         }
         items(
             items = checkboxes,
-            key = { it }
+            key = { it.viewKey }
         ) {
-            ReorderableItem(state, key = it) { isDragging ->
+            ReorderableItem(state, key = it.viewKey) { isDragging ->
                 SmartCheckboxItem(it, eventCollector, state, isDragging)
 //                ParentCheckboxItem(
 //                    Modifier
@@ -341,7 +342,7 @@ private fun LazyItemScope.SmartCheckboxItem(
             isDragging,
             state.draggingItemKey != null
         )
-    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckbox)?.isParent == true) {
+    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
         // do not render if any parent is moved
     } else {
         val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
@@ -424,12 +425,32 @@ private fun ChecklistTemplateDetails(
     )
 }
 
-val ItemPosition.checkbox: ViewTemplateCheckbox?
+@Parcelize
+data class ViewTemplateCheckboxKey(
+    val viewId: Long,
+    val isNew: Boolean,
+    val isParent: Boolean
+) : Parcelable {
+
+    val isChild: Boolean
+        get() = !isParent
+}
+
+val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
     get() {
-        return key as? ViewTemplateCheckbox
+        return ViewTemplateCheckboxKey(
+            id.id,
+            this is ViewTemplateCheckbox.New,
+            isParent
+        )
+    }
+
+val ItemPosition.viewKey: ViewTemplateCheckboxKey?
+    get() {
+        return key as? ViewTemplateCheckboxKey
     }
 
 val ItemPosition.isCheckbox: Boolean
     get() {
-        return key is ViewTemplateCheckbox
+        return key is ViewTemplateCheckboxKey
     }

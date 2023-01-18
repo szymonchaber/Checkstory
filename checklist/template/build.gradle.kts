@@ -8,6 +8,7 @@ plugins {
     id("dependencies")
     id("com.google.devtools.ksp") version "1.7.0-1.0.6"
     id("library-config")
+    id("kotlin-parcelize")
 }
 
 android {

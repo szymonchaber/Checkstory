@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.wrapReorderChanges
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -119,7 +120,10 @@ sealed interface TemplateLoadingState {
             }.copy(remindersToDelete = updatedRemindersToDelete)
         }
 
-        fun withMovedUnwrappedCheckbox(from: ViewTemplateCheckbox, to: ViewTemplateCheckbox): TemplateLoadingState {
+        fun withMovedUnwrappedCheckbox(
+            from: ViewTemplateCheckboxKey,
+            to: ViewTemplateCheckboxKey
+        ): TemplateLoadingState {
             val wrappedList = wrapReorderChanges(unwrappedCheckboxes, from, to)
             Timber.d("Items reordered! New state:\n${renderCheckboxes(wrappedList)}")
             return copy(checkboxes = wrappedList)
