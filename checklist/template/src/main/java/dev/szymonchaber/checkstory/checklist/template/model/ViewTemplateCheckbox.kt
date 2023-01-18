@@ -206,6 +206,19 @@ fun List<ViewTemplateCheckbox>.update(
     )
 }
 
+fun List<ViewTemplateCheckbox>.update(
+    templateCheckboxId: TemplateCheckboxId,
+    updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
+): List<ViewTemplateCheckbox> {
+    return update(
+        templateCheckboxId,
+        {
+            it.id // TODO it was "it" before - will it work still?
+        },
+        updater
+    )
+}
+
 fun renderCheckboxes(templateCheckboxes: List<ViewTemplateCheckbox>): String {
     return templateCheckboxes.joinToString("\n") {
         val parentIndicator = if (it.isParent) "Parent " else "Child "

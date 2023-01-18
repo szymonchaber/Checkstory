@@ -88,16 +88,16 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun minusChildCheckbox(parent: ViewTemplateCheckbox, viewTemplateCheckbox: ViewTemplateCheckbox): Success {
-            val shouldDeleteFromDatabase = viewTemplateCheckbox is ViewTemplateCheckbox.Existing
+        fun minusChildCheckbox(parentId: TemplateCheckboxId, child: ViewTemplateCheckbox): Success {
+            val shouldDeleteFromDatabase = child is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(viewTemplateCheckbox.toDomainModel())
+                checkboxesToDelete.plus(child.toDomainModel())
             } else {
                 checkboxesToDelete
             }
             return copy(
-                checkboxes = checkboxes.update(parent) {
-                    it.minusChildCheckbox(viewTemplateCheckbox)
+                checkboxes = checkboxes.update(parentId) {
+                    it.minusChildCheckbox(child)
                 },
                 checkboxesToDelete = updatedCheckboxesToDelete
             )

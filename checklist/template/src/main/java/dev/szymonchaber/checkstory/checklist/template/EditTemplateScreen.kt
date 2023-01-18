@@ -325,7 +325,7 @@ private fun SmartCheckboxItem(
         } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
             // do not render if any parent is moved
         } else {
-            ChildCheckbox(state, isDragging, checkbox)
+            ChildCheckbox(state, isDragging, checkbox, eventCollector)
         }
     }
 }
@@ -356,7 +356,8 @@ private fun ParentCheckbox(
 private fun ChildCheckbox(
     state: ReorderableLazyListState,
     isDragging: Boolean,
-    checkbox: ViewTemplateCheckbox
+    checkbox: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit
 ) {
     CheckboxItem(
         modifier = Modifier
@@ -369,7 +370,12 @@ private fun ChildCheckbox(
 //                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentId, checkbox, it))
         },
     ) {
-        //            eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, it))
+        eventCollector(
+            EditTemplateEvent.ChildItemDeleted(
+                checkbox.parentId!!,
+                checkbox
+            )
+        ) // TODO parent view key instead of as is?
     }
 }
 
