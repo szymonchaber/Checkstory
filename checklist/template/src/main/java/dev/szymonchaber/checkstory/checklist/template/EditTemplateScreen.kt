@@ -259,7 +259,6 @@ fun EditTemplateView(
         draggedOver.isCheckbox
                 && (dragging.checkbox!!.isParent || draggedOver.index > 1)
                 && !(draggedOver.checkbox!!.isChild && dragging.checkbox!!.isParent)
-//        )
     })
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
@@ -276,113 +275,17 @@ fun EditTemplateView(
             key = { it }
         ) {
             ReorderableItem(state, key = it) { isDragging ->
-                WhatAmICheckboxItem(it, eventCollector, state, isDragging, checkboxes)
-            }
-        }
-        item {
-            AddButton(
-                modifier = Modifier.padding(start = 8.dp),
-                onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
-                text = stringResource(R.string.new_checkbox)
-            )
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalFoundationApi::class)
-private fun LazyItemScope.WhatAmICheckboxItem(
-    it: ViewTemplateCheckbox,
-    eventCollector: (EditTemplateEvent) -> Unit,
-    state: ReorderableLazyListState,
-    isDragging: Boolean,
-    checkboxes: List<ViewTemplateCheckbox>
-) {
-    if (it.parentId == null) {
-        ParentCheckboxItem(
-            Modifier.Companion
-                .animateItemPlacement()
-                .padding(start = 16.dp, end = 16.dp),
-            it,
-            eventCollector,
-            state,
-            isDragging,
-            state.draggingItemKey != null
-        )
-    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckbox)?.isParent == true) {
-        // do not render if any parent is moved
-    } else {
-        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
-        Row(
-            modifier = Modifier
-                .padding(start = 48.dp, top = 8.dp, end = 0.dp)
-                .animateContentSize()
-                .shadow(elevation.value)
-                .background(MaterialTheme.colors.surface)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .detectReorder(state)
-                    .align(Alignment.CenterVertically),
-                painter = painterResource(id = R.drawable.drag_indicator),
-                contentDescription = null
-            )
-            CheckboxItem(
-                modifier = Modifier,
-                title = it.title,
-                it is ViewTemplateCheckbox.New,
-                onTitleChange = {
-//                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox, it, it))
-                }
-            ) {
-//            eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, it))
-            }
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalFoundationApi::class)
-private fun InlineBack(
-    eventCollector: (EditTemplateEvent) -> Unit,
-    checkboxes: List<ViewTemplateCheckbox>,
-    checklistTemplate: ChecklistTemplate
-) {
-    val state = rememberReorderableLazyListState(onMove = { from, to ->
-//        eventCollector(
-//            EditTemplateEvent.ParentItemsSwapped(
-//                from = from.key as ViewTemplateCheckbox,
-//                to = to.key as ViewTemplateCheckbox
-//            )
-//        )
-    }, canDragOver = { a, b ->
-        checkboxes.any { it == a.key }
-    })
-    LazyColumn(
-        contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        state = state.listState,
-        modifier = Modifier
-            .reorderable(state)
-    ) {
-        item {
-            ChecklistTemplateDetails(checklistTemplate, eventCollector)
-        }
-        items(
-            items = checkboxes,
-            key = { it }
-        ) {
-            ReorderableItem(state, key = it) { isDragging ->
-                ParentCheckboxItem(
-                    Modifier
-                        .animateItemPlacement()
-                        .padding(start = 16.dp, end = 16.dp),
-                    it,
-                    eventCollector,
-                    state,
-                    isDragging,
-                    state.draggingItemKey != null
-                )
+                SmartCheckboxItem(it, eventCollector, state, isDragging)
+//                ParentCheckboxItem(
+//                    Modifier
+//                        .animateItemPlacement()
+//                        .padding(start = 16.dp, end = 16.dp),
+//                    it,
+//                    eventCollector,
+//                    state,
+//                    isDragging,
+//                    state.draggingItemKey != null
+//                )
             }
         }
         item {
@@ -404,6 +307,58 @@ private fun InlineBack(
                 ) {
                     eventCollector(EditTemplateEvent.DeleteTemplateClicked)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+private fun LazyItemScope.SmartCheckboxItem(
+    checkbox: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit,
+    state: ReorderableLazyListState,
+    isDragging: Boolean
+) {
+    if (checkbox.isParent) {
+        ParentCheckboxItem(
+            Modifier.Companion
+                .animateItemPlacement()
+                .padding(start = 16.dp, end = 16.dp),
+            checkbox,
+            eventCollector,
+            state,
+            isDragging,
+            state.draggingItemKey != null
+        )
+    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckbox)?.isParent == true) {
+        // do not render if any parent is moved
+    } else {
+        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
+        Row(
+            modifier = Modifier
+                .padding(start = 48.dp, top = 8.dp, end = 0.dp)
+                .animateContentSize()
+                .animateItemPlacement()
+                .shadow(elevation.value)
+                .background(MaterialTheme.colors.surface)
+        ) {
+            Icon(
+                modifier = Modifier
+                    .detectReorder(state)
+                    .align(Alignment.CenterVertically),
+                painter = painterResource(id = R.drawable.drag_indicator),
+                contentDescription = null
+            )
+            CheckboxItem(
+                modifier = Modifier,
+                title = checkbox.title,
+                checkbox is ViewTemplateCheckbox.New,
+                onTitleChange = {
+//                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox, it, it))
+                }
+            ) {
+//            eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, it))
             }
         }
     }
