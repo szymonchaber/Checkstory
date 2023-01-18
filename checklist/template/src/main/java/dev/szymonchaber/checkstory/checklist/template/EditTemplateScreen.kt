@@ -5,9 +5,7 @@ package dev.szymonchaber.checkstory.checklist.template
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -24,7 +21,6 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
@@ -44,11 +40,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -68,7 +62,6 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
 import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
-import dev.szymonchaber.checkstory.checklist.template.views.ParentCheckboxItem
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
@@ -83,7 +76,6 @@ import kotlinx.parcelize.Parcelize
 import org.burnoutcrew.reorderable.ItemPosition
 import org.burnoutcrew.reorderable.ReorderableItem
 import org.burnoutcrew.reorderable.ReorderableLazyListState
-import org.burnoutcrew.reorderable.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 import org.burnoutcrew.reorderable.reorderable
 
@@ -248,6 +240,7 @@ private fun EditTemplateScaffold(
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
@@ -275,18 +268,12 @@ fun EditTemplateView(
             items = checkboxes,
             key = { it.viewKey }
         ) {
-            ReorderableItem(state, key = it.viewKey) { isDragging ->
+            ReorderableItem(
+                reorderableState = state,
+                key = it.viewKey,
+                modifier = Modifier.animateItemPlacement()
+            ) { isDragging ->
                 SmartCheckboxItem(it, eventCollector, state, isDragging)
-//                ParentCheckboxItem(
-//                    Modifier
-//                        .animateItemPlacement()
-//                        .padding(start = 16.dp, end = 16.dp),
-//                    it,
-//                    eventCollector,
-//                    state,
-//                    isDragging,
-//                    state.draggingItemKey != null
-//                )
             }
         }
         item {
@@ -324,55 +311,81 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
 }
 
 @Composable
-@OptIn(ExperimentalFoundationApi::class)
-private fun LazyItemScope.SmartCheckboxItem(
+private fun SmartCheckboxItem(
     checkbox: ViewTemplateCheckbox,
     eventCollector: (EditTemplateEvent) -> Unit,
     state: ReorderableLazyListState,
     isDragging: Boolean
 ) {
-    if (checkbox.isParent) {
-        ParentCheckboxItem(
-            Modifier.Companion
-                .animateItemPlacement()
-                .padding(start = 16.dp, end = 16.dp),
-            checkbox,
-            eventCollector,
-            state,
-            isDragging,
-            state.draggingItemKey != null
-        )
-    } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
-        // do not render if any parent is moved
-    } else {
-        val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
-        Row(
-            modifier = Modifier
-                .padding(start = 48.dp, top = 8.dp, end = 0.dp)
-                .animateContentSize()
-                .animateItemPlacement()
-                .shadow(elevation.value)
-                .background(MaterialTheme.colors.surface)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .detectReorder(state)
-                    .align(Alignment.CenterVertically),
-                painter = painterResource(id = R.drawable.drag_indicator),
-                contentDescription = null
-            )
-            CheckboxItem(
-                modifier = Modifier,
-                title = checkbox.title,
-                checkbox is ViewTemplateCheckbox.New,
-                onTitleChange = {
-//                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox, it, it))
-                }
-            ) {
-//            eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, it))
-            }
+    Row(
+        Modifier.animateContentSize()
+    ) {
+        if (checkbox.isParent) {
+            ParentCheckbox(state, isDragging, checkbox, eventCollector)
+        } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
+            // do not render if any parent is moved
+        } else {
+            ChildCheckbox(state, isDragging, checkbox)
         }
     }
+}
+
+@Composable
+private fun ParentCheckbox(
+    state: ReorderableLazyListState,
+    isDragging: Boolean,
+    checkbox: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    CheckboxItem(
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp),
+        state = state,
+        isDragging = isDragging,
+        title = checkbox.title,
+        checkbox is ViewTemplateCheckbox.New,
+        onTitleChange = {
+            eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+        },
+    ) {
+        eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+    }
+}
+
+@Composable
+private fun ChildCheckbox(
+    state: ReorderableLazyListState,
+    isDragging: Boolean,
+    checkbox: ViewTemplateCheckbox
+) {
+    CheckboxItem(
+        modifier = Modifier
+            .padding(start = 44.dp, top = 8.dp, end = 16.dp),
+        state = state,
+        isDragging = isDragging,
+        title = checkbox.title,
+        checkbox is ViewTemplateCheckbox.New,
+        onTitleChange = {
+//                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentId, checkbox, it))
+        },
+    ) {
+        //            eventCollector(EditTemplateEvent.ChildItemDeleted(checkbox, it))
+    }
+}
+
+@Composable
+fun NewChildCheckboxButton(
+    parent: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    val text = stringResource(R.string.new_child_checkbox)
+    AddButton(
+        modifier = Modifier.padding(start = 36.dp, end = 16.dp),
+        onClick = {
+            eventCollector(EditTemplateEvent.ChildItemAdded(parent))
+        },
+        text = text
+    )
 }
 
 @Composable
