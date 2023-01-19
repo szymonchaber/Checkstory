@@ -16,6 +16,7 @@ import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -106,7 +108,9 @@ class EditTemplateViewModel @Inject constructor(
                 } else {
                     getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
                         .map {
-                            TemplateLoadingState.Success.fromTemplate(it)
+                            withContext(Dispatchers.Default) {
+                                TemplateLoadingState.Success.fromTemplate(it)
+                            }
                         }
                         .onStart<TemplateLoadingState> {
                             emit(TemplateLoadingState.Loading)
@@ -161,8 +165,10 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.OnUnwrappedCheckboxMoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                tracker.logEvent("checkbox_moved")
-                EditTemplateState(loadingState.withMovedUnwrappedCheckbox(event.from, event.to)) to null
+                withContext(Dispatchers.Default) {
+                    tracker.logEvent("checkbox_moved")
+                    EditTemplateState(loadingState.withMovedUnwrappedCheckbox(event.from, event.to)) to null
+                }
             }
     }
 
@@ -363,10 +369,12 @@ class EditTemplateViewModel @Inject constructor(
 
     private fun <T> Flow<T>.withSuccessState(): Flow<Pair<TemplateLoadingState.Success, T>> {
         return flatMapLatest { event ->
-            state.map { it.templateLoadingState }
-                .filterIsInstance<TemplateLoadingState.Success>()
-                .map { it to event }
-                .take(1)
+            withContext(Dispatchers.Default) {
+                state.map { it.templateLoadingState }
+                    .filterIsInstance<TemplateLoadingState.Success>()
+                    .map { it to event }
+                    .take(1)
+            }
         }
     }
 }

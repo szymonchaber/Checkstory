@@ -5,7 +5,6 @@ package dev.szymonchaber.checkstory.checklist.template
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -240,7 +239,6 @@ private fun EditTemplateScaffold(
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
@@ -270,8 +268,7 @@ fun EditTemplateView(
         ) {
             ReorderableItem(
                 reorderableState = state,
-                key = it.viewKey,
-                modifier = Modifier.animateItemPlacement()
+                key = it.viewKey
             ) { isDragging ->
                 SmartCheckboxItem(it, eventCollector, state, isDragging)
             }
