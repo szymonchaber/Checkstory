@@ -364,7 +364,7 @@ private fun ChildCheckbox(
         title = checkbox.title,
         checkbox is ViewTemplateCheckbox.New,
         onTitleChange = {
-//                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentId, checkbox, it))
+            eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentId!!, checkbox, it))
         },
     ) {
         eventCollector(

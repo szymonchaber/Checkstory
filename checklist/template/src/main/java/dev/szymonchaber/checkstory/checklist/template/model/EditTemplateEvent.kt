@@ -22,7 +22,7 @@ sealed interface EditTemplateEvent {
     data class ChildItemAdded(val parent: ViewTemplateCheckbox) : EditTemplateEvent
 
     data class ChildItemTitleChanged(
-        val checkbox: ViewTemplateCheckbox,
+        val parentId: TemplateCheckboxId,
         val child: ViewTemplateCheckbox,
         val newTitle: String
     ) : EditTemplateEvent

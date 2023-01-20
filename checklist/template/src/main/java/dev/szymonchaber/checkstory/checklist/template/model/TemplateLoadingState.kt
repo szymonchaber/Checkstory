@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
+import dev.szymonchaber.checkstory.checklist.template.viewKey
 import dev.szymonchaber.checkstory.checklist.template.wrapReorderChanges
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -76,13 +77,23 @@ sealed interface TemplateLoadingState {
         }
 
         fun changeChildCheckboxTitle(
-            parent: ViewTemplateCheckbox,
+            parent: TemplateCheckboxId,
             child: ViewTemplateCheckbox,
             title: String
         ): Success {
+            var found = false
             return copy(
-                checkboxes = checkboxes.update(parent) {
-                    it.editChildCheckboxTitle(child, title)
+                checkboxes = checkboxes.map {
+                    if (it.id == parent && it.children.find { it.viewKey == child.viewKey } != null) {
+                        found = true
+                        it.editChildCheckboxTitle(child, title)
+                    } else {
+                        it
+                    }
+                }.also {
+                    if (!found) {
+                        error("Did not find id to update: $parent")
+                    }
                 }
             )
         }

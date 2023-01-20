@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -200,11 +201,13 @@ class EditTemplateViewModel @Inject constructor(
 
     private fun Flow<EditTemplateEvent>.handleChildItemChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.ChildItemTitleChanged>()
-            .withSuccessState()
+            .withSuccessStateConcat()
             .map { (loadingState, event) ->
-                EditTemplateState(
-                    loadingState.changeChildCheckboxTitle(event.checkbox, event.child, event.newTitle)
-                ) to null
+                withContext(Dispatchers.Default) {
+                    EditTemplateState(
+                        loadingState.changeChildCheckboxTitle(event.parentId, event.child, event.newTitle)
+                    ) to null
+                }
             }
     }
 
@@ -369,6 +372,17 @@ class EditTemplateViewModel @Inject constructor(
 
     private fun <T> Flow<T>.withSuccessState(): Flow<Pair<TemplateLoadingState.Success, T>> {
         return flatMapLatest { event ->
+            withContext(Dispatchers.Default) {
+                state.map { it.templateLoadingState }
+                    .filterIsInstance<TemplateLoadingState.Success>()
+                    .map { it to event }
+                    .take(1)
+            }
+        }
+    }
+
+    private fun <T> Flow<T>.withSuccessStateConcat(): Flow<Pair<TemplateLoadingState.Success, T>> {
+        return flatMapConcat { event ->
             withContext(Dispatchers.Default) {
                 state.map { it.templateLoadingState }
                     .filterIsInstance<TemplateLoadingState.Success>()
