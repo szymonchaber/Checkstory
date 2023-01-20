@@ -19,6 +19,8 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     val isChild: Boolean
         get() = !isParent
 
+    val isLastChild: Boolean
+
     fun withUpdatedTitle(title: String): ViewTemplateCheckbox
 
     fun toDomainModel(parentId: TemplateCheckboxId? = null): TemplateCheckbox
@@ -33,12 +35,15 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox
 
+    fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox
+
     data class New(
         override val id: TemplateCheckboxId,
         override val parentViewKey: ViewTemplateCheckboxKey?,
         override val isParent: Boolean,
         override val title: String,
-        override val children: List<ViewTemplateCheckbox>
+        override val children: List<ViewTemplateCheckbox>,
+        override val isLastChild: Boolean
     ) : ViewTemplateCheckbox {
 
         override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
@@ -65,9 +70,10 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         viewKey,
                         false,
                         "",
-                        listOf()
+                        listOf(),
+                        true
                     )
-                )
+                ).reindexed()
             )
         }
 
@@ -84,13 +90,13 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                             viewTemplateCheckbox
                         )
                     }
-                }
+                }.reindexed()
             )
         }
 
         override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
             return copy(
-                children = children.minus(child)
+                children = children.minus(child).reindexed()
             )
         }
 
@@ -103,7 +109,11 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         }
 
         override fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
-            return copy(children = children)
+            return copy(children = children.reindexed())
+        }
+
+        override fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
+            return copy(isLastChild = isLastChild)
         }
     }
 
@@ -112,7 +122,8 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override val parentViewKey: ViewTemplateCheckboxKey?,
         override val isParent: Boolean,
         override val title: String,
-        override val children: List<ViewTemplateCheckbox>
+        override val children: List<ViewTemplateCheckbox>,
+        override val isLastChild: Boolean
     ) : ViewTemplateCheckbox {
 
         override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
@@ -139,9 +150,10 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         viewKey,
                         false,
                         "",
-                        listOf()
+                        listOf(),
+                        true
                     )
-                )
+                ).reindexed()
             )
         }
 
@@ -158,13 +170,13 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                             viewTemplateCheckbox
                         )
                     }
-                }
+                }.reindexed()
             )
         }
 
         override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
             return copy(
-                children = children.minus(child)
+                children = children.minus(child).reindexed()
             )
         }
 
@@ -177,7 +189,11 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         }
 
         override fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
-            return copy(children = children)
+            return copy(children = children.reindexed())
+        }
+
+        override fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
+            return copy(isLastChild = isLastChild)
         }
 
         companion object {
@@ -191,11 +207,18 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         },
                         parentId == null,
                         title = title,
-                        children = children.map { fromDomainModel(it) }
+                        children = children.map { fromDomainModel(it) }.reindexed(),
+                        false
                     )
                 }
             }
         }
+    }
+}
+
+private fun List<ViewTemplateCheckbox>.reindexed(): List<ViewTemplateCheckbox> {
+    return mapIndexed { index, item ->
+        item.withIsLastChild(index == lastIndex)
     }
 }
 

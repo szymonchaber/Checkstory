@@ -362,23 +362,29 @@ private fun ChildCheckbox(
     checkbox: ViewTemplateCheckbox,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    CheckboxItem(
-        modifier = Modifier
-            .padding(start = 44.dp, top = 8.dp, end = 16.dp),
-        state = state,
-        isDragging = isDragging,
-        title = checkbox.title,
-        checkbox is ViewTemplateCheckbox.New,
-        onTitleChange = {
-            eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
-        },
-    ) {
-        eventCollector(
-            EditTemplateEvent.ChildItemDeleted(
-                checkbox.parentViewKey!!,
-                checkbox
+    Column {
+
+        CheckboxItem(
+            modifier = Modifier
+                .padding(start = 44.dp, top = 8.dp, end = 16.dp),
+            state = state,
+            isDragging = isDragging,
+            title = checkbox.title,
+            checkbox is ViewTemplateCheckbox.New,
+            onTitleChange = {
+                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
+            },
+        ) {
+            eventCollector(
+                EditTemplateEvent.ChildItemDeleted(
+                    checkbox.parentViewKey!!,
+                    checkbox
+                )
             )
-        )
+        }
+        if (checkbox.isLastChild) {
+            NewChildCheckboxButton(parent = checkbox.parentViewKey!!, eventCollector = eventCollector)
+        }
     }
 }
 

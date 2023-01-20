@@ -40,7 +40,8 @@ sealed interface TemplateLoadingState {
                         null,
                         true,
                         title,
-                        listOf()
+                        listOf(),
+                        true
                     )
                 )
             )
