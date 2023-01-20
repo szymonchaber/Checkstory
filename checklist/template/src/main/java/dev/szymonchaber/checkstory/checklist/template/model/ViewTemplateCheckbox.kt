@@ -23,7 +23,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun withUpdatedTitle(title: String): ViewTemplateCheckbox
 
-    fun toDomainModel(parentId: TemplateCheckboxId? = null): TemplateCheckbox
+    fun toDomainModel(parentId: TemplateCheckboxId? = null, position: Int): TemplateCheckbox
 
     fun plusChildCheckbox(title: String): ViewTemplateCheckbox
 
@@ -46,15 +46,15 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override val isLastChild: Boolean
     ) : ViewTemplateCheckbox {
 
-        override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
+        override fun toDomainModel(parentId: TemplateCheckboxId?, position: Int): TemplateCheckbox {
             return TemplateCheckbox(
                 id = TemplateCheckboxId(0),
                 parentId = parentId,
                 title = title,
-                children = children.map {
-                    it.toDomainModel(id)
+                children = children.mapIndexed { index, it ->
+                    it.toDomainModel(id, index)
                 },
-                0
+                position.toLong()
             )
         }
 
@@ -126,15 +126,15 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override val isLastChild: Boolean
     ) : ViewTemplateCheckbox {
 
-        override fun toDomainModel(parentId: TemplateCheckboxId?): TemplateCheckbox {
+        override fun toDomainModel(parentId: TemplateCheckboxId?, position: Int): TemplateCheckbox {
             return TemplateCheckbox(
                 id = id,
                 parentId = parentId,
                 title = title,
-                children = children.map {
-                    it.toDomainModel(id)
+                children = children.mapIndexed { index, child ->
+                    child.toDomainModel(id, index)
                 },
-                0
+                position.toLong()
             )
         }
 

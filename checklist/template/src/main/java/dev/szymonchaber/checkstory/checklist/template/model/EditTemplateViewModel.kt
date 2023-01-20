@@ -232,9 +232,12 @@ class EditTemplateViewModel @Inject constructor(
                         copy(
                             title = title.trimEnd(),
                             description = description.trim(),
-                            items = loadingState.checkboxes.map(ViewTemplateCheckbox::toDomainModel)
-                                .mapIndexed { index, it ->
-                                    it.copy(title = it.title.trimEnd(), sortPosition = index.toLong())
+                            items = loadingState.checkboxes
+                                .mapIndexed { index, checkbox ->
+                                    checkbox.toDomainModel(position = index)
+                                }
+                                .map {
+                                    it.copy(title = it.title.trimEnd())
                                 })
                     }
                     .checklistTemplate

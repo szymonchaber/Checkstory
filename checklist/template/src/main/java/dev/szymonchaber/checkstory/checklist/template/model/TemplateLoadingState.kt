@@ -23,7 +23,9 @@ sealed interface TemplateLoadingState {
 
         fun isChanged(): Boolean {
             return originalChecklistTemplate != checklistTemplate
-                    || originalChecklistTemplate.items != checkboxes.map { it.toDomainModel() }
+                    || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
+                checkbox.toDomainModel(position = index)
+            }
                     || checkboxesToDelete.isNotEmpty()
                     || remindersToDelete.isNotEmpty()
         }
@@ -50,7 +52,7 @@ sealed interface TemplateLoadingState {
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
             val shouldDeleteFromDatabase = checkbox is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(checkbox.toDomainModel())
+                checkboxesToDelete.plus(checkbox.toDomainModel(position = 0))
             } else {
                 checkboxesToDelete
             }
@@ -91,7 +93,7 @@ sealed interface TemplateLoadingState {
         fun minusChildCheckbox(parentKey: ViewTemplateCheckboxKey, child: ViewTemplateCheckbox): Success {
             val shouldDeleteFromDatabase = child is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(child.toDomainModel())
+                checkboxesToDelete.plus(child.toDomainModel(position = 0))
             } else {
                 checkboxesToDelete
             }
