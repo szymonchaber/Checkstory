@@ -18,7 +18,7 @@ sealed interface TemplateLoadingState {
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = checkboxes.flatMap {
-            listOf(it.replaceChildren(listOf())) + it.children
+            listOf(it) + it.children
         }
 
         fun isChanged(): Boolean {

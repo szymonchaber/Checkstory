@@ -9,7 +9,7 @@ internal class WithUpdatedPositionKtTest {
 
     private val initialCheckboxes = checkboxes()
         .flatMap {
-            listOf(it.replaceChildren(listOf())) + it.children
+            listOf(it) + it.children
         }
 
     // region original reordering
@@ -195,18 +195,15 @@ internal class WithUpdatedPositionKtTest {
             )
         )
 
-        val actualFrom = from.replaceChildren(listOf())
-        val actualTo = to.replaceChildren(listOf())
-
         val checkboxes = listOf(from, to).flatMap {
-            listOf(it.replaceChildren(listOf())) + it.children
+            listOf(it) + it.children
         }
 
         // when
         val result = withUpdatedPosition(
             checkboxes,
-            actualFrom.viewKey,
-            actualTo.viewKey
+            from.viewKey,
+            to.viewKey
         )
 
         // then
