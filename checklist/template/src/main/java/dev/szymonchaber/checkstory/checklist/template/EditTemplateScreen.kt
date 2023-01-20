@@ -7,6 +7,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -318,7 +319,12 @@ private fun SmartCheckboxItem(
         Modifier.animateContentSize()
     ) {
         if (checkbox.isParent) {
-            ParentCheckbox(state, isDragging, checkbox, eventCollector)
+            Column {
+                ParentCheckbox(state, isDragging, checkbox, eventCollector)
+                if (checkbox.children.isEmpty()) {
+                    NewChildCheckboxButton(checkbox.viewKey, eventCollector)
+                }
+            }
         } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
             // do not render if any parent is moved
         } else {
@@ -378,7 +384,7 @@ private fun ChildCheckbox(
 
 @Composable
 fun NewChildCheckboxButton(
-    parent: ViewTemplateCheckbox,
+    parent: ViewTemplateCheckboxKey,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val text = stringResource(R.string.new_child_checkbox)
@@ -444,6 +450,7 @@ private fun ChecklistTemplateDetails(
 @Parcelize
 data class ViewTemplateCheckboxKey(
     val viewId: Long,
+    val parentKey: ViewTemplateCheckboxKey?,
     val isNew: Boolean,
     val isParent: Boolean
 ) : Parcelable {
@@ -456,6 +463,7 @@ val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
     get() {
         return ViewTemplateCheckboxKey(
             id.id,
+            parentViewKey,
             this is ViewTemplateCheckbox.New,
             isParent
         )

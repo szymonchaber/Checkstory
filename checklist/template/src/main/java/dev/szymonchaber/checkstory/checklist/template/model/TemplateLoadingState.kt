@@ -60,10 +60,10 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusChildCheckbox(parent: ViewTemplateCheckbox, title: String): Success {
+        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
             return copy(
-                checkboxes = checkboxes.update(parent) {
-                    it.plusChildCheckbox(title)
+                checkboxes = checkboxes.update(parentId) {
+                    it.plusChildCheckbox("")
                 }
             )
         }

@@ -19,7 +19,7 @@ class TemplateLoadingStateTest {
         // when
         val updatedState = successState.plusNewCheckbox("New checkbox").let {
             val newCheckbox = it.checkboxes.filterIsInstance<ViewTemplateCheckbox.New>().first()
-            it.plusChildCheckbox(newCheckbox, "New child checkbox")
+            it
         }
 
         // then

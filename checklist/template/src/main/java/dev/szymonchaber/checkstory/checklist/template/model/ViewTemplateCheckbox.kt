@@ -1,5 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
+import dev.szymonchaber.checkstory.checklist.template.viewKey
 import dev.szymonchaber.checkstory.common.extensions.update
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -7,7 +9,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     val id: TemplateCheckboxId
+    val parentViewKey: ViewTemplateCheckboxKey?
     val parentId: TemplateCheckboxId?
+        get() = parentViewKey?.viewId?.let(::TemplateCheckboxId)
     val title: String
     val children: List<ViewTemplateCheckbox>
     val isParent: Boolean
@@ -31,7 +35,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     data class New(
         override val id: TemplateCheckboxId,
-        override val parentId: TemplateCheckboxId?,
+        override val parentViewKey: ViewTemplateCheckboxKey?,
         override val isParent: Boolean,
         override val title: String,
         override val children: List<ViewTemplateCheckbox>
@@ -58,9 +62,9 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                 children = children.plus(
                     New(
                         TemplateCheckboxId(children.size.toLong()),
-                        null,
+                        viewKey,
                         false,
-                        title,
+                        "",
                         listOf()
                     )
                 )
@@ -105,7 +109,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     data class Existing(
         override val id: TemplateCheckboxId,
-        override val parentId: TemplateCheckboxId?,
+        override val parentViewKey: ViewTemplateCheckboxKey?,
         override val isParent: Boolean,
         override val title: String,
         override val children: List<ViewTemplateCheckbox>
@@ -132,9 +136,9 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                 children = children.plus(
                     New(
                         TemplateCheckboxId(children.size.toLong()),
-                        null,
+                        viewKey,
                         false,
-                        title,
+                        "",
                         listOf()
                     )
                 )
@@ -182,7 +186,9 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                 return with(templateCheckbox) {
                     Existing(
                         id = id,
-                        parentId = parentId,
+                        parentViewKey = parentId?.let {
+                            ViewTemplateCheckboxKey(viewId = it.id, isNew = false, isParent = true, parentKey = null)
+                        },
                         parentId == null,
                         title = title,
                         children = children.map { fromDomainModel(it) }
@@ -214,6 +220,19 @@ fun List<ViewTemplateCheckbox>.update(
         templateCheckboxId,
         {
             it.id // TODO it was "it" before - will it work still?
+        },
+        updater
+    )
+}
+
+fun List<ViewTemplateCheckbox>.update(
+    viewTemplateCheckboxKey: ViewTemplateCheckboxKey,
+    updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
+): List<ViewTemplateCheckbox> {
+    return update(
+        viewTemplateCheckboxKey,
+        {
+            it.viewKey
         },
         updater
     )
