@@ -197,7 +197,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("delete_child_checkbox_clicked")
-                EditTemplateState(loadingState.minusChildCheckbox(event.parentId, event.child)) to null
+                EditTemplateState(loadingState.minusChildCheckbox(event.parentKey, event.child)) to null
             }
     }
 
@@ -207,7 +207,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     EditTemplateState(
-                        loadingState.changeChildCheckboxTitle(event.parentId, event.child, event.newTitle)
+                        loadingState.changeChildCheckboxTitle(event.parentKey, event.child, event.newTitle)
                     ) to null
                 }
             }

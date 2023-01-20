@@ -1,7 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
-import dev.szymonchaber.checkstory.checklist.template.viewKey
 import dev.szymonchaber.checkstory.checklist.template.wrapReorderChanges
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -77,28 +76,18 @@ sealed interface TemplateLoadingState {
         }
 
         fun changeChildCheckboxTitle(
-            parent: TemplateCheckboxId,
+            parentKey: ViewTemplateCheckboxKey,
             child: ViewTemplateCheckbox,
             title: String
         ): Success {
-            var found = false
             return copy(
-                checkboxes = checkboxes.map {
-                    if (it.id == parent && it.children.find { it.viewKey == child.viewKey } != null) {
-                        found = true
-                        it.editChildCheckboxTitle(child, title)
-                    } else {
-                        it
-                    }
-                }.also {
-                    if (!found) {
-                        error("Did not find id to update: $parent")
-                    }
+                checkboxes = checkboxes.update(parentKey) {
+                    it.editChildCheckboxTitle(child, title)
                 }
             )
         }
 
-        fun minusChildCheckbox(parentId: TemplateCheckboxId, child: ViewTemplateCheckbox): Success {
+        fun minusChildCheckbox(parentKey: ViewTemplateCheckboxKey, child: ViewTemplateCheckbox): Success {
             val shouldDeleteFromDatabase = child is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
                 checkboxesToDelete.plus(child.toDomainModel())
@@ -106,7 +95,7 @@ sealed interface TemplateLoadingState {
                 checkboxesToDelete
             }
             return copy(
-                checkboxes = checkboxes.update(parentId) {
+                checkboxes = checkboxes.update(parentKey) {
                     it.minusChildCheckbox(child)
                 },
                 checkboxesToDelete = updatedCheckboxesToDelete

@@ -370,15 +370,15 @@ private fun ChildCheckbox(
         title = checkbox.title,
         checkbox is ViewTemplateCheckbox.New,
         onTitleChange = {
-            eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentId!!, checkbox, it))
+            eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
         },
     ) {
         eventCollector(
             EditTemplateEvent.ChildItemDeleted(
-                checkbox.parentId!!,
+                checkbox.parentViewKey!!,
                 checkbox
             )
-        ) // TODO parent view key instead of as is?
+        )
     }
 }
 
