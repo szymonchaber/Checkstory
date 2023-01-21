@@ -5,12 +5,14 @@ package dev.szymonchaber.checkstory.checklist.template
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -325,8 +327,6 @@ private fun SmartCheckboxItem(
                     NewChildCheckboxButton(checkbox.viewKey, eventCollector)
                 }
             }
-        } else if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
-            // do not render if any parent is moved
         } else {
             ChildCheckbox(state, isDragging, checkbox, eventCollector)
         }
@@ -362,27 +362,39 @@ private fun ChildCheckbox(
     checkbox: ViewTemplateCheckbox,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    Column {
-        CheckboxItem(
-            modifier = Modifier
-                .padding(start = 44.dp, top = 8.dp, end = 16.dp),
-            state = state,
-            isDragging = isDragging,
-            title = checkbox.title,
-            checkbox is ViewTemplateCheckbox.New,
-            onTitleChange = {
-                eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
-            },
-        ) {
-            eventCollector(
-                EditTemplateEvent.ChildItemDeleted(
-                    checkbox.parentViewKey!!,
-                    checkbox
+    Column(Modifier.animateContentSize()) {
+        if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
+            Row(
+                Modifier
+                    .padding(start = 44.dp, top = 8.dp, end = 16.dp)
+                    .fillMaxWidth()
+                    .height(height = 8.dp)
+                    .background(Color.LightGray)
+            ) {
+
+            }
+        } else {
+            CheckboxItem(
+                modifier = Modifier
+                    .padding(start = 44.dp, top = 8.dp, end = 16.dp),
+                state = state,
+                isDragging = isDragging,
+                title = checkbox.title,
+                checkbox is ViewTemplateCheckbox.New,
+                onTitleChange = {
+                    eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
+                },
+            ) {
+                eventCollector(
+                    EditTemplateEvent.ChildItemDeleted(
+                        checkbox.parentViewKey!!,
+                        checkbox
+                    )
                 )
-            )
-        }
-        if (checkbox.isLastChild && state.draggingItemKey == null) {
-            NewChildCheckboxButton(parent = checkbox.parentViewKey!!, eventCollector = eventCollector)
+            }
+            if (checkbox.isLastChild && state.draggingItemKey == null) {
+                NewChildCheckboxButton(parent = checkbox.parentViewKey!!, eventCollector = eventCollector)
+            }
         }
     }
 }
