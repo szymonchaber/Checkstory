@@ -321,7 +321,7 @@ private fun SmartCheckboxItem(
         if (checkbox.isParent) {
             Column {
                 ParentCheckbox(state, isDragging, checkbox, eventCollector)
-                if (checkbox.children.isEmpty()) {
+                if (checkbox.children.isEmpty() && state.draggingItemKey == null) {
                     NewChildCheckboxButton(checkbox.viewKey, eventCollector)
                 }
             }
@@ -363,7 +363,6 @@ private fun ChildCheckbox(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column {
-
         CheckboxItem(
             modifier = Modifier
                 .padding(start = 44.dp, top = 8.dp, end = 16.dp),
@@ -382,7 +381,7 @@ private fun ChildCheckbox(
                 )
             )
         }
-        if (checkbox.isLastChild) {
+        if (checkbox.isLastChild && state.draggingItemKey == null) {
             NewChildCheckboxButton(parent = checkbox.parentViewKey!!, eventCollector = eventCollector)
         }
     }
