@@ -252,8 +252,8 @@ fun EditTemplateView(
         eventCollector(EditTemplateEvent.OnUnwrappedCheckboxMoved(from.viewKey!!, to.viewKey!!))
     }, canDragOver = { draggedOver, dragging ->
         draggedOver.isCheckbox
-                && (dragging.viewKey!!.isParent || draggedOver.index > 1)
-                && !(draggedOver.viewKey!!.isChild && dragging.viewKey!!.isParent)
+                && !(dragging.viewKey!!.isChild && draggedOver.index < 2)
+                && !(dragging.viewKey!!.isParent && draggedOver.viewKey!!.isChild)
     })
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
