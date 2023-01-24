@@ -112,6 +112,9 @@ private fun MutableList<ViewTemplateCheckbox>.moveChild(
 ) {
     val fromIndex = indexOfFirst { it.viewKey == child }
     val toIndex = indexOfFirst { it.viewKey == toPositionOf }
+    require(toIndex != 0) {
+        "Attempting to move a child to top-most position"
+    }
     add(toIndex, removeAt(fromIndex))
 }
 
