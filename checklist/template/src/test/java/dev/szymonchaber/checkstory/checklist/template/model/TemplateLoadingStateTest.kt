@@ -24,11 +24,11 @@ class TemplateLoadingStateTest {
 
         // then
         assertThat(updatedState.checkboxes).containsExactly(
-            ViewTemplateCheckbox.Existing(commonCheckboxId, null, true, "title", listOf()),
+            ViewTemplateCheckbox.Existing(commonCheckboxId, null, true, "title", listOf(), false),
             ViewTemplateCheckbox.New(
                 commonCheckboxId, null, true, "New checkbox", listOf(
-                    ViewTemplateCheckbox.New(TemplateCheckboxId(0), null, true, "New child checkbox", listOf())
-                )
+                    ViewTemplateCheckbox.New(TemplateCheckboxId(0), null, true, "New child checkbox", listOf(), false)
+                ), false
             )
         )
     }

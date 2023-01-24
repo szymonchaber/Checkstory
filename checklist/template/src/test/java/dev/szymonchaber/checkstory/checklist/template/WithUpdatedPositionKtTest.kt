@@ -147,58 +147,66 @@ internal class WithUpdatedPositionKtTest {
     fun `should not crash in this special case`() {
         val from = ViewTemplateCheckbox.New(
             id = TemplateCheckboxId(id = 4),
-            parentId = null,
+            parentViewKey = null,
             isParent = true,
             title = "Item 2",
             children = listOf(
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 6),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 2-2",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 7),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 2-3",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 2),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 1-2",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 3),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 1-3",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 )
-            )
+            ),
+            false
         )
         val to = ViewTemplateCheckbox.New(
             id = TemplateCheckboxId(id = 0),
-            parentId = null,
+            parentViewKey = null,
             isParent = true,
             title = "Item 1",
             children = listOf(
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 1),
-                    parentId = TemplateCheckboxId(id = 0),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 1-1",
-                    children = listOf()
+                    children = listOf(),
+                    false
                 ),
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 5),
-                    parentId = TemplateCheckboxId(id = 0),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 2-1",
-                    children = listOf()
+                    children = listOf(),
+                    false
                 )
-            )
+            ),
+            false
         )
 
         val checkboxes = listOf(from, to).flatMap {
@@ -321,58 +329,66 @@ internal class WithUpdatedPositionKtTest {
     fun `wrapped should not crash in this special case`() {
         val from = ViewTemplateCheckbox.New(
             id = TemplateCheckboxId(id = 4),
-            parentId = null,
+            parentViewKey = null,
             isParent = true,
             title = "Item 2",
             children = listOf(
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 6),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 2-2",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 7),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 2-3",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 2),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 1-2",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 ), ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 3),
-                    parentId = TemplateCheckboxId(id = 4),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 1-3",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 )
-            )
+            ),
+            isLastChild = false
         )
         val to = ViewTemplateCheckbox.New(
             id = TemplateCheckboxId(id = 0),
-            parentId = null,
+            parentViewKey = null,
             isParent = true,
             title = "Item 1",
             children = listOf(
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 1),
-                    parentId = TemplateCheckboxId(id = 0),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 1-1",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 ),
                 ViewTemplateCheckbox.New(
                     id = TemplateCheckboxId(id = 5),
-                    parentId = TemplateCheckboxId(id = 0),
+                    parentViewKey = null,
                     isParent = false,
                     title = "Child 2-1",
-                    children = listOf()
+                    children = listOf(),
+                    isLastChild = false
                 )
-            )
+            ),
+            isLastChild = false
         )
 
         val checkboxes = listOf(from, to).flatMap {
@@ -411,12 +427,14 @@ internal class WithUpdatedPositionKtTest {
                 List(3) {
                     ViewTemplateCheckbox.New(
                         TemplateCheckboxId(globalIndex++),
-                        TemplateCheckboxId(0),
+                        null,
                         false,
                         "Child ${parentIndex + 1}-${it + 1}",
-                        listOf()
+                        listOf(),
+                        false
                     )
-                }
+                },
+                false
             )
         }
     }
