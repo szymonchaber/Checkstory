@@ -79,6 +79,37 @@ internal class WithUpdatedPositionKtTest {
     }
 
     @Test
+    fun `when parent 2 is moved below parent 3, then should reorder the list keeping children below their parents`() {
+        // when
+        val result = withUpdatedPosition(
+            initialCheckboxes,
+            initialCheckboxes[4].viewKey,
+            initialCheckboxes[8].viewKey
+        )
+
+        // then
+        val titles = result.map { it.title }
+        assertThat(titles).containsExactly(
+            "Item 1",
+            "Child 1-1",
+            "Child 1-2",
+            "Child 1-3",
+            "Item 3",
+            "Child 3-1",
+            "Child 3-2",
+            "Child 3-3",
+            "Item 2",
+            "Child 2-1",
+            "Child 2-2",
+            "Child 2-3",
+            "Item 4",
+            "Child 4-1",
+            "Child 4-2",
+            "Child 4-3"
+        ).inOrder()
+    }
+
+    @Test
     fun `when parent 2 is moved above parent 1, then should reorder the list keeping children below their parents`() {
         // when
         val result = withUpdatedPosition(
@@ -102,6 +133,37 @@ internal class WithUpdatedPositionKtTest {
             "Child 3-1",
             "Child 3-2",
             "Child 3-3",
+            "Item 4",
+            "Child 4-1",
+            "Child 4-2",
+            "Child 4-3"
+        ).inOrder()
+    }
+
+    @Test
+    fun `when parent 3 is moved above parent 2, then should reorder the list keeping children below their parents`() {
+        // when
+        val result = withUpdatedPosition(
+            initialCheckboxes,
+            initialCheckboxes[8].viewKey,
+            initialCheckboxes[4].viewKey
+        )
+
+        // then
+        val titles = result.map { it.title }
+        assertThat(titles).containsExactly(
+            "Item 1",
+            "Child 1-1",
+            "Child 1-2",
+            "Child 1-3",
+            "Item 3",
+            "Child 3-1",
+            "Child 3-2",
+            "Child 3-3",
+            "Item 2",
+            "Child 2-1",
+            "Child 2-2",
+            "Child 2-3",
             "Item 4",
             "Child 4-1",
             "Child 4-2",

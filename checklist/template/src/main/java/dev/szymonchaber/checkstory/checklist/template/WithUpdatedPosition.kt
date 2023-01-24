@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.checklist.template
 
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.model.renderCheckbox
-import java.lang.Integer.max
 
 fun wrapReorderChanges(
     viewTemplateCheckboxes: List<ViewTemplateCheckbox>,
@@ -60,10 +59,9 @@ private fun MutableList<ViewTemplateCheckbox>.moveParent(
     val isMovingUp = fromIndex > toIndex
     val sourceParentChildrenCount = findChildrenCount(fromIndex)
     if (isMovingUp) {
-        val offsetToIndex = max(0, toIndex - 1)
-        add(offsetToIndex, removeAt(fromIndex))
+        add(toIndex, removeAt(fromIndex))
         repeat(sourceParentChildrenCount) {
-            add(offsetToIndex + 1, removeAt(fromIndex + sourceParentChildrenCount))
+            add(toIndex + 1, removeAt(fromIndex + sourceParentChildrenCount))
         }
     } else {
         val targetParentChildrenCount = findChildrenCount(toIndex)
