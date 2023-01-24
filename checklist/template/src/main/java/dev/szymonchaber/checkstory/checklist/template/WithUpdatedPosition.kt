@@ -42,6 +42,9 @@ fun withUpdatedPosition(
     fromCheckbox: ViewTemplateCheckboxKey,
     toCheckbox: ViewTemplateCheckboxKey
 ): List<ViewTemplateCheckbox> {
+    require(fromCheckbox != toCheckbox) {
+        "\"from\" and \"to\" checkbox keys are the same: $fromCheckbox"
+    }
     return checkboxes.toMutableList()
         .apply {
             if (areParentsMoving(fromCheckbox, toCheckbox)) {

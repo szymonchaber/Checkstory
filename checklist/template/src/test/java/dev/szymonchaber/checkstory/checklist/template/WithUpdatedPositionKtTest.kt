@@ -20,6 +20,12 @@ internal class WithUpdatedPositionKtTest {
         withUpdatedPosition(initialCheckboxes, initialCheckboxes[1].viewKey, initialCheckboxes[0].viewKey)
     }
 
+    @Test(expected = IllegalArgumentException::class)
+    fun `when item is dragged to itself, then should throw`() {
+        // when
+        withUpdatedPosition(initialCheckboxes, initialCheckboxes[0].viewKey, initialCheckboxes[0].viewKey)
+    }
+
     @Test
     fun `when child is moved within parent, then should reorder children correctly in global list`() {
         // when
