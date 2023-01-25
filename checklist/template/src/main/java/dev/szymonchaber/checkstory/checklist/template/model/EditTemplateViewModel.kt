@@ -16,6 +16,7 @@ import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -58,6 +60,7 @@ class EditTemplateViewModel @Inject constructor(
             handleDescriptionChanged(),
             handleAddCheckboxClicked(),
             handleItemRemoved(),
+            handleOnCheckboxMoved(),
             handleItemTitleChanged(),
             handleSaveTemplateClicked(),
             handleDeleteTemplateClicked(),
@@ -86,7 +89,7 @@ class EditTemplateViewModel @Inject constructor(
                         "",
                         "",
                         listOf(
-                            TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf()),
+                            TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf(), 0),
                         ),
                         LocalDateTime.now(),
                         listOf(),
@@ -105,7 +108,9 @@ class EditTemplateViewModel @Inject constructor(
                 } else {
                     getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
                         .map {
-                            TemplateLoadingState.Success.fromTemplate(it)
+                            withContext(Dispatchers.Default) {
+                                TemplateLoadingState.Success.fromTemplate(it)
+                            }
                         }
                         .onStart<TemplateLoadingState> {
                             emit(TemplateLoadingState.Loading)
@@ -156,12 +161,25 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
+    private fun Flow<EditTemplateEvent>.handleOnCheckboxMoved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.OnCheckboxMoved>()
+            .withSuccessState()
+            .map { (loadingState, event) ->
+                withContext(Dispatchers.Default) {
+                    tracker.logEvent("checkbox_moved")
+                    EditTemplateState(loadingState.withMovedCheckbox(event.from, event.to)) to null
+                }
+            }
+    }
+
     private fun Flow<EditTemplateEvent>.handleChildItemAdded(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                tracker.logEvent("add_child_checkbox_clicked")
-                EditTemplateState(loadingState.plusChildCheckbox(event.parent, "")) to null
+                withContext(Dispatchers.Default) {
+                    tracker.logEvent("add_child_checkbox_clicked")
+                    EditTemplateState(loadingState.plusChildCheckbox(event.parentViewKey)) to null
+                }
             }
     }
 
@@ -178,7 +196,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("delete_child_checkbox_clicked")
-                EditTemplateState(loadingState.minusChildCheckbox(event.checkbox, event.child)) to null
+                EditTemplateState(loadingState.minusChildCheckbox(event.parentKey, event.child)) to null
             }
     }
 
@@ -187,7 +205,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 EditTemplateState(
-                    loadingState.changeChildCheckboxTitle(event.checkbox, event.child, event.newTitle)
+                    loadingState.changeChildCheckboxTitle(event.parentKey, event.child, event.newTitle)
                 ) to null
             }
     }
@@ -211,8 +229,13 @@ class EditTemplateViewModel @Inject constructor(
                         copy(
                             title = title.trimEnd(),
                             description = description.trim(),
-                            items = loadingState.checkboxes.map(ViewTemplateCheckbox::toDomainModel)
-                                .map { it.copy(title = it.title.trimEnd()) })
+                            items = loadingState.checkboxes
+                                .mapIndexed { index, checkbox ->
+                                    checkbox.toDomainModel(position = index)
+                                }
+                                .map {
+                                    it.copy(title = it.title.trimEnd())
+                                })
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)

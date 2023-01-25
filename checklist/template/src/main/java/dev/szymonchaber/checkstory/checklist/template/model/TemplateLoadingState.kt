@@ -1,5 +1,8 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
+import dev.szymonchaber.checkstory.checklist.template.viewKey
+import dev.szymonchaber.checkstory.checklist.template.wrapReorderChanges
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -15,9 +18,15 @@ sealed interface TemplateLoadingState {
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate
     ) : TemplateLoadingState {
 
+        val unwrappedCheckboxes = checkboxes.flatMap {
+            listOf(it) + it.children
+        }
+
         fun isChanged(): Boolean {
             return originalChecklistTemplate != checklistTemplate
-                    || originalChecklistTemplate.items != checkboxes.map { it.toDomainModel() }
+                    || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
+                checkbox.toDomainModel(position = index)
+            }
                     || checkboxesToDelete.isNotEmpty()
                     || remindersToDelete.isNotEmpty()
         }
@@ -32,8 +41,10 @@ sealed interface TemplateLoadingState {
                     ViewTemplateCheckbox.New(
                         TemplateCheckboxId(checkboxes.size.toLong()),
                         null,
+                        true,
                         title,
-                        listOf()
+                        listOf(),
+                        true
                     )
                 )
             )
@@ -42,7 +53,7 @@ sealed interface TemplateLoadingState {
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
             val shouldDeleteFromDatabase = checkbox is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(checkbox.toDomainModel())
+                checkboxesToDelete.plus(checkbox.toDomainModel(position = 0))
             } else {
                 checkboxesToDelete
             }
@@ -52,44 +63,44 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusChildCheckbox(parent: ViewTemplateCheckbox, title: String): Success {
+        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
             return copy(
-                checkboxes = checkboxes.update(parent) {
-                    it.plusChildCheckbox(title)
+                checkboxes = checkboxes.update(parentId) {
+                    it.plusChildCheckbox("")
                 }
             )
         }
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
             return copy(
-                checkboxes = checkboxes.update(checkbox) {
+                checkboxes = checkboxes.update(checkbox.viewKey) { it: ViewTemplateCheckbox ->
                     it.withUpdatedTitle(title)
                 }
             )
         }
 
         fun changeChildCheckboxTitle(
-            parent: ViewTemplateCheckbox,
+            parentKey: ViewTemplateCheckboxKey,
             child: ViewTemplateCheckbox,
             title: String
         ): Success {
             return copy(
-                checkboxes = checkboxes.update(parent) {
+                checkboxes = checkboxes.update(parentKey) {
                     it.editChildCheckboxTitle(child, title)
                 }
             )
         }
 
-        fun minusChildCheckbox(parent: ViewTemplateCheckbox, viewTemplateCheckbox: ViewTemplateCheckbox): Success {
-            val shouldDeleteFromDatabase = viewTemplateCheckbox is ViewTemplateCheckbox.Existing
+        fun minusChildCheckbox(parentKey: ViewTemplateCheckboxKey, child: ViewTemplateCheckbox): Success {
+            val shouldDeleteFromDatabase = child is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(viewTemplateCheckbox.toDomainModel())
+                checkboxesToDelete.plus(child.toDomainModel(position = 0))
             } else {
                 checkboxesToDelete
             }
             return copy(
-                checkboxes = checkboxes.update(parent) {
-                    it.minusChildCheckbox(viewTemplateCheckbox)
+                checkboxes = checkboxes.update(parentKey) {
+                    it.minusChildCheckbox(child)
                 },
                 checkboxesToDelete = updatedCheckboxesToDelete
             )
@@ -110,6 +121,10 @@ sealed interface TemplateLoadingState {
             return updateTemplate {
                 copy(reminders = reminders.minus(reminder))
             }.copy(remindersToDelete = updatedRemindersToDelete)
+        }
+
+        fun withMovedCheckbox(from: ViewTemplateCheckboxKey, to: ViewTemplateCheckboxKey): TemplateLoadingState {
+            return copy(checkboxes = wrapReorderChanges(unwrappedCheckboxes, from, to))
         }
 
         companion object {

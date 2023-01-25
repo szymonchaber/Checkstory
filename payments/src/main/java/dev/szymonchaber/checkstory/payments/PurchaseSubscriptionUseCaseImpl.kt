@@ -69,7 +69,6 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
         }
     }
 
-
     override suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
         return withContext(Dispatchers.Default) {
             billingManager.connectBillingClient().flatMap {

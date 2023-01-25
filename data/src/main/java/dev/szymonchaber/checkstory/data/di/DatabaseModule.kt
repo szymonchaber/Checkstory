@@ -8,7 +8,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
-import dev.szymonchaber.checkstory.data.database.dao.*
+import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
+import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
+import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
+import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
@@ -55,8 +59,8 @@ object DatabaseModule {
                     )
                 )
                 templateCheckboxDao.insertAll(
-                    TemplateCheckboxEntity(1, 1, "Checkbox item", null),
-                    TemplateCheckboxEntity(2, 1, "Checkbox item 2", null)
+                    TemplateCheckboxEntity(1, 1, "Checkbox item", null, 0),
+                    TemplateCheckboxEntity(2, 1, "Checkbox item 2", null, 0)
                 )
                 insert {
                     checklist(1, 1, "This was an awesome session") {

@@ -16,8 +16,8 @@
     <string name="edit_template">Edit template</string>
     <string name="title">Title</string>
     <string name="description">Description</string>
-    <string name="new_checkbox">New item</string>
-    <string name="new_child_checkbox">New sub-item</string>
+    <string name="new_checkbox">New task</string>
+    <string name="new_child_checkbox">New sub-task</string>
     <string name="reminders_label">Reminders</string>
     <string name="new_reminder">New reminder</string>
     <string name="task_name">Task name</string>

@@ -14,21 +14,21 @@ class TemplateLoadingStateTest {
     fun `given existing and new item with the same id, should update item of the same type only`() {
         // given
         val commonCheckboxId = TemplateCheckboxId(1)
-        val successState = success(listOf(TemplateCheckbox(commonCheckboxId, null, "title", listOf())))
+        val successState = success(listOf(TemplateCheckbox(commonCheckboxId, null, "title", listOf(), 0)))
 
         // when
         val updatedState = successState.plusNewCheckbox("New checkbox").let {
             val newCheckbox = it.checkboxes.filterIsInstance<ViewTemplateCheckbox.New>().first()
-            it.plusChildCheckbox(newCheckbox, "New child checkbox")
+            it
         }
 
         // then
         assertThat(updatedState.checkboxes).containsExactly(
-            ViewTemplateCheckbox.Existing(commonCheckboxId, null, "title", listOf()),
+            ViewTemplateCheckbox.Existing(commonCheckboxId, null, true, "title", listOf(), false),
             ViewTemplateCheckbox.New(
-                commonCheckboxId, null, "New checkbox", listOf(
-                    ViewTemplateCheckbox.New(TemplateCheckboxId(0), null, "New child checkbox", listOf())
-                )
+                commonCheckboxId, null, true, "New checkbox", listOf(
+                    ViewTemplateCheckbox.New(TemplateCheckboxId(0), null, true, "New child checkbox", listOf(), false)
+                ), false
             )
         )
     }
@@ -41,6 +41,7 @@ class TemplateLoadingStateTest {
                 "Description",
                 list,
                 LocalDateTime.now(),
+                listOf(),
                 listOf()
             )
         )

@@ -2,11 +2,14 @@
 
 package dev.szymonchaber.checkstory.checklist.template
 
+import android.os.Parcelable
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -58,6 +61,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderView
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
+import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
@@ -68,6 +72,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
+import org.burnoutcrew.reorderable.ItemPosition
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.ReorderableLazyListState
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination("edit_template_screen", start = true)
@@ -212,7 +222,11 @@ private fun EditTemplateScaffold(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    EditTemplateView(loadingState.checklistTemplate, loadingState.checkboxes, viewModel::onEvent)
+                    EditTemplateView(
+                        loadingState.checklistTemplate,
+                        loadingState.unwrappedCheckboxes,
+                        viewModel::onEvent
+                    )
                 }
             }
         },
@@ -226,53 +240,164 @@ private fun EditTemplateScaffold(
     )
 }
 
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
     checkboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
+    val state = rememberReorderableLazyListState(onMove = { from, to ->
+        eventCollector(EditTemplateEvent.OnCheckboxMoved(from.viewKey!!, to.viewKey!!))
+    }, canDragOver = { draggedOver, dragging ->
+        draggedOver.isCheckbox
+                && !(dragging.viewKey!!.isChild && draggedOver.index < 2)
+                && !(dragging.viewKey!!.isParent && draggedOver.viewKey!!.isChild)
+    })
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        state = state.listState,
+        modifier = Modifier
+            .reorderable(state)
     ) {
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
         }
         items(
-            checkboxes,
-//            key = { it.id.id } // TODO causes crashes & animations don't work anyways - fix at some point
+            items = checkboxes,
+            key = { it.viewKey }
         ) {
-            ParentCheckboxItem(
-                Modifier
-                    .animateItemPlacement()
-                    .padding(start = 16.dp, end = 16.dp), it, eventCollector
-            )
+            ReorderableItem(
+                reorderableState = state,
+                key = it.viewKey
+            ) { isDragging ->
+                SmartCheckboxItem(it, eventCollector, state, isDragging)
+            }
         }
         item {
-            AddButton(
-                modifier = Modifier.padding(start = 8.dp),
-                onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
-                text = stringResource(R.string.new_checkbox)
-            )
+            AddTaskButton(eventCollector)
         }
         item {
             RemindersSection(checklistTemplate, eventCollector)
         }
         item {
-            Box(Modifier.fillMaxWidth()) {
-                DeleteButton(
-                    modifier = Modifier
-                        .padding(top = 16.dp)
-                        .align(Alignment.TopCenter)
-                ) {
-                    eventCollector(EditTemplateEvent.DeleteTemplateClicked)
+            DeleteTemplateButton(eventCollector)
+        }
+    }
+}
+
+@Composable
+private fun AddTaskButton(eventCollector: (EditTemplateEvent) -> Unit) {
+    AddButton(
+        modifier = Modifier.padding(start = 8.dp),
+        onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
+        text = stringResource(R.string.new_checkbox)
+    )
+}
+
+@Composable
+private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
+    Box(Modifier.fillMaxWidth()) {
+        DeleteButton(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .align(Alignment.TopCenter)
+        ) {
+            eventCollector(EditTemplateEvent.DeleteTemplateClicked)
+        }
+    }
+}
+
+@Composable
+private fun SmartCheckboxItem(
+    checkbox: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit,
+    state: ReorderableLazyListState,
+    isDragging: Boolean
+) {
+    Row(
+        Modifier.animateContentSize()
+    ) {
+        if (checkbox.isParent) {
+            Column {
+                ParentCheckbox(state, isDragging, checkbox, eventCollector)
+                if (checkbox.children.isEmpty() && state.draggingItemKey == null) {
+                    NewChildCheckboxButton(checkbox.viewKey, eventCollector)
                 }
+            }
+        } else {
+            ChildCheckbox(state, isDragging, checkbox, eventCollector)
+        }
+    }
+}
+
+@Composable
+private fun ParentCheckbox(
+    state: ReorderableLazyListState,
+    isDragging: Boolean,
+    checkbox: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    CheckboxItem(
+        modifier = Modifier
+            .padding(start = 16.dp, end = 16.dp),
+        state = state,
+        isDragging = isDragging,
+        title = checkbox.title,
+        onTitleChange = {
+            eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+        },
+    ) {
+        eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+    }
+}
+
+@Composable
+private fun ChildCheckbox(
+    state: ReorderableLazyListState,
+    isDragging: Boolean,
+    checkbox: ViewTemplateCheckbox,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    Column(Modifier.animateContentSize()) {
+        if (state.draggingItemKey == null || (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent != true) {
+            CheckboxItem(
+                modifier = Modifier
+                    .padding(start = 44.dp, top = 8.dp, end = 16.dp),
+                state = state,
+                isDragging = isDragging,
+                title = checkbox.title,
+                onTitleChange = {
+                    eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
+                },
+            ) {
+                eventCollector(
+                    EditTemplateEvent.ChildItemDeleted(
+                        checkbox.parentViewKey!!,
+                        checkbox
+                    )
+                )
+            }
+            if (checkbox.isLastChild && state.draggingItemKey == null) {
+                NewChildCheckboxButton(parent = checkbox.parentViewKey!!, eventCollector = eventCollector)
             }
         }
     }
+}
+
+@Composable
+fun NewChildCheckboxButton(
+    parent: ViewTemplateCheckboxKey,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    val text = stringResource(R.string.new_child_checkbox)
+    AddButton(
+        modifier = Modifier.padding(start = 36.dp, end = 16.dp),
+        onClick = {
+            eventCollector(EditTemplateEvent.ChildItemAdded(parent))
+        },
+        text = text
+    )
 }
 
 @Composable
@@ -324,3 +449,35 @@ private fun ChecklistTemplateDetails(
         text = stringResource(R.string.items)
     )
 }
+
+@Parcelize
+data class ViewTemplateCheckboxKey(
+    val viewId: Long,
+    val parentKey: ViewTemplateCheckboxKey?,
+    val isNew: Boolean,
+    val isParent: Boolean
+) : Parcelable {
+
+    val isChild: Boolean
+        get() = !isParent
+}
+
+val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
+    get() {
+        return ViewTemplateCheckboxKey(
+            id.id,
+            parentViewKey,
+            this is ViewTemplateCheckbox.New,
+            isParent
+        )
+    }
+
+val ItemPosition.viewKey: ViewTemplateCheckboxKey?
+    get() {
+        return key as? ViewTemplateCheckboxKey
+    }
+
+val ItemPosition.isCheckbox: Boolean
+    get() {
+        return key is ViewTemplateCheckboxKey
+    }

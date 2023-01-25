@@ -47,7 +47,9 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     fun getAll(): Flow<List<ChecklistTemplate>> {
         return checklistTemplateDao.getAll()
             .flatMapLatest {
-                it.map(::combineIntoDomainChecklistTemplate).toFlowOfLists()
+                withContext(Dispatchers.Default) {
+                    it.map { combineIntoDomainChecklistTemplate(it) }.toFlowOfLists()
+                }
             }
     }
 
@@ -104,12 +106,14 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         }
     }
 
-    private fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {
-        val checkboxesFlow = templateCheckboxDao.getAllForChecklistTemplate(entity.id)
-        val checklistsFlow = checklistRoomDataSource.getBasedOn(ChecklistTemplateId(entity.id))
-        val remindersFlow = reminderDao.getAllForChecklistTemplate(entity.id)
-        return combine(checkboxesFlow, checklistsFlow, remindersFlow) { checkboxes, checklists, reminders ->
-            mapChecklistTemplate(entity, checkboxes, checklists, reminders)
+    private suspend fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {
+        return withContext(Dispatchers.Default) {
+            val checkboxesFlow = templateCheckboxDao.getAllForChecklistTemplate(entity.id)
+            val checklistsFlow = checklistRoomDataSource.getBasedOn(ChecklistTemplateId(entity.id))
+            val remindersFlow = reminderDao.getAllForChecklistTemplate(entity.id)
+            combine(checkboxesFlow, checklistsFlow, remindersFlow) { checkboxes, checklists, reminders ->
+                mapChecklistTemplate(entity, checkboxes, checklists, reminders)
+            }
         }
     }
 
@@ -152,7 +156,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             TemplateCheckboxId(templateCheckboxEntity.checkboxId),
             parentId,
             templateCheckboxEntity.checkboxTitle,
-            children
+            children,
+            templateCheckboxEntity.sortPosition
         )
     }
 
