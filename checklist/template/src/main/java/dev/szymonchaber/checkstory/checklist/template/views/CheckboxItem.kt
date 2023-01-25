@@ -35,7 +35,6 @@ fun CheckboxItem(
     state: ReorderableLazyListState,
     isDragging: Boolean,
     title: String,
-    isNew: Boolean,
     onTitleChange: (String) -> Unit,
     onDeleteClick: () -> Unit
 ) {
@@ -52,15 +51,7 @@ fun CheckboxItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp)
-                .align(Alignment.CenterVertically)
-                .let {
-                    if (isNew) {
-                        it
-//                            .focusOnEntry(true) // TODO does not work
-                    } else {
-                        it
-                    }
-                },
+                .align(Alignment.CenterVertically),
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
             value = title,
             onValueChange = onTitleChange,
@@ -95,7 +86,6 @@ fun CheckboxItemPreview() {
         state = rememberReorderableLazyListState({ _, _ -> }),
         isDragging = false,
         title = "Checkbox",
-        isNew = true,
         onTitleChange = { }
     ) { }
 }

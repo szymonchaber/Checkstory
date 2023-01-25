@@ -344,7 +344,6 @@ private fun ParentCheckbox(
         state = state,
         isDragging = isDragging,
         title = checkbox.title,
-        checkbox is ViewTemplateCheckbox.New,
         onTitleChange = {
             eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
         },
@@ -368,7 +367,6 @@ private fun ChildCheckbox(
                 state = state,
                 isDragging = isDragging,
                 title = checkbox.title,
-                checkbox is ViewTemplateCheckbox.New,
                 onTitleChange = {
                     eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
                 },
