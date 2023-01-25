@@ -10,14 +10,9 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     val id: TemplateCheckboxId
     val parentViewKey: ViewTemplateCheckboxKey?
-    val parentId: TemplateCheckboxId?
-        get() = parentViewKey?.viewId?.let(::TemplateCheckboxId)
     val title: String
     val children: List<ViewTemplateCheckbox>
     val isParent: Boolean
-
-    val isChild: Boolean
-        get() = !isParent
 
     val isLastChild: Boolean
 
@@ -228,19 +223,6 @@ fun List<ViewTemplateCheckbox>.update(
 ): List<ViewTemplateCheckbox> {
     return update(
         viewTemplateCheckbox.id,
-        {
-            it.id // TODO it was "it" before - will it work still?
-        },
-        updater
-    )
-}
-
-fun List<ViewTemplateCheckbox>.update(
-    templateCheckboxId: TemplateCheckboxId,
-    updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
-): List<ViewTemplateCheckbox> {
-    return update(
-        templateCheckboxId,
         {
             it.id // TODO it was "it" before - will it work still?
         },
