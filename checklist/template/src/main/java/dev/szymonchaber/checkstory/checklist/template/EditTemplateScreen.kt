@@ -5,14 +5,12 @@ package dev.szymonchaber.checkstory.checklist.template
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -363,17 +361,7 @@ private fun ChildCheckbox(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column(Modifier.animateContentSize()) {
-        if (state.draggingItemKey != null && (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent == true) {
-            Row(
-                Modifier
-                    .padding(start = 44.dp, top = 8.dp, end = 16.dp)
-                    .fillMaxWidth()
-                    .height(height = 8.dp)
-                    .background(Color.LightGray)
-            ) {
-
-            }
-        } else {
+        if (state.draggingItemKey == null || (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent != true) {
             CheckboxItem(
                 modifier = Modifier
                     .padding(start = 44.dp, top = 8.dp, end = 16.dp),
