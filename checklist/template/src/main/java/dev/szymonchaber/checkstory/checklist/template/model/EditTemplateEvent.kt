@@ -37,7 +37,7 @@ sealed interface EditTemplateEvent {
 
     data class DeleteReminderClicked(val reminder: Reminder) : EditTemplateEvent
 
-    data class OnUnwrappedCheckboxMoved(
+    data class OnCheckboxMoved(
         val from: ViewTemplateCheckboxKey,
         val to: ViewTemplateCheckboxKey
     ) : EditTemplateEvent

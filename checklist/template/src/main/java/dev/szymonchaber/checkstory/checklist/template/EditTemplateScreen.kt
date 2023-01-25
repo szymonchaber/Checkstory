@@ -247,7 +247,7 @@ fun EditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val state = rememberReorderableLazyListState(onMove = { from, to ->
-        eventCollector(EditTemplateEvent.OnUnwrappedCheckboxMoved(from.viewKey!!, to.viewKey!!))
+        eventCollector(EditTemplateEvent.OnCheckboxMoved(from.viewKey!!, to.viewKey!!))
     }, canDragOver = { draggedOver, dragging ->
         draggedOver.isCheckbox
                 && !(dragging.viewKey!!.isChild && draggedOver.index < 2)

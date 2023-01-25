@@ -122,10 +122,7 @@ sealed interface TemplateLoadingState {
             }.copy(remindersToDelete = updatedRemindersToDelete)
         }
 
-        fun withMovedUnwrappedCheckbox(
-            from: ViewTemplateCheckboxKey,
-            to: ViewTemplateCheckboxKey
-        ): TemplateLoadingState {
+        fun withMovedCheckbox(from: ViewTemplateCheckboxKey, to: ViewTemplateCheckboxKey): TemplateLoadingState {
             return copy(checkboxes = wrapReorderChanges(unwrappedCheckboxes, from, to))
         }
 
