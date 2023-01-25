@@ -22,8 +22,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun plusChildCheckbox(title: String): ViewTemplateCheckbox
 
-    fun plusChildCheckbox(viewTemplateCheckbox: ViewTemplateCheckbox, index: Int? = null): ViewTemplateCheckbox
-
     fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox
 
     fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox
@@ -72,23 +70,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             )
         }
 
-        override fun plusChildCheckbox(
-            viewTemplateCheckbox: ViewTemplateCheckbox,
-            index: Int?
-        ): ViewTemplateCheckbox {
-            return copy(
-                children = children.toMutableList().apply {
-                    index?.let {
-                        add(it, viewTemplateCheckbox)
-                    } ?: kotlin.run {
-                        add(
-                            viewTemplateCheckbox
-                        )
-                    }
-                }.reindexed()
-            )
-        }
-
         override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
             return copy(
                 children = children.minus(child).reindexed()
@@ -97,7 +78,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
             return copy(
-                children = children.update(child.viewKey) { it: ViewTemplateCheckbox ->
+                children = children.update(child.viewKey) {
                     it.withUpdatedTitle(title)
                 }
             )
@@ -152,23 +133,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             )
         }
 
-        override fun plusChildCheckbox(
-            viewTemplateCheckbox: ViewTemplateCheckbox,
-            index: Int?
-        ): ViewTemplateCheckbox {
-            return copy(
-                children = children.toMutableList().apply {
-                    index?.let {
-                        add(it, viewTemplateCheckbox)
-                    } ?: kotlin.run {
-                        add(
-                            viewTemplateCheckbox
-                        )
-                    }
-                }.reindexed()
-            )
-        }
-
         override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
             return copy(
                 children = children.minus(child).reindexed()
@@ -177,7 +141,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
             return copy(
-                children = children.update(child.viewKey) { it: ViewTemplateCheckbox ->
+                children = children.update(child.viewKey) {
                     it.withUpdatedTitle(title)
                 }
             )
