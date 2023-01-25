@@ -97,7 +97,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
             return copy(
-                children = children.update(child) {
+                children = children.update(child.viewKey) { it: ViewTemplateCheckbox ->
                     it.withUpdatedTitle(title)
                 }
             )
@@ -177,7 +177,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
             return copy(
-                children = children.update(child) {
+                children = children.update(child.viewKey) { it: ViewTemplateCheckbox ->
                     it.withUpdatedTitle(title)
                 }
             )
@@ -215,19 +215,6 @@ private fun List<ViewTemplateCheckbox>.reindexed(): List<ViewTemplateCheckbox> {
     return mapIndexed { index, item ->
         item.withIsLastChild(index == lastIndex)
     }
-}
-
-fun List<ViewTemplateCheckbox>.update(
-    viewTemplateCheckbox: ViewTemplateCheckbox,
-    updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
-): List<ViewTemplateCheckbox> {
-    return update(
-        viewTemplateCheckbox.id,
-        {
-            it.id // TODO it was "it" before - will it work still?
-        },
-        updater
-    )
 }
 
 fun List<ViewTemplateCheckbox>.update(
