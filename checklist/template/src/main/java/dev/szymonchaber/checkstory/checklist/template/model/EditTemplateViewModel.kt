@@ -165,10 +165,8 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.OnCheckboxMoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                withContext(Dispatchers.Default) {
-                    tracker.logEvent("checkbox_moved")
-                    EditTemplateState(loadingState.withMovedCheckbox(event.from, event.to)) to null
-                }
+                tracker.logEvent("checkbox_moved")
+                EditTemplateState(loadingState.withMovedCheckbox(event.from, event.to)) to null
             }
     }
 
