@@ -19,6 +19,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
@@ -33,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
@@ -170,14 +172,12 @@ private fun TemplateActionButtons(
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     Row(Modifier.fillMaxWidth()) {
-        IconButton(
+        TextButton(
             onClick = {
-                eventListener(
-                    ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate)
-                )
+                eventListener(ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate))
             }
         ) {
-            Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+            Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
         }
         Row(
             Modifier.fillMaxWidth(),
