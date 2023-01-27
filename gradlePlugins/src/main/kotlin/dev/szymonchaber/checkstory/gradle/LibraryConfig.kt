@@ -40,7 +40,7 @@ class LibraryConfig : Plugin<Project> {
                 compose = true
             }
             composeOptions {
-                kotlinCompilerExtensionVersion = "1.2.0"
+                kotlinCompilerExtensionVersion = "1.4.0"
             }
             kotlinOptions {
                 jvmTarget = "11"

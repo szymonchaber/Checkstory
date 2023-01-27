@@ -6,7 +6,7 @@ plugins {
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("dependencies")
-    id("com.google.devtools.ksp") version "1.7.0-1.0.6"
+    id("com.google.devtools.ksp") version "1.8.0-1.0.8"
     id("library-config")
     id("kotlin-parcelize")
 }

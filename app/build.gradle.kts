@@ -6,7 +6,7 @@ plugins {
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("dependencies")
-    id("com.google.devtools.ksp") version "1.7.0-1.0.6"
+    id("com.google.devtools.ksp") version "1.8.0-1.0.8"
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("com.google.firebase.firebase-perf")
@@ -52,7 +52,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.2.0"
+        kotlinCompilerExtensionVersion = "1.4.0"
     }
     packagingOptions {
         resources {

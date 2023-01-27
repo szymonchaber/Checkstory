@@ -11,7 +11,7 @@ class Dependencies : Plugin<Project> {
 
         const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0"
 
-        private const val hiltVersion = "2.42"
+        private const val hiltVersion = "2.44.2"
         private const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
         const val hiltKapt = "com.google.dagger:hilt-compiler:$hiltVersion"
         private const val timber = "com.jakewharton.timber:timber:5.0.1"
@@ -28,13 +28,13 @@ class Dependencies : Plugin<Project> {
             "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion"
         )
 
-        const val composeVersion = "1.2.1"
+        const val composeVersion = "1.4.0-alpha05"
         val compose = listOf(
             "androidx.compose.ui:ui:$composeVersion",
             "androidx.compose.ui:ui-tooling:$composeVersion",
             "androidx.compose.material:material:$composeVersion",
-            "androidx.activity:activity-compose:1.5.1",
-            "androidx.navigation:navigation-compose:2.5.1",
+            "androidx.activity:activity-compose:1.6.0",
+            "androidx.navigation:navigation-compose:2.5.3",
             "androidx.hilt:hilt-navigation-compose:1.0.0"
         )
 
@@ -59,12 +59,14 @@ class Dependencies : Plugin<Project> {
 
         val ads = "com.google.android.gms:play-services-ads:20.6.0"
 
+        // region firebase
         val firebasePlatform = "com.google.firebase:firebase-bom:31.0.1"
 
         val analytics = "com.google.firebase:firebase-analytics-ktx"
         val crashlytics = "com.google.firebase:firebase-crashlytics"
         val performance = "com.google.firebase:firebase-perf"
         val messaging = "com.google.firebase:firebase-messaging-ktx"
+        //endregion
 
         val rrule = "com.github.PhilJay:RRule:1.0.3"
 
