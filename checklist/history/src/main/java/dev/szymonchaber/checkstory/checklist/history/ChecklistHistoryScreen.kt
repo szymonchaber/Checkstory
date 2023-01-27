@@ -27,8 +27,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -151,7 +153,14 @@ fun ChecklistHistoryItem(
             eventListener(ChecklistHistoryEvent.ChecklistClicked(checklist.id))
         }
     ) {
-        val notes = checklist.notes.takeUnless(String::isBlank)?.let { "\"$it\"" } ?: "🙊"
+        val notesFontStyle = if (checklist.notes.isBlank()) {
+            FontStyle.Italic
+        } else {
+            FontStyle.Normal
+        }
+        val notesOrEmptyNotesText = checklist.notes.ifBlank {
+            stringResource(id = R.string.no_notes)
+        }
         Column(
             modifier = Modifier.padding(all = 16.dp)
         ) {
@@ -161,8 +170,8 @@ fun ChecklistHistoryItem(
             )
             Text(
                 modifier = Modifier.padding(top = 16.dp),
-                text = notes,
-                style = MaterialTheme.typography.subtitle1
+                text = notesOrEmptyNotesText,
+                style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle, fontSize = 14.sp)
             )
             Row(
                 modifier = Modifier
