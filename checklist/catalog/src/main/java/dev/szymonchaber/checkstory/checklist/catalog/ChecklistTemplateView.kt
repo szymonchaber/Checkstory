@@ -1,15 +1,19 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -19,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,11 +66,18 @@ fun ChecklistTemplateView(
             modifier = Modifier
                 .animateContentSize()
         ) {
-            Text(
-                modifier = Modifier.padding(16.dp),
-                text = checklistTemplate.title,
-                style = MaterialTheme.typography.subtitle1
-            )
+            val interactionSource = remember { MutableInteractionSource() }
+            Row(Modifier.fillMaxWidth()) {
+                Text(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(vertical = 16.dp)
+                        .padding(start = 16.dp, end = 8.dp),
+                    text = checklistTemplate.title,
+                    style = MaterialTheme.typography.subtitle1
+                )
+                TemplateActions(interactionSource, eventListener, checklistTemplate)
+            }
             DateFormatText(
                 localDateTime = checklistTemplate.createdAt,
                 modifier = Modifier
@@ -72,7 +85,7 @@ fun ChecklistTemplateView(
                     .padding(horizontal = 16.dp)
                     .padding(top = 16.dp)
             )
-            TemplateActionButtons(checklistTemplate, eventListener)
+            TemplateActionButtons(checklistTemplate, interactionSource, eventListener)
             if (!isCollapsed) {
                 SectionLabel(
                     modifier = Modifier.padding(start = 16.dp),
@@ -118,8 +131,42 @@ fun ChecklistTemplateView(
 }
 
 @Composable
+private fun RowScope.TemplateActions(
+    interactionSource: MutableInteractionSource,
+    eventListener: (ChecklistCatalogEvent) -> Unit,
+    checklistTemplate: ChecklistTemplate
+) {
+    var showMenu by remember { mutableStateOf(false) }
+    IconButton(
+        modifier = Modifier.Companion
+            .align(Alignment.Top),
+        interactionSource = interactionSource,
+        onClick = { showMenu = !showMenu }) {
+        Icon(Icons.Default.MoreVert, null, tint = Color.Black)
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false }
+        ) {
+            DropdownMenuItem(onClick = {
+                showMenu = false
+                eventListener(ChecklistCatalogEvent.EditTemplateClicked(checklistTemplate.id))
+            }) {
+                Text(text = stringResource(id = R.string.edit))
+            }
+            DropdownMenuItem(onClick = {
+                showMenu = false
+                eventListener(ChecklistCatalogEvent.TemplateHistoryClicked(checklistTemplate.id))
+            }) {
+                Text(text = stringResource(id = R.string.checklist_history))
+            }
+        }
+    }
+}
+
+@Composable
 private fun TemplateActionButtons(
     checklistTemplate: ChecklistTemplate,
+    targetInteractionSource: MutableInteractionSource,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     Row(Modifier.fillMaxWidth()) {
@@ -136,21 +183,21 @@ private fun TemplateActionButtons(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
         ) {
+            val editInteractionSource = remember {
+                PassThroughInteractionSource(targetInteractionSource)
+            }
+            val historyInteractionSource = remember {
+                PassThroughInteractionSource(targetInteractionSource)
+            }
             IconButton(
-                onClick = {
-                    eventListener(
-                        ChecklistCatalogEvent.EditTemplateClicked(checklistTemplate.id)
-                    )
-                }
+                interactionSource = editInteractionSource,
+                onClick = {}
             ) {
                 Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
             }
             IconButton(
-                onClick = {
-                    eventListener(
-                        ChecklistCatalogEvent.TemplateHistoryClicked(checklistTemplate.id)
-                    )
-                }
+                interactionSource = historyInteractionSource,
+                onClick = {}
             ) {
                 Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
             }
