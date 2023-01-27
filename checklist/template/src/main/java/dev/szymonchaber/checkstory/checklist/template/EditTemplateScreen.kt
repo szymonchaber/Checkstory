@@ -246,6 +246,7 @@ fun EditTemplateView(
     checkboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
+    val isDraggingEnabled = false
     val state = rememberReorderableLazyListState(onMove = { from, to ->
         eventCollector(EditTemplateEvent.OnCheckboxMoved(from.viewKey!!, to.viewKey!!))
     }, canDragOver = { draggedOver, dragging ->
@@ -258,7 +259,13 @@ fun EditTemplateView(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         state = state.listState,
         modifier = Modifier
-            .reorderable(state)
+            .let {
+                if (isDraggingEnabled) {
+                    it.reorderable(state)
+                } else {
+                    it
+                }
+            }
     ) {
         item {
             ChecklistTemplateDetails(checklistTemplate, eventCollector)
@@ -271,7 +278,7 @@ fun EditTemplateView(
                 reorderableState = state,
                 key = it.viewKey
             ) { isDragging ->
-                SmartCheckboxItem(it, eventCollector, state, isDragging)
+                SmartCheckboxItem(it, isDraggingEnabled, eventCollector, state, isDragging)
             }
         }
         item {
@@ -311,22 +318,23 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
 @Composable
 private fun SmartCheckboxItem(
     checkbox: ViewTemplateCheckbox,
+    isDraggingEnabled: Boolean,
     eventCollector: (EditTemplateEvent) -> Unit,
     state: ReorderableLazyListState,
     isDragging: Boolean
 ) {
     Row(
-        Modifier.animateContentSize()
+        if (isDraggingEnabled) Modifier.animateContentSize() else Modifier
     ) {
         if (checkbox.isParent) {
             Column {
-                ParentCheckbox(state, isDragging, checkbox, eventCollector)
+                ParentCheckbox(state, isDraggingEnabled, isDragging, checkbox, eventCollector)
                 if (checkbox.children.isEmpty() && state.draggingItemKey == null) {
                     NewChildCheckboxButton(checkbox.viewKey, eventCollector)
                 }
             }
         } else {
-            ChildCheckbox(state, isDragging, checkbox, eventCollector)
+            ChildCheckbox(state, isDraggingEnabled, isDragging, checkbox, eventCollector)
         }
     }
 }
@@ -334,6 +342,7 @@ private fun SmartCheckboxItem(
 @Composable
 private fun ParentCheckbox(
     state: ReorderableLazyListState,
+    isDraggingEnabled: Boolean,
     isDragging: Boolean,
     checkbox: ViewTemplateCheckbox,
     eventCollector: (EditTemplateEvent) -> Unit
@@ -342,6 +351,7 @@ private fun ParentCheckbox(
         modifier = Modifier
             .padding(start = 16.dp, end = 16.dp),
         state = state,
+        isDraggingEnabled = isDraggingEnabled,
         isDragging = isDragging,
         title = checkbox.title,
         onTitleChange = {
@@ -355,16 +365,18 @@ private fun ParentCheckbox(
 @Composable
 private fun ChildCheckbox(
     state: ReorderableLazyListState,
+    isDraggingEnabled: Boolean,
     isDragging: Boolean,
     checkbox: ViewTemplateCheckbox,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    Column(Modifier.animateContentSize()) {
+    Column(if (isDraggingEnabled) Modifier.animateContentSize() else Modifier) {
         if (state.draggingItemKey == null || (state.draggingItemKey as? ViewTemplateCheckboxKey)?.isParent != true) {
             CheckboxItem(
                 modifier = Modifier
                     .padding(start = 44.dp, top = 8.dp, end = 16.dp),
                 state = state,
+                isDraggingEnabled = isDraggingEnabled,
                 isDragging = isDragging,
                 title = checkbox.title,
                 onTitleChange = {

@@ -33,10 +33,11 @@ import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 fun CheckboxItem(
     modifier: Modifier,
     state: ReorderableLazyListState,
+    isDraggingEnabled: Boolean,
     isDragging: Boolean,
     title: String,
     onTitleChange: (String) -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
 ) {
     val elevation = animateDpAsState(if (isDragging) 16.dp else 0.dp)
     Row(
@@ -46,11 +47,13 @@ fun CheckboxItem(
             .background(MaterialTheme.colors.surface)
             .then(modifier)
     ) {
-        DragHandle(state)
+        if (isDraggingEnabled) {
+            DragHandle(state)
+        }
         OutlinedTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 8.dp)
+                .padding(start = if (isDraggingEnabled) 8.dp else 0.dp)
                 .align(Alignment.CenterVertically),
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
             value = title,
@@ -85,7 +88,10 @@ fun CheckboxItemPreview() {
         modifier = Modifier,
         state = rememberReorderableLazyListState({ _, _ -> }),
         isDragging = false,
+        isDraggingEnabled = false,
         title = "Checkbox",
         onTitleChange = { }
-    ) { }
+    ) {
+
+    }
 }
