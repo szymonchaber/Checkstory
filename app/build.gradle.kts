@@ -104,6 +104,7 @@ dependencies {
     implementation(Dependencies.performance)
     implementation(Dependencies.messaging)
 
+    debugImplementation(Dependencies.debugUiTooling)
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }

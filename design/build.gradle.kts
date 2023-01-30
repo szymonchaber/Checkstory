@@ -44,6 +44,7 @@ dependencies {
 
     implementation(Dependencies.ads)
 
+    debugImplementation(Dependencies.debugUiTooling)
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }

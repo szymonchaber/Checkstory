@@ -43,6 +43,7 @@ dependencies {
     implementation(Dependencies.crashlytics)
     implementation(Dependencies.analytics)
 
+    debugImplementation(Dependencies.debugUiTooling)
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }

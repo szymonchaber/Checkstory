@@ -31,6 +31,7 @@ dependencies {
 
     kapt(Dependencies.hiltKapt)
 
+    debugImplementation(Dependencies.debugUiTooling)
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }

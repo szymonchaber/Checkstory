@@ -56,6 +56,7 @@ dependencies {
     implementation(Dependencies.composeDialogsDateTime)
     implementation(Dependencies.composeReorderable)
 
+    debugImplementation(Dependencies.debugUiTooling)
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }
