@@ -51,6 +51,12 @@ sealed interface TemplateLoadingState {
         }
 
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
+            val filteredCheckboxes =
+                checkboxes
+                    .filterNot { it.viewKey == checkbox.viewKey }
+                    .map {
+                        it.minusChildCheckboxRecursive(checkbox)
+                    }
             val shouldDeleteFromDatabase = checkbox is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
                 checkboxesToDelete.plus(checkbox.toDomainModel(position = 0))
@@ -58,7 +64,7 @@ sealed interface TemplateLoadingState {
                 checkboxesToDelete
             }
             return copy(
-                checkboxes = checkboxes.minus(checkbox),
+                checkboxes = filteredCheckboxes,
                 checkboxesToDelete = updatedCheckboxesToDelete
             )
         }
@@ -73,7 +79,7 @@ sealed interface TemplateLoadingState {
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
             return copy(
-                checkboxes = checkboxes.update(checkbox.viewKey) { it: ViewTemplateCheckbox ->
+                checkboxes = checkboxes.update(checkbox.viewKey) {
                     it.withUpdatedTitle(title)
                 }
             )
@@ -132,7 +138,20 @@ sealed interface TemplateLoadingState {
             fun fromTemplate(checklistTemplate: ChecklistTemplate): Success {
                 return Success(
                     checklistTemplate,
-                    checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) },
+                    checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) }
+                        .map {
+                            it.replaceChildren(
+                                it.children.map {
+                                    val updated = it.plusChildCheckbox("A subtask!")
+                                        .plusChildCheckbox("A second subtask!")
+                                        .plusChildCheckbox("A third?!")
+                                    updated.replaceChildren(updated.children.map {
+                                        it.plusChildCheckbox("A subtask!").plusChildCheckbox("A second subtask!")
+                                            .plusChildCheckbox("A third?!")
+                                    })
+                                }
+                            )
+                        },
                     listOf(),
                     listOf()
                 )

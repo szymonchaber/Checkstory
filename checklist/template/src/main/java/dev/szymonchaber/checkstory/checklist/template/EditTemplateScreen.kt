@@ -273,13 +273,13 @@ fun EditTemplateView(
         }
         items(
             items = checkboxes,
-            key = { it.viewKey }
-        ) {
+//            key = { it.viewKey }
+        ) { checkbox ->
             ReorderableItem(
                 reorderableState = state,
-                key = it.viewKey
-            ) { isDragging ->
-                SmartCheckboxItem(it, isDraggingEnabled, eventCollector, state, isDragging)
+                key = checkbox.viewKey
+            ) {
+                SmartCheckboxItem(checkbox, isDraggingEnabled, eventCollector, state, false)
             }
         }
         item {

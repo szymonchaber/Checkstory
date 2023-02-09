@@ -29,6 +29,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox
 
     fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox
+    fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox
 
     data class New(
         override val id: TemplateCheckboxId,
@@ -62,7 +63,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         TemplateCheckboxId(children.size.toLong()),
                         viewKey,
                         false,
-                        "",
+                        title,
                         listOf(),
                         true
                     )
@@ -73,6 +74,14 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
             return copy(
                 children = children.minus(child).reindexed()
+            )
+        }
+
+        override fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
+            return copy(
+                children = children
+                    .filterNot { it.viewKey == checkbox.viewKey }
+                    .map { it.minusChildCheckboxRecursive(checkbox) }
             )
         }
 
@@ -125,7 +134,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         TemplateCheckboxId(children.size.toLong()),
                         viewKey,
                         false,
-                        "",
+                        title,
                         listOf(),
                         true
                     )
@@ -136,6 +145,14 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
             return copy(
                 children = children.minus(child).reindexed()
+            )
+        }
+
+        override fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
+            return copy(
+                children = children
+                    .filterNot { it.viewKey == checkbox.viewKey }
+                    .map { it.minusChildCheckboxRecursive(checkbox) }
             )
         }
 
