@@ -412,12 +412,6 @@ private fun ChildCheckbox(
                     eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
                 },
             ) {
-                eventCollector(
-                    EditTemplateEvent.ChildItemDeleted(
-                        checkbox.parentViewKey!!,
-                        checkbox
-                    )
-                )
             }
             if (checkbox.isLastChild && state.draggingItemKey == null) {
                 NewChildCheckboxButton(

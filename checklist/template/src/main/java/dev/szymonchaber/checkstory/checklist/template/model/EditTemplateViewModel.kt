@@ -66,7 +66,6 @@ class EditTemplateViewModel @Inject constructor(
             handleDeleteTemplateClicked(),
             handleConfirmDeleteTemplateClicked(),
             handleChildItemAdded(),
-            handleChildItemDeleted(),
             handleChildItemChanged(),
             handleAddReminderClicked(),
             handleReminderClicked(),
@@ -186,15 +185,6 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 EditTemplateState(loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)) to null
-            }
-    }
-
-    private fun Flow<EditTemplateEvent>.handleChildItemDeleted(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ChildItemDeleted>()
-            .withSuccessState()
-            .map { (loadingState, event) ->
-                tracker.logEvent("delete_child_checkbox_clicked")
-                EditTemplateState(loadingState.minusChildCheckbox(event.parentKey, event.child)) to null
             }
     }
 
