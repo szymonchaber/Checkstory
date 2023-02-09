@@ -18,21 +18,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun toDomainModel(parentId: TemplateCheckboxId? = null, position: Int): TemplateCheckbox
 
-    fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
-        return abstractCopy(
-            children = children.plus(
-                New(
-                    TemplateCheckboxId(children.size.toLong()),
-                    viewKey,
-                    false,
-                    title,
-                    listOf(),
-                    true
-                )
-            ).reindexed()
-        )
-    }
-
     fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
         return abstractCopy(
             children = children
@@ -49,6 +34,27 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                 title
             },
             children = children.map { it.withUpdatedTitleRecursive(checkbox, newTitle) }
+        )
+    }
+
+    fun plusChildCheckboxRecursive(parentId: ViewTemplateCheckboxKey): ViewTemplateCheckbox {
+        return abstractCopy(
+            children = children.map { it.plusChildCheckboxRecursive(parentId) }.let {
+                if (viewKey == parentId) {
+                    it.plus(
+                        New(
+                            TemplateCheckboxId(children.size.toLong()),
+                            viewKey,
+                            false,
+                            "",
+                            listOf(),
+                            true
+                        )
+                    )
+                } else {
+                    it
+                }
+            }
         )
     }
 

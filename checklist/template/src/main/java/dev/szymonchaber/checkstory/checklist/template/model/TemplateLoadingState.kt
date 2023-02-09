@@ -71,8 +71,8 @@ sealed interface TemplateLoadingState {
 
         fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
             return copy(
-                checkboxes = checkboxes.update(parentId) {
-                    it.plusChildCheckbox("")
+                checkboxes = checkboxes.map {
+                    it.plusChildCheckboxRecursive(parentId)
                 }
             )
         }
@@ -88,7 +88,7 @@ sealed interface TemplateLoadingState {
         fun plusReminder(reminder: Reminder): Success {
             return updateTemplate {
                 copy(reminders = reminders.plus(reminder))
-            } // Do the same new / old discrimination (or not?)
+            }
         }
 
         fun minusReminder(reminder: Reminder): TemplateLoadingState {
@@ -111,20 +111,7 @@ sealed interface TemplateLoadingState {
             fun fromTemplate(checklistTemplate: ChecklistTemplate): Success {
                 return Success(
                     checklistTemplate,
-                    checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) }
-                        .map {
-                            it.replaceChildren(
-                                it.children.map {
-                                    val updated = it.plusChildCheckbox("A subtask!")
-                                        .plusChildCheckbox("A second subtask!")
-                                        .plusChildCheckbox("A third?!")
-                                    updated.replaceChildren(updated.children.map {
-                                        it.plusChildCheckbox("A subtask!").plusChildCheckbox("A second subtask!")
-                                            .plusChildCheckbox("A third?!")
-                                    })
-                                }
-                            )
-                        },
+                    checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) },
                     listOf(),
                     listOf()
                 )
