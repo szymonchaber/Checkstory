@@ -79,20 +79,8 @@ sealed interface TemplateLoadingState {
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
             return copy(
-                checkboxes = checkboxes.update(checkbox.viewKey) {
-                    it.withUpdatedTitle(title)
-                }
-            )
-        }
-
-        fun changeChildCheckboxTitle(
-            parentKey: ViewTemplateCheckboxKey,
-            child: ViewTemplateCheckbox,
-            title: String
-        ): Success {
-            return copy(
-                checkboxes = checkboxes.update(parentKey) {
-                    it.editChildCheckboxTitle(child, title)
+                checkboxes = checkboxes.map {
+                    it.withUpdatedTitleRecursive(checkbox, title)
                 }
             )
         }

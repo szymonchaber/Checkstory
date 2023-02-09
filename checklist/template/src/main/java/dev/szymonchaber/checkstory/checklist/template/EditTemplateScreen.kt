@@ -409,7 +409,6 @@ private fun ChildCheckbox(
                 isDragging = isDragging,
                 title = checkbox.title,
                 onTitleChange = {
-                    eventCollector(EditTemplateEvent.ChildItemTitleChanged(checkbox.parentViewKey!!, checkbox, it))
                 },
             ) {
             }

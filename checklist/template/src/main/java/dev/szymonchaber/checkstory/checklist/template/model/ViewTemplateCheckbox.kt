@@ -16,10 +16,6 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     val isLastChild: Boolean
 
-    fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
-        return abstractCopy(title = title)
-    }
-
     fun toDomainModel(parentId: TemplateCheckboxId? = null, position: Int): TemplateCheckbox
 
     fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
@@ -45,11 +41,14 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         )
     }
 
-    fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
+    fun withUpdatedTitleRecursive(checkbox: ViewTemplateCheckbox, newTitle: String): ViewTemplateCheckbox {
         return abstractCopy(
-            children = children.update(child.viewKey) {
-                it.withUpdatedTitle(title)
-            }
+            title = if (viewKey == checkbox.viewKey) {
+                newTitle
+            } else {
+                title
+            },
+            children = children.map { it.withUpdatedTitleRecursive(checkbox, newTitle) }
         )
     }
 
