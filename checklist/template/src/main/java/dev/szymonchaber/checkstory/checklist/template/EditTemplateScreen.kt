@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -224,7 +225,7 @@ private fun EditTemplateScaffold(
                 is TemplateLoadingState.Success -> {
                     EditTemplateView(
                         loadingState.checklistTemplate,
-                        loadingState.unwrappedCheckboxes,
+                        loadingState.checkboxes,
                         viewModel::onEvent
                     )
                 }
@@ -324,18 +325,46 @@ private fun SmartCheckboxItem(
     isDragging: Boolean
 ) {
     Row(
-        if (isDraggingEnabled) Modifier.animateContentSize() else Modifier
+        (if (isDraggingEnabled) Modifier.animateContentSize() else Modifier).padding(end = 16.dp)
     ) {
-        if (checkbox.isParent) {
-            Column {
-                ParentCheckbox(state, isDraggingEnabled, isDragging, checkbox, eventCollector)
-                if (checkbox.children.isEmpty() && state.draggingItemKey == null) {
-                    NewChildCheckboxButton(checkbox.viewKey, eventCollector)
-                }
-            }
-        } else {
-            ChildCheckbox(state, isDraggingEnabled, isDragging, checkbox, eventCollector)
+        CommonCheckbox(checkbox, 16.dp, state, isDraggingEnabled, isDragging, eventCollector)
+    }
+}
+
+@Composable
+private fun CommonCheckbox(
+    checkbox: ViewTemplateCheckbox,
+    paddingStart: Dp,
+    state: ReorderableLazyListState,
+    isDraggingEnabled: Boolean,
+    isDragging: Boolean,
+    eventCollector: (EditTemplateEvent) -> Unit,
+) {
+    Column(Modifier.padding(start = paddingStart)) {
+        CheckboxItem(
+            modifier = Modifier,
+            state = state,
+            isDraggingEnabled = isDraggingEnabled,
+            isDragging = isDragging,
+            title = checkbox.title,
+            onTitleChange = {
+                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+            },
+            onDeleteClick = {
+                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+            },
+        )
+        checkbox.children.forEach {
+            CommonCheckbox(
+                checkbox = it,
+                paddingStart = 44.dp,
+                state = state,
+                isDraggingEnabled = isDraggingEnabled,
+                isDragging = false,
+                eventCollector = eventCollector,
+            )
         }
+        NewChildCheckboxButton(checkbox.viewKey, 36.dp, eventCollector)
     }
 }
 
@@ -391,7 +420,11 @@ private fun ChildCheckbox(
                 )
             }
             if (checkbox.isLastChild && state.draggingItemKey == null) {
-                NewChildCheckboxButton(parent = checkbox.parentViewKey!!, eventCollector = eventCollector)
+                NewChildCheckboxButton(
+                    parent = checkbox.parentViewKey!!,
+                    paddingStart = 36.dp,
+                    eventCollector = eventCollector
+                )
             }
         }
     }
@@ -400,11 +433,12 @@ private fun ChildCheckbox(
 @Composable
 fun NewChildCheckboxButton(
     parent: ViewTemplateCheckboxKey,
+    paddingStart: Dp,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val text = stringResource(R.string.new_child_checkbox)
     AddButton(
-        modifier = Modifier.padding(start = 36.dp, end = 16.dp),
+        modifier = Modifier.padding(start = paddingStart, end = 16.dp),
         onClick = {
             eventCollector(EditTemplateEvent.ChildItemAdded(parent))
         },
