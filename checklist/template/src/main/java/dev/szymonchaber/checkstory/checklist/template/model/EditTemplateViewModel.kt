@@ -210,9 +210,7 @@ class EditTemplateViewModel @Inject constructor(
                                 .mapIndexed { index, checkbox ->
                                     checkbox.toDomainModel(position = index)
                                 }
-                                .map {
-                                    it.copy(title = it.title.trimEnd())
-                                })
+                        )
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
