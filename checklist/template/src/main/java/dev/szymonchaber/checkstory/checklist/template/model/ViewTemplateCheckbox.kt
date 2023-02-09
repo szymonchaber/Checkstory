@@ -16,20 +16,59 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     val isLastChild: Boolean
 
-    fun withUpdatedTitle(title: String): ViewTemplateCheckbox
+    fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
+        return abstractCopy(title = title)
+    }
 
     fun toDomainModel(parentId: TemplateCheckboxId? = null, position: Int): TemplateCheckbox
 
-    fun plusChildCheckbox(title: String): ViewTemplateCheckbox
+    fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
+        return abstractCopy(
+            children = children.plus(
+                New(
+                    TemplateCheckboxId(children.size.toLong()),
+                    viewKey,
+                    false,
+                    title,
+                    listOf(),
+                    true
+                )
+            ).reindexed()
+        )
+    }
 
-    fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox
+    fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
+        return abstractCopy(
+            children = children
+                .filterNot { it.viewKey == checkbox.viewKey }
+                .map { it.minusChildCheckboxRecursive(checkbox) }
+        )
+    }
 
-    fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox
+    fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
+        return abstractCopy(
+            children = children.update(child.viewKey) {
+                it.withUpdatedTitle(title)
+            }
+        )
+    }
 
-    fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox
+    fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
+        return abstractCopy(children = children.reindexed())
+    }
 
-    fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox
-    fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox
+    fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
+        return abstractCopy(isLastChild = isLastChild)
+    }
+
+    fun abstractCopy(
+        id: TemplateCheckboxId = this.id,
+        parentViewKey: ViewTemplateCheckboxKey? = this.parentViewKey,
+        isParent: Boolean = this.isParent,
+        title: String = this.title,
+        children: List<ViewTemplateCheckbox> = this.children,
+        isLastChild: Boolean = this.isLastChild
+    ): ViewTemplateCheckbox
 
     data class New(
         override val id: TemplateCheckboxId,
@@ -52,53 +91,22 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             )
         }
 
-        override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
-            return copy(title = title)
-        }
-
-        override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
+        override fun abstractCopy(
+            id: TemplateCheckboxId,
+            parentViewKey: ViewTemplateCheckboxKey?,
+            isParent: Boolean,
+            title: String,
+            children: List<ViewTemplateCheckbox>,
+            isLastChild: Boolean,
+        ): ViewTemplateCheckbox {
             return copy(
-                children = children.plus(
-                    New(
-                        TemplateCheckboxId(children.size.toLong()),
-                        viewKey,
-                        false,
-                        title,
-                        listOf(),
-                        true
-                    )
-                ).reindexed()
+                id = id,
+                parentViewKey = parentViewKey,
+                isParent = isParent,
+                title = title,
+                children = children,
+                isLastChild = isLastChild
             )
-        }
-
-        override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
-            return copy(
-                children = children.minus(child).reindexed()
-            )
-        }
-
-        override fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
-            return copy(
-                children = children
-                    .filterNot { it.viewKey == checkbox.viewKey }
-                    .map { it.minusChildCheckboxRecursive(checkbox) }
-            )
-        }
-
-        override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
-            return copy(
-                children = children.update(child.viewKey) {
-                    it.withUpdatedTitle(title)
-                }
-            )
-        }
-
-        override fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
-            return copy(children = children.reindexed())
-        }
-
-        override fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
-            return copy(isLastChild = isLastChild)
         }
     }
 
@@ -123,53 +131,22 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             )
         }
 
-        override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
-            return copy(title = title)
-        }
-
-        override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
+        override fun abstractCopy(
+            id: TemplateCheckboxId,
+            parentViewKey: ViewTemplateCheckboxKey?,
+            isParent: Boolean,
+            title: String,
+            children: List<ViewTemplateCheckbox>,
+            isLastChild: Boolean,
+        ): ViewTemplateCheckbox {
             return copy(
-                children = children.plus(
-                    New(
-                        TemplateCheckboxId(children.size.toLong()),
-                        viewKey,
-                        false,
-                        title,
-                        listOf(),
-                        true
-                    )
-                ).reindexed()
+                id = id,
+                parentViewKey = parentViewKey,
+                isParent = isParent,
+                title = title,
+                children = children,
+                isLastChild = isLastChild
             )
-        }
-
-        override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
-            return copy(
-                children = children.minus(child).reindexed()
-            )
-        }
-
-        override fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
-            return copy(
-                children = children
-                    .filterNot { it.viewKey == checkbox.viewKey }
-                    .map { it.minusChildCheckboxRecursive(checkbox) }
-            )
-        }
-
-        override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
-            return copy(
-                children = children.update(child.viewKey) {
-                    it.withUpdatedTitle(title)
-                }
-            )
-        }
-
-        override fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
-            return copy(children = children.reindexed())
-        }
-
-        override fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
-            return copy(isLastChild = isLastChild)
         }
 
         companion object {
