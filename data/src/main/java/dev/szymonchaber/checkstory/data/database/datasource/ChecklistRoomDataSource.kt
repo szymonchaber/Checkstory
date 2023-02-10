@@ -7,10 +7,10 @@ import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -48,19 +48,24 @@ class ChecklistRoomDataSource @Inject constructor(
 
     private suspend fun insertCheckboxes(checkboxes: List<Checkbox>, checklistId: Long) {
         checkboxes.forEach {
-            coroutineScope {
-                withContext(Dispatchers.Default) {
-                    launch {
-                        val parentId =
-                            checkboxDao.insert(CheckboxEntity.fromDomainCheckbox(it).copy(checklistId = checklistId))
-                        val children = it.children.map { child ->
-                            CheckboxEntity.fromDomainCheckbox(child)
-                                .copy(parentId = parentId, checklistId = checklistId)
-                        }
-                        checkboxDao.insertAll(*children.toTypedArray())
-                    }
+            withContext(Dispatchers.Default) {
+                launch {
+                    insertCheckboxRecursive(it, checklistId, null)
                 }
             }
+        }
+    }
+
+    private suspend fun insertCheckboxRecursive(
+        checkbox: Checkbox,
+        checklistId: Long,
+        parentId: CheckboxId?
+    ) {
+        val nestedParentId = checkboxDao.insert(
+            CheckboxEntity.fromDomainCheckbox(checkbox).copy(parentId = parentId?.id, checklistId = checklistId)
+        )
+        checkbox.children.forEach { child ->
+            insertCheckboxRecursive(child, checklistId, CheckboxId(nestedParentId))
         }
     }
 
@@ -82,21 +87,44 @@ class ChecklistRoomDataSource @Inject constructor(
                 checklist.toDomainChecklist(
                     template.title,
                     template.description,
-                    toRelation(checkboxes)
+                    groupToDomain(checkboxes)
                 )
             }
     }
 
-    private fun toRelation(checkboxes: List<CheckboxEntity>): List<Checkbox> {
-        val parentToChildren: Map<Long?, List<CheckboxEntity>> = checkboxes.groupBy {
-            it.parentId
-        }
-        return parentToChildren[null]?.map { parent ->
-            parent.toDomainCheckbox(parentToChildren[parent.checkboxId]?.map {
-                it.toDomainCheckbox(listOf())
-            }.orEmpty())
-        }.orEmpty()
+    private fun groupToDomain(checkboxes: List<CheckboxEntity>): List<Checkbox> {
+        return convertToNestedCheckboxes(checkboxes)
     }
+
+    private fun convertToNestedCheckboxes(entities: List<CheckboxEntity>): List<Checkbox> {
+        val entityMap = entities.associateBy { it.checkboxId }
+        val checkboxes = entities.map { CheckboxToChildren(it) }
+        checkboxes.forEach { checkbox ->
+            val parentId = checkbox.checkbox.parentId
+            if (parentId != null) {
+                val parent = entityMap[parentId]
+                if (parent != null) {
+                    val parentCheckbox = checkboxes.firstOrNull { it.checkbox.checkboxId == parent.checkboxId }
+                    if (parentCheckbox != null) {
+                        parentCheckbox.children += checkbox
+                    }
+                }
+            }
+        }
+        return checkboxes.filter { it.checkbox.parentId == null }
+            .map {
+                toDomain(it)
+            }
+    }
+
+    private fun toDomain(checkboxToChildren: CheckboxToChildren): Checkbox {
+        return checkboxToChildren.checkbox.toDomainCheckbox(checkboxToChildren.children.map { toDomain(it) })
+    }
+
+    class CheckboxToChildren(
+        val checkbox: CheckboxEntity,
+        val children: MutableList<CheckboxToChildren> = mutableListOf()
+    )
 
     suspend fun delete(checklist: Checklist) {
         val checkboxEntities = checklist.items.map(CheckboxEntity::fromDomainCheckbox)
