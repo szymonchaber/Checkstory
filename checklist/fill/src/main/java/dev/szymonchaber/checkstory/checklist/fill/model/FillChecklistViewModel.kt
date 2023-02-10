@@ -4,6 +4,7 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox.Companion.checkedCount
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
@@ -55,17 +56,25 @@ class FillChecklistViewModel @Inject constructor(
             .mapLatest { (success, event) ->
                 tracker.logEvent("check_changed", bundleOf("checked" to event.newCheck))
                 val updated = success.updateChecklist {
-                    copy(items = items.map {
-                        if (it.id == event.item.id) {
-                            it.copy(isChecked = event.newCheck)
-                        } else {
-                            it
+                    copy(
+                        items = items.map {
+                            it.withUpdatedCheckRecursive(event.item, event.newCheck)
                         }
-                    }
                     )
                 }
                 state.first().copy(checklistLoadingState = updated) to null
             }
+    }
+
+    private fun Checkbox.withUpdatedCheckRecursive(checkbox: Checkbox, newIsChecked: Boolean): Checkbox {
+        return copy(
+            isChecked = if (id == checkbox.id) {
+                newIsChecked
+            } else {
+                isChecked
+            },
+            children = children.map { it.withUpdatedCheckRecursive(checkbox, newIsChecked) }
+        )
     }
 
     private fun Flow<FillChecklistEvent>.handleChildCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
