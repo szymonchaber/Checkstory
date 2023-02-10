@@ -365,7 +365,9 @@ private fun CommonCheckbox(
                 eventCollector = eventCollector,
             )
         }
-        NewChildCheckboxButton(checkbox.viewKey, 36.dp, eventCollector)
+        if (checkbox.viewKey.nestingLevel < 4) {
+            NewChildCheckboxButton(checkbox.viewKey, 36.dp, eventCollector)
+        }
     }
 }
 
