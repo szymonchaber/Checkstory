@@ -2,9 +2,9 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.viewKey
-import dev.szymonchaber.checkstory.common.extensions.update
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import timber.log.Timber
 
 sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
@@ -156,18 +156,27 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         companion object {
 
-            fun fromDomainModel(templateCheckbox: TemplateCheckbox): Existing {
+            fun fromDomainModel(
+                templateCheckbox: TemplateCheckbox,
+                ancestorViewKey: ViewTemplateCheckboxKey? = templateCheckbox.parentId?.let {
+                    ViewTemplateCheckboxKey(viewId = it.id, parentKey = null, isNew = false)
+                }
+            ): Existing {
                 return with(templateCheckbox) {
                     Existing(
-                        id = id,
-                        parentViewKey = parentId?.let {
-                            ViewTemplateCheckboxKey(viewId = it.id, isNew = false, isParent = true, parentKey = null)
-                        },
+                        id = this.id,
+                        parentViewKey = ancestorViewKey,
                         parentId == null,
                         title = title,
-                        children = children.map { fromDomainModel(it) }.reindexed(),
+                        children = children.map {
+                            fromDomainModel(it, it.parentId?.let {
+                                ViewTemplateCheckboxKey(viewId = it.id, parentKey = ancestorViewKey, isNew = false)
+                            })
+                        }.reindexed(),
                         false
-                    )
+                    ).also {
+                        Timber.d("Building ${templateCheckbox.title} with key ${it.viewKey}")
+                    }
                 }
             }
         }
@@ -180,24 +189,18 @@ private fun List<ViewTemplateCheckbox>.reindexed(): List<ViewTemplateCheckbox> {
     }
 }
 
-fun List<ViewTemplateCheckbox>.update(
-    viewTemplateCheckboxKey: ViewTemplateCheckboxKey,
-    updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
-): List<ViewTemplateCheckbox> {
-    return update(
-        viewTemplateCheckboxKey,
-        {
-            it.viewKey
-        },
-        updater
-    )
-}
-
-fun renderCheckbox(checkbox: ViewTemplateCheckbox): String {
-    val parentIndicator = if (checkbox.isParent) "Parent " else "Child "
+fun renderCheckbox(checkbox: ViewTemplateCheckbox, prefix: String = "     "): String {
     val children = checkbox.children.takeUnless { it.isEmpty() }?.joinToString("\n") { child ->
-        val childIndicator = if (child.isParent) "Parent " else "Child "
-        "     $childIndicator ${child.title}"
+        "$prefix${child.title.ifEmpty { "Empty" }} ${child.viewKey.nestingLevel}\n${
+            child.children.joinToString("") {
+                "     ${
+                    renderCheckbox(
+                        it,
+                        "$prefix     "
+                    )
+                }"
+            }
+        }"
     }
-    return parentIndicator + " " + checkbox.title + children?.let { "\n" + it }.orEmpty()
+    return "${checkbox.title.ifEmpty { "Empty" }} ${checkbox.viewKey.nestingLevel} ${children?.let { "\n$it" }}"
 }

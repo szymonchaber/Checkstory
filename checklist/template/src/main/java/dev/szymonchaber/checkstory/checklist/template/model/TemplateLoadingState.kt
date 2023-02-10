@@ -18,7 +18,7 @@ sealed interface TemplateLoadingState {
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate
     ) : TemplateLoadingState {
 
-        val unwrappedCheckboxes = checkboxes.flatMap {
+        private val unwrappedCheckboxes = checkboxes.flatMap {
             listOf(it) + it.children
         }
 

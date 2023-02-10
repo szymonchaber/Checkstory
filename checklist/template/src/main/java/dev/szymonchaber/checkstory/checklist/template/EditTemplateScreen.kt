@@ -252,6 +252,7 @@ fun EditTemplateView(
     val state = rememberReorderableLazyListState(onMove = { from, to ->
         eventCollector(EditTemplateEvent.OnCheckboxMoved(from.viewKey!!, to.viewKey!!))
     }, canDragOver = { draggedOver, dragging ->
+        // TODO This is all broken, throw it away probably
         draggedOver.isCheckbox
                 && !(dragging.viewKey!!.isChild && draggedOver.index < 2)
                 && !(dragging.viewKey!!.isParent && draggedOver.viewKey!!.isChild)
@@ -274,7 +275,7 @@ fun EditTemplateView(
         }
         items(
             items = checkboxes,
-//            key = { it.viewKey }
+            key = { it.viewKey }
         ) { checkbox ->
             ReorderableItem(
                 reorderableState = state,
@@ -496,12 +497,9 @@ private fun ChecklistTemplateDetails(
 data class ViewTemplateCheckboxKey(
     val viewId: Long,
     val parentKey: ViewTemplateCheckboxKey?,
-    val isNew: Boolean,
-    val isParent: Boolean
+    val isNew: Boolean
 ) : Parcelable {
 
-    val isChild: Boolean
-        get() = !isParent
 
     @IgnoredOnParcel
     val nestingLevel = calculateNestingLevelRecursive(this)
@@ -520,8 +518,7 @@ val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
         return ViewTemplateCheckboxKey(
             id.id,
             parentViewKey,
-            this is ViewTemplateCheckbox.New,
-            isParent
+            this is ViewTemplateCheckbox.New
         )
     }
 

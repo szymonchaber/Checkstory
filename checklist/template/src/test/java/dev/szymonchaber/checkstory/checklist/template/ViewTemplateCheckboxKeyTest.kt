@@ -9,7 +9,7 @@ internal class ViewTemplateCheckboxKeyTest {
     @Test
     fun `given the checkbox has no ancestors, then should return nestingLevel of 1`() {
         // given
-        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true, isParent = true)
+        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true)
 
         // when
         val nestingLevel = levelOne.nestingLevel
@@ -21,8 +21,8 @@ internal class ViewTemplateCheckboxKeyTest {
     @Test
     fun `given the checkbox has one ancestor, then should return nestingLevel of 2`() {
         // given
-        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true, isParent = true)
-        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true, isParent = true)
+        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true)
+        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true)
 
         // when
         val nestingLevel = levelTwo.nestingLevel
@@ -34,9 +34,9 @@ internal class ViewTemplateCheckboxKeyTest {
     @Test
     fun `given the checkbox has two ancestors, then should return nestingLevel of 3`() {
         // given
-        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true, isParent = true)
-        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true, isParent = true)
-        val levelThree = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelTwo, isNew = true, isParent = true)
+        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true)
+        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true)
+        val levelThree = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelTwo, isNew = true)
 
         // when
         val nestingLevel = levelThree.nestingLevel
@@ -48,10 +48,10 @@ internal class ViewTemplateCheckboxKeyTest {
     @Test
     fun `given the checkbox has three ancestors, then should return nestingLevel of 4`() {
         // given
-        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true, isParent = true)
-        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true, isParent = true)
-        val levelThree = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelTwo, isNew = true, isParent = true)
-        val levelFour = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelThree, isNew = true, isParent = true)
+        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true)
+        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true)
+        val levelThree = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelTwo, isNew = true)
+        val levelFour = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelThree, isNew = true)
 
         // when
         val nestingLevel = levelFour.nestingLevel
@@ -63,11 +63,11 @@ internal class ViewTemplateCheckboxKeyTest {
     @Test
     fun `given the checkbox has four ancestors, then should return nestingLevel of 5`() {
         // given
-        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true, isParent = true)
-        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true, isParent = true)
-        val levelThree = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelTwo, isNew = true, isParent = true)
-        val levelFour = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelThree, isNew = true, isParent = true)
-        val levelFive = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelFour, isNew = true, isParent = true)
+        val levelOne = ViewTemplateCheckboxKey(viewId = 1, parentKey = null, isNew = true)
+        val levelTwo = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelOne, isNew = true)
+        val levelThree = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelTwo, isNew = true)
+        val levelFour = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelThree, isNew = true)
+        val levelFive = ViewTemplateCheckboxKey(viewId = 1, parentKey = levelFour, isNew = true)
 
         // when
         val nestingLevel = levelFive.nestingLevel
