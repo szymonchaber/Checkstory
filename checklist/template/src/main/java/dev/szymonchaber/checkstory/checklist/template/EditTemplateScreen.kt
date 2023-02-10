@@ -73,6 +73,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.burnoutcrew.reorderable.ItemPosition
 import org.burnoutcrew.reorderable.ReorderableItem
@@ -499,6 +500,17 @@ data class ViewTemplateCheckboxKey(
 
     val isChild: Boolean
         get() = !isParent
+
+    @IgnoredOnParcel
+    val nestingLevel = calculateNestingLevelRecursive(this)
+
+    private tailrec fun calculateNestingLevelRecursive(key: ViewTemplateCheckboxKey, level: Int = 1): Int {
+        return if (key.parentKey == null) {
+            level
+        } else {
+            calculateNestingLevelRecursive(key.parentKey, level + 1)
+        }
+    }
 }
 
 val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
