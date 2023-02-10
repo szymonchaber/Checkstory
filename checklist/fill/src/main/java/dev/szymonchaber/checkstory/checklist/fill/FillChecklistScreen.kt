@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -54,6 +55,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.DeepLink
@@ -270,7 +272,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             ChecklistInfo(checklist.title, checklist.description)
         }
         items(checklist.items, key = { it.id.id }) {
-            CheckboxSection(checkbox = it, eventCollector = eventCollector)
+            CheckboxSection(checkbox = it, paddingStart = 8.dp, eventCollector = eventCollector)
         }
         item {
             NotesSection(checklist, eventCollector)
@@ -348,41 +350,102 @@ private fun NotesSection(
 
 
 @Composable
-fun CheckboxSection(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> Unit) {
-    val shouldIncludeIcon = checkbox.children.isNotEmpty()
-    var isCollapsed by remember { mutableStateOf(false) }
-    val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
-    CheckboxItem(
-        modifier = Modifier.padding(start = 8.dp, end = endPadding),
-        checkbox = checkbox,
-        onCheckedChange = {
-            eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+fun CheckboxSection(
+    checkbox: Checkbox,
+    paddingStart: Dp,
+    collapsedByDefault: Boolean = true,
+    eventCollector: (FillChecklistEvent) -> Unit
+) {
+    Column(Modifier.padding(start = paddingStart)) {
+        val shouldIncludeIcon = checkbox.children.isNotEmpty()
+        var isCollapsed by remember(collapsedByDefault) { mutableStateOf(collapsedByDefault) }
+        val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
+        CheckboxItem(
+            modifier = Modifier.padding(end = endPadding),
+            checkbox = checkbox,
+            onCheckedChange = {
+                eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+            }
+        ) {
+            if (shouldIncludeIcon) {
+                IconButton(
+                    onClick = { isCollapsed = !isCollapsed }) {
+                    val rotationDegrees = if (isCollapsed) 0f else 180f
+                    Icon(
+                        modifier = Modifier.rotate(rotationDegrees),
+                        imageVector = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null
+                    )
+                }
+            }
         }
-    ) {
-        if (shouldIncludeIcon) {
-            IconButton(
-                onClick = { isCollapsed = !isCollapsed }) {
-                val rotationDegrees = if (isCollapsed) 0f else 180f
-                Icon(
-                    modifier = Modifier.rotate(rotationDegrees),
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null
+        if (!isCollapsed) {
+            checkbox.children.forEach { child ->
+                CheckboxSection(
+//        modifier = Modifier.padding(start = 42.dp, end = 16.dp),
+                    checkbox = child,
+                    paddingStart = 42.dp,
+                    collapsedByDefault = true,
+                    eventCollector
                 )
             }
         }
     }
-    if (!isCollapsed) {
-        checkbox.children.forEach { child ->
-            CheckboxItem(
-                modifier = Modifier.padding(start = 42.dp, end = 16.dp),
-                checkbox = child,
-                onCheckedChange = {
-                    eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
-                }
-            )
-        }
-    }
 }
+
+//@Composable
+//private fun SmartCheckboxItem(
+//    checkbox: ViewTemplateCheckbox,
+//    isDraggingEnabled: Boolean,
+//    eventCollector: (EditTemplateEvent) -> Unit,
+//    state: ReorderableLazyListState,
+//    isDragging: Boolean
+//) {
+//    Row(
+//        (if (isDraggingEnabled) Modifier.animateContentSize() else Modifier).padding(end = 16.dp)
+//    ) {
+//        CommonCheckbox(checkbox, 16.dp, state, isDraggingEnabled, isDragging, eventCollector)
+//    }
+//}
+//
+//@Composable
+//private fun CommonCheckbox(
+//    checkbox: ViewTemplateCheckbox,
+//    paddingStart: Dp,
+//    state: ReorderableLazyListState,
+//    isDraggingEnabled: Boolean,
+//    isDragging: Boolean,
+//    eventCollector: (EditTemplateEvent) -> Unit,
+//) {
+//    Column(Modifier.padding(start = paddingStart)) {
+//        CheckboxItem(
+//            modifier = Modifier,
+//            state = state,
+//            isDraggingEnabled = isDraggingEnabled,
+//            isDragging = isDragging,
+//            title = checkbox.title,
+//            onTitleChange = {
+//                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+//            },
+//            onDeleteClick = {
+//                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+//            },
+//        )
+//        checkbox.children.forEach {
+//            CommonCheckbox(
+//                checkbox = it,
+//                paddingStart = 44.dp,
+//                state = state,
+//                isDraggingEnabled = isDraggingEnabled,
+//                isDragging = false,
+//                eventCollector = eventCollector,
+//            )
+//        }
+//        if (checkbox.viewKey.nestingLevel < 4) {
+//            NewChildCheckboxButton(checkbox.viewKey, 36.dp, eventCollector)
+//        }
+//    }
+//}
 
 @OptIn(ExperimentalLayoutApi::class)
 fun Modifier.focusOnEntry(ignoreImeVisibility: Boolean = false) = composed {
