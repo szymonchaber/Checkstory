@@ -1,14 +1,17 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
@@ -363,15 +366,23 @@ fun CheckboxSection(
     checkbox: Checkbox,
     paddingStart: Dp,
     nestingLevel: Int = 1,
+    isLastChild: Boolean = true,
     collapsedByDefault: Boolean = true,
-    eventCollector: (FillChecklistEvent) -> Unit
+    eventCollector: (FillChecklistEvent) -> Unit,
 ) {
     Column {
         val shouldIncludeIcon = checkbox.children.isNotEmpty()
         var isCollapsed by remember(collapsedByDefault) { mutableStateOf(collapsedByDefault) }
         val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
-        Row {
+        Row(Modifier.height(IntrinsicSize.Min)) {
             if (nestingLevel > 1) {
+                val heightFraction = if (!isLastChild) 1f else 0.52f
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight(heightFraction)
+                        .background(Color.Gray)
+                        .width(2.dp)
+                )
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
@@ -405,26 +416,32 @@ fun CheckboxSection(
         } else {
             3
         }
-        if (!isCollapsed) {
-            Row(Modifier.padding(start = paddingStart * paddingMultiplier)) {
+        AnimatedVisibility(visible = !isCollapsed) {
+            Row(Modifier) {
                 val localDensity = LocalDensity.current
                 var columnHeightDp by remember {
                     mutableStateOf(0.dp)
                 }
-                Box(
-                    modifier = Modifier
-                        .height(columnHeightDp)
-                        .background(Color.Gray)
-                        .width(2.dp)
-                )
-                Column(Modifier.onGloballyPositioned {
-                    columnHeightDp = with(localDensity) { it.size.height.toDp() }
-                }) {
-                    checkbox.children.forEach { child ->
+                if (!isLastChild) {
+                    Box(
+                        modifier = Modifier
+                            .height(columnHeightDp)
+                            .background(Color.Gray)
+                            .width(2.dp)
+                    )
+                }
+                Column(
+                    Modifier
+                        .padding(start = paddingStart * paddingMultiplier)
+                        .onGloballyPositioned {
+                            columnHeightDp = with(localDensity) { it.size.height.toDp() }
+                        }) {
+                    checkbox.children.forEachIndexed { index, child ->
                         CheckboxSection(
                             checkbox = child,
                             paddingStart = nestedPaddingStart,
                             nestingLevel = nestingLevel + 1,
+                            isLastChild = checkbox.children.lastIndex == index,
                             collapsedByDefault = true,
                             eventCollector
                         )
