@@ -8,8 +8,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -264,7 +266,7 @@ fun EditTemplateView(
             Row(
                 Modifier.padding(start = 16.dp, end = 16.dp)
             ) {
-                CommonCheckbox(checkbox, nestedPaddingStart, eventCollector)
+                CommonCheckbox(checkbox, nestedPaddingStart, true, eventCollector)
             }
         }
         item {
@@ -305,11 +307,19 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
 private fun CommonCheckbox(
     checkbox: ViewTemplateCheckbox,
     paddingStart: Dp,
+    isLastChild: Boolean,
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
     Column {
-        Row {
+        Row(Modifier.height(IntrinsicSize.Min)) {
             if (checkbox.viewKey.nestingLevel > 1) {
+                val heightFraction = if (!isLastChild) 1f else 0.52f
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight(heightFraction)
+                        .background(Color.Gray)
+                        .width(2.dp)
+                )
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
@@ -337,61 +347,36 @@ private fun CommonCheckbox(
         } else {
             2
         }
-        Row(Modifier.padding(start = paddingStart * paddingMultiplier)) {
+        Row {
             val localDensity = LocalDensity.current
             var columnHeightDp by remember {
                 mutableStateOf(0.dp)
             }
-            var buttonSizeDp by remember {
-                mutableStateOf(0.dp)
+            if (!isLastChild) {
+                Box(
+                    modifier = Modifier
+                        .height(columnHeightDp)
+                        .background(Color.Gray)
+                        .width(2.dp)
+                )
             }
-            Box(
-                modifier = Modifier
-                    .height(columnHeightDp)
-                    .padding(bottom = buttonSizeDp / 2)
-                    .background(Color.Gray)
-                    .width(2.dp)
-            )
-            Column(Modifier.onGloballyPositioned {
-                columnHeightDp = with(localDensity) { it.size.height.toDp() }
-            }) {
-                checkbox.children.forEach {
+            Column(
+                Modifier
+                    .padding(start = paddingStart * paddingMultiplier)
+                    .onGloballyPositioned {
+                        columnHeightDp = with(localDensity) { it.size.height.toDp() }
+                    }) {
+                checkbox.children.forEachIndexed { index, child ->
                     CommonCheckbox(
-                        checkbox = it,
+                        checkbox = child,
                         paddingStart = paddingStart,
+                        checkbox.children.lastIndex == index,
                         eventCollector = eventCollector,
-                    )
-                }
-                if (checkbox.viewKey.nestingLevel < 4) {
-                    NewChildCheckboxButton(
-                        modifier = Modifier.onGloballyPositioned { coordinates ->
-                            buttonSizeDp = with(localDensity) { coordinates.size.height.toDp() }
-                        },
-                        parent = checkbox.viewKey,
-                        paddingStart = 8.dp,
-                        eventCollector = eventCollector
                     )
                 }
             }
         }
     }
-}
-
-@Composable
-fun NewChildCheckboxButton(
-    modifier: Modifier,
-    parent: ViewTemplateCheckboxKey,
-    paddingStart: Dp,
-    eventCollector: (EditTemplateEvent) -> Unit
-) {
-    val text = stringResource(R.string.new_child_checkbox)
-    AddButton(
-        modifier = modifier.padding(start = paddingStart, end = 16.dp),
-        onClick = {
-            eventCollector(EditTemplateEvent.ChildItemAdded(parent))
-        },
-        text = text
-    )
 }
 
 @Composable

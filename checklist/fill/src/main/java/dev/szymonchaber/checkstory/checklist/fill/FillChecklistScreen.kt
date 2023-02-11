@@ -417,7 +417,7 @@ fun CheckboxSection(
             3
         }
         AnimatedVisibility(visible = !isCollapsed) {
-            Row(Modifier) {
+            Row {
                 val localDensity = LocalDensity.current
                 var columnHeightDp by remember {
                     mutableStateOf(0.dp)
