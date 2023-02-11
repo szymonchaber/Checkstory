@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -9,9 +10,11 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +52,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -265,6 +270,8 @@ private fun FillChecklistScaffold(
     )
 }
 
+private val nestedPaddingStart = 12.dp
+
 @Composable
 fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent) -> Unit) {
     LazyColumn {
@@ -272,7 +279,9 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             ChecklistInfo(checklist.title, checklist.description)
         }
         items(checklist.items, key = { it.id.id }) {
-            CheckboxSection(checkbox = it, paddingStart = 8.dp, eventCollector = eventCollector)
+            Box(Modifier.padding(start = 8.dp)) {
+                CheckboxSection(checkbox = it, paddingStart = nestedPaddingStart, eventCollector = eventCollector)
+            }
         }
         item {
             NotesSection(checklist, eventCollector)
@@ -353,99 +362,78 @@ private fun NotesSection(
 fun CheckboxSection(
     checkbox: Checkbox,
     paddingStart: Dp,
+    nestingLevel: Int = 1,
     collapsedByDefault: Boolean = true,
     eventCollector: (FillChecklistEvent) -> Unit
 ) {
-    Column(Modifier.padding(start = paddingStart)) {
+    Column {
         val shouldIncludeIcon = checkbox.children.isNotEmpty()
         var isCollapsed by remember(collapsedByDefault) { mutableStateOf(collapsedByDefault) }
         val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
-        CheckboxItem(
-            modifier = Modifier.padding(end = endPadding),
-            checkbox = checkbox,
-            onCheckedChange = {
-                eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+        Row {
+            if (nestingLevel > 1) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .background(Color.Gray)
+                        .height(2.dp)
+                        .width(nestedPaddingStart)
+                )
             }
-        ) {
-            if (shouldIncludeIcon) {
-                IconButton(
-                    onClick = { isCollapsed = !isCollapsed }) {
-                    val rotationDegrees = if (isCollapsed) 0f else 180f
-                    Icon(
-                        modifier = Modifier.rotate(rotationDegrees),
-                        imageVector = Icons.Filled.KeyboardArrowDown,
-                        contentDescription = null
-                    )
+            CheckboxItem(
+                modifier = Modifier.padding(end = endPadding),
+                checkbox = checkbox,
+                onCheckedChange = {
+                    eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+                }
+            ) {
+                if (shouldIncludeIcon) {
+                    IconButton(
+                        onClick = { isCollapsed = !isCollapsed }) {
+                        val rotationDegrees = if (isCollapsed) 0f else 180f
+                        Icon(
+                            modifier = Modifier.rotate(rotationDegrees),
+                            imageVector = Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
                 }
             }
         }
+        val paddingMultiplier = if (nestingLevel == 1) {
+            2
+        } else {
+            3
+        }
         if (!isCollapsed) {
-            checkbox.children.forEach { child ->
-                CheckboxSection(
-//        modifier = Modifier.padding(start = 42.dp, end = 16.dp),
-                    checkbox = child,
-                    paddingStart = 42.dp,
-                    collapsedByDefault = true,
-                    eventCollector
+            Row(Modifier.padding(start = paddingStart * paddingMultiplier)) {
+                val localDensity = LocalDensity.current
+                var columnHeightDp by remember {
+                    mutableStateOf(0.dp)
+                }
+                Box(
+                    modifier = Modifier
+                        .height(columnHeightDp)
+                        .background(Color.Gray)
+                        .width(2.dp)
                 )
+                Column(Modifier.onGloballyPositioned {
+                    columnHeightDp = with(localDensity) { it.size.height.toDp() }
+                }) {
+                    checkbox.children.forEach { child ->
+                        CheckboxSection(
+                            checkbox = child,
+                            paddingStart = nestedPaddingStart,
+                            nestingLevel = nestingLevel + 1,
+                            collapsedByDefault = true,
+                            eventCollector
+                        )
+                    }
+                }
             }
         }
     }
 }
-
-//@Composable
-//private fun SmartCheckboxItem(
-//    checkbox: ViewTemplateCheckbox,
-//    isDraggingEnabled: Boolean,
-//    eventCollector: (EditTemplateEvent) -> Unit,
-//    state: ReorderableLazyListState,
-//    isDragging: Boolean
-//) {
-//    Row(
-//        (if (isDraggingEnabled) Modifier.animateContentSize() else Modifier).padding(end = 16.dp)
-//    ) {
-//        CommonCheckbox(checkbox, 16.dp, state, isDraggingEnabled, isDragging, eventCollector)
-//    }
-//}
-//
-//@Composable
-//private fun CommonCheckbox(
-//    checkbox: ViewTemplateCheckbox,
-//    paddingStart: Dp,
-//    state: ReorderableLazyListState,
-//    isDraggingEnabled: Boolean,
-//    isDragging: Boolean,
-//    eventCollector: (EditTemplateEvent) -> Unit,
-//) {
-//    Column(Modifier.padding(start = paddingStart)) {
-//        CheckboxItem(
-//            modifier = Modifier,
-//            state = state,
-//            isDraggingEnabled = isDraggingEnabled,
-//            isDragging = isDragging,
-//            title = checkbox.title,
-//            onTitleChange = {
-//                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-//            },
-//            onDeleteClick = {
-//                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
-//            },
-//        )
-//        checkbox.children.forEach {
-//            CommonCheckbox(
-//                checkbox = it,
-//                paddingStart = 44.dp,
-//                state = state,
-//                isDraggingEnabled = isDraggingEnabled,
-//                isDragging = false,
-//                eventCollector = eventCollector,
-//            )
-//        }
-//        if (checkbox.viewKey.nestingLevel < 4) {
-//            NewChildCheckboxButton(checkbox.viewKey, 36.dp, eventCollector)
-//        }
-//    }
-//}
 
 @OptIn(ExperimentalLayoutApi::class)
 fun Modifier.focusOnEntry(ignoreImeVisibility: Boolean = false) = composed {
