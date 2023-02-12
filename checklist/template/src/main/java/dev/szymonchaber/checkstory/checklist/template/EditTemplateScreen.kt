@@ -369,6 +369,7 @@ private fun CommonCheckbox(
             Column(
                 Modifier
                     .padding(start = paddingStart * paddingMultiplier)
+                    .animateContentSize()
                     .onGloballyPositioned {
                         columnHeightDp = with(localDensity) { it.size.height.toDp() }
                     }) {
