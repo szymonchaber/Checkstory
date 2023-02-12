@@ -4,6 +4,7 @@ package dev.szymonchaber.checkstory.checklist.template
 
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,7 +81,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
-import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -266,7 +266,12 @@ fun EditTemplateView(
             Row(
                 Modifier.padding(start = 16.dp, end = 16.dp)
             ) {
-                CommonCheckbox(checkbox, nestedPaddingStart, true, eventCollector)
+                CommonCheckbox(
+                    checkbox = checkbox,
+                    paddingStart = nestedPaddingStart,
+                    isLastChild = true,
+                    eventCollector = eventCollector
+                )
             }
         }
         item {
@@ -308,11 +313,12 @@ private fun CommonCheckbox(
     checkbox: ViewTemplateCheckbox,
     paddingStart: Dp,
     isLastChild: Boolean,
+    nestingLevel: Int = 1,
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
     Column {
         Row(Modifier.height(IntrinsicSize.Min)) {
-            if (checkbox.viewKey.nestingLevel > 1) {
+            if (nestingLevel > 1) {
                 val heightFraction = if (!isLastChild) 1f else 0.52f
                 Box(
                     modifier = Modifier
@@ -331,7 +337,7 @@ private fun CommonCheckbox(
             CheckboxItem(
                 modifier = Modifier.padding(top = 8.dp),
                 title = checkbox.title,
-                nestingLevel = checkbox.viewKey.nestingLevel,
+                nestingLevel = nestingLevel,
                 onTitleChange = {
                     eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
                 },
@@ -342,7 +348,7 @@ private fun CommonCheckbox(
                 eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
             }
         }
-        val paddingMultiplier = if (checkbox.viewKey.nestingLevel == 1) {
+        val paddingMultiplier = if (nestingLevel == 1) {
             1
         } else {
             2
@@ -370,7 +376,8 @@ private fun CommonCheckbox(
                     CommonCheckbox(
                         checkbox = child,
                         paddingStart = paddingStart,
-                        checkbox.children.lastIndex == index,
+                        nestingLevel = nestingLevel + 1,
+                        isLastChild = checkbox.children.lastIndex == index,
                         eventCollector = eventCollector,
                     )
                 }
@@ -434,20 +441,7 @@ data class ViewTemplateCheckboxKey(
     val viewId: Long,
     val parentKey: ViewTemplateCheckboxKey?,
     val isNew: Boolean
-) : Parcelable {
-
-
-    @IgnoredOnParcel
-    val nestingLevel = calculateNestingLevelRecursive(this)
-
-    private tailrec fun calculateNestingLevelRecursive(key: ViewTemplateCheckboxKey, level: Int = 1): Int {
-        return if (key.parentKey == null) {
-            level
-        } else {
-            calculateNestingLevelRecursive(key.parentKey, level + 1)
-        }
-    }
-}
+) : Parcelable
 
 val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
     get() {

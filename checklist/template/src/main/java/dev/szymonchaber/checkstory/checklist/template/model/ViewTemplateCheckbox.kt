@@ -191,7 +191,7 @@ private fun List<ViewTemplateCheckbox>.reindexed(): List<ViewTemplateCheckbox> {
 
 fun renderCheckbox(checkbox: ViewTemplateCheckbox, prefix: String = "     "): String {
     val children = checkbox.children.takeUnless { it.isEmpty() }?.joinToString("\n") { child ->
-        "$prefix${child.title.ifEmpty { "Empty" }} ${child.viewKey.nestingLevel}\n${
+        "$prefix${child.title.ifEmpty { "Empty" }} \n${
             child.children.joinToString("") {
                 "     ${
                     renderCheckbox(
@@ -202,5 +202,5 @@ fun renderCheckbox(checkbox: ViewTemplateCheckbox, prefix: String = "     "): St
             }
         }"
     }
-    return "${checkbox.title.ifEmpty { "Empty" }} ${checkbox.viewKey.nestingLevel} ${children?.let { "\n$it" }}"
+    return "${checkbox.title.ifEmpty { "Empty" }} ${children?.let { "\n$it" }}"
 }
