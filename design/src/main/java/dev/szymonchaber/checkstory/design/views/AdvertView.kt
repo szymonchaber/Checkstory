@@ -44,7 +44,7 @@ fun AdvertView(modifier: Modifier = Modifier) {
             modifier = modifier.fillMaxWidth(),
             factory = { context ->
                 AdView(context).apply {
-                    adSize = AdSize.BANNER
+                    setAdSize(AdSize.BANNER)
                     adUnitId = BuildConfig.BANNER_AD_UNIT_ID
                     loadAd(AdRequest.Builder().build())
                 }
