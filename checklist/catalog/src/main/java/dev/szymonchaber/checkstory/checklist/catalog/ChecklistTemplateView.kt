@@ -91,7 +91,7 @@ fun ChecklistTemplateView(
             if (!isCollapsed) {
                 SectionLabel(
                     modifier = Modifier.padding(start = 16.dp),
-                    text = stringResource(id = R.string.checklist_history)
+                    text = stringResource(id = R.string.template_checklists)
                 )
                 ChecklistsCarousel(
                     checklists = checklistTemplate.checklists,
@@ -159,7 +159,7 @@ private fun RowScope.TemplateActions(
                 showMenu = false
                 eventListener(ChecklistCatalogEvent.TemplateHistoryClicked(checklistTemplate.id))
             }) {
-                Text(text = stringResource(id = R.string.checklist_history))
+                Text(text = stringResource(id = R.string.template_checklists))
             }
         }
     }
@@ -211,8 +211,8 @@ fun ChecklistTemplateViewPreview() {
     ChecklistTemplateView(
         checklistTemplate = ChecklistTemplate(
             ChecklistTemplateId(0),
-            "Checklist template",
-            "Checklist description",
+            "Template",
+            "Description",
             listOf(
                 TemplateCheckbox(
                     TemplateCheckboxId(0),

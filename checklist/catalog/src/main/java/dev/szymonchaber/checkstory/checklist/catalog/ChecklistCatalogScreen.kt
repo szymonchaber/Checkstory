@@ -148,12 +148,6 @@ private fun ChecklistCatalogView(
         item {
             RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
         }
-        item {
-            SectionLabel(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                text = stringResource(R.string.templates),
-            )
-        }
         checklistTemplates(state, viewModel)
     }
 }
@@ -162,6 +156,12 @@ private fun LazyListScope.checklistTemplates(
     state: ChecklistCatalogState,
     viewModel: ChecklistCatalogViewModel
 ) {
+    item {
+        SectionLabel(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = stringResource(R.string.templates),
+        )
+    }
     when (val loadingState = state.templatesLoadingState) {
         ChecklistCatalogLoadingState.Loading -> {
             item {
@@ -171,7 +171,7 @@ private fun LazyListScope.checklistTemplates(
         is ChecklistCatalogLoadingState.Success -> {
             if (loadingState.checklistTemplates.isEmpty()) {
                 item {
-                    NoChecklistTemplatesView()
+                    NoTemplatesView()
                 }
             } else {
                 items(loadingState.checklistTemplates) {
@@ -183,7 +183,7 @@ private fun LazyListScope.checklistTemplates(
 }
 
 @Composable
-fun NoChecklistTemplatesView() {
+fun NoTemplatesView() {
     Box(
         modifier = Modifier
             .fillMaxWidth()

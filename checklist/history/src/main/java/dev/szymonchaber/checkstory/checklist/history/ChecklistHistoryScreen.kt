@@ -59,7 +59,7 @@ fun ChecklistHistoryScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.checklist_history))
+                    Text(text = stringResource(R.string.template_checklists))
                 },
                 navigationIcon = {
                     IconButton(onClick = {

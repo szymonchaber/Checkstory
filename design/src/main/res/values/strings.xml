@@ -4,10 +4,10 @@
     <string name="checkstory">Checkstory</string>
     <string name="recent_checklists">Recent checklists</string>
     <string name="loading">Loading</string>
-    <string name="templates">Checklist templates</string>
+    <string name="templates">Templates</string>
     <string name="recent_checklists_empty">No checklists filled yet.\nPick something below 👇</string>
-    <string name="templates_empty">No checklists templates created yet.\nCreate one by clicking \"+\" button</string>
-    <string name="checklist_history">Checklist history</string>
+    <string name="templates_empty">No templates created yet.\nCreate one by clicking \"+\" button</string>
+    <string name="template_checklists">Checklists</string>
     <string name="checklist_history_empty">No checklists filled for this template yet</string>
     <string name="fill_checklist">Fill checklist</string>
     <string name="items">Items</string>
@@ -87,7 +87,7 @@
     <string name="unlimited_history">Unlimited checklists per template - start filling a checklist with a&#160;single click</string>
     <string name="unlimited_reminders">Unlimited reminders - jump directly to a&#160;new or recent checklist at the right time</string>
     <string name="subscription_successful_thanks_for_support">Subscription successful!\nThanks for your support</string>
-    <string name="onboarding_template_title">(Click the pencil) This is your checklist template!</string>
+    <string name="onboarding_template_title">(Click the pencil) This is your template!</string>
     <string name="onboarding_template_description">"Templates are used to quickly create the same checklist again and again.\nNo clearing of the old ones required"</string>
     <string name="about">About</string>
     <string name="about_first_paragraph">A single person makes Checkstory - I’m not a faceless corporation, but an actual person happy to help.\n\nLet me know if you have any feedback or improvements for the app in mind: </string>
