@@ -16,6 +16,8 @@ class AdViewModel @Inject constructor(getUserUseCase: GetUserUseCase) : ViewMode
 
     var shouldEnableAds: Boolean = false
 
+    val currentUserFlow = getUserUseCase.getUser()
+
     init {
         viewModelScope.launch(Dispatchers.IO) {
             getUserUseCase.getUser()

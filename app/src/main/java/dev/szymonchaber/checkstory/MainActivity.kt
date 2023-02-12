@@ -8,15 +8,23 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.ads.MobileAds
 import com.google.android.play.core.review.ReviewManagerFactory
 import dagger.hilt.android.AndroidEntryPoint
+import dev.szymonchaber.checkstory.design.ActiveUser
+import dev.szymonchaber.checkstory.design.AdViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
+import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.navigation.Navigation
 import kotlinx.coroutines.launch
 
@@ -32,7 +40,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             CheckstoryTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
-                    Navigation()
+                    val adViewModel = hiltViewModel<AdViewModel>(LocalContext.current as ComponentActivity)
+                    val user by adViewModel.currentUserFlow.collectAsState(initial = User.Guest)
+                    CompositionLocalProvider(ActiveUser provides user) {
+                        Navigation()
+                    }
                 }
             }
         }

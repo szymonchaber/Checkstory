@@ -33,3 +33,18 @@ fun LoadingView() {
         )
     }
 }
+
+@Composable
+fun LoadingViewNoPadding() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .padding()
+                .align(alignment = Alignment.Center)
+        )
+    }
+}
