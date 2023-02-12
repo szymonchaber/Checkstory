@@ -6,10 +6,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 
 class CreateChecklistFromTemplateUseCase @Inject constructor(
@@ -24,34 +26,32 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
     }
 
     private fun createChecklist(basedOn: ChecklistTemplate): Checklist {
+        val temporaryIdGenerator = AtomicLong(0)
         return with(basedOn) {
             Checklist(
                 ChecklistId(0),
                 basedOn.id,
                 title,
                 description,
-                items.mapIndexed { index, it ->
-                    Checkbox(
-                        CheckboxId(index.toLong()),
-                        null,
-                        ChecklistId(0),
-                        it.title,
-                        false,
-                        it.children.mapIndexed { childIndex, child ->
-                            Checkbox(
-                                CheckboxId(childIndex.toLong()),
-                                null,
-                                ChecklistId(0),
-                                child.title,
-                                false,
-                                listOf()
-                            )
-                        }
-                    )
+                items.map {
+                    toCheckbox(it, temporaryIdGenerator)
                 },
                 "",
                 LocalDateTime.now()
             )
         }
+    }
+
+    private fun toCheckbox(basedOn: TemplateCheckbox, idGenerator: AtomicLong): Checkbox {
+        return Checkbox(
+            CheckboxId(idGenerator.getAndIncrement()),
+            null,
+            ChecklistId(0),
+            basedOn.title,
+            false,
+            basedOn.children.map { child ->
+                toCheckbox(child, idGenerator)
+            }
+        )
     }
 }

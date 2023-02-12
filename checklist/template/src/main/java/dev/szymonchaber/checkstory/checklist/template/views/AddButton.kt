@@ -24,7 +24,7 @@ fun AddButton(modifier: Modifier, onClick: () -> Unit, text: String) {
             Icons.Filled.Add,
             null,
             Modifier
-                .padding(vertical = 12.dp)
+                .padding(vertical = 10.dp)
                 .padding(start = 12.dp, end = 8.dp)
                 .align(Alignment.CenterVertically)
         )

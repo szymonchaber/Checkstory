@@ -2,9 +2,9 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.viewKey
-import dev.szymonchaber.checkstory.common.extensions.update
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import timber.log.Timber
 
 sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
@@ -16,19 +16,64 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     val isLastChild: Boolean
 
-    fun withUpdatedTitle(title: String): ViewTemplateCheckbox
-
     fun toDomainModel(parentId: TemplateCheckboxId? = null, position: Int): TemplateCheckbox
 
-    fun plusChildCheckbox(title: String): ViewTemplateCheckbox
+    fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
+        return abstractCopy(
+            children = children
+                .filterNot { it.viewKey == checkbox.viewKey }
+                .map { it.minusChildCheckboxRecursive(checkbox) }
+        )
+    }
 
-    fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox
+    fun withUpdatedTitleRecursive(checkbox: ViewTemplateCheckbox, newTitle: String): ViewTemplateCheckbox {
+        return abstractCopy(
+            title = if (viewKey == checkbox.viewKey) {
+                newTitle
+            } else {
+                title
+            },
+            children = children.map { it.withUpdatedTitleRecursive(checkbox, newTitle) }
+        )
+    }
 
-    fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox
+    fun plusChildCheckboxRecursive(parentId: ViewTemplateCheckboxKey): ViewTemplateCheckbox {
+        return abstractCopy(
+            children = children.map { it.plusChildCheckboxRecursive(parentId) }.let {
+                if (viewKey == parentId) {
+                    it.plus(
+                        New(
+                            TemplateCheckboxId(children.size.toLong()),
+                            viewKey,
+                            false,
+                            "",
+                            listOf(),
+                            true
+                        )
+                    )
+                } else {
+                    it
+                }
+            }
+        )
+    }
 
-    fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox
+    fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
+        return abstractCopy(children = children.reindexed())
+    }
 
-    fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox
+    fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
+        return abstractCopy(isLastChild = isLastChild)
+    }
+
+    fun abstractCopy(
+        id: TemplateCheckboxId = this.id,
+        parentViewKey: ViewTemplateCheckboxKey? = this.parentViewKey,
+        isParent: Boolean = this.isParent,
+        title: String = this.title,
+        children: List<ViewTemplateCheckbox> = this.children,
+        isLastChild: Boolean = this.isLastChild
+    ): ViewTemplateCheckbox
 
     data class New(
         override val id: TemplateCheckboxId,
@@ -51,45 +96,22 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             )
         }
 
-        override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
-            return copy(title = title)
-        }
-
-        override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
+        override fun abstractCopy(
+            id: TemplateCheckboxId,
+            parentViewKey: ViewTemplateCheckboxKey?,
+            isParent: Boolean,
+            title: String,
+            children: List<ViewTemplateCheckbox>,
+            isLastChild: Boolean,
+        ): ViewTemplateCheckbox {
             return copy(
-                children = children.plus(
-                    New(
-                        TemplateCheckboxId(children.size.toLong()),
-                        viewKey,
-                        false,
-                        "",
-                        listOf(),
-                        true
-                    )
-                ).reindexed()
+                id = id,
+                parentViewKey = parentViewKey,
+                isParent = isParent,
+                title = title,
+                children = children,
+                isLastChild = isLastChild
             )
-        }
-
-        override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
-            return copy(
-                children = children.minus(child).reindexed()
-            )
-        }
-
-        override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
-            return copy(
-                children = children.update(child.viewKey) {
-                    it.withUpdatedTitle(title)
-                }
-            )
-        }
-
-        override fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
-            return copy(children = children.reindexed())
-        }
-
-        override fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
-            return copy(isLastChild = isLastChild)
         }
     }
 
@@ -114,61 +136,47 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             )
         }
 
-        override fun withUpdatedTitle(title: String): ViewTemplateCheckbox {
-            return copy(title = title)
-        }
-
-        override fun plusChildCheckbox(title: String): ViewTemplateCheckbox {
+        override fun abstractCopy(
+            id: TemplateCheckboxId,
+            parentViewKey: ViewTemplateCheckboxKey?,
+            isParent: Boolean,
+            title: String,
+            children: List<ViewTemplateCheckbox>,
+            isLastChild: Boolean,
+        ): ViewTemplateCheckbox {
             return copy(
-                children = children.plus(
-                    New(
-                        TemplateCheckboxId(children.size.toLong()),
-                        viewKey,
-                        false,
-                        "",
-                        listOf(),
-                        true
-                    )
-                ).reindexed()
+                id = id,
+                parentViewKey = parentViewKey,
+                isParent = isParent,
+                title = title,
+                children = children,
+                isLastChild = isLastChild
             )
-        }
-
-        override fun minusChildCheckbox(child: ViewTemplateCheckbox): ViewTemplateCheckbox {
-            return copy(
-                children = children.minus(child).reindexed()
-            )
-        }
-
-        override fun editChildCheckboxTitle(child: ViewTemplateCheckbox, title: String): ViewTemplateCheckbox {
-            return copy(
-                children = children.update(child.viewKey) {
-                    it.withUpdatedTitle(title)
-                }
-            )
-        }
-
-        override fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
-            return copy(children = children.reindexed())
-        }
-
-        override fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
-            return copy(isLastChild = isLastChild)
         }
 
         companion object {
 
-            fun fromDomainModel(templateCheckbox: TemplateCheckbox): Existing {
+            fun fromDomainModel(
+                templateCheckbox: TemplateCheckbox,
+                ancestorViewKey: ViewTemplateCheckboxKey? = templateCheckbox.parentId?.let {
+                    ViewTemplateCheckboxKey(viewId = it.id, parentKey = null, isNew = false)
+                }
+            ): Existing {
                 return with(templateCheckbox) {
                     Existing(
-                        id = id,
-                        parentViewKey = parentId?.let {
-                            ViewTemplateCheckboxKey(viewId = it.id, isNew = false, isParent = true, parentKey = null)
-                        },
+                        id = this.id,
+                        parentViewKey = ancestorViewKey,
                         parentId == null,
                         title = title,
-                        children = children.map { fromDomainModel(it) }.reindexed(),
+                        children = children.map {
+                            fromDomainModel(it, it.parentId?.let {
+                                ViewTemplateCheckboxKey(viewId = it.id, parentKey = ancestorViewKey, isNew = false)
+                            })
+                        }.reindexed(),
                         false
-                    )
+                    ).also {
+                        Timber.d("Building ${templateCheckbox.title} with key ${it.viewKey}")
+                    }
                 }
             }
         }
@@ -181,24 +189,18 @@ private fun List<ViewTemplateCheckbox>.reindexed(): List<ViewTemplateCheckbox> {
     }
 }
 
-fun List<ViewTemplateCheckbox>.update(
-    viewTemplateCheckboxKey: ViewTemplateCheckboxKey,
-    updater: (ViewTemplateCheckbox) -> ViewTemplateCheckbox
-): List<ViewTemplateCheckbox> {
-    return update(
-        viewTemplateCheckboxKey,
-        {
-            it.viewKey
-        },
-        updater
-    )
-}
-
-fun renderCheckbox(checkbox: ViewTemplateCheckbox): String {
-    val parentIndicator = if (checkbox.isParent) "Parent " else "Child "
+fun renderCheckbox(checkbox: ViewTemplateCheckbox, prefix: String = "     "): String {
     val children = checkbox.children.takeUnless { it.isEmpty() }?.joinToString("\n") { child ->
-        val childIndicator = if (child.isParent) "Parent " else "Child "
-        "     $childIndicator ${child.title}"
+        "$prefix${child.title.ifEmpty { "Empty" }} \n${
+            child.children.joinToString("") {
+                "     ${
+                    renderCheckbox(
+                        it,
+                        "$prefix     "
+                    )
+                }"
+            }
+        }"
     }
-    return parentIndicator + " " + checkbox.title + children?.let { "\n" + it }.orEmpty()
+    return "${checkbox.title.ifEmpty { "Empty" }} ${children?.let { "\n$it" }}"
 }

@@ -20,15 +20,6 @@ sealed interface EditTemplateEvent {
 
     data class ChildItemAdded(val parentViewKey: ViewTemplateCheckboxKey) : EditTemplateEvent
 
-    data class ChildItemTitleChanged(
-        val parentKey: ViewTemplateCheckboxKey,
-        val child: ViewTemplateCheckbox,
-        val newTitle: String
-    ) : EditTemplateEvent
-
-    data class ChildItemDeleted(val parentKey: ViewTemplateCheckboxKey, val child: ViewTemplateCheckbox) :
-        EditTemplateEvent
-
     object AddReminderClicked : EditTemplateEvent
 
     data class ReminderClicked(val reminder: Reminder) : EditTemplateEvent

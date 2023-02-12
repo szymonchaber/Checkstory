@@ -18,7 +18,7 @@ sealed interface TemplateLoadingState {
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate
     ) : TemplateLoadingState {
 
-        val unwrappedCheckboxes = checkboxes.flatMap {
+        private val unwrappedCheckboxes = checkboxes.flatMap {
             listOf(it) + it.children
         }
 
@@ -51,6 +51,12 @@ sealed interface TemplateLoadingState {
         }
 
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
+            val filteredCheckboxes =
+                checkboxes
+                    .filterNot { it.viewKey == checkbox.viewKey }
+                    .map {
+                        it.minusChildCheckboxRecursive(checkbox)
+                    }
             val shouldDeleteFromDatabase = checkbox is ViewTemplateCheckbox.Existing
             val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
                 checkboxesToDelete.plus(checkbox.toDomainModel(position = 0))
@@ -58,58 +64,31 @@ sealed interface TemplateLoadingState {
                 checkboxesToDelete
             }
             return copy(
-                checkboxes = checkboxes.minus(checkbox),
+                checkboxes = filteredCheckboxes,
                 checkboxesToDelete = updatedCheckboxesToDelete
             )
         }
 
         fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
             return copy(
-                checkboxes = checkboxes.update(parentId) {
-                    it.plusChildCheckbox("")
+                checkboxes = checkboxes.map {
+                    it.plusChildCheckboxRecursive(parentId)
                 }
             )
         }
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
             return copy(
-                checkboxes = checkboxes.update(checkbox.viewKey) { it: ViewTemplateCheckbox ->
-                    it.withUpdatedTitle(title)
+                checkboxes = checkboxes.map {
+                    it.withUpdatedTitleRecursive(checkbox, title)
                 }
-            )
-        }
-
-        fun changeChildCheckboxTitle(
-            parentKey: ViewTemplateCheckboxKey,
-            child: ViewTemplateCheckbox,
-            title: String
-        ): Success {
-            return copy(
-                checkboxes = checkboxes.update(parentKey) {
-                    it.editChildCheckboxTitle(child, title)
-                }
-            )
-        }
-
-        fun minusChildCheckbox(parentKey: ViewTemplateCheckboxKey, child: ViewTemplateCheckbox): Success {
-            val shouldDeleteFromDatabase = child is ViewTemplateCheckbox.Existing
-            val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(child.toDomainModel(position = 0))
-            } else {
-                checkboxesToDelete
-            }
-            return copy(
-                checkboxes = checkboxes.update(parentKey) {
-                    it.minusChildCheckbox(child)
-                },
-                checkboxesToDelete = updatedCheckboxesToDelete
             )
         }
 
         fun plusReminder(reminder: Reminder): Success {
             return updateTemplate {
                 copy(reminders = reminders.plus(reminder))
-            } // Do the same new / old discrimination (or not?)
+            }
         }
 
         fun minusReminder(reminder: Reminder): TemplateLoadingState {

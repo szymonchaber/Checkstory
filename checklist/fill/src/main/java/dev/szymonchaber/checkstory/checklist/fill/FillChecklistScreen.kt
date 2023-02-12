@@ -1,16 +1,23 @@
 package dev.szymonchaber.checkstory.checklist.fill
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,12 +55,15 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.DeepLink
@@ -263,6 +273,8 @@ private fun FillChecklistScaffold(
     )
 }
 
+private val nestedPaddingStart = 12.dp
+
 @Composable
 fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent) -> Unit) {
     LazyColumn {
@@ -270,7 +282,9 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             ChecklistInfo(checklist.title, checklist.description)
         }
         items(checklist.items, key = { it.id.id }) {
-            CheckboxSection(checkbox = it, eventCollector = eventCollector)
+            Box(Modifier.padding(start = 8.dp)) {
+                CheckboxSection(checkbox = it, paddingStart = nestedPaddingStart, eventCollector = eventCollector)
+            }
         }
         item {
             NotesSection(checklist, eventCollector)
@@ -348,38 +362,92 @@ private fun NotesSection(
 
 
 @Composable
-fun CheckboxSection(checkbox: Checkbox, eventCollector: (FillChecklistEvent) -> Unit) {
-    val shouldIncludeIcon = checkbox.children.isNotEmpty()
-    var isCollapsed by remember { mutableStateOf(false) }
-    val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
-    CheckboxItem(
-        modifier = Modifier.padding(start = 8.dp, end = endPadding),
-        checkbox = checkbox,
-        onCheckedChange = {
-            eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
-        }
-    ) {
-        if (shouldIncludeIcon) {
-            IconButton(
-                onClick = { isCollapsed = !isCollapsed }) {
-                val rotationDegrees = if (isCollapsed) 0f else 180f
-                Icon(
-                    modifier = Modifier.rotate(rotationDegrees),
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = null
+fun CheckboxSection(
+    checkbox: Checkbox,
+    paddingStart: Dp,
+    nestingLevel: Int = 1,
+    isLastChild: Boolean = true,
+    collapsedByDefault: Boolean = true,
+    eventCollector: (FillChecklistEvent) -> Unit,
+) {
+    Column {
+        val shouldIncludeIcon = checkbox.children.isNotEmpty()
+        var isCollapsed by remember(collapsedByDefault) { mutableStateOf(collapsedByDefault) }
+        val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
+        Row(Modifier.height(IntrinsicSize.Min)) {
+            if (nestingLevel > 1) {
+                val heightFraction = if (!isLastChild) 1f else 0.52f
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight(heightFraction)
+                        .background(Color.Gray)
+                        .width(2.dp)
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .background(Color.Gray)
+                        .height(2.dp)
+                        .width(nestedPaddingStart)
                 )
             }
-        }
-    }
-    if (!isCollapsed) {
-        checkbox.children.forEach { child ->
             CheckboxItem(
-                modifier = Modifier.padding(start = 42.dp, end = 16.dp),
-                checkbox = child,
+                modifier = Modifier.padding(end = endPadding),
+                checkbox = checkbox,
                 onCheckedChange = {
-                    eventCollector(FillChecklistEvent.ChildCheckChanged(checkbox, child, it))
+                    eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
                 }
-            )
+            ) {
+                if (shouldIncludeIcon) {
+                    IconButton(
+                        onClick = { isCollapsed = !isCollapsed }) {
+                        val rotationDegrees = if (isCollapsed) 0f else 180f
+                        Icon(
+                            modifier = Modifier.rotate(rotationDegrees),
+                            imageVector = Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
+                }
+            }
+        }
+        val paddingMultiplier = if (nestingLevel == 1) {
+            2
+        } else {
+            3
+        }
+        AnimatedVisibility(visible = !isCollapsed) {
+            Row {
+                val localDensity = LocalDensity.current
+                var columnHeightDp by remember {
+                    mutableStateOf(0.dp)
+                }
+                if (!isLastChild) {
+                    Box(
+                        modifier = Modifier
+                            .height(columnHeightDp)
+                            .background(Color.Gray)
+                            .width(2.dp)
+                    )
+                }
+                Column(
+                    Modifier
+                        .padding(start = paddingStart * paddingMultiplier)
+                        .onGloballyPositioned {
+                            columnHeightDp = with(localDensity) { it.size.height.toDp() }
+                        }) {
+                    checkbox.children.forEachIndexed { index, child ->
+                        CheckboxSection(
+                            checkbox = child,
+                            paddingStart = nestedPaddingStart,
+                            nestingLevel = nestingLevel + 1,
+                            isLastChild = checkbox.children.lastIndex == index,
+                            collapsedByDefault = true,
+                            eventCollector
+                        )
+                    }
+                }
+            }
         }
     }
 }

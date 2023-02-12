@@ -9,7 +9,7 @@ class Dependencies : Plugin<Project> {
 
     companion object {
 
-        const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0"
+        const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
 
         private const val hiltVersion = "2.44.2"
         private const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
@@ -19,8 +19,8 @@ class Dependencies : Plugin<Project> {
 
         val common = listOf(coroutines, hiltLibrary, timber, kotlinImmutableCollections)
 
-        const val androidXCore = "androidx.core:core-ktx:1.7.0"
-        const val appCompat = "androidx.appcompat:appcompat:1.4.1"
+        const val androidXCore = "androidx.core:core-ktx:1.9.0"
+        const val appCompat = "androidx.appcompat:appcompat:1.7.0-alpha02"
 
         private const val lifecycleVersion = "2.4.1"
         val lifecycle = listOf(
@@ -29,12 +29,12 @@ class Dependencies : Plugin<Project> {
             "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion"
         )
 
-        const val composeVersion = "1.4.0-alpha05"
+        const val composeVersion = "1.4.0-beta01"
         val compose = listOf(
             "androidx.compose.ui:ui:$composeVersion",
             "androidx.compose.ui:ui-tooling-preview:$composeVersion",
             "androidx.compose.material:material:$composeVersion",
-            "androidx.activity:activity-compose:1.7.0-alpha04",
+            "androidx.activity:activity-compose:1.7.0-beta01",
             "androidx.navigation:navigation-compose:2.5.3",
             "androidx.hilt:hilt-navigation-compose:1.0.0"
         )
@@ -60,10 +60,10 @@ class Dependencies : Plugin<Project> {
 
         val ui = listOf(androidXCore, appCompat) + compose + lifecycle
 
-        val ads = "com.google.android.gms:play-services-ads:20.6.0"
+        val ads = "com.google.android.gms:play-services-ads:21.5.0"
 
         // region firebase
-        val firebasePlatform = "com.google.firebase:firebase-bom:31.0.1"
+        val firebasePlatform = "com.google.firebase:firebase-bom:31.2.1"
 
         val analytics = "com.google.firebase:firebase-analytics-ktx"
         val crashlytics = "com.google.firebase:firebase-crashlytics"
@@ -73,15 +73,15 @@ class Dependencies : Plugin<Project> {
 
         val rrule = "com.github.PhilJay:RRule:1.0.3"
 
-        const val workVersion = "2.7.1"
+        const val workVersion = "2.8.0"
 
         val work = "androidx.work:work-runtime-ktx:$workVersion"
 
-        private val billing_version = "5.0.0"
+        private val billing_version = "5.1.0"
 
         val billing = "com.android.billingclient:billing-ktx:$billing_version"
 
-        val review = "com.google.android.play:review-ktx:2.0.0"
+        val review = "com.google.android.play:review-ktx:2.0.1"
 
         val arrow = "io.arrow-kt:arrow-core:1.0.1"
 
@@ -95,8 +95,8 @@ class Dependencies : Plugin<Project> {
         )
 
         val uiTest = listOf(
-            "androidx.test.ext:junit:1.1.3",
-            "androidx.test.espresso:espresso-core:3.4.0",
+            "androidx.test.ext:junit:1.1.5",
+            "androidx.test.espresso:espresso-core:3.5.1",
             "androidx.compose.ui:ui-test-junit4:$composeVersion",
             "androidx.room:room-testing:$roomVersion"
         )

@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.checklist.template
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.model.renderCheckbox
 
+// TODO this is all broken currently
 fun wrapReorderChanges(
     viewTemplateCheckboxes: List<ViewTemplateCheckbox>,
     from: ViewTemplateCheckboxKey,
@@ -82,6 +83,13 @@ private fun isChildMoving(fromCheckbox: ViewTemplateCheckboxKey) = fromCheckbox.
 private fun areParentsMoving(fromCheckbox: ViewTemplateCheckboxKey, toCheckbox: ViewTemplateCheckboxKey): Boolean {
     return fromCheckbox.isParent && toCheckbox.isParent
 }
+
+// TODO this is broken
+val ViewTemplateCheckboxKey.isParent: Boolean
+    get() = false
+
+val ViewTemplateCheckboxKey.isChild: Boolean
+    get() = !isParent
 
 private fun MutableList<ViewTemplateCheckbox>.moveChild(
     child: ViewTemplateCheckboxKey,

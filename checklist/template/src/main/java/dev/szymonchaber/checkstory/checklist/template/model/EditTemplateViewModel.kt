@@ -66,8 +66,6 @@ class EditTemplateViewModel @Inject constructor(
             handleDeleteTemplateClicked(),
             handleConfirmDeleteTemplateClicked(),
             handleChildItemAdded(),
-            handleChildItemDeleted(),
-            handleChildItemChanged(),
             handleAddReminderClicked(),
             handleReminderClicked(),
             handleReminderSaved(),
@@ -189,25 +187,6 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleChildItemDeleted(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ChildItemDeleted>()
-            .withSuccessState()
-            .map { (loadingState, event) ->
-                tracker.logEvent("delete_child_checkbox_clicked")
-                EditTemplateState(loadingState.minusChildCheckbox(event.parentKey, event.child)) to null
-            }
-    }
-
-    private fun Flow<EditTemplateEvent>.handleChildItemChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ChildItemTitleChanged>()
-            .withSuccessState()
-            .map { (loadingState, event) ->
-                EditTemplateState(
-                    loadingState.changeChildCheckboxTitle(event.parentKey, event.child, event.newTitle)
-                ) to null
-            }
-    }
-
     private fun Flow<EditTemplateEvent>.handleAddCheckboxClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
             .withSuccessState()
@@ -231,9 +210,7 @@ class EditTemplateViewModel @Inject constructor(
                                 .mapIndexed { index, checkbox ->
                                     checkbox.toDomainModel(position = index)
                                 }
-                                .map {
-                                    it.copy(title = it.title.trimEnd())
-                                })
+                        )
                     }
                     .checklistTemplate
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)

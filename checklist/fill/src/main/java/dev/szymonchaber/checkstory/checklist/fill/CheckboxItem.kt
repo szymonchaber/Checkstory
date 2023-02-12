@@ -22,7 +22,7 @@ fun CheckboxItem(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row {
+        Row(Modifier.weight(1f)) {
             Checkbox(
                 modifier = Modifier.align(Alignment.CenterVertically),
                 checked = checkbox.isChecked,
@@ -33,10 +33,7 @@ fun CheckboxItem(
                 text = checkbox.title
             )
         }
-        Row(
-            modifier = Modifier
-                .weight(1f, false)
-        ) {
+        Row {
             icon()
         }
     }

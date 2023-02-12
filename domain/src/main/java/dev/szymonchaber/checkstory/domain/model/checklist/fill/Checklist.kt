@@ -19,8 +19,11 @@ data class Checklist(
     val flattenedItems: List<Checkbox>
         get() {
             return items.flatMap {
-                listOf(it) + it.children
+                flatten(it)
             }
         }
 
+    private fun flatten(checkbox: Checkbox): List<Checkbox> {
+        return listOf(checkbox) + checkbox.children.flatMap { flatten(it) }
+    }
 }
