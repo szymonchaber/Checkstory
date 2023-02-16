@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -22,8 +22,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -101,32 +99,40 @@ fun ChecklistTemplateView(
                         eventListener(
                             ChecklistCatalogEvent.RecentChecklistClicked(it.id)
                         )
-                    }
-                ) {
-                    Box {
-                        Card(
-                            modifier = Modifier
-                                .size(width = 90.dp, height = 120.dp)
-                                .align(Alignment.Center),
-                            elevation = 1.dp,
-                            onClick = {
-                                eventListener(
-                                    ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate)
-                                )
-                            }
-                        ) {
-                            Box {
-                                Icon(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .align(Alignment.Center),
-                                    imageVector = Icons.Filled.Add,
-                                    contentDescription = "Add"
-                                )
-                            }
-                        }
-                    }
-                }
+                    },
+//                    header = UseTemplateHeader(eventListener, checklistTemplate)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+private fun UseTemplateHeader(
+    eventListener: (ChecklistCatalogEvent) -> Unit,
+    checklistTemplate: ChecklistTemplate
+): @Composable() (LazyItemScope.() -> Unit) = {
+    Box {
+        Card(
+            modifier = Modifier
+                .size(width = 90.dp, height = 120.dp)
+                .align(Alignment.Center),
+            elevation = 1.dp,
+            onClick = {
+                eventListener(
+                    ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate)
+                )
+            }
+        ) {
+            Box {
+                Icon(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .align(Alignment.Center),
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add"
+                )
             }
         }
     }
@@ -179,29 +185,29 @@ private fun TemplateActionButtons(
         ) {
             Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
         }
-        Row(
-            Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-        ) {
-            val editInteractionSource = remember {
-                PassThroughInteractionSource(targetInteractionSource)
-            }
-            val historyInteractionSource = remember {
-                PassThroughInteractionSource(targetInteractionSource)
-            }
-            IconButton(
-                interactionSource = editInteractionSource,
-                onClick = {}
-            ) {
-                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
-            }
-            IconButton(
-                interactionSource = historyInteractionSource,
-                onClick = {}
-            ) {
-                Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
-            }
-        }
+//        Row(
+//            Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.End,
+//        ) {
+//            val editInteractionSource = remember {
+//                PassThroughInteractionSource(targetInteractionSource)
+//            }
+//            val historyInteractionSource = remember {
+//                PassThroughInteractionSource(targetInteractionSource)
+//            }
+//            IconButton(
+//                interactionSource = editInteractionSource,
+//                onClick = {}
+//            ) {
+//                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
+//            }
+//            IconButton(
+//                interactionSource = historyInteractionSource,
+//                onClick = {}
+//            ) {
+//                Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
+//            }
+//        }
     }
 }
 
