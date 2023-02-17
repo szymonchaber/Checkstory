@@ -96,6 +96,7 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
+                    tracker.logEvent("onboarding_template_generated")
                     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
                         .updateTemplate {
                             copy(
@@ -142,8 +143,12 @@ class EditTemplateViewModel @Inject constructor(
                     )
                 )
             ),
-            CheckboxToChildren("You can add links where you need them: checkstory.tech"),
-            CheckboxToChildren("When you’re done, save this template and “use” it on the next screen"),
+            CheckboxToChildren("You can add links like this:\ncheckstory.tech"),
+            CheckboxToChildren(
+                "When you’re done,\nsave this template", listOf(
+                    CheckboxToChildren("Then “use” it\non the next screen")
+                )
+            ),
             CheckboxToChildren("Happy checklisting!")
         )
     }
