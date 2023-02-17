@@ -2,13 +2,13 @@ package dev.szymonchaber.checkstory.onboarding
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
@@ -23,7 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -99,7 +102,8 @@ private fun ReusableChecklistsPage(onButtonClick: () -> Unit) {
                 "This lets you start working with a single click.\n" +
                 "You can work on multiple checklists at the same time.",
         buttonText = "Next",
-        onButtonClick = onButtonClick
+        onButtonClick = onButtonClick,
+        image = R.drawable.onboarding_1
     )
 }
 
@@ -111,12 +115,19 @@ private fun KeepTrackOfThePastPage(onButtonClick: () -> Unit) {
                 "\n" +
                 "Editing a template affects only future checklists - we don’t rewrite history.",
         buttonText = "Let's begin",
-        onButtonClick = onButtonClick
+        onButtonClick = onButtonClick,
+        image = R.drawable.onboarding_2
     )
 }
 
 @Composable
-private fun OnboardingPage(title: String, description: String, buttonText: String, onButtonClick: () -> Unit) {
+private fun OnboardingPage(
+    title: String,
+    description: String,
+    buttonText: String,
+    onButtonClick: () -> Unit,
+    image: Int
+) {
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
         Column {
             Box(
@@ -124,13 +135,14 @@ private fun OnboardingPage(title: String, description: String, buttonText: Strin
                     .fillMaxWidth()
                     .background(Color(0xFFD6CFFC))
             ) {
-                Box(
-                    Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp)
+                Image(
+                    modifier = Modifier
                         .fillMaxWidth()
-                        .height(196.dp)
-                        .background(Color.Red, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    painter = painterResource(id = image),
+                    contentDescription = "",
+                    contentScale = ContentScale.FillWidth,
                 )
             }
             Text(
