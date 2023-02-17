@@ -53,7 +53,6 @@ class App : Application() {
         }
         setPaymentTierProperty()
         runReminderSchedulerDaily()
-        insertOnboardingTemplates()
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Timber.w("Fetching FCM registration token failed", task.exception)
