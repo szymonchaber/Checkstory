@@ -35,7 +35,6 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.rememberModalBottomSheetState
@@ -245,13 +244,13 @@ private fun FillChecklistScaffold(
                     }
                 },
                 elevation = 12.dp,
-                actions = {
-                    IconButton(onClick = {
-                        viewModel.onEvent(FillChecklistEvent.EditTemplateClicked)
-                    }) {
-                        Icon(Icons.Filled.Edit, "", tint = Color.White)
-                    }
-                }
+//                actions = {
+//                    IconButton(onClick = {
+//                        viewModel.onEvent(FillChecklistEvent.EditTemplateClicked)
+//                    }) {
+//                        Icon(Icons.Filled.Edit, "", tint = Color.White)
+//                    }
+//                }
             )
         }, content = {
             when (val loadingState = state.value.checklistLoadingState) {
