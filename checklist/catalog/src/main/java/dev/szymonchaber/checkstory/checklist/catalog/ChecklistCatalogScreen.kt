@@ -56,9 +56,6 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     trackScreenName("checklist_catalog")
     val viewModel = hiltViewModel<ChecklistCatalogViewModel>()
     var showMenu by remember { mutableStateOf(false) }
-    LaunchedEffect(key1 = true) {
-//        navigator.navigate(Routes.onboardingScreen())
-    }
     AdvertScaffold(
         topBar = {
             TopAppBar(
@@ -118,6 +115,9 @@ private fun ChecklistCatalogView(
     val context = LocalContext.current
     LaunchedEffect(effect) {
         when (val value = effect) {
+            is ChecklistCatalogEffect.NavigateToOnboarding -> {
+                navigator.navigate(Routes.onboardingScreen())
+            }
             is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
                 navigator.navigate(Routes.newChecklistScreen(value.basedOn))
             }

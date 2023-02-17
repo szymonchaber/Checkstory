@@ -63,6 +63,8 @@ class Dependencies : Plugin<Project> {
         )
         val roomKsp = "androidx.room:room-compiler:$roomVersion"
 
+        val dataStore = "androidx.datastore:datastore-preferences:1.0.0"
+
         val ui = listOf(androidXCore, appCompat) + compose + lifecycle + accompanist
 
         val ads = "com.google.android.gms:play-services-ads:21.5.0"

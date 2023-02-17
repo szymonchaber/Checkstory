@@ -8,6 +8,8 @@ sealed interface ChecklistCatalogEvent {
 
     object LoadChecklistCatalog : ChecklistCatalogEvent
 
+    object GoToOnboarding : ChecklistCatalogEvent
+
     data class NewChecklistFromTemplateClicked(val template: ChecklistTemplate) : ChecklistCatalogEvent
 
     data class RecentChecklistClicked(val checklistId: ChecklistId) : ChecklistCatalogEvent

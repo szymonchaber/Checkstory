@@ -42,6 +42,7 @@ dependencies {
     ksp(Dependencies.roomKsp)
 
     implementation(Dependencies.rrule)
+    implementation(Dependencies.dataStore)
 
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

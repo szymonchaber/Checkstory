@@ -9,7 +9,6 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
-import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
@@ -36,9 +35,6 @@ class App : Application() {
 
     @Inject
     lateinit var isProUserUseCase: IsProUserUseCase
-
-    @Inject
-    lateinit var onboardingPreferences: OnboardingPreferences
 
     private val alarmManager by lazy { getSystemService(Context.ALARM_SERVICE) as AlarmManager }
 

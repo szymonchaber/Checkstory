@@ -1,21 +1,34 @@
 package dev.szymonchaber.checkstory.data.preferences
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import javax.inject.Named
+import javax.inject.Singleton
 
-class OnboardingPreferences @Inject constructor(@ApplicationContext context: Context) {
+@Singleton
+class OnboardingPreferences @Inject constructor(
+    @Named("onboardingPreferences")
+    private val onboardingPreferencesDataStore: DataStore<Preferences>
+) {
 
-    private val preferences = context.getSharedPreferences(ONBOARDING_PREFERENCES, Context.MODE_PRIVATE)
+    val didShowOnboarding: Flow<Boolean> = onboardingPreferencesDataStore.data
+        .map {
+            it[KEY_DID_SHOW_ONBOARDING] ?: false
+        }
 
-    var didGenerateOnboardingTemplate: Boolean
-        get() = preferences.getBoolean(KEY_ONBOARDING_TEMPLATE_GENERATED, false)
-        set(value) = preferences.edit().putBoolean(KEY_ONBOARDING_TEMPLATE_GENERATED, value).apply()
+    suspend fun updateDidShowOnboardingFlow(sidShowOnboardingFlow: Boolean) {
+        onboardingPreferencesDataStore.edit { preferences ->
+            preferences[KEY_DID_SHOW_ONBOARDING] = sidShowOnboardingFlow
+        }
+    }
 
     companion object {
 
-        private const val ONBOARDING_PREFERENCES = "ONBOARDING_PREFERENCES"
-        private const val KEY_ONBOARDING_TEMPLATE_GENERATED = "ONBOARDING_PREFERENCES"
-
+        private val KEY_DID_SHOW_ONBOARDING = booleanPreferencesKey("DID_SHOW_ONBOARDING")
     }
 }

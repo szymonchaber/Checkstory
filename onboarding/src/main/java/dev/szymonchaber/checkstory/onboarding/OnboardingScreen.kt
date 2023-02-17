@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.HorizontalPagerIndicator
@@ -46,6 +47,7 @@ fun OnboardingScreen(
     navigator: DestinationsNavigator
 ) {
     trackScreenName("onboarding_screen")
+    hiltViewModel<OnboardingViewModel>()
 
     val pagerState = rememberPagerState()
     val scope = rememberCoroutineScope()
