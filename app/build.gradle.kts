@@ -86,6 +86,7 @@ dependencies {
     implementation(project(":notifications"))
     implementation(project(":payments"))
     implementation(project(":about"))
+    implementation(project(":onboarding"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)

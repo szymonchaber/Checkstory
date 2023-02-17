@@ -32,4 +32,8 @@ object Routes {
     fun aboutScreen(): String {
         return "about_screen"
     }
+
+    fun homeScreen(): String = "home_screen"
+
+    fun onboardingScreen() = "onboarding_screen"
 }
