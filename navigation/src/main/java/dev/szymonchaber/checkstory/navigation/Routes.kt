@@ -22,11 +22,11 @@ object Routes {
     }
 
     fun newChecklistScreen(templateId: ChecklistTemplateId): String {
-        return "fill_checklist_screen?checklistId={checklistId}?createChecklistFrom=${templateId.id}"
+        return "fill_checklist_screen?createChecklistFrom=${templateId.id}"
     }
 
     fun editChecklistScreen(checklistId: ChecklistId): String {
-        return "fill_checklist_screen?checklistId=${checklistId.id}?createChecklistFrom={createChecklistFrom}"
+        return "fill_checklist_screen?checklistId=${checklistId.id}"
     }
 
     fun paymentScreen(): String {
