@@ -162,12 +162,7 @@ class FillChecklistViewModel @Inject constructor(
                     success.checklist
                 } else {
                     val itemsWithoutTemporaryIds = success.checklist.items.map { checkbox ->
-                        checkbox.copy(
-                            id = CheckboxId(0),
-                            children = checkbox.children.map {
-                                it.copy(id = CheckboxId(0))
-                            }
-                        )
+                        checkbox.clearIdsRecursive()
                     }
                     success.checklist.copy(items = itemsWithoutTemporaryIds)
                 }
@@ -231,4 +226,13 @@ class FillChecklistViewModel @Inject constructor(
                 .take(1)
         }
     }
+}
+
+private fun Checkbox.clearIdsRecursive(): Checkbox {
+    return copy(
+        id = CheckboxId(0),
+        children = children.map {
+            it.clearIdsRecursive()
+        }
+    )
 }
