@@ -41,7 +41,7 @@ class Dependencies : Plugin<Project> {
 
         val debugUiTooling = "androidx.compose.ui:ui-tooling:$composeVersion"
 
-        private val composeDestinationsVersion = "1.4.2-beta"
+        private val composeDestinationsVersion = "1.8.33-beta"
         val composeDestinations = listOf(
             "io.github.raamcosta.compose-destinations:core:$composeDestinationsVersion",
             "io.github.raamcosta.compose-destinations:animations-core:$composeDestinationsVersion"
