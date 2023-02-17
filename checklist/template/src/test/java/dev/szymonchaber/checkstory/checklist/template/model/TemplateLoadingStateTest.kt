@@ -17,7 +17,7 @@ class TemplateLoadingStateTest {
         val successState = success(listOf(TemplateCheckbox(commonCheckboxId, null, "title", listOf(), 0)))
 
         // when
-        val updatedState = successState.plusNewCheckbox("New checkbox").let {
+        val updatedState = successState.plusNestedCheckboxes("New checkbox").let {
             val newCheckbox = it.checkboxes.filterIsInstance<ViewTemplateCheckbox.New>().first()
             it
         }

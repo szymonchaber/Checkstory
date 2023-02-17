@@ -5,6 +5,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 
 object Routes {
 
+    fun onboardingChecklistTemplateScreen(): String {
+        return "edit_template_screen?generateOnboarding=true"
+    }
+
     fun newChecklistTemplateScreen(): String {
         return "edit_template_screen"
     }
@@ -18,11 +22,11 @@ object Routes {
     }
 
     fun newChecklistScreen(templateId: ChecklistTemplateId): String {
-        return "fill_checklist_screen?checklistId={checklistId}?createChecklistFrom=${templateId.id}"
+        return "fill_checklist_screen?createChecklistFrom=${templateId.id}"
     }
 
     fun editChecklistScreen(checklistId: ChecklistId): String {
-        return "fill_checklist_screen?checklistId=${checklistId.id}?createChecklistFrom={createChecklistFrom}"
+        return "fill_checklist_screen?checklistId=${checklistId.id}"
     }
 
     fun paymentScreen(): String {
@@ -32,4 +36,8 @@ object Routes {
     fun aboutScreen(): String {
         return "about_screen"
     }
+
+    fun homeScreen(): String = "home_screen"
+
+    fun onboardingScreen() = "onboarding_screen"
 }

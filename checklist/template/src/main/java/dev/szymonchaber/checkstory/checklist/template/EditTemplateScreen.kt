@@ -88,7 +88,8 @@ import kotlinx.parcelize.Parcelize
 @Composable
 fun EditTemplateScreen(
     navigator: DestinationsNavigator,
-    templateId: ChecklistTemplateId?
+    generateOnboarding: Boolean = false,
+    templateId: ChecklistTemplateId?,
 ) {
     trackScreenName("edit_template")
     val viewModel = hiltViewModel<EditTemplateViewModel>()
@@ -98,7 +99,11 @@ fun EditTemplateScreen(
         templateId?.let {
             viewModel.onEvent(EditTemplateEvent.EditChecklistTemplate(it))
         } ?: run {
-            viewModel.onEvent(EditTemplateEvent.CreateChecklistTemplate)
+            if (generateOnboarding) {
+                viewModel.onEvent(EditTemplateEvent.GenerateOnboardingChecklistTemplate)
+            } else {
+                viewModel.onEvent(EditTemplateEvent.CreateChecklistTemplate)
+            }
         }
     }
 

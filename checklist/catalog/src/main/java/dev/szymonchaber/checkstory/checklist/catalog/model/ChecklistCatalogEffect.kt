@@ -22,4 +22,7 @@ sealed interface ChecklistCatalogEffect {
 
     @Suppress("CanSealedSubClassBeObject")
     class NavigateToAboutScreen : ChecklistCatalogEffect
+
+    @Suppress("CanSealedSubClassBeObject")
+    class NavigateToOnboarding : ChecklistCatalogEffect
 }

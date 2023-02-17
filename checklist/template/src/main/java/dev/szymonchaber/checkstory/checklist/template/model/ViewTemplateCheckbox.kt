@@ -58,6 +58,39 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         )
     }
 
+    fun plusNestedChildCheckboxRecursive(
+        parentId: ViewTemplateCheckboxKey,
+        title: String = "",
+        children: List<CheckboxToChildren>
+    ): ViewTemplateCheckbox {
+        return abstractCopy(
+            children = this.children.map { it.plusNestedChildCheckboxRecursive(parentId, title, children) }.let {
+                if (viewKey == parentId) {
+                    val newElement = New(
+                        TemplateCheckboxId(this.children.size.toLong()),
+                        viewKey,
+                        false,
+                        title,
+                        listOf(),
+                        true
+                    )
+                    val newUpdatedElement = children.fold(newElement) { acc: ViewTemplateCheckbox, checkboxToChildren ->
+                        acc.plusNestedChildCheckboxRecursive(
+                            newElement.viewKey,
+                            checkboxToChildren.title,
+                            checkboxToChildren.children
+                        )
+                    }
+                    it.plus(
+                        newUpdatedElement
+                    )
+                } else {
+                    it
+                }
+            }
+        )
+    }
+
     fun replaceChildren(children: List<ViewTemplateCheckbox>): ViewTemplateCheckbox {
         return abstractCopy(children = children.reindexed())
     }

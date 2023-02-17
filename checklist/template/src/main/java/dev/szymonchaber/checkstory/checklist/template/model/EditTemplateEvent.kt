@@ -8,6 +8,8 @@ sealed interface EditTemplateEvent {
 
     object CreateChecklistTemplate : EditTemplateEvent
 
+    object GenerateOnboardingChecklistTemplate : EditTemplateEvent
+
     data class EditChecklistTemplate(val checklistTemplateId: ChecklistTemplateId) : EditTemplateEvent
 
     data class TitleChanged(val newTitle: String) : EditTemplateEvent

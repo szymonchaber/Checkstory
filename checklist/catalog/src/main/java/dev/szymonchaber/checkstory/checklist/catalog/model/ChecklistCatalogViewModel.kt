@@ -1,9 +1,11 @@
 package dev.szymonchaber.checkstory.checklist.catalog.model
 
+import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
@@ -11,16 +13,19 @@ import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -28,7 +33,8 @@ class ChecklistCatalogViewModel @Inject constructor(
     private val getChecklistTemplatesUseCase: GetChecklistTemplatesUseCase,
     private val getRecentChecklistsUseCase: GetRecentChecklistsUseCase,
     private val getUserUseCase: GetUserUseCase,
-    private val tracker: Tracker
+    private val tracker: Tracker,
+    private val onboardingPreferences: OnboardingPreferences
 ) : BaseViewModel<
         ChecklistCatalogEvent,
         ChecklistCatalogState,
@@ -38,12 +44,24 @@ class ChecklistCatalogViewModel @Inject constructor(
 ) {
 
     init {
-        onEvent(ChecklistCatalogEvent.LoadChecklistCatalog)
+        viewModelScope.launch {
+            onboardingPreferences.didShowOnboarding
+                .flatMapLatest { didShowOnboarding ->
+                    if (didShowOnboarding) {
+                        ChecklistCatalogEvent.LoadChecklistCatalog
+                    } else {
+                        ChecklistCatalogEvent.GoToOnboarding
+                    }.let(::flowOf)
+                }
+                .onEach(::onEvent)
+                .collect()
+        }
     }
 
     override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return merge(
-            eventFlow.handleLoadChecklist(),
+            eventFlow.handleLoadCatalog(),
+            eventFlow.handleGoToOnboarding(),
             eventFlow.handleTemplateClicked(),
             eventFlow.handleRecentChecklistClicked(),
             eventFlow.handleRecentChecklistInTemplateClicked(),
@@ -57,7 +75,7 @@ class ChecklistCatalogViewModel @Inject constructor(
         }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleLoadChecklist(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+    private fun Flow<ChecklistCatalogEvent>.handleLoadCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.LoadChecklistCatalog>()
             .flatMapLatest {
                 val templatesLoading = getChecklistTemplatesUseCase.getChecklistTemplates()
@@ -77,6 +95,13 @@ class ChecklistCatalogViewModel @Inject constructor(
                     state.first()
                         .copy(templatesLoadingState = templates, recentChecklistsLoadingState = checklists) to null
                 }
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleGoToOnboarding(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.GoToOnboarding>()
+            .mapLatest {
+                state.first() to ChecklistCatalogEffect.NavigateToOnboarding()
             }
     }
 
