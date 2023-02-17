@@ -1,18 +1,14 @@
 package dev.szymonchaber.checkstory.onboarding
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PagerState
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
@@ -32,13 +28,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.HorizontalPagerIndicator
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalPagerApi::class)
 @Destination("onboarding_screen", start = true)
 @Composable
 fun OnboardingScreen(
@@ -68,109 +69,122 @@ fun OnboardingScreen(
             Box(
                 Modifier.padding(it)
             ) {
-                OnboardingView(navigator, pagerState)
+                OnboardingView(pagerState)
+            }
+        },
+        bottomBar = {
+            val buttonText = when (pagerState.currentPage) {
+                0 -> "Next"
+                1 -> "Let's begin"
+                else -> error("Page ${pagerState.currentPage} does not exist")
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+            ) {
+                HorizontalPagerIndicator(
+                    pagerState = pagerState,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(16.dp),
+                )
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp),
+                    onClick = {
+                        when (pagerState.currentPage) {
+                            0 -> {
+                                scope.launch {
+                                    pagerState.animateScrollToPage(1)
+                                }
+                            }
+                            1 -> {
+                                navigator.navigate(Routes.aboutScreen()) {
+                                    popUpTo(Routes.homeScreen())
+                                }
+                            }
+                        }
+                    },
+                ) {
+                    Text(text = buttonText)
+                }
             }
         }
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-fun OnboardingView(navigator: DestinationsNavigator, pagerState: PagerState) {
-    val scope = rememberCoroutineScope()
-    HorizontalPager(pageCount = 2, state = pagerState, beyondBoundsPageCount = 1) { page ->
+fun OnboardingView(pagerState: PagerState) {
+    HorizontalPager(count = 2, state = pagerState) { page ->
         when (page) {
-            0 -> ReusableChecklistsPage {
-                scope.launch {
-                    pagerState.animateScrollToPage(1)
-                }
-            }
-            1 -> KeepTrackOfThePastPage {
-                navigator.navigate(Routes.aboutScreen()) {
-                    popUpTo(Routes.homeScreen())
-                }
-            }
+            0 -> ReusableChecklistsPage()
+            1 -> KeepTrackOfThePastPage()
         }
     }
 }
 
 @Composable
-private fun ReusableChecklistsPage(onButtonClick: () -> Unit) {
+private fun ReusableChecklistsPage() {
     OnboardingPage(
+        imageRes = R.drawable.onboarding_1,
         title = "We’re all about\nreusable checklists",
         description = "Every checklist is made from a template.\n" +
                 "This lets you start working with a single click.\n" +
-                "You can work on multiple checklists at the same time.",
-        buttonText = "Next",
-        onButtonClick = onButtonClick,
-        image = R.drawable.onboarding_1
+                "You can work on multiple checklists at the same time."
     )
 }
 
 @Composable
-private fun KeepTrackOfThePastPage(onButtonClick: () -> Unit) {
+private fun KeepTrackOfThePastPage() {
     OnboardingPage(
+        imageRes = R.drawable.onboarding_2,
         title = "Keep track of the past",
         description = "When you’re done with a checklist,\nyou can keep it to track your past accomplishments & notes." +
                 "\n" +
-                "Editing a template affects only future checklists - we don’t rewrite history.",
-        buttonText = "Let's begin",
-        onButtonClick = onButtonClick,
-        image = R.drawable.onboarding_2
+                "Editing a template affects only future checklists - we don’t rewrite history."
     )
 }
 
 @Composable
 private fun OnboardingPage(
+    @DrawableRes imageRes: Int,
     title: String,
-    description: String,
-    buttonText: String,
-    onButtonClick: () -> Unit,
-    image: Int
+    description: String
 ) {
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFD6CFFC))
-            ) {
-                Image(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    painter = painterResource(id = image),
-                    contentDescription = "",
-                    contentScale = ContentScale.FillWidth,
-                )
-            }
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 16.dp),
-                style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Medium, textAlign = TextAlign.Center),
-                text = title
-            )
-            Text(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .padding(horizontal = 16.dp),
-                style = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Center, lineHeight = 22.sp),
-                text = description
-            )
-        }
-        Button(
+    Column(Modifier.fillMaxSize()) {
+        Box(
             modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp)
                 .fillMaxWidth()
-                .weight(1f, false),
-            onClick = onButtonClick,
+                .background(Color(0xFFD6CFFC))
         ) {
-            Text(text = buttonText)
+            Image(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                painter = painterResource(id = imageRes),
+                contentDescription = "",
+                contentScale = ContentScale.FillWidth,
+            )
         }
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Medium, textAlign = TextAlign.Center),
+            text = title
+        )
+        Text(
+            modifier = Modifier
+                .padding(top = 16.dp)
+                .padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Center, lineHeight = 22.sp),
+            text = description
+        )
     }
 }

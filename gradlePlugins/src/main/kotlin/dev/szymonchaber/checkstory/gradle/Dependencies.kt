@@ -50,7 +50,8 @@ class Dependencies : Plugin<Project> {
             "io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion"
 
         val accompanist = listOf(
-            "com.google.accompanist:accompanist-pager:0.29.1-alpha"
+            "com.google.accompanist:accompanist-pager:0.29.1-alpha",
+            "com.google.accompanist:accompanist-pager-indicators:0.29.1-alpha"
         )
 
         private const val roomVersion = "2.4.2"
