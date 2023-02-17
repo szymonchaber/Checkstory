@@ -49,6 +49,10 @@ class Dependencies : Plugin<Project> {
         val composeDestinationsKsp =
             "io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion"
 
+        val accompanist = listOf(
+            "com.google.accompanist:accompanist-pager:0.29.1-alpha"
+        )
+
         private const val roomVersion = "2.4.2"
 
         val room = listOf(
@@ -58,7 +62,7 @@ class Dependencies : Plugin<Project> {
         )
         val roomKsp = "androidx.room:room-compiler:$roomVersion"
 
-        val ui = listOf(androidXCore, appCompat) + compose + lifecycle
+        val ui = listOf(androidXCore, appCompat) + compose + lifecycle + accompanist
 
         val ads = "com.google.android.gms:play-services-ads:21.5.0"
 
