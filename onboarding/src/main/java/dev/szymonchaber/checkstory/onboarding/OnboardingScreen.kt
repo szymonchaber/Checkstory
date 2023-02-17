@@ -102,7 +102,7 @@ fun OnboardingScreen(
                                 }
                             }
                             1 -> {
-                                navigator.navigate(Routes.aboutScreen()) {
+                                navigator.navigate(Routes.onboardingChecklistTemplateScreen()) {
                                     popUpTo(Routes.homeScreen())
                                 }
                             }

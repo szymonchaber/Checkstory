@@ -57,7 +57,7 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     val viewModel = hiltViewModel<ChecklistCatalogViewModel>()
     var showMenu by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = true) {
-        navigator.navigate(Routes.onboardingScreen())
+//        navigator.navigate(Routes.onboardingScreen())
     }
     AdvertScaffold(
         topBar = {

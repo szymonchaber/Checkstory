@@ -1,13 +1,13 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import android.app.Application
 import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
@@ -33,6 +33,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
+    private val application: Application,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
     private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
     private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
@@ -55,6 +56,7 @@ class EditTemplateViewModel @Inject constructor(
     private fun Flow<EditTemplateEvent>.buildMviFlowActual(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return merge(
             handleCreateChecklist(),
+            handleGenerateOnboardingTemplate(),
             handleEditChecklist(),
             handleTitleChanged(),
             handleDescriptionChanged(),
@@ -82,20 +84,68 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
-                    val newChecklistTemplate = ChecklistTemplate(
-                        ChecklistTemplateId(0),
-                        "",
-                        "",
-                        listOf(
-                            TemplateCheckbox(TemplateCheckboxId(0), null, "", listOf(), 0),
-                        ),
-                        LocalDateTime.now(),
-                        listOf(),
-                        listOf()
-                    )
+                    val newChecklistTemplate = emptyChecklistTemplate()
                     EditTemplateState(TemplateLoadingState.Success.fromTemplate(newChecklistTemplate)) to null
                 }
             }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleGenerateOnboardingTemplate(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.GenerateOnboardingChecklistTemplate>()
+            .map {
+                if (isTemplateAlreadyCreated()) {
+                    state.first() to null
+                } else {
+                    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
+                        .updateTemplate {
+                            copy(
+                                title = application.resources.getString(R.string.onboarding_template_title),
+                                description = application.resources.getString(R.string.onboarding_template_description)
+                            )
+                        }
+                    val withChildren = generateOnboardingCheckboxes()
+                        .fold(templateLoadingState) { state, checkboxToChildren ->
+                            state.plusNestedCheckbox(checkboxToChildren.title, checkboxToChildren.children)
+                        }
+                    EditTemplateState(withChildren) to null
+                }
+            }
+    }
+
+    private fun emptyChecklistTemplate(): ChecklistTemplate {
+        return ChecklistTemplate(
+            ChecklistTemplateId(0),
+            "",
+            "",
+            listOf(),
+            LocalDateTime.now(),
+            listOf(),
+            listOf()
+        )
+    }
+
+    private fun generateOnboardingCheckboxes(): List<CheckboxToChildren> {
+        return listOf(
+            CheckboxToChildren("Add as many tasks as you want"),
+            CheckboxToChildren(
+                "Nest them as needed", listOf(
+                    CheckboxToChildren(
+                        "We think that it’s neat", listOf(
+                            CheckboxToChildren(
+                                "Nest them as needed", listOf(
+                                    CheckboxToChildren(
+                                        "Up to four levels deep"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            CheckboxToChildren("You can add links where you need them: checkstory.tech"),
+            CheckboxToChildren("When you’re done, save this template and “use” it on the next screen"),
+            CheckboxToChildren("Happy checklisting!")
+        )
     }
 
     private fun Flow<EditTemplateEvent>.handleEditChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
@@ -356,3 +406,8 @@ class EditTemplateViewModel @Inject constructor(
         }
     }
 }
+
+data class CheckboxToChildren(
+    val title: String,
+    val children: List<CheckboxToChildren> = listOf()
+)

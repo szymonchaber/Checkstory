@@ -50,6 +50,24 @@ sealed interface TemplateLoadingState {
             )
         }
 
+        fun plusNestedCheckbox(title: String, childrenTitles: List<CheckboxToChildren>): Success {
+            val parent = ViewTemplateCheckbox.New(
+                TemplateCheckboxId(checkboxes.size.toLong()),
+                null,
+                true,
+                title,
+                listOf(),
+                true
+            )
+            return copy(
+                checkboxes = checkboxes.plus(parent)
+            ).let {
+                childrenTitles.fold(it) { acc, (childTitle, nestedChildren) ->
+                    acc.plusChildCheckboxNested(parent.viewKey, childTitle, nestedChildren)
+                }
+            }
+        }
+
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
             val filteredCheckboxes =
                 checkboxes
@@ -73,6 +91,18 @@ sealed interface TemplateLoadingState {
             return copy(
                 checkboxes = checkboxes.map {
                     it.plusChildCheckboxRecursive(parentId)
+                }
+            )
+        }
+
+        private fun plusChildCheckboxNested(
+            parentId: ViewTemplateCheckboxKey,
+            title: String = "",
+            children: List<CheckboxToChildren> = listOf()
+        ): Success {
+            return copy(
+                checkboxes = checkboxes.map {
+                    it.plusNestedChildCheckboxRecursive(parentId, title, children)
                 }
             )
         }

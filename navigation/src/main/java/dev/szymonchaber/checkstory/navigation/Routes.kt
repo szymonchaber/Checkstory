@@ -5,6 +5,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 
 object Routes {
 
+    fun onboardingChecklistTemplateScreen(): String {
+        return "edit_template_screen?generateOnboarding=true"
+    }
+
     fun newChecklistTemplateScreen(): String {
         return "edit_template_screen"
     }
