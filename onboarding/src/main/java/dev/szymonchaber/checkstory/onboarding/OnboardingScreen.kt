@@ -62,7 +62,7 @@ fun OnboardingScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(R.string.checkstory))
+                    Text(text = stringResource(R.string.welcome))
                 },
                 elevation = 12.dp
             )
@@ -135,8 +135,8 @@ private fun ReusableChecklistsPage() {
         imageRes = R.drawable.onboarding_1,
         title = "We’re all about\nreusable checklists",
         description = "Every checklist is made from a template.\n" +
-                "This lets you start working with a single click.\n" +
-                "You can work on multiple checklists at the same time."
+                "This lets you start working with\na single click.\n" +
+                "You can also work on multiple checklists at the same time."
     )
 }
 
@@ -183,9 +183,13 @@ private fun OnboardingPage(
         )
         Text(
             modifier = Modifier
-                .padding(top = 16.dp)
+                .padding(top = 8.dp)
                 .padding(horizontal = 16.dp),
-            style = MaterialTheme.typography.body1.copy(textAlign = TextAlign.Center, lineHeight = 22.sp),
+            style = MaterialTheme.typography.body1.copy(
+                textAlign = TextAlign.Center,
+                fontSize = 18.sp,
+                lineHeight = 25.sp
+            ),
             text = description
         )
     }
