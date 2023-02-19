@@ -3,11 +3,8 @@ package dev.szymonchaber.checkstory.checklist.template.model
 import android.app.Application
 import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
@@ -28,7 +25,6 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -84,8 +80,7 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
-                    val newChecklistTemplate = emptyChecklistTemplate()
-                    EditTemplateState(TemplateLoadingState.Success.fromTemplate(newChecklistTemplate)) to null
+                    EditTemplateState(TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())) to null
                 }
             }
     }
@@ -97,60 +92,9 @@ class EditTemplateViewModel @Inject constructor(
                     state.first() to null
                 } else {
                     tracker.logEvent("onboarding_template_generated")
-                    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
-                        .updateTemplate {
-                            copy(
-                                title = application.resources.getString(R.string.onboarding_template_title),
-                                description = application.resources.getString(R.string.onboarding_template_description)
-                            )
-                        }
-                    val withChildren = generateOnboardingCheckboxes()
-                        .fold(templateLoadingState) { state, checkboxToChildren ->
-                            state.plusNestedCheckbox(checkboxToChildren.title, checkboxToChildren.children)
-                        }
-                    EditTemplateState(withChildren) to null
+                    EditTemplateState(generateOnboardingTemplate(application.resources)) to null
                 }
             }
-    }
-
-    private fun emptyChecklistTemplate(): ChecklistTemplate {
-        return ChecklistTemplate(
-            ChecklistTemplateId(0),
-            "",
-            "",
-            listOf(),
-            LocalDateTime.now(),
-            listOf(),
-            listOf()
-        )
-    }
-
-    private fun generateOnboardingCheckboxes(): List<CheckboxToChildren> {
-        return listOf(
-            CheckboxToChildren("Add as many tasks as you want"),
-            CheckboxToChildren(
-                "Nest them as needed", listOf(
-                    CheckboxToChildren(
-                        "We think that it’s neat", listOf(
-                            CheckboxToChildren(
-                                "Nest them as needed", listOf(
-                                    CheckboxToChildren(
-                                        "Up to four levels deep"
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            CheckboxToChildren("You can add links like this:\ncheckstory.tech"),
-            CheckboxToChildren(
-                "When you’re done,\nsave this template", listOf(
-                    CheckboxToChildren("Then “use” it\non the next screen")
-                )
-            ),
-            CheckboxToChildren("Happy checklisting!")
-        )
     }
 
     private fun Flow<EditTemplateEvent>.handleEditChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
