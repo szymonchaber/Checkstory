@@ -37,9 +37,12 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         )
     }
 
-    fun plusChildCheckboxRecursive(parentId: ViewTemplateCheckboxKey): ViewTemplateCheckbox {
+    fun plusChildCheckboxRecursive(
+        parentId: ViewTemplateCheckboxKey,
+        onItemAdded: (ViewTemplateCheckboxKey) -> Unit
+    ): ViewTemplateCheckbox {
         return abstractCopy(
-            children = children.map { it.plusChildCheckboxRecursive(parentId) }.let {
+            children = children.map { it.plusChildCheckboxRecursive(parentId, onItemAdded) }.let {
                 if (viewKey == parentId) {
                     it.plus(
                         New(
@@ -49,7 +52,9 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                             "",
                             listOf(),
                             true
-                        )
+                        ).also { newItem ->
+                            onItemAdded(newItem.viewKey)
+                        }
                     )
                 } else {
                     it

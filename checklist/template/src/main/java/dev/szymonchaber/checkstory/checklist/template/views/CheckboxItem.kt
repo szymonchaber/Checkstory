@@ -12,8 +12,11 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -26,6 +29,7 @@ fun CheckboxItem(
     modifier: Modifier,
     title: String,
     nestingLevel: Int,
+    focusRequester: FocusRequester,
     onTitleChange: (String) -> Unit,
     onAddSubtask: () -> Unit,
     onDeleteClick: () -> Unit
@@ -37,6 +41,7 @@ fun CheckboxItem(
     ) {
         OutlinedTextField(
             modifier = Modifier
+                .focusRequester(focusRequester = focusRequester)
                 .fillMaxWidth()
                 .align(Alignment.CenterVertically),
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
@@ -70,6 +75,9 @@ fun CheckboxItemPreview() {
         modifier = Modifier,
         title = "Checkbox",
         nestingLevel = 4,
+        focusRequester = remember {
+            FocusRequester()
+        },
         onTitleChange = { },
         onAddSubtask = {}
     ) {

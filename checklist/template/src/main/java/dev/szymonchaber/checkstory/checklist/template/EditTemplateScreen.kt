@@ -37,8 +37,10 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -188,6 +191,10 @@ fun EditTemplateScreen(
     }
 }
 
+val RecentlyAddedUnconsumedItem = compositionLocalOf<ViewTemplateCheckboxKey?> {
+    null
+}
+
 @Composable
 private fun EditTemplateScaffold(
     isNewTemplate: Boolean,
@@ -231,11 +238,21 @@ private fun EditTemplateScaffold(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    EditTemplateView(
-                        loadingState.checklistTemplate,
-                        loadingState.checkboxes,
-                        viewModel::onEvent
-                    )
+                    var recentlyAddedUnconsumedItem by remember {
+                        mutableStateOf<ViewTemplateCheckboxKey?>(null)
+                    }
+                    LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
+                        recentlyAddedUnconsumedItem = loadingState.mostRecentlyAddedItem
+                    }
+                    CompositionLocalProvider(RecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem) {
+                        EditTemplateView(
+                            loadingState.checklistTemplate,
+                            loadingState.checkboxes,
+                            viewModel::onEvent
+                        ) {
+                            recentlyAddedUnconsumedItem = null
+                        }
+                    }
                 }
             }
         },
@@ -255,7 +272,8 @@ private val nestedPaddingStart = 16.dp
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
     checkboxes: List<ViewTemplateCheckbox>,
-    eventCollector: (EditTemplateEvent) -> Unit
+    eventCollector: (EditTemplateEvent) -> Unit,
+    onAddedItemConsumed: () -> Unit
 ) {
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
@@ -275,6 +293,7 @@ fun EditTemplateView(
                     checkbox = checkbox,
                     paddingStart = nestedPaddingStart,
                     isLastChild = true,
+                    onAddedItemConsumed = onAddedItemConsumed,
                     eventCollector = eventCollector
                 )
             }
@@ -319,6 +338,7 @@ private fun CommonCheckbox(
     paddingStart: Dp,
     isLastChild: Boolean,
     nestingLevel: Int = 1,
+    onAddedItemConsumed: () -> Unit,
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
     Column {
@@ -339,10 +359,12 @@ private fun CommonCheckbox(
                         .width(paddingStart)
                 )
             }
+            val focusRequester = remember { FocusRequester() }
             CheckboxItem(
                 modifier = Modifier.padding(top = 8.dp),
                 title = checkbox.title,
                 nestingLevel = nestingLevel,
+                focusRequester = focusRequester,
                 onTitleChange = {
                     eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
                 },
@@ -351,6 +373,13 @@ private fun CommonCheckbox(
                 }
             ) {
                 eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+            }
+            val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
+            LaunchedEffect(recentlyAddedItem) {
+                if (checkbox.viewKey == recentlyAddedItem) {
+                    focusRequester.requestFocus()
+                    onAddedItemConsumed()
+                }
             }
         }
         val paddingMultiplier = if (nestingLevel == 1) {
@@ -382,8 +411,9 @@ private fun CommonCheckbox(
                     CommonCheckbox(
                         checkbox = child,
                         paddingStart = paddingStart,
-                        nestingLevel = nestingLevel + 1,
                         isLastChild = checkbox.children.lastIndex == index,
+                        nestingLevel = nestingLevel + 1,
+                        onAddedItemConsumed = onAddedItemConsumed,
                         eventCollector = eventCollector,
                     )
                 }

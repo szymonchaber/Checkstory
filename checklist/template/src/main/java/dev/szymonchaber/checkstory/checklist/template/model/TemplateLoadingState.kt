@@ -15,7 +15,8 @@ sealed interface TemplateLoadingState {
         val checkboxes: List<ViewTemplateCheckbox>,
         val checkboxesToDelete: List<TemplateCheckbox>,
         val remindersToDelete: List<Reminder>,
-        val checklistTemplate: ChecklistTemplate = originalChecklistTemplate
+        val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
+        val mostRecentlyAddedItem: ViewTemplateCheckboxKey? = null
     ) : TemplateLoadingState {
 
         private val unwrappedCheckboxes = checkboxes.flatMap {
@@ -36,17 +37,19 @@ sealed interface TemplateLoadingState {
         }
 
         fun plusNewCheckbox(title: String): Success {
+            val newCheckbox = ViewTemplateCheckbox.New(
+                TemplateCheckboxId(checkboxes.size.toLong()),
+                null,
+                true,
+                title,
+                listOf(),
+                true
+            )
             return copy(
                 checkboxes = checkboxes.plus(
-                    ViewTemplateCheckbox.New(
-                        TemplateCheckboxId(checkboxes.size.toLong()),
-                        null,
-                        true,
-                        title,
-                        listOf(),
-                        true
-                    )
-                )
+                    newCheckbox
+                ),
+                mostRecentlyAddedItem = newCheckbox.viewKey
             )
         }
 
@@ -88,10 +91,18 @@ sealed interface TemplateLoadingState {
         }
 
         fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
+            var addedItem: ViewTemplateCheckboxKey? = null
+            val onItemActuallyAdded: (ViewTemplateCheckboxKey) -> Unit = {
+                if (addedItem != null) {
+                    error("Attempted two sub-task additions where there should be one!")
+                }
+                addedItem = it
+            }
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusChildCheckboxRecursive(parentId)
-                }
+                    it.plusChildCheckboxRecursive(parentId, onItemActuallyAdded)
+                },
+                mostRecentlyAddedItem = addedItem
             )
         }
 
