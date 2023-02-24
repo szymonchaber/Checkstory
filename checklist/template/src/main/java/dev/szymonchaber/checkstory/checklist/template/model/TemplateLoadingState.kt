@@ -86,7 +86,8 @@ sealed interface TemplateLoadingState {
             }
             return copy(
                 checkboxes = filteredCheckboxes,
-                checkboxesToDelete = updatedCheckboxesToDelete
+                checkboxesToDelete = updatedCheckboxesToDelete,
+                mostRecentlyAddedItem = null
             )
         }
 
