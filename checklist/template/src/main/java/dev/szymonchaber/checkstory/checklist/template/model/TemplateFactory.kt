@@ -8,16 +8,16 @@ import java.time.LocalDateTime
 
 fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
-        .updateTemplate {
-            copy(
-                title = resources.getString(R.string.onboarding_template_title),
-                description = resources.getString(R.string.onboarding_template_description)
-            )
-        }
     return generateOnboardingCheckboxes()
         .fold(templateLoadingState) { state, checkboxToChildren ->
             state.plusNestedCheckbox(checkboxToChildren.title, checkboxToChildren.children)
         }
+        .copy(
+            onboardingPlaceholders = OnboardingPlaceholders(
+                title = resources.getString(R.string.onboarding_template_title),
+                description = resources.getString(R.string.onboarding_template_description)
+            )
+        )
 }
 
 fun generateOnboardingCheckboxes(): List<CheckboxToChildren> {

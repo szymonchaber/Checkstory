@@ -16,7 +16,8 @@ sealed interface TemplateLoadingState {
         val checkboxesToDelete: List<TemplateCheckbox>,
         val remindersToDelete: List<Reminder>,
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
-        val mostRecentlyAddedItem: ViewTemplateCheckboxKey? = null
+        val mostRecentlyAddedItem: ViewTemplateCheckboxKey? = null,
+        val onboardingPlaceholders: OnboardingPlaceholders? = null
     ) : TemplateLoadingState {
 
         private val unwrappedCheckboxes = checkboxes.flatMap {
@@ -163,3 +164,5 @@ sealed interface TemplateLoadingState {
 
     object Loading : TemplateLoadingState
 }
+
+data class OnboardingPlaceholders(val title: String, val description: String)

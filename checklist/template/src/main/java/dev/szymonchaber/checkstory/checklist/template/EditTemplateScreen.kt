@@ -50,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -67,6 +68,7 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEffect
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
+import dev.szymonchaber.checkstory.checklist.template.model.OnboardingPlaceholders
 import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
@@ -247,6 +249,7 @@ private fun EditTemplateScaffold(
                     CompositionLocalProvider(RecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem) {
                         EditTemplateView(
                             loadingState.checklistTemplate,
+                            loadingState.onboardingPlaceholders,
                             loadingState.checkboxes,
                             viewModel::onEvent
                         ) {
@@ -271,6 +274,7 @@ private val nestedPaddingStart = 16.dp
 @Composable
 fun EditTemplateView(
     checklistTemplate: ChecklistTemplate,
+    onboardingPlaceholders: OnboardingPlaceholders?,
     checkboxes: List<ViewTemplateCheckbox>,
     eventCollector: (EditTemplateEvent) -> Unit,
     onAddedItemConsumed: () -> Unit
@@ -280,7 +284,7 @@ fun EditTemplateView(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         item {
-            ChecklistTemplateDetails(checklistTemplate, eventCollector)
+            ChecklistTemplateDetails(checklistTemplate, onboardingPlaceholders, eventCollector)
         }
         items(
             items = checkboxes,
@@ -425,34 +429,59 @@ private fun CommonCheckbox(
 @Composable
 private fun ChecklistTemplateDetails(
     checklistTemplate: ChecklistTemplate,
+    onboardingPlaceholders: OnboardingPlaceholders?,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    TitleTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
+    DescriptionTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
+    SectionLabel(
+        modifier = Modifier.padding(
+            top = 8.dp,
+            start = 16.dp
+        ),
+        text = stringResource(R.string.items)
+    )
+}
+
+@Composable
+private fun TitleTextField(
+    checklistTemplate: ChecklistTemplate,
+    onboardingPlaceholders: OnboardingPlaceholders?,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    OutlinedTextField(
-        keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Next,
-            capitalization = KeyboardCapitalization.Sentences
-        ),
-        singleLine = true,
-        maxLines = 1,
+    TextFieldWithFixedPlaceholder(
         value = checklistTemplate.title,
-        label = { Text(text = stringResource(R.string.title)) },
         onValueChange = {
             eventCollector(EditTemplateEvent.TitleChanged(it))
         },
         modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        singleLine = true,
+        label = stringResource(R.string.title),
+        placeholder = onboardingPlaceholders?.title,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Next,
+            capitalization = KeyboardCapitalization.Sentences
+        ),
         keyboardActions = KeyboardActions(
             onNext = {
                 focusManager.moveFocus(FocusDirection.Down)
             }
         )
     )
-    OutlinedTextField(
-        keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+
+}
+
+@Composable
+private fun DescriptionTextField(
+    checklistTemplate: ChecklistTemplate,
+    onboardingPlaceholders: OnboardingPlaceholders?,
+    eventCollector: (EditTemplateEvent) -> Unit
+) {
+    TextFieldWithFixedPlaceholder(
         value = checklistTemplate.description,
-        label = { Text(text = stringResource(R.string.description)) },
         onValueChange = {
             eventCollector(EditTemplateEvent.DescriptionChanged(it))
         },
@@ -462,13 +491,47 @@ private fun ChecklistTemplateDetails(
                 horizontal = 16.dp,
                 vertical = 8.dp,
             ),
+        label = stringResource(R.string.description),
+        placeholder = onboardingPlaceholders?.description,
+        keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
     )
-    SectionLabel(
-        modifier = Modifier.padding(
-            top = 16.dp,
-            start = 16.dp
-        ),
-        text = stringResource(R.string.items)
+}
+
+@Composable
+private fun TextFieldWithFixedPlaceholder(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    label: String,
+    placeholder: String?,
+    singleLine: Boolean = false,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
+) {
+    var hasFocus by remember {
+        mutableStateOf(false)
+    }
+    val textValue: String = if (hasFocus || value.isNotEmpty()) {
+        value
+    } else {
+        placeholder ?: ""
+    }
+    OutlinedTextField(
+        keyboardOptions = keyboardOptions,
+        value = textValue,
+        singleLine = singleLine,
+        maxLines = maxLines,
+        label = { Text(text = label) },
+        placeholder = placeholder?.let {
+            { Text(text = it) }
+        },
+        keyboardActions = keyboardActions,
+        onValueChange = onValueChange,
+        modifier = modifier
+            .onFocusChanged { focusState ->
+                hasFocus = focusState.isFocused
+            },
     )
 }
 
