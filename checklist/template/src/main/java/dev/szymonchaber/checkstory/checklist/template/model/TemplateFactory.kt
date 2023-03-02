@@ -10,7 +10,7 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
     return generateOnboardingCheckboxes()
         .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusNestedCheckbox(checkboxToChildren.title, checkboxToChildren.children)
+            state.plusNestedCheckbox(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
         }
         .copy(
             onboardingPlaceholders = OnboardingPlaceholders(
@@ -58,7 +58,7 @@ fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
         }
     val withChildren = generateWriteOfferCheckboxes()
         .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusNestedCheckbox(checkboxToChildren.title, checkboxToChildren.children)
+            state.plusNestedCheckbox(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
         }
     return withChildren
 }
@@ -97,7 +97,7 @@ fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
         CheckboxToChildren("$it")
     }
         .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusNestedCheckbox(checkboxToChildren.title, checkboxToChildren.children)
+            state.plusNestedCheckbox(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
         }
 }
 
@@ -113,7 +113,7 @@ fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
         CheckboxToChildren("$it")
     }
         .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusNestedCheckbox(checkboxToChildren.title, checkboxToChildren.children)
+            state.plusNestedCheckbox(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
         }
 }
 
@@ -129,3 +129,8 @@ fun emptyChecklistTemplate(): ChecklistTemplate {
         listOf()
     )
 }
+
+data class CheckboxToChildren(
+    val placeholderTitle: String,
+    val children: List<CheckboxToChildren> = listOf()
+)

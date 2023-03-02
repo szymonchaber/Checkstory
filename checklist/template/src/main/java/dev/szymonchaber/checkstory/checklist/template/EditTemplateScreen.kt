@@ -367,6 +367,7 @@ private fun CommonCheckbox(
             CheckboxItem(
                 modifier = Modifier.padding(top = 8.dp),
                 title = checkbox.title,
+                placeholder = checkbox.placeholderTitle,
                 nestingLevel = nestingLevel,
                 focusRequester = focusRequester,
                 onTitleChange = {

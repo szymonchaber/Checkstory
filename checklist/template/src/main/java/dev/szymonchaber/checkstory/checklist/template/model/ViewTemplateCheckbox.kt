@@ -16,6 +16,8 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     val isLastChild: Boolean
 
+    val placeholderTitle: String?
+
     fun toDomainModel(parentId: TemplateCheckboxId? = null, position: Int): TemplateCheckbox
 
     fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
@@ -65,34 +67,35 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun plusNestedChildCheckboxRecursive(
         parentId: ViewTemplateCheckboxKey,
-        title: String = "",
+        placeholderTitle: String = "",
         children: List<CheckboxToChildren>
     ): ViewTemplateCheckbox {
         return abstractCopy(
-            children = this.children.map { it.plusNestedChildCheckboxRecursive(parentId, title, children) }.let {
-                if (viewKey == parentId) {
-                    val newElement = New(
-                        TemplateCheckboxId(this.children.size.toLong()),
-                        viewKey,
-                        false,
-                        title,
-                        listOf(),
-                        true
-                    )
-                    val newUpdatedElement = children.fold(newElement) { acc: ViewTemplateCheckbox, checkboxToChildren ->
-                        acc.plusNestedChildCheckboxRecursive(
-                            newElement.viewKey,
-                            checkboxToChildren.title,
-                            checkboxToChildren.children
+            children = this.children.map { it.plusNestedChildCheckboxRecursive(parentId, placeholderTitle, children) }
+                .let {
+                    if (viewKey == parentId) {
+                        val newElement = New(
+                            id = TemplateCheckboxId(this.children.size.toLong()),
+                            parentViewKey = viewKey,
+                            isParent = false,
+                            title = "",
+                            children = listOf(),
+                            isLastChild = true,
+                            placeholderTitle = placeholderTitle
                         )
+                        val newUpdatedElement =
+                            children.fold(newElement) { acc: ViewTemplateCheckbox, checkboxToChildren ->
+                                acc.plusNestedChildCheckboxRecursive(
+                                    newElement.viewKey,
+                                    checkboxToChildren.placeholderTitle,
+                                    checkboxToChildren.children
+                                )
+                            }
+                        it.plus(newUpdatedElement)
+                    } else {
+                        it
                     }
-                    it.plus(
-                        newUpdatedElement
-                    )
-                } else {
-                    it
                 }
-            }
         )
     }
 
@@ -119,7 +122,8 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override val isParent: Boolean,
         override val title: String,
         override val children: List<ViewTemplateCheckbox>,
-        override val isLastChild: Boolean
+        override val isLastChild: Boolean,
+        override val placeholderTitle: String? = null
     ) : ViewTemplateCheckbox {
 
         override fun toDomainModel(parentId: TemplateCheckboxId?, position: Int): TemplateCheckbox {
@@ -159,7 +163,8 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override val isParent: Boolean,
         override val title: String,
         override val children: List<ViewTemplateCheckbox>,
-        override val isLastChild: Boolean
+        override val isLastChild: Boolean,
+        override val placeholderTitle: String? = null
     ) : ViewTemplateCheckbox {
 
         override fun toDomainModel(parentId: TemplateCheckboxId?, position: Int): TemplateCheckbox {
