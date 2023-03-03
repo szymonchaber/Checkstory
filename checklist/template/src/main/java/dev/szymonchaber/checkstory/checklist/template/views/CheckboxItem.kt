@@ -1,5 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.views
 
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -44,13 +46,26 @@ fun CheckboxItem(
             .background(MaterialTheme.colors.surface)
             .then(modifier)
     ) {
-        var hasFocus by remember {
+        var showActualValue by remember {
             mutableStateOf(false)
         }
-        val textValue: String = if (hasFocus || title.isNotEmpty()) {
+        var placeholderCharactersDisplayed by remember(placeholder) {
+            mutableStateOf(placeholder?.count() ?: 0)
+        }
+        val animatedCharacterCount by animateIntAsState(
+            targetValue = placeholderCharactersDisplayed,
+            animationSpec = tween(
+                durationMillis = pleasantCharacterRemovalAnimationDurationMillis * (placeholder?.length ?: 1)
+            )
+        ) {
+            if (it == 0) {
+                showActualValue = true
+            }
+        }
+        val textValue = if (showActualValue || title.isNotEmpty()) {
             title
         } else {
-            placeholder ?: ""
+            placeholder?.take(animatedCharacterCount) ?: ""
         }
         OutlinedTextField(
             modifier = Modifier
@@ -58,7 +73,9 @@ fun CheckboxItem(
                 .fillMaxWidth()
                 .align(Alignment.CenterVertically)
                 .onFocusChanged { focusState ->
-                    hasFocus = focusState.isFocused
+                    if (focusState.isFocused) {
+                        placeholderCharactersDisplayed = 0
+                    }
                 },
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
             value = textValue,

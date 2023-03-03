@@ -78,6 +78,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
 import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
+import dev.szymonchaber.checkstory.checklist.template.views.pleasantCharacterRemovalAnimationDurationMillis
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
@@ -501,8 +502,6 @@ private fun DescriptionTextField(
     )
 }
 
-private val pleasantCharacterRemovalAnimationDurationMillis = 12
-
 @Composable
 private fun TextFieldWithFixedPlaceholder(
     value: String,
@@ -518,7 +517,7 @@ private fun TextFieldWithFixedPlaceholder(
     var showActualValue by remember {
         mutableStateOf(false)
     }
-    var placeholderCharactersDisplayed by remember(value) {
+    var placeholderCharactersDisplayed by remember(placeholder) {
         mutableStateOf(placeholder?.count() ?: 0)
     }
     val animatedCharacterCount by animateIntAsState(
