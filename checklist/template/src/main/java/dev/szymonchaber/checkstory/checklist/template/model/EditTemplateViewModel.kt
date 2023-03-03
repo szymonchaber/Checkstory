@@ -223,6 +223,9 @@ class EditTemplateViewModel @Inject constructor(
                         "reminder_count" to checklistTemplate.reminders.count()
                     )
                 )
+                if (loadingState.isOnboardingTemplate) {
+                    tracker.logEvent("template_saved_during_onboarding")
+                }
                 null to EditTemplateEffect.CloseScreen
             }
     }
@@ -243,6 +246,9 @@ class EditTemplateViewModel @Inject constructor(
                 tracker.logEvent("delete_template_confirmation_clicked")
                 if (loadingState.checklistTemplate.isStored) {
                     deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
+                }
+                if (loadingState.isOnboardingTemplate) {
+                    tracker.logEvent("template_creation_cancelled_during_onboarding")
                 }
                 null to EditTemplateEffect.CloseScreen
             }

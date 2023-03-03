@@ -17,7 +17,8 @@ sealed interface TemplateLoadingState {
         val remindersToDelete: List<Reminder>,
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
         val mostRecentlyAddedItem: ViewTemplateCheckboxKey? = null,
-        val onboardingPlaceholders: OnboardingPlaceholders? = null
+        val onboardingPlaceholders: OnboardingPlaceholders? = null,
+        val isOnboardingTemplate: Boolean = false
     ) : TemplateLoadingState {
 
         private val unwrappedCheckboxes = checkboxes.flatMap {

@@ -21,9 +21,9 @@ class OnboardingPreferences @Inject constructor(
             it[KEY_DID_SHOW_ONBOARDING] ?: false
         }
 
-    suspend fun updateDidShowOnboardingFlow(sidShowOnboardingFlow: Boolean) {
+    suspend fun updateDidShowOnboardingFlow(didShowOnboardingFlow: Boolean) {
         onboardingPreferencesDataStore.edit { preferences ->
-            preferences[KEY_DID_SHOW_ONBOARDING] = sidShowOnboardingFlow
+            preferences[KEY_DID_SHOW_ONBOARDING] = didShowOnboardingFlow
         }
     }
 

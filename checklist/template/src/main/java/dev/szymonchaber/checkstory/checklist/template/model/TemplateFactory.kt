@@ -16,7 +16,8 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
             onboardingPlaceholders = OnboardingPlaceholders(
                 title = resources.getString(R.string.onboarding_template_title),
                 description = resources.getString(R.string.onboarding_template_description)
-            )
+            ),
+            isOnboardingTemplate = true
         )
 }
 
