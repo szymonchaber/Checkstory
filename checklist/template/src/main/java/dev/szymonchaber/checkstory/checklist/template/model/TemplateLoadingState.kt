@@ -16,7 +16,8 @@ sealed interface TemplateLoadingState {
         val checkboxesToDelete: List<TemplateCheckbox>,
         val remindersToDelete: List<Reminder>,
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
-        val mostRecentlyAddedItem: ViewTemplateCheckboxKey? = null
+        val mostRecentlyAddedItem: ViewTemplateCheckboxKey? = null,
+        val onboardingPlaceholders: OnboardingPlaceholders? = null
     ) : TemplateLoadingState {
 
         private val unwrappedCheckboxes = checkboxes.flatMap {
@@ -53,14 +54,15 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusNestedCheckbox(title: String, childrenTitles: List<CheckboxToChildren>): Success {
+        fun plusNestedCheckbox(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
             val parent = ViewTemplateCheckbox.New(
-                TemplateCheckboxId(checkboxes.size.toLong()),
-                null,
-                true,
-                title,
-                listOf(),
-                true
+                id = TemplateCheckboxId(checkboxes.size.toLong()),
+                parentViewKey = null,
+                isParent = true,
+                title = "",
+                children = listOf(),
+                isLastChild = true,
+                placeholderTitle = placeholderTitle
             )
             return copy(
                 checkboxes = checkboxes.plus(parent)
@@ -109,12 +111,12 @@ sealed interface TemplateLoadingState {
 
         private fun plusChildCheckboxNested(
             parentId: ViewTemplateCheckboxKey,
-            title: String = "",
+            placeholderTitle: String = "",
             children: List<CheckboxToChildren> = listOf()
         ): Success {
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusNestedChildCheckboxRecursive(parentId, title, children)
+                    it.plusNestedChildCheckboxRecursive(parentId, placeholderTitle, children)
                 }
             )
         }
@@ -163,3 +165,5 @@ sealed interface TemplateLoadingState {
 
     object Loading : TemplateLoadingState
 }
+
+data class OnboardingPlaceholders(val title: String, val description: String)

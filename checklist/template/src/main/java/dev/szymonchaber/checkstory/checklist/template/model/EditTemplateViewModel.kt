@@ -355,8 +355,3 @@ class EditTemplateViewModel @Inject constructor(
         }
     }
 }
-
-data class CheckboxToChildren(
-    val title: String,
-    val children: List<CheckboxToChildren> = listOf()
-)
