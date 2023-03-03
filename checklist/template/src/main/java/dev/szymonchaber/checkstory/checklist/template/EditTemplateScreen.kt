@@ -5,6 +5,8 @@ package dev.szymonchaber.checkstory.checklist.template
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -87,6 +89,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import java.time.Duration.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination("edit_template_screen", start = true)
@@ -498,6 +501,8 @@ private fun DescriptionTextField(
     )
 }
 
+private val pleasantCharacterRemovalAnimationDurationMillis = 12
+
 @Composable
 private fun TextFieldWithFixedPlaceholder(
     value: String,
@@ -510,13 +515,26 @@ private fun TextFieldWithFixedPlaceholder(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
-    var hasFocus by remember {
+    var showActualValue by remember {
         mutableStateOf(false)
     }
-    val textValue: String = if (hasFocus || value.isNotEmpty()) {
+    var placeholderCharactersDisplayed by remember(value) {
+        mutableStateOf(placeholder?.count() ?: 0)
+    }
+    val animatedCharacterCount by animateIntAsState(
+        targetValue = placeholderCharactersDisplayed,
+        animationSpec = tween(
+            durationMillis = pleasantCharacterRemovalAnimationDurationMillis * (placeholder?.length ?: 1)
+        )
+    ) {
+        if (it == 0) {
+            showActualValue = true
+        }
+    }
+    val textValue = if (showActualValue || value.isNotEmpty()) {
         value
     } else {
-        placeholder ?: ""
+        placeholder?.take(animatedCharacterCount) ?: ""
     }
     OutlinedTextField(
         keyboardOptions = keyboardOptions,
@@ -531,7 +549,9 @@ private fun TextFieldWithFixedPlaceholder(
         onValueChange = onValueChange,
         modifier = modifier
             .onFocusChanged { focusState ->
-                hasFocus = focusState.isFocused
+                if (focusState.isFocused) {
+                    placeholderCharactersDisplayed = 0
+                }
             },
     )
 }
