@@ -193,7 +193,7 @@ fun EditTemplateScreen(
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     ) {
-        EditTemplateScaffold(templateId == null, state, viewModel)
+        EditTemplateScaffold(generateOnboarding, templateId == null, state, viewModel)
     }
 }
 
@@ -203,32 +203,40 @@ val RecentlyAddedUnconsumedItem = compositionLocalOf<ViewTemplateCheckboxKey?> {
 
 @Composable
 private fun EditTemplateScaffold(
+    isOnboarding: Boolean,
     isNewTemplate: Boolean,
     state: EditTemplateState,
     viewModel: EditTemplateViewModel
 ) {
     AdvertScaffold(
         topBar = {
-            val titleText = if (isNewTemplate) {
-                R.string.add_template
-            } else {
-                R.string.edit_template
+            val titleText = when {
+                isOnboarding -> {
+                    R.string.create_your_first_checklist
+                }
+                isNewTemplate -> {
+                    R.string.add_template
+                }
+                else -> {
+                    R.string.edit_template
+                }
             }
             TopAppBar(
                 title = {
                     Text(text = stringResource(titleText))
                 },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        viewModel.onEvent(EditTemplateEvent.BackClicked)
-                    }) {
-                        Icon(Icons.Filled.ArrowBack, "")
+                navigationIcon = if (!isOnboarding) {
+                    {
+                        BackIcon {
+                            viewModel.onEvent(EditTemplateEvent.BackClicked)
+                        }
                     }
+                } else {
+                    null
                 },
                 elevation = 12.dp,
                 actions = {
-                    val loadingState = state.templateLoadingState
-                    if (loadingState is TemplateLoadingState.Success && loadingState.checklistTemplate.isStored) {
+                    if (!isOnboarding && !isNewTemplate) {
                         IconButton(onClick = {
                             viewModel.onEvent(EditTemplateEvent.TemplateHistoryClicked)
                         }) {
@@ -271,6 +279,13 @@ private fun EditTemplateScaffold(
             }
         }
     )
+}
+
+@Composable
+private fun BackIcon(onBackClicked: () -> Unit) {
+    IconButton(onClick = onBackClicked) {
+        Icon(Icons.Filled.ArrowBack, "")
+    }
 }
 
 private val nestedPaddingStart = 16.dp
