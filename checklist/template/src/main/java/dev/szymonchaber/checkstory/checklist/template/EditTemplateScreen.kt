@@ -11,10 +11,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -50,9 +48,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -350,45 +350,48 @@ private fun CommonCheckbox(
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
     Column {
-        Row(Modifier.height(IntrinsicSize.Min)) {
-            if (nestingLevel > 1) {
-                val heightFraction = if (!isLastChild) 1f else 0.52f
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight(heightFraction)
-                        .background(Color.Gray)
-                        .width(2.dp)
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .background(Color.Gray)
-                        .height(2.dp)
-                        .width(paddingStart)
-                )
-            }
-            val focusRequester = remember { FocusRequester() }
-            CheckboxItem(
-                modifier = Modifier.padding(top = 8.dp),
-                title = checkbox.title,
-                placeholder = checkbox.placeholderTitle,
-                nestingLevel = nestingLevel,
-                focusRequester = focusRequester,
-                onTitleChange = {
-                    eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-                },
-                onAddSubtask = {
-                    eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
+        val taskTopPadding = 8.dp
+        val paddingStartActual = if (nestingLevel > 1) paddingStart else 0.dp
+        val focusRequester = remember { FocusRequester() }
+        CheckboxItem(
+            modifier = Modifier
+                .drawBehind { // TODO check drawWithContent or withCache
+                    if (nestingLevel > 1) {
+                        val heightFraction = if (!isLastChild) 1f else 0.5f
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset.Zero,
+                            end = Offset(0f, size.height * heightFraction + taskTopPadding.toPx() / 2),
+                            strokeWidth = 4.dp.toPx()
+                        )
+                        val visualCenterY = center.y + taskTopPadding.toPx() / 2
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset(x = 0f, y = visualCenterY),
+                            end = Offset(x = paddingStart.toPx(), y = visualCenterY),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
                 }
-            ) {
-                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+                .padding(top = taskTopPadding, start = paddingStartActual),
+            title = checkbox.title,
+            placeholder = checkbox.placeholderTitle,
+            nestingLevel = nestingLevel,
+            focusRequester = focusRequester,
+            onTitleChange = {
+                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+            },
+            onAddSubtask = {
+                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
             }
-            val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
-            LaunchedEffect(recentlyAddedItem) {
-                if (checkbox.viewKey == recentlyAddedItem) {
-                    focusRequester.requestFocus()
-                    onAddedItemConsumed()
-                }
+        ) {
+            eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+        }
+        val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
+        LaunchedEffect(recentlyAddedItem) {
+            if (checkbox.viewKey == recentlyAddedItem) {
+                focusRequester.requestFocus()
+                onAddedItemConsumed()
             }
         }
         val paddingMultiplier = if (nestingLevel == 1) {
