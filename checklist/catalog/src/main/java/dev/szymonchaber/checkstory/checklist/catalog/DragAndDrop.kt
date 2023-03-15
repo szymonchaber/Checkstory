@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,28 +44,39 @@ fun Experiment() {
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 10.dp)
         ) {
+            item {
+                DropTarget<Task>(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(24.dp), key = Unit, onDataDropped = {
+                    moveTaskToTop(tasks, it)
+                })
+            }
             items(items = tasks, key = { it.id }) { task ->
                 val childTasks = remember {
-                    mutableStateListOf<Task>()
-                }
-                val siblingTasks = remember {
                     mutableStateListOf<Task>()
                 }
                 TaskCard(
                     task = task,
                     childTasks = childTasks,
-                    siblingTasks = siblingTasks,
                     onSiblingTaskDropped = { siblingTask ->
                         moveTaskBelow(tasks, siblingTask, task)
-//                        siblingTasks.add(siblingTask)
-                    },
-                    onChildTaskDropped = { childTask ->
-                        childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
                     }
-                )
+                ) { childTask ->
+                    childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
+                }
             }
         }
         TargetTodoistLine()
+    }
+}
+
+fun moveTaskToTop(tasks: SnapshotStateList<Task>, task: Task) {
+    tasks.removeAt(tasks.indexOfFirst { it.id == task.id })
+    val targetIndex = 0
+    if (targetIndex > tasks.lastIndex) {
+        tasks.add(task)
+    } else {
+        tasks.add(targetIndex, task)
     }
 }
 

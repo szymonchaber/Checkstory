@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.sp
 fun TaskCard(
     task: Task,
     childTasks: SnapshotStateList<Task>,
-    siblingTasks: SnapshotStateList<Task>,
     onSiblingTaskDropped: (Task) -> Unit,
     onChildTaskDropped: (Task) -> Unit
 ) {
@@ -77,15 +76,6 @@ fun TaskCard(
                         text = "* " + task.name,
                         fontSize = 22.sp,
                         color = Color.Blue
-                    )
-                }
-            }
-            siblingTasks.forEach { task ->
-                Row {
-                    Text(
-                        text = "* " + task.name,
-                        fontSize = 22.sp,
-                        color = Color.DarkGray
                     )
                 }
             }
