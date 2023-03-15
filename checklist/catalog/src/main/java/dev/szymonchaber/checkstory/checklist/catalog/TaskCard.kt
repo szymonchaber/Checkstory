@@ -17,8 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -26,19 +25,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun TaskCard(task: Task) {
+fun TaskCard(
+    task: Task,
+    childTasks: SnapshotStateList<Task>,
+    siblingTasks: SnapshotStateList<Task>,
+    onSiblingTaskDropped: (Task) -> Unit,
+    onChildTaskDropped: (Task) -> Unit
+) {
     Card(
         elevation = 10.dp,
         backgroundColor = Color.White,
         modifier = Modifier.padding(8.dp)
     ) {
         Column {
-            val childTasks = remember {
-                mutableStateListOf<Task>()
-            }
-            val siblingTasks = remember {
-                mutableStateListOf<Task>()
-            }
             Box(Modifier.height(IntrinsicSize.Min)) {
                 Draggable(modifier = Modifier, dataToDrop = task) {
                     Row(
@@ -63,12 +62,13 @@ fun TaskCard(task: Task) {
                 }
                 Receptacles(
                     task = task,
-                    { childTask ->
-                        siblingTasks.add(childTask)
+                    onSiblingTaskDropped = { siblingTask ->
+                        onSiblingTaskDropped(siblingTask)
+                    },
+                    onChildTaskDropped = { childTask ->
+                        onChildTaskDropped(childTask)
                     }
-                ) { childTask ->
-                    childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
-                }
+                )
             }
             childTasks.forEach { task ->
                 Row {

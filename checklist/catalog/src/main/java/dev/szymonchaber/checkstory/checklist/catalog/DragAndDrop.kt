@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,21 +27,38 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
-val tasks = listOf(
-    Task(1, "Pizza", Color.Blue),
-    Task(2, "French toast", Color.Cyan),
-    Task(3, "Chocolate cake", Color.Magenta),
-)
-
 @Composable
 fun Experiment() {
+    val tasks = remember {
+        mutableStateListOf(
+            Task(1, "Pizza", Color.Blue),
+            Task(2, "French toast", Color.Cyan),
+            Task(3, "Chocolate cake", Color.Magenta),
+        )
+    }
     LongPressDraggable(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 10.dp)
         ) {
             items(items = tasks) { task ->
-                TaskCard(task = task)
+                val childTasks = remember {
+                    mutableStateListOf<Task>()
+                }
+                val siblingTasks = remember {
+                    mutableStateListOf<Task>()
+                }
+                TaskCard(
+                    task = task,
+                    childTasks = childTasks,
+                    siblingTasks = siblingTasks,
+                    onSiblingTaskDropped = { siblingTask ->
+                        siblingTasks.add(siblingTask)
+                    },
+                    onChildTaskDropped = { childTask ->
+                        childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
+                    }
+                )
             }
         }
         TargetTodoistLine()
