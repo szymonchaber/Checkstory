@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TaskCard(task: Task) {
     Card(
-        elevation = 10.dp, backgroundColor = Color.White,
-        shape = RoundedCornerShape(24.dp),
+        elevation = 10.dp,
+        backgroundColor = Color.White,
         modifier = Modifier.padding(8.dp)
     ) {
         Column {

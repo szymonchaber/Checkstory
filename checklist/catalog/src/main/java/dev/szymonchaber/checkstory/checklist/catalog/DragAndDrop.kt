@@ -1,17 +1,15 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -24,6 +22,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
@@ -53,24 +52,25 @@ private fun TargetTodoistLine() {
     val state = LocalDragTargetInfo.current
     val targetState = LocalTargetedItemInfo.current
 
-    val targetOffset = (state.dragPosition + state.dragOffset)
-    val offset by animateOffsetAsState(targetValue = targetOffset)
-    AnimatedVisibility(visible = targetState.targetedItemSet.isNotEmpty()) {
-        Card(
-            elevation = 20.dp,
-            backgroundColor = Color.White,
-            shape = RoundedCornerShape(24.dp),
+    val targetValue = LocalDensity.current.run {
+        (targetState.targetedItemPosition ?: Offset.Zero) - Offset.Zero.copy(y = 20.dp.toPx())
+    }
+    val offset by animateOffsetAsState(targetValue = targetValue)
+    if (state.isDragging) {
+        Canvas(
             modifier = Modifier
-                .padding(8.dp)
+                .padding(end = 20.dp)
+                .fillMaxWidth()
                 .graphicsLayer {
-//                scaleX = 1.3f
-//                scaleY = 1.3f
-                    translationX = offset.x
                     translationY = offset.y
                 }
-                .size(50.dp)
         ) {
-
+            drawLine(
+                color = Color.Red,
+                start = offset.copy(y = 0f),
+                end = offset.copy(x = this.size.width, y = 0f),
+                strokeWidth = 2.dp.toPx()
+            )
         }
     }
 }
@@ -85,6 +85,7 @@ internal class DragTargetInfo {
 
 internal class TargetedItemInfo {
     var targetedItemSet: Set<Any> by mutableStateOf(setOf())
+    var targetedItemPosition: Offset? by mutableStateOf(null)
 }
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }

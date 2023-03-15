@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 
 @Composable
 fun <T> DropTarget(
@@ -31,6 +32,7 @@ fun <T> DropTarget(
             isCurrentDropTarget = rect.contains(dragPosition + dragOffset)
             if (isCurrentDropTarget) {
                 targetedItemInfo.targetedItemSet = targetedItemInfo.targetedItemSet.plus(key)
+                targetedItemInfo.targetedItemPosition = it.positionInRoot()
             } else {
                 targetedItemInfo.targetedItemSet = targetedItemInfo.targetedItemSet.minus(key)
             }
