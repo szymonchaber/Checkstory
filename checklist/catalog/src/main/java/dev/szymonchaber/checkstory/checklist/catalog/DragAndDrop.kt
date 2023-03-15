@@ -28,14 +28,9 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
 val tasks = listOf(
-    Task(1, "Pizza", 20.0, Color.Blue),
-    Task(2, "French toast", 10.05, Color.Cyan),
-    Task(3, "Chocolate cake", 12.99, Color.Magenta),
-)
-val taskWithChildren = listOf(
-    TaskWithChildren(1, "Jhone"),
-    TaskWithChildren(2, "Eyle"),
-    TaskWithChildren(3, "Tommy"),
+    Task(1, "Pizza", Color.Blue),
+    Task(2, "French toast", Color.Cyan),
+    Task(3, "Chocolate cake", Color.Magenta),
 )
 
 @Composable
@@ -47,9 +42,6 @@ fun Experiment() {
         ) {
             items(items = tasks) { task ->
                 TaskCard(task = task)
-            }
-            items(items = taskWithChildren) { person ->
-                ReceiverTaskCard(person)
             }
         }
         TargetTodoistLine()
@@ -138,9 +130,4 @@ fun LongPressDraggable(
     }
 }
 
-data class TaskWithChildren(val id: Int, val name: String)
-
-
-data class Task(val id: Int, val name: String, val price: Double, val color: Color) {
-
-}
+data class Task(val id: Int, val name: String, val color: Color)
