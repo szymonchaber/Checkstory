@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -28,10 +31,13 @@ fun TaskCard(task: Task) {
         backgroundColor = Color.White,
         modifier = Modifier.padding(8.dp)
     ) {
+//        Box(Modifier.height(IntrinsicSize.Min)) {
         Column {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(10.dp)
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth()
             ) {
                 Draggable(modifier = Modifier, dataToDrop = task) {
                     Box(
@@ -50,59 +56,66 @@ fun TaskCard(task: Task) {
                     )
                 }
             }
-            Row {
-                val childTasks = remember {
-                    mutableListOf<Task>()
+            Receptacles(task = task)
+        }
+    }
+}
+
+@Composable
+private fun Receptacles(task: Task) {
+    Row(Modifier.fillMaxSize()) {
+        val childTasks = remember {
+            mutableListOf<Task>()
+        }
+        val siblingTasks = remember {
+            mutableListOf<Task>()
+        }
+        DropTarget<Task>(
+            modifier = Modifier
+                .fillMaxHeight()
+                .defaultMinSize(minHeight = 30.dp)
+                .weight(0.2f)
+                .background(Color.Gray),
+            key = task
+        ) { isInBound, childTask ->
+            childTask?.let {
+                if (isInBound) {
+                    childTasks.add(childTask)
                 }
-                val siblingTasks = remember {
-                    mutableListOf<Task>()
-                }
-                DropTarget<Task>(
-                    modifier = Modifier
-                        .defaultMinSize(minHeight = 30.dp)
-                        .weight(0.2f)
-                        .background(Color.Gray),
-                    key = task
-                ) { isInBound, childTask ->
-                    childTask?.let {
-                        if (isInBound) {
-                            childTasks.add(childTask)
-                        }
-                    }
-                    Column {
-                        childTasks.forEach { task ->
-                            Row {
-                                Text(
-                                    text = "* " + task.name,
-                                    fontSize = 22.sp,
-                                    color = Color.DarkGray
-                                )
-                            }
-                        }
+            }
+            Column {
+                childTasks.forEach { task ->
+                    Row {
+                        Text(
+                            text = "* " + task.name,
+                            fontSize = 22.sp,
+                            color = Color.DarkGray
+                        )
                     }
                 }
-                DropTarget<Task>(
-                    modifier = Modifier
-                        .defaultMinSize(minHeight = 30.dp)
-                        .weight(1f)
-                        .background(Color.DarkGray),
-                    key = task
-                ) { isInBound, childTask ->
-                    childTask?.let {
-                        if (isInBound) {
-                            siblingTasks.add(childTask)
-                        }
-                    }
-                    Column {
-                        siblingTasks.forEach { task ->
-                            Row {
-                                Text(
-                                    text = "* " + task.name,
-                                    fontSize = 22.sp,
-                                    color = Color.DarkGray
-                                )
-                            }
-                        }
+            }
+        }
+        DropTarget<Task>(
+            modifier = Modifier
+                .fillMaxHeight()
+                .defaultMinSize(minHeight = 30.dp)
+                .weight(1f)
+                .background(Color.DarkGray),
+            key = task
+        ) { isInBound, childTask ->
+            childTask?.let {
+                if (isInBound) {
+                    siblingTasks.add(childTask)
+                }
+            }
+            Column {
+                siblingTasks.forEach { task ->
+                    Row {
+                        Text(
+                            text = "* " + task.name,
+                            fontSize = 22.sp,
+                            color = Color.DarkGray
+                        )
                     }
                 }
             }
