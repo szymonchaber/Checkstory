@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.checklist.catalog
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -17,7 +18,8 @@ import androidx.compose.ui.layout.positionInRoot
 fun <T> DropTarget(
     modifier: Modifier,
     key: Any,
-    content: @Composable (BoxScope.(isInBound: Boolean, data: T?) -> Unit)
+    onDataDropped: (T) -> Unit,
+    content: @Composable (BoxScope.() -> Unit) = {}
 ) {
     val dragInfo = LocalDragTargetInfo.current
     val dragPosition = dragInfo.dragPosition
@@ -27,6 +29,18 @@ fun <T> DropTarget(
     }
 
     val targetedItemInfo = LocalTargetedItemInfo.current
+
+    val data = if (isCurrentDropTarget && !dragInfo.isDragging && dragInfo.dataToDrop != key) {
+        dragInfo.dataToDrop as T?
+    } else {
+        null
+    }
+    LaunchedEffect(key1 = data) {
+        data?.let {
+            dragInfo.dataToDrop = null
+            onDataDropped(it)
+        }
+    }
 
     Box(modifier = modifier.onGloballyPositioned {
         it.boundsInWindow().let { rect ->
@@ -39,13 +53,5 @@ fun <T> DropTarget(
                 targetedItemInfo.targetedItemSet = targetedItemInfo.targetedItemSet.minus(key)
             }
         }
-    }) {
-        val data =
-            if (isCurrentDropTarget && !dragInfo.isDragging && dragInfo.dataToDrop != key) {
-                dragInfo.dataToDrop as T?
-            } else {
-                null
-            }
-        content(isCurrentDropTarget, data)
-    }
+    }, content = content)
 }

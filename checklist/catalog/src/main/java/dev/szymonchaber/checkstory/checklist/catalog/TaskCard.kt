@@ -104,25 +104,19 @@ private fun Receptacles(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(0.2f),
-            key = task
-        ) { isInBound, siblingTask ->
-            siblingTask?.let {
-                if (isInBound) {
-                    onSiblingTaskDropped(it)
-                }
+            key = task,
+            onDataDropped = { siblingTask ->
+                onSiblingTaskDropped(siblingTask)
             }
-        }
+        )
         DropTarget<Task>(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
-            key = task
-        ) { isInBound, childTask ->
-            childTask?.let {
-                if (isInBound) {
-                    onChildTaskDropped(childTask)
-                }
+            key = task,
+            onDataDropped = { childTask ->
+                onChildTaskDropped(childTask)
             }
-        }
+        )
     }
 }

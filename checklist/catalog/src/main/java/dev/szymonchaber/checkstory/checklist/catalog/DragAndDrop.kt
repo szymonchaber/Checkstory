@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -26,6 +27,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import timber.log.Timber
 
 @Composable
 fun Experiment() {
@@ -41,7 +43,7 @@ fun Experiment() {
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 10.dp)
         ) {
-            items(items = tasks) { task ->
+            items(items = tasks, key = { it.id }) { task ->
                 val childTasks = remember {
                     mutableStateListOf<Task>()
                 }
@@ -53,7 +55,8 @@ fun Experiment() {
                     childTasks = childTasks,
                     siblingTasks = siblingTasks,
                     onSiblingTaskDropped = { siblingTask ->
-                        siblingTasks.add(siblingTask)
+                        moveTaskBelow(tasks, siblingTask, task)
+//                        siblingTasks.add(siblingTask)
                     },
                     onChildTaskDropped = { childTask ->
                         childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
@@ -62,6 +65,17 @@ fun Experiment() {
             }
         }
         TargetTodoistLine()
+    }
+}
+
+fun moveTaskBelow(tasks: SnapshotStateList<Task>, task: Task, below: Task) {
+    Timber.d("Moving $task below $below")
+    tasks.removeAt(tasks.indexOfFirst { it.id == task.id })
+    val targetIndex = tasks.indexOfFirst { it.id == below.id } + 1
+    if (targetIndex > tasks.lastIndex) {
+        tasks.add(task)
+    } else {
+        tasks.add(targetIndex, task)
     }
 }
 
