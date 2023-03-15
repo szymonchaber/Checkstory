@@ -53,7 +53,7 @@ private fun TargetTodoistLine() {
     val targetState = LocalTargetedItemInfo.current
 
     val targetValue = LocalDensity.current.run {
-        (targetState.targetedItemPosition ?: Offset.Zero) - Offset.Zero.copy(y = 20.dp.toPx())
+        (targetState.targetedItemPosition ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx())
     }
     val offset by animateOffsetAsState(targetValue = targetValue)
     if (state.isDragging) {

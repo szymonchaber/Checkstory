@@ -3,12 +3,13 @@ package dev.szymonchaber.checkstory.checklist.catalog
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,92 +33,97 @@ fun TaskCard(task: Task) {
         backgroundColor = Color.White,
         modifier = Modifier.padding(8.dp)
     ) {
-//        Box(Modifier.height(IntrinsicSize.Min)) {
         Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(10.dp)
-                    .fillMaxWidth()
-            ) {
-                Draggable(modifier = Modifier, dataToDrop = task) {
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(task.color)
-                            .size(30.dp)
+            val childTasks = remember {
+                mutableStateListOf<Task>()
+            }
+            val siblingTasks = remember {
+                mutableStateListOf<Task>()
+            }
+            Box(Modifier.height(IntrinsicSize.Min)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth()
+                ) {
+                    Draggable(modifier = Modifier, dataToDrop = task) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .background(task.color)
+                                .size(30.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(20.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = task.name,
+                            fontSize = 22.sp,
+                            color = Color.DarkGray
+                        )
+                    }
+                }
+                Receptacles(
+                    task = task,
+                    { childTask ->
+                        siblingTasks.add(childTask)
+                    }
+                ) { childTask ->
+                    childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
+                }
+            }
+            childTasks.forEach { task ->
+                Row {
+                    Text(
+                        modifier = Modifier.padding(start = 32.dp),
+                        text = "* " + task.name,
+                        fontSize = 22.sp,
+                        color = Color.Blue
                     )
                 }
-                Spacer(modifier = Modifier.width(20.dp))
-                Column(modifier = Modifier.weight(1f)) {
+            }
+            siblingTasks.forEach { task ->
+                Row {
                     Text(
-                        text = task.name,
+                        text = "* " + task.name,
                         fontSize = 22.sp,
                         color = Color.DarkGray
                     )
                 }
             }
-            Receptacles(task = task)
         }
     }
 }
 
 @Composable
-private fun Receptacles(task: Task) {
+private fun Receptacles(
+    task: Task,
+    onSiblingTaskDropped: (Task) -> Unit,
+    onChildTaskDropped: (Task) -> Unit
+) {
     Row(Modifier.fillMaxSize()) {
-        val childTasks = remember {
-            mutableListOf<Task>()
-        }
-        val siblingTasks = remember {
-            mutableListOf<Task>()
-        }
         DropTarget<Task>(
             modifier = Modifier
                 .fillMaxHeight()
-                .defaultMinSize(minHeight = 30.dp)
-                .weight(0.2f)
-                .background(Color.Gray),
+                .weight(0.2f),
             key = task
-        ) { isInBound, childTask ->
-            childTask?.let {
+        ) { isInBound, siblingTask ->
+            siblingTask?.let {
                 if (isInBound) {
-                    childTasks.add(childTask)
-                }
-            }
-            Column {
-                childTasks.forEach { task ->
-                    Row {
-                        Text(
-                            text = "* " + task.name,
-                            fontSize = 22.sp,
-                            color = Color.DarkGray
-                        )
-                    }
+                    onSiblingTaskDropped(it)
                 }
             }
         }
         DropTarget<Task>(
             modifier = Modifier
                 .fillMaxHeight()
-                .defaultMinSize(minHeight = 30.dp)
-                .weight(1f)
-                .background(Color.DarkGray),
+                .weight(1f),
             key = task
         ) { isInBound, childTask ->
             childTask?.let {
                 if (isInBound) {
-                    siblingTasks.add(childTask)
-                }
-            }
-            Column {
-                siblingTasks.forEach { task ->
-                    Row {
-                        Text(
-                            text = "* " + task.name,
-                            fontSize = 22.sp,
-                            color = Color.DarkGray
-                        )
-                    }
+                    onChildTaskDropped(childTask)
                 }
             }
         }

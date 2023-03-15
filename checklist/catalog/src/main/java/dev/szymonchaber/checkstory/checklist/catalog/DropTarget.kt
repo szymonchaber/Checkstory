@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -32,14 +33,19 @@ fun <T> DropTarget(
             isCurrentDropTarget = rect.contains(dragPosition + dragOffset)
             if (isCurrentDropTarget) {
                 targetedItemInfo.targetedItemSet = targetedItemInfo.targetedItemSet.plus(key)
-                targetedItemInfo.targetedItemPosition = it.positionInRoot()
+                targetedItemInfo.targetedItemPosition =
+                    it.positionInRoot().plus(Offset.Zero.copy(y = it.size.height.toFloat()))
             } else {
                 targetedItemInfo.targetedItemSet = targetedItemInfo.targetedItemSet.minus(key)
             }
         }
     }) {
         val data =
-            if (isCurrentDropTarget && !dragInfo.isDragging) dragInfo.dataToDrop as T? else null
+            if (isCurrentDropTarget && !dragInfo.isDragging && dragInfo.dataToDrop != key) {
+                dragInfo.dataToDrop as T?
+            } else {
+                null
+            }
         content(isCurrentDropTarget, data)
     }
 }
