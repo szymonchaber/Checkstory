@@ -3,14 +3,12 @@ package dev.szymonchaber.checkstory.checklist.catalog
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,9 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
@@ -28,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -49,10 +44,10 @@ val tasks = listOf(
     Task(2, "French toast", 10.05, Color.Cyan),
     Task(3, "Chocolate cake", 12.99, Color.Magenta),
 )
-val persons = listOf(
-    Person(1, "Jhone", Color.Green),
-    Person(2, "Eyle", Color.Yellow),
-    Person(3, "Tommy", Color.Gray),
+val taskWithChildren = listOf(
+    TaskWithChildren(1, "Jhone"),
+    TaskWithChildren(2, "Eyle"),
+    TaskWithChildren(3, "Tommy"),
 )
 
 @Composable
@@ -65,8 +60,10 @@ fun Experiment() {
             items(items = tasks) { task ->
                 TaskCard(task = task)
             }
+            items(items = taskWithChildren) { person ->
+                ReceiverTaskCard(person)
+            }
         }
-        PersonListContainer(persons)
         TargetTodoistLine()
     }
 }
@@ -98,25 +95,6 @@ private fun TargetTodoistLine() {
     }
 }
 
-@Composable
-private fun BoxScope.PersonListContainer(persons: List<Person>) {
-    LazyRow(
-        modifier = Modifier
-            .fillMaxHeight(0.3f)
-            .fillMaxWidth()
-            .background(Color.LightGray, shape = RoundedCornerShape(topEnd = 10.dp, topStart = 10.dp))
-            .padding(vertical = 10.dp)
-            .align(Alignment.BottomCenter),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        items(items = persons) { person ->
-            PersonCard(person)
-        }
-    }
-}
-
-
 internal class DragTargetInfo {
     var isDragging: Boolean by mutableStateOf(false)
     var dragPosition by mutableStateOf(Offset.Zero)
@@ -131,6 +109,7 @@ internal class TargetedItemInfo {
 
 internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
 internal val LocalTargetedItemInfo = compositionLocalOf { TargetedItemInfo() }
+
 @Composable
 fun TaskCard(task: Task) {
     Card(
@@ -196,7 +175,7 @@ fun LongPressDraggable(
                         scaleY = 1.3f
                         alpha = if (targetSize == IntSize.Zero) 0f else .9f
                         translationX = offset.x.minus(targetSize.width / 2)
-                        translationY = offset.y.minus(targetSize.height / 2)
+                        translationY = offset.y.minus(targetSize.height)
                     }
                     .onGloballyPositioned {
                         targetSize = it.size
@@ -209,56 +188,46 @@ fun LongPressDraggable(
     }
 }
 
-data class Person(val id: Int, val name: String, val color: Color)
+data class TaskWithChildren(val id: Int, val name: String)
 
 @Composable
-fun PersonCard(person: Person) {
-    val foodItems = remember {
-        mutableStateMapOf<Int, Task>()
+fun ReceiverTaskCard(taskWithChildren: TaskWithChildren) {
+    val childTasks = remember {
+        mutableListOf<Task>()
     }
     DropTarget<Task>(
         modifier = Modifier
             .padding(6.dp)
-            .width(width = 120.dp)
-            .fillMaxHeight(0.8f),
-        person
+            .fillMaxWidth(),
+        taskWithChildren
     ) { isInBound, foodItem ->
         val bgColor = if (isInBound) Color.Red else Color.White
 
         foodItem?.let {
-            if (isInBound)
-                foodItems[foodItem.id] = foodItem
+            if (isInBound) {
+                childTasks.add(foodItem)
+            }
         }
 
         Column(
             modifier = Modifier.background(bgColor, RoundedCornerShape(16.dp)),
         ) {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(person.color)
-                    .size(70.dp),
-            )
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-                text = person.name,
+                text = taskWithChildren.name,
                 fontSize = 18.sp,
                 color = Color.Black,
                 fontWeight = FontWeight.Bold
             )
 
-            if (foodItems.isNotEmpty()) {
-                Text(
-                    text = "$${foodItems.values.sumOf { it.price }}",
-                    fontSize = 16.sp,
-                    color = Color.Black,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Text(
-                    text = "${foodItems.size} Items",
-                    fontSize = 14.sp,
-                    color = Color.Black
-                )
+            childTasks.forEach { task ->
+                Row {
+                    Text(
+                        text = "* " + task.name,
+                        fontSize = 22.sp,
+                        color = Color.DarkGray
+                    )
+                }
             }
         }
     }
