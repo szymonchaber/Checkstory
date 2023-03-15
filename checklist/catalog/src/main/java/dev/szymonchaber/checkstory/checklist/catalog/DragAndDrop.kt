@@ -114,11 +114,9 @@ fun LongPressDraggable(
                 Box(modifier = Modifier
                     .graphicsLayer {
                         val offset = (state.dragPosition + state.dragOffset)
-                        scaleX = 1.3f
-                        scaleY = 1.3f
                         alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                        translationX = offset.x.minus(targetSize.width / 2)
-                        translationY = offset.y.minus(targetSize.height * 3)
+                        translationX = offset.x.minus(24.dp.toPx())
+                        translationY = offset.y.minus(targetSize.height * 2 + 8.dp.toPx())
                     }
                     .onGloballyPositioned {
                         targetSize = it.size

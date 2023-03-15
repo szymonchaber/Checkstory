@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,7 +26,7 @@ fun <T> Draggable(
             currentPosition = it.localToWindow(Offset.Zero)
         }
         .pointerInput(Unit) {
-            detectDragGesturesAfterLongPress(
+            detectDragGestures(
                 onDragStart = {
                     currentState.dataToDrop = dataToDrop
                     currentState.isDragging = true

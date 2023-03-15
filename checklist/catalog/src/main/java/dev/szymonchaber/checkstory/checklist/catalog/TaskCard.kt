@@ -19,7 +19,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -41,22 +40,20 @@ fun TaskCard(task: Task) {
                 mutableStateListOf<Task>()
             }
             Box(Modifier.height(IntrinsicSize.Min)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .fillMaxWidth()
-                ) {
-                    Draggable(modifier = Modifier, dataToDrop = task) {
+                Draggable(modifier = Modifier, dataToDrop = task) {
+                    Row(
+                        modifier = Modifier
+                            .background(Color.White)
+                            .padding(10.dp)
+                            .fillMaxWidth()
+                    ) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(16.dp))
                                 .background(task.color)
                                 .size(30.dp)
                         )
-                    }
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Column(modifier = Modifier.weight(1f)) {
+                        Spacer(modifier = Modifier.width(20.dp))
                         Text(
                             text = task.name,
                             fontSize = 22.sp,
