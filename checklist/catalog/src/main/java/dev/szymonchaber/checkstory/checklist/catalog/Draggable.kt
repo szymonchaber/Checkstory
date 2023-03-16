@@ -19,7 +19,7 @@ fun <T> Draggable(
     content: @Composable (() -> Unit)
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
-    val currentState = LocalDragTargetInfo.current
+    val currentState = LocalDraggableItemInfo.current
 
     Box(modifier = modifier
         .onGloballyPositioned {

@@ -1,11 +1,8 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.animation.core.animateOffsetAsState
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,8 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,12 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
@@ -111,7 +101,7 @@ fun Experiment() {
                 )
             }
         }
-        TargetTodoistLine()
+        DropTargetIndicatorLine()
         Draggable(
             modifier = Modifier.align(Alignment.BottomStart),
             dataToDrop = Task(id = NEW_TASK_ID, "", Color.LightGray, listOf())
@@ -233,88 +223,6 @@ data class MagicTree(val tasks: List<Task>) {
             val nextIndent = indent + if (isLast) "  " else "│ "
             Timber.d("$indent$prefix${childTask.id} ${childTask.name}")
             logTaskChildren(childTask, nextIndent)
-        }
-    }
-}
-
-@Composable
-private fun TargetTodoistLine() {
-    val state = LocalDragTargetInfo.current
-    val targetState = LocalTargetedItemInfo.current
-
-    val targetValue = LocalDensity.current.run {
-        (targetState.targetedItemPosition ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx())
-    }
-    val offset by animateOffsetAsState(targetValue = targetValue)
-    if (state.isDragging) {
-        Canvas(
-            modifier = Modifier
-                .padding(end = 20.dp)
-                .fillMaxWidth()
-                .graphicsLayer {
-                    translationY = offset.y
-                }
-        ) {
-            drawLine(
-                color = Color.Red,
-                start = offset.copy(y = 0f),
-                end = offset.copy(x = this.size.width, y = 0f),
-                strokeWidth = 2.dp.toPx()
-            )
-        }
-    }
-}
-
-internal class DragTargetInfo {
-    var isDragging: Boolean by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero)
-    var dragOffset by mutableStateOf(Offset.Zero)
-    var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
-    var dataToDrop by mutableStateOf<Any?>(null)
-}
-
-internal class TargetedItemInfo {
-    var targetedItemSet: Set<Any> by mutableStateOf(setOf())
-    var targetedItemPosition: Offset? by mutableStateOf(null)
-}
-
-internal val LocalDragTargetInfo = compositionLocalOf { DragTargetInfo() }
-internal val LocalTargetedItemInfo = compositionLocalOf { TargetedItemInfo() }
-
-@Composable
-fun LongPressDraggable(
-    modifier: Modifier = Modifier,
-    content: @Composable BoxScope.() -> Unit
-) {
-    val targetState = remember { TargetedItemInfo() }
-    val state = remember { DragTargetInfo() }
-    CompositionLocalProvider(
-        LocalDragTargetInfo provides state,
-        LocalTargetedItemInfo provides targetState
-    ) {
-        Box(
-            modifier = modifier
-                .fillMaxSize()
-        ) {
-            content()
-            if (state.isDragging) {
-                var targetSize by remember {
-                    mutableStateOf(IntSize.Zero)
-                }
-                Box(modifier = Modifier
-                    .graphicsLayer {
-                        val offset = (state.dragPosition + state.dragOffset)
-                        alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                        translationX = offset.x.minus(24.dp.toPx())
-                        translationY = offset.y.minus(targetSize.height * 2 + 8.dp.toPx())
-                    }
-                    .onGloballyPositioned {
-                        targetSize = it.size
-                    }
-                ) {
-                    state.draggableComposable?.invoke()
-                }
-            }
         }
     }
 }

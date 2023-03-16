@@ -21,14 +21,14 @@ fun <T> DropTarget(
     onDataDropped: (T) -> Unit,
     content: @Composable (BoxScope.() -> Unit) = {}
 ) {
-    val dragInfo = LocalDragTargetInfo.current
+    val dragInfo = LocalDraggableItemInfo.current
     val dragPosition = dragInfo.dragPosition
     val dragOffset = dragInfo.dragOffset
     var isCurrentDropTarget by remember {
         mutableStateOf(false)
     }
 
-    val targetedItemInfo = LocalTargetedItemInfo.current
+    val targetedItemInfo = LocalDropTargetInfo.current
 
     val data = if (isCurrentDropTarget && !dragInfo.isDragging && dragInfo.dataToDrop != key) {
         dragInfo.dataToDrop as T?
@@ -46,11 +46,11 @@ fun <T> DropTarget(
         it.boundsInWindow().let { rect ->
             isCurrentDropTarget = rect.contains(dragPosition + dragOffset)
             if (isCurrentDropTarget) {
-                targetedItemInfo.targetedItemSet = targetedItemInfo.targetedItemSet.plus(key)
-                targetedItemInfo.targetedItemPosition =
+                targetedItemInfo.currentDropTargetSet = targetedItemInfo.currentDropTargetSet.plus(key)
+                targetedItemInfo.currentDropTargetPosition =
                     it.positionInRoot().plus(Offset.Zero.copy(y = it.size.height.toFloat()))
             } else {
-                targetedItemInfo.targetedItemSet = targetedItemInfo.targetedItemSet.minus(key)
+                targetedItemInfo.currentDropTargetSet = targetedItemInfo.currentDropTargetSet.minus(key)
             }
         }
     }, content = content)
