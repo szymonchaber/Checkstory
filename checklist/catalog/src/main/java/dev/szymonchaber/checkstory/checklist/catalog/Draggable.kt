@@ -14,8 +14,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 
 @Composable
 fun <T> Draggable(
-    modifier: Modifier,
     dataToDrop: T,
+    modifier: Modifier = Modifier,
     content: @Composable (() -> Unit)
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }

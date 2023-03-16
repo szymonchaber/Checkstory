@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.checklist.catalog
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -19,7 +22,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -27,6 +32,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import java.util.concurrent.atomic.AtomicInteger
 
 val colors = listOf(Color.Blue, Color.Red, Color.Magenta, Color.Gray, Color.DarkGray, Color.Cyan, Color.Green)
 
@@ -36,8 +42,13 @@ val food = listOf(
     Task(3, "Chocolate cake", Color.Magenta, listOf()),
 )
 
+const val NEW_TASK_ID = -50
+
+val indexGenerator = AtomicInteger(0)
+
 val tasks = List(50) {
-    Task(it, "Item ${it + 1}", colors[it % colors.size], listOf())
+    val index = indexGenerator.getAndIncrement()
+    Task(index, "Item ${it + 1}", colors[index % colors.size], listOf())
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -88,6 +99,21 @@ fun Experiment() {
             }
         }
         TargetTodoistLine()
+        Draggable(
+            modifier = Modifier.align(Alignment.BottomStart),
+            dataToDrop = Task(id = NEW_TASK_ID, "", Color.LightGray, listOf())
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Cyan)
+                    .height(50.dp)
+                    .padding(8.dp)
+            ) {
+                Text(modifier = Modifier.align(Alignment.Center), text = "New task")
+            }
+        }
     }
 }
 
@@ -147,6 +173,10 @@ data class MagicTree(val tasks: List<Task>) {
     }
 
     private fun withExtractedTask(taskId: Int): Pair<List<Task>, Task> {
+        val index = indexGenerator.getAndIncrement()
+        if (taskId == NEW_TASK_ID) {
+            return tasks to Task(id = index, "", colors[index % colors.size], listOf())
+        }
         var movedItem: Task? = null
         val onItemFoundAndRemoved: (Task) -> Unit = {
             movedItem = it
