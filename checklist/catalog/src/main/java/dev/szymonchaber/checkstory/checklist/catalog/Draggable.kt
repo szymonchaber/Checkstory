@@ -11,11 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import timber.log.Timber
 
 @Composable
 fun <T> Draggable(
     dataToDrop: T,
     modifier: Modifier = Modifier,
+    onDragStart: (T) -> Unit,
     content: @Composable (() -> Unit)
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
@@ -29,6 +31,8 @@ fun <T> Draggable(
             detectDragGestures(
                 onDragStart = {
                     currentState.dataToDrop = dataToDrop
+                    onDragStart(dataToDrop)
+                    Timber.d("Setting data to drop: $dataToDrop")
                     currentState.isDragging = true
                     currentState.dragPosition = currentPosition + it
                     currentState.draggableComposable = content

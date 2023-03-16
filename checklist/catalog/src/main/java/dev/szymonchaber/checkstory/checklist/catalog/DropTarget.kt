@@ -19,6 +19,7 @@ fun <T> DropTarget(
     modifier: Modifier,
     key: Any,
     onDataDropped: (T) -> Unit,
+    debugTag: String,
     content: @Composable (BoxScope.() -> Unit) = {}
 ) {
     val dragInfo = LocalDraggableItemInfo.current
@@ -45,6 +46,7 @@ fun <T> DropTarget(
     Box(modifier = modifier.onGloballyPositioned {
         it.boundsInWindow().let { rect ->
             isCurrentDropTarget = rect.contains(dragPosition + dragOffset)
+//            Timber.d("Is $debugTag current drop target: $isCurrentDropTarget")
             if (isCurrentDropTarget) {
                 targetedItemInfo.currentDropTargetSet = targetedItemInfo.currentDropTargetSet.plus(key)
                 targetedItemInfo.currentDropTargetPosition =

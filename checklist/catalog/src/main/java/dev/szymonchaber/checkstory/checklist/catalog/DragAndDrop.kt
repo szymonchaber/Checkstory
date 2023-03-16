@@ -63,10 +63,11 @@ fun Experiment() {
                     key = Unit,
                     onDataDropped = {
                         magicTree = magicTree.withTaskMovedToTop(it)
-                    }
+                    },
+                    debugTag = "Top task receptacle"
                 )
             }
-            items(items = magicTree.tasks, key = { it.id }) { task ->
+            items(items = magicTree.tasks) { task ->
                 NestedTaskCard(
                     modifier = Modifier.animateItemPlacement(),
                     task = task,
@@ -97,14 +98,16 @@ fun Experiment() {
                     key = true,
                     onDataDropped = {
                         magicTree = magicTree.withTaskMovedToBottom(it)
-                    }
+                    },
+                    debugTag = "Bottom task receptacle"
                 )
             }
         }
         DropTargetIndicatorLine()
         Draggable(
             modifier = Modifier.align(Alignment.BottomStart),
-            dataToDrop = Task(id = NEW_TASK_ID, "", Color.LightGray, listOf())
+            dataToDrop = Task(id = NEW_TASK_ID, "", Color.LightGray, listOf()),
+            onDragStart = {}
         ) {
             Box(
                 modifier = Modifier

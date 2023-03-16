@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import timber.log.Timber
 
 @Composable
 fun TaskCard(
@@ -35,7 +36,9 @@ fun TaskCard(
         modifier = modifier.padding(8.dp)
     ) {
         Box(Modifier.height(IntrinsicSize.Min)) {
-            Draggable(modifier = Modifier, dataToDrop = task) {
+            Draggable(modifier = Modifier, dataToDrop = task, onDragStart = {
+                Timber.d("Starting the drag with data: $it for actual task: $task ")
+            }) {
                 Row(
                     modifier = Modifier
                         .background(Color.White)
@@ -83,7 +86,8 @@ private fun Receptacles(
             key = task,
             onDataDropped = { siblingTask ->
                 onSiblingTaskDropped(siblingTask)
-            }
+            },
+            debugTag = "Sibling receptacle ${task.name}"
         )
         DropTarget<Task>(
             modifier = Modifier
@@ -92,7 +96,8 @@ private fun Receptacles(
             key = task,
             onDataDropped = { childTask ->
                 onChildTaskDropped(childTask)
-            }
+            },
+            debugTag = "Child receptacle ${task.name}"
         )
     }
 }
