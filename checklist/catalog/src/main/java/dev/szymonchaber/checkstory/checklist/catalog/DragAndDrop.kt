@@ -121,12 +121,12 @@ data class MagicTree(val tasks: List<Task>) {
 
     fun withTaskMovedToBottom(task: Task): MagicTree {
         val (filteredTasks, removedTask) = withExtractedTask(task.id)
-        return copy(tasks = filteredTasks.plus(removedTask))
+        return copy(tasks = filteredTasks.withTaskAtIndex(removedTask, filteredTasks.size))
     }
 
     fun withTaskMovedToTop(task: Task): MagicTree {
         val (filteredTasks, removedTask) = withExtractedTask(task.id)
-        return copy(tasks = listOf(removedTask) + filteredTasks)
+        return copy(tasks = filteredTasks.withTaskAtIndex(removedTask, 0))
     }
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
@@ -284,4 +284,8 @@ data class Task(val id: Int, val name: String, val color: Color, val children: L
                 }
         )
     }
+}
+
+fun List<Task>.withTaskAtIndex(task: Task, index: Int): List<Task> {
+    return take(index) + task + drop(index)
 }
