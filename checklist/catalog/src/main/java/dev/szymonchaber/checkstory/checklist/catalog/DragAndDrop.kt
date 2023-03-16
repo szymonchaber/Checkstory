@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -29,17 +28,18 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import timber.log.Timber
+
+val tasks = listOf(
+    Task(1, "Pizza", Color.Blue, listOf()),
+    Task(2, "French toast", Color.Cyan, listOf()),
+    Task(3, "Chocolate cake", Color.Magenta, listOf()),
+)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Experiment() {
-    val tasks = remember {
-        mutableStateListOf(
-            Task(1, "Pizza", Color.Blue),
-            Task(2, "French toast", Color.Cyan),
-            Task(3, "Chocolate cake", Color.Magenta),
-        )
+    var magicTree by remember {
+        mutableStateOf(MagicTree(tasks))
     }
     LongPressDraggable(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -50,10 +50,10 @@ fun Experiment() {
                 DropTarget<Task>(modifier = Modifier
                     .fillMaxWidth()
                     .height(24.dp), key = Unit, onDataDropped = {
-                    moveTaskToTop(tasks, it)
+                    magicTree = magicTree.withTaskMovedToTop(it)
                 })
             }
-            items(items = tasks, key = { it.id }) { task ->
+            items(items = magicTree.tasks, key = { it.id }) { task ->
                 val childTasks = remember {
                     mutableStateListOf<Task>()
                 }
@@ -62,7 +62,7 @@ fun Experiment() {
                     task = task,
                     childTasks = childTasks,
                     onSiblingTaskDropped = { siblingTask ->
-                        moveTaskBelow(tasks, siblingTask, task)
+                        magicTree = magicTree.withTaskMovedBelow(siblingTask, task)
                     }
                 ) { childTask ->
                     childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
@@ -76,7 +76,7 @@ fun Experiment() {
                         .height(96.dp),
                     key = true,
                     onDataDropped = {
-                        moveTaskToBottom(tasks, it)
+                        magicTree = magicTree.withTaskMovedToBottom(it)
                     }
                 )
             }
@@ -85,29 +85,37 @@ fun Experiment() {
     }
 }
 
-fun moveTaskToBottom(tasks: SnapshotStateList<Task>, task: Task) {
-    tasks.removeAt(tasks.indexOfFirst { it.id == task.id })
-    tasks.add(task)
-}
+data class MagicTree(val tasks: List<Task>) {
 
-fun moveTaskToTop(tasks: SnapshotStateList<Task>, task: Task) {
-    tasks.removeAt(tasks.indexOfFirst { it.id == task.id })
-    val targetIndex = 0
-    if (targetIndex > tasks.lastIndex) {
-        tasks.add(task)
-    } else {
-        tasks.add(targetIndex, task)
+    fun withTaskMovedToBottom(task: Task): MagicTree {
+        return copy(tasks = tasks.toMutableList().apply {
+            removeAt(indexOfFirst { it.id == task.id })
+            add(task)
+        })
     }
-}
 
-fun moveTaskBelow(tasks: SnapshotStateList<Task>, task: Task, below: Task) {
-    Timber.d("Moving $task below $below")
-    tasks.removeAt(tasks.indexOfFirst { it.id == task.id })
-    val targetIndex = tasks.indexOfFirst { it.id == below.id } + 1
-    if (targetIndex > tasks.lastIndex) {
-        tasks.add(task)
-    } else {
-        tasks.add(targetIndex, task)
+    fun withTaskMovedToTop(task: Task): MagicTree {
+        return copy(tasks = tasks.toMutableList().apply {
+            removeAt(indexOfFirst { it.id == task.id })
+            val targetIndex = 0
+            if (targetIndex > lastIndex) {
+                add(task)
+            } else {
+                add(targetIndex, task)
+            }
+        })
+    }
+
+    fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
+        return copy(tasks = tasks.toMutableList().apply {
+            removeAt(indexOfFirst { it.id == task.id })
+            val targetIndex = indexOfFirst { it.id == below.id } + 1
+            if (targetIndex > lastIndex) {
+                add(task)
+            } else {
+                add(targetIndex, task)
+            }
+        })
     }
 }
 
@@ -193,4 +201,4 @@ fun LongPressDraggable(
     }
 }
 
-data class Task(val id: Int, val name: String, val color: Color)
+data class Task(val id: Int, val name: String, val color: Color, val children: List<Task>)
