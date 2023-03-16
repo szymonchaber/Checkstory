@@ -28,11 +28,17 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
-val tasks = listOf(
+val colors = listOf(Color.Blue, Color.Red, Color.Magenta, Color.Gray, Color.DarkGray, Color.Cyan, Color.Green)
+
+val food = listOf(
     Task(1, "Pizza", Color.Blue, listOf()),
     Task(2, "French toast", Color.Cyan, listOf()),
     Task(3, "Chocolate cake", Color.Magenta, listOf()),
 )
+
+val tasks = List(50) {
+    Task(it, "Item ${it + 1}", colors[it % colors.size], listOf())
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -60,11 +66,7 @@ fun Experiment() {
                         magicTree = magicTree.withTaskMovedBelow(siblingTask, targetTask)
                     },
                     onChildTaskDroppedUnder = { childTask, targetTask ->
-                        magicTree =
-                            magicTree.withChildMovedUnderTask(
-                                childTask.copy(name = "Child ${childTask.name}"),
-                                targetTask
-                            )
+                        magicTree = magicTree.withChildMovedUnderTask(childTask, targetTask)
                     }
                 )
             }
@@ -145,13 +147,23 @@ data class MagicTree(val tasks: List<Task>) {
     }
 
     fun withChildMovedUnderTask(childTask: Task, task: Task): MagicTree {
-        return copy(tasks = tasks.filterNot { it.id == childTask.id }.map {
-            if (it.id == task.id) {
-                it.copy(children = it.children.plus(childTask))
-            } else {
-                it
+        var movedItem: Task? = null
+        val onItemFoundAndRemoved: (Task) -> Unit = {
+            if (movedItem != null) {
+                error("Attempted two sub-task additions where there should be one!")
             }
-        })
+            movedItem = it
+        }
+        return copy(
+            tasks = tasks
+                .map {
+                    it.withoutChild(childTask, onItemFoundAndRemoved)
+                }
+                .map {
+                    it.withMovedChildRecursive(task, childTask)
+                }
+                .filterNot { it.id == childTask.id },
+        )
     }
 }
 
@@ -237,4 +249,34 @@ fun LongPressDraggable(
     }
 }
 
-data class Task(val id: Int, val name: String, val color: Color, val children: List<Task>)
+data class Task(val id: Int, val name: String, val color: Color, val children: List<Task>) {
+
+    fun withoutChild(childTask: Task, onItemFoundAndRemoved: (Task) -> Unit): Task {
+        return copy(
+            children = children.map { it.withoutChild(childTask, onItemFoundAndRemoved) }
+                .let { tasks ->
+                    tasks
+                        .firstOrNull {
+                            it.id == childTask.id
+                        }?.let { foundChildTask ->
+                            tasks.minus(foundChildTask).also {
+                                onItemFoundAndRemoved(foundChildTask)
+                            }
+                        } ?: tasks
+                }
+        )
+    }
+
+    fun withMovedChildRecursive(parentTask: Task, childTask: Task): Task {
+        return copy(
+            children = children.map { it.withMovedChildRecursive(parentTask, childTask) }
+                .let { tasks ->
+                    if (id == parentTask.id) {
+                        tasks.plus(childTask)
+                    } else {
+                        tasks
+                    }
+                }
+        )
+    }
+}
