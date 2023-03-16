@@ -32,23 +32,26 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 
 val colors = listOf(Color.Blue, Color.Red, Color.Magenta, Color.Gray, Color.DarkGray, Color.Cyan, Color.Green)
-
-val food = listOf(
-    Task(1, "Pizza", Color.Blue, listOf()),
-    Task(2, "French toast", Color.Cyan, listOf()),
-    Task(3, "Chocolate cake", Color.Magenta, listOf()),
-)
 
 const val NEW_TASK_ID = -50
 
 val indexGenerator = AtomicInteger(0)
 
-val tasks = List(50) {
+//val taskList = List(50) {
+//    val index = indexGenerator.getAndIncrement()
+//    Task(index, "Task ${it + 1}", colors[index % colors.size], listOf())
+//}
+val tasks = List(3) {
     val index = indexGenerator.getAndIncrement()
-    Task(index, "Item ${it + 1}", colors[index % colors.size], listOf())
+
+    Task(index, "Task ${index + 1}", colors[index % colors.size], List(2) {
+        val localIndex = indexGenerator.getAndIncrement()
+        Task(localIndex, "Task ${localIndex + 1}", colors[index % colors.size], listOf())
+    })
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -77,11 +80,21 @@ fun Experiment() {
                 NestedTaskCard(
                     modifier = Modifier.animateItemPlacement(),
                     task = task,
-                    onSiblingTaskDroppedOnto = { siblingTask, targetTask ->
-                        magicTree = magicTree.withTaskMovedBelow(siblingTask, targetTask)
+                    onSiblingTaskDroppedOnto = { taskToMove, existingSibling ->
+                        Timber.d("onSiblingTaskDroppedOnto: taskToMove: ${taskToMove.name} existingSibling: ${existingSibling.name}")
+                        Timber.d("Content before:\n")
+                        magicTree.logMagicTree()
+                        magicTree = magicTree.withTaskMovedBelow(taskToMove, existingSibling)
+                        Timber.d("Content after:\n")
+                        magicTree.logMagicTree()
                     },
                     onChildTaskDroppedUnder = { childTask, targetTask ->
+                        Timber.d("onChildTaskDroppedUnder: childTask: ${childTask.name} targetTask: ${targetTask.name}")
+                        Timber.d("Content before:\n")
+                        magicTree.logMagicTree()
                         magicTree = magicTree.withChildMovedUnderTask(childTask, targetTask)
+                        Timber.d("Content after:\n")
+                        magicTree.logMagicTree()
                     }
                 )
             }
@@ -127,8 +140,8 @@ fun NestedTaskCard(
     TaskCard(
         modifier = modifier,
         task = task,
-        onSiblingTaskDropped = { siblingTask ->
-            onSiblingTaskDroppedOnto(siblingTask, task)
+        onSiblingTaskDropped = { newSibling ->
+            onSiblingTaskDroppedOnto(newSibling, task)
         }
     ) { childTask ->
         onChildTaskDroppedUnder(childTask, task)
@@ -157,9 +170,16 @@ data class MagicTree(val tasks: List<Task>) {
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
         val (filteredTasks, movedItem) = withExtractedTask(task.id)
-        val newTaskIndex = filteredTasks.indexOfFirst { it.id == below.id } + 1
-        val new = filteredTasks.withTaskAtIndex(movedItem, newTaskIndex)
-        return copy(tasks = new)
+//        val isSiblingTopLevel = filteredTasks.any { it.id == below.id }
+//        val new = if (isSiblingTopLevel) {
+//            val newTaskIndex = filteredTasks.indexOfFirst { it.id == below.id }
+//            filteredTasks.withTaskAtIndex(movedItem, newTaskIndex)
+//        } else {
+//            filteredTasks.map {
+//                it.withMovedSiblingRecursive(below.id, movedItem)
+//            } // Children logic
+//        }
+        return copy(tasks = filteredTasks)
     }
 
     fun withChildMovedUnderTask(childTask: Task, targetTask: Task): MagicTree {
@@ -194,6 +214,26 @@ data class MagicTree(val tasks: List<Task>) {
                 it.withoutChild(taskId, onItemFoundAndRemoved)
             }
         return withExtractedElement to movedItem!!
+    }
+
+    fun logMagicTree(indent: String = "") {
+        tasks.forEachIndexed { index, task ->
+            val isLast = index == tasks.lastIndex
+            val prefix = if (isLast) "└─" else "├─"
+            val nextIndent = indent + if (isLast) "  " else "│ "
+            Timber.d("$indent$prefix${task.id} ${task.name}")
+            logTaskChildren(task, nextIndent)
+        }
+    }
+
+    private fun logTaskChildren(task: Task, indent: String) {
+        task.children.forEachIndexed { index, childTask ->
+            val isLast = index == task.children.lastIndex
+            val prefix = if (isLast) "└─" else "├─"
+            val nextIndent = indent + if (isLast) "  " else "│ "
+            Timber.d("$indent$prefix${childTask.id} ${childTask.name}")
+            logTaskChildren(childTask, nextIndent)
+        }
     }
 }
 
@@ -308,6 +348,23 @@ data class Task(val id: Int, val name: String, val color: Color, val children: L
                     }
                 }
         )
+    }
+
+    fun withMovedSiblingRecursive(siblingId: Int, movedItem: Task): Task {
+        val children = children.map {
+            it.withMovedSiblingRecursive(siblingId, movedItem)
+        }
+            .let { tasks ->
+                if (tasks.any { it.id == siblingId }) {
+                    // correct level
+                    val targetLocalIndex = tasks.indexOfFirst { it.id == siblingId } + 1
+                    Timber.d("Dropping below ${tasks[targetLocalIndex - 1].name}!")
+                    tasks.withTaskAtIndex(movedItem, targetLocalIndex)
+                } else {
+                    tasks
+                }
+            }
+        return copy(children = children)
     }
 }
 
