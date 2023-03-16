@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.sp
 fun TaskCard(
     modifier: Modifier,
     task: Task,
-    childTasks: SnapshotStateList<Task>,
     onSiblingTaskDropped: (Task) -> Unit,
     onChildTaskDropped: (Task) -> Unit
 ) {
@@ -70,7 +68,7 @@ fun TaskCard(
                     }
                 )
             }
-            childTasks.forEach { task ->
+            task.children.forEach { task ->
                 Row {
                     Text(
                         modifier = Modifier.padding(start = 32.dp),

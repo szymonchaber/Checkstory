@@ -16,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -54,18 +53,15 @@ fun Experiment() {
                 })
             }
             items(items = magicTree.tasks, key = { it.id }) { task ->
-                val childTasks = remember {
-                    mutableStateListOf<Task>()
-                }
                 TaskCard(
                     modifier = Modifier.animateItemPlacement(),
                     task = task,
-                    childTasks = childTasks,
                     onSiblingTaskDropped = { siblingTask ->
                         magicTree = magicTree.withTaskMovedBelow(siblingTask, task)
                     }
                 ) { childTask ->
-                    childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
+                    magicTree =
+                        magicTree.withChildMovedUnderTask(childTask.copy(name = "Child ${childTask.name}"), task)
                 }
             }
             item {
@@ -89,31 +85,41 @@ data class MagicTree(val tasks: List<Task>) {
 
     fun withTaskMovedToBottom(task: Task): MagicTree {
         return copy(tasks = tasks.toMutableList().apply {
-            removeAt(indexOfFirst { it.id == task.id })
-            add(task)
+            val freshTask = removeAt(indexOfFirst { it.id == task.id })
+            add(freshTask)
         })
     }
 
     fun withTaskMovedToTop(task: Task): MagicTree {
         return copy(tasks = tasks.toMutableList().apply {
-            removeAt(indexOfFirst { it.id == task.id })
+            val freshTask = removeAt(indexOfFirst { it.id == task.id })
             val targetIndex = 0
             if (targetIndex > lastIndex) {
-                add(task)
+                add(freshTask)
             } else {
-                add(targetIndex, task)
+                add(targetIndex, freshTask)
             }
         })
     }
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
         return copy(tasks = tasks.toMutableList().apply {
-            removeAt(indexOfFirst { it.id == task.id })
+            val freshTask = removeAt(indexOfFirst { it.id == task.id })
             val targetIndex = indexOfFirst { it.id == below.id } + 1
             if (targetIndex > lastIndex) {
-                add(task)
+                add(freshTask)
             } else {
-                add(targetIndex, task)
+                add(targetIndex, freshTask)
+            }
+        })
+    }
+
+    fun withChildMovedUnderTask(childTask: Task, task: Task): MagicTree {
+        return copy(tasks = tasks.filterNot { it.id == childTask.id }.map {
+            if (it.id == task.id) {
+                it.copy(children = it.children.plus(childTask))
+            } else {
+                it
             }
         })
     }
