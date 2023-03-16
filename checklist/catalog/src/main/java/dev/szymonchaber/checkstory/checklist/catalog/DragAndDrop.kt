@@ -53,16 +53,20 @@ fun Experiment() {
                 })
             }
             items(items = magicTree.tasks, key = { it.id }) { task ->
-                TaskCard(
+                NestedTaskCard(
                     modifier = Modifier.animateItemPlacement(),
                     task = task,
-                    onSiblingTaskDropped = { siblingTask ->
-                        magicTree = magicTree.withTaskMovedBelow(siblingTask, task)
+                    onSiblingTaskDroppedOnto = { siblingTask, targetTask ->
+                        magicTree = magicTree.withTaskMovedBelow(siblingTask, targetTask)
+                    },
+                    onChildTaskDroppedUnder = { childTask, targetTask ->
+                        magicTree =
+                            magicTree.withChildMovedUnderTask(
+                                childTask.copy(name = "Child ${childTask.name}"),
+                                targetTask
+                            )
                     }
-                ) { childTask ->
-                    magicTree =
-                        magicTree.withChildMovedUnderTask(childTask.copy(name = "Child ${childTask.name}"), task)
-                }
+                )
             }
             item {
                 DropTarget<Task>(
@@ -78,6 +82,32 @@ fun Experiment() {
             }
         }
         TargetTodoistLine()
+    }
+}
+
+@Composable
+fun NestedTaskCard(
+    modifier: Modifier,
+    task: Task,
+    onSiblingTaskDroppedOnto: (Task, Task) -> Unit,
+    onChildTaskDroppedUnder: (Task, Task) -> Unit
+) {
+    TaskCard(
+        modifier = modifier,
+        task = task,
+        onSiblingTaskDropped = { siblingTask ->
+            onSiblingTaskDroppedOnto(siblingTask, task)
+        }
+    ) { childTask ->
+        onChildTaskDroppedUnder(childTask, task)
+    }
+    task.children.forEach {
+        NestedTaskCard(
+            modifier = modifier.padding(start = 24.dp),
+            task = it,
+            onSiblingTaskDroppedOnto = onSiblingTaskDroppedOnto,
+            onChildTaskDroppedUnder = onChildTaskDroppedUnder
+        )
     }
 }
 

@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,49 +34,37 @@ fun TaskCard(
         backgroundColor = Color.White,
         modifier = modifier.padding(8.dp)
     ) {
-        Column {
-            Box(Modifier.height(IntrinsicSize.Min)) {
-                Draggable(modifier = Modifier, dataToDrop = task) {
-                    Row(
+        Box(Modifier.height(IntrinsicSize.Min)) {
+            Draggable(modifier = Modifier, dataToDrop = task) {
+                Row(
+                    modifier = Modifier
+                        .background(Color.White)
+                        .padding(10.dp)
+                        .fillMaxWidth()
+                ) {
+                    Box(
                         modifier = Modifier
-                            .background(Color.White)
-                            .padding(10.dp)
-                            .fillMaxWidth()
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(task.color)
-                                .size(30.dp)
-                        )
-                        Spacer(modifier = Modifier.width(20.dp))
-                        Text(
-                            text = task.name,
-                            fontSize = 22.sp,
-                            color = Color.DarkGray
-                        )
-                    }
-                }
-                Receptacles(
-                    task = task,
-                    onSiblingTaskDropped = { siblingTask ->
-                        onSiblingTaskDropped(siblingTask)
-                    },
-                    onChildTaskDropped = { childTask ->
-                        onChildTaskDropped(childTask)
-                    }
-                )
-            }
-            task.children.forEach { task ->
-                Row {
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(task.color)
+                            .size(30.dp)
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
                     Text(
-                        modifier = Modifier.padding(start = 32.dp),
-                        text = "* " + task.name,
+                        text = task.name,
                         fontSize = 22.sp,
-                        color = Color.Blue
+                        color = Color.DarkGray
                     )
                 }
             }
+            Receptacles(
+                task = task,
+                onSiblingTaskDropped = { siblingTask ->
+                    onSiblingTaskDropped(siblingTask)
+                },
+                onChildTaskDropped = { childTask ->
+                    onChildTaskDropped(childTask)
+                }
+            )
         }
     }
 }
