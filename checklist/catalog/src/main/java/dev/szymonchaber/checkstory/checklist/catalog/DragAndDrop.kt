@@ -120,36 +120,13 @@ fun NestedTaskCard(
 data class MagicTree(val tasks: List<Task>) {
 
     fun withTaskMovedToBottom(task: Task): MagicTree {
-        val (filteredTasks, removedTask) = withExtractedElement(task)
+        val (filteredTasks, removedTask) = withExtractedTask(task.id)
         return copy(tasks = filteredTasks.plus(removedTask))
     }
 
     fun withTaskMovedToTop(task: Task): MagicTree {
-        val (filteredTasks, removedTask) = withExtractedElement(task)
+        val (filteredTasks, removedTask) = withExtractedTask(task.id)
         return copy(tasks = listOf(removedTask) + filteredTasks)
-    }
-
-    private fun withExtractedElement(task: Task): Pair<List<Task>, Task> {
-        var movedItem: Task? = null
-        val onItemFoundAndRemoved: (Task) -> Unit = {
-            if (movedItem != null) {
-                error("Attempted two sub-task additions where there should be one!")
-            }
-            movedItem = it
-        }
-        val withExtractedElement = tasks
-            .filter {
-                if (it.id == task.id) {
-                    movedItem = it
-                    false
-                } else {
-                    true
-                }
-            }
-            .map {
-                it.withoutChild(task, onItemFoundAndRemoved)
-            }
-        return withExtractedElement to movedItem!!
     }
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
@@ -164,24 +141,34 @@ data class MagicTree(val tasks: List<Task>) {
         })
     }
 
-    fun withChildMovedUnderTask(childTask: Task, task: Task): MagicTree {
+    fun withChildMovedUnderTask(childTask: Task, targetTask: Task): MagicTree {
+        val (filteredTasks, movedItem) = withExtractedTask(childTask.id)
+        return copy(
+            tasks = filteredTasks
+                .map {
+                    it.withMovedChildRecursive(targetTask, movedItem)
+                },
+        )
+    }
+
+    private fun withExtractedTask(taskId: Int): Pair<List<Task>, Task> {
         var movedItem: Task? = null
         val onItemFoundAndRemoved: (Task) -> Unit = {
-            if (movedItem != null) {
-                error("Attempted two sub-task additions where there should be one!")
-            }
             movedItem = it
         }
-        return copy(
-            tasks = tasks
-                .map {
-                    it.withoutChild(childTask, onItemFoundAndRemoved)
+        val withExtractedElement = tasks
+            .filter {
+                if (it.id == taskId) {
+                    movedItem = it
+                    false
+                } else {
+                    true
                 }
-                .map {
-                    it.withMovedChildRecursive(task, childTask)
-                }
-                .filterNot { it.id == childTask.id },
-        )
+            }
+            .map {
+                it.withoutChild(taskId, onItemFoundAndRemoved)
+            }
+        return withExtractedElement to movedItem!!
     }
 }
 
@@ -269,13 +256,13 @@ fun LongPressDraggable(
 
 data class Task(val id: Int, val name: String, val color: Color, val children: List<Task>) {
 
-    fun withoutChild(childTask: Task, onItemFoundAndRemoved: (Task) -> Unit): Task {
+    fun withoutChild(childTaskId: Int, onItemFoundAndRemoved: (Task) -> Unit): Task {
         return copy(
-            children = children.map { it.withoutChild(childTask, onItemFoundAndRemoved) }
+            children = children.map { it.withoutChild(childTaskId, onItemFoundAndRemoved) }
                 .let { tasks ->
                     tasks
                         .firstOrNull {
-                            it.id == childTask.id
+                            it.id == childTaskId
                         }?.let { foundChildTask ->
                             tasks.minus(foundChildTask).also {
                                 onItemFoundAndRemoved(foundChildTask)
