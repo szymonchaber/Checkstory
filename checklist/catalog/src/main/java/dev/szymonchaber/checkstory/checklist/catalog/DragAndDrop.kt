@@ -65,9 +65,26 @@ fun Experiment() {
                     childTasks.add(childTask.copy(name = "Child ${childTask.name}"))
                 }
             }
+            item {
+                DropTarget<Task>(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp)
+                        .height(96.dp),
+                    key = true,
+                    onDataDropped = {
+                        moveTaskToBottom(tasks, it)
+                    }
+                )
+            }
         }
         TargetTodoistLine()
     }
+}
+
+fun moveTaskToBottom(tasks: SnapshotStateList<Task>, task: Task) {
+    tasks.removeAt(tasks.indexOfFirst { it.id == task.id })
+    tasks.add(task)
 }
 
 fun moveTaskToTop(tasks: SnapshotStateList<Task>, task: Task) {
