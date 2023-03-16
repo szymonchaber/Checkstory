@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import timber.log.Timber
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Experiment() {
     val tasks = remember {
@@ -56,6 +58,7 @@ fun Experiment() {
                     mutableStateListOf<Task>()
                 }
                 TaskCard(
+                    modifier = Modifier.animateItemPlacement(),
                     task = task,
                     childTasks = childTasks,
                     onSiblingTaskDropped = { siblingTask ->

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun TaskCard(
+    modifier: Modifier,
     task: Task,
     childTasks: SnapshotStateList<Task>,
     onSiblingTaskDropped: (Task) -> Unit,
@@ -34,7 +35,7 @@ fun TaskCard(
     Card(
         elevation = 10.dp,
         backgroundColor = Color.White,
-        modifier = Modifier.padding(8.dp)
+        modifier = modifier.padding(8.dp)
     ) {
         Column {
             Box(Modifier.height(IntrinsicSize.Min)) {
