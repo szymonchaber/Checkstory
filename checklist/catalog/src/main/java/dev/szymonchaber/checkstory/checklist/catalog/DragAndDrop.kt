@@ -52,11 +52,15 @@ fun Experiment() {
             contentPadding = PaddingValues(horizontal = 10.dp)
         ) {
             item {
-                DropTarget<Task>(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(24.dp), key = Unit, onDataDropped = {
-                    magicTree = magicTree.withTaskMovedToTop(it)
-                })
+                DropTarget<Task>(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(96.dp),
+                    key = Unit,
+                    onDataDropped = {
+                        magicTree = magicTree.withTaskMovedToTop(it)
+                    }
+                )
             }
             items(items = magicTree.tasks, key = { it.id }) { task ->
                 NestedTaskCard(
@@ -123,15 +127,28 @@ data class MagicTree(val tasks: List<Task>) {
     }
 
     fun withTaskMovedToTop(task: Task): MagicTree {
-        return copy(tasks = tasks.toMutableList().apply {
-            val freshTask = removeAt(indexOfFirst { it.id == task.id })
-            val targetIndex = 0
-            if (targetIndex > lastIndex) {
-                add(freshTask)
-            } else {
-                add(targetIndex, freshTask)
+        var movedItem: Task? = null
+        val onItemFoundAndRemoved: (Task) -> Unit = {
+            if (movedItem != null) {
+                error("Attempted two sub-task additions where there should be one!")
             }
-        })
+            movedItem = it
+        }
+        return copy(tasks = tasks
+            .filter {
+                if (it.id == task.id) {
+                    movedItem = it
+                    false
+                } else {
+                    true
+                }
+            }
+            .map {
+                it.withoutChild(task, onItemFoundAndRemoved)
+            }.let {
+                listOf(movedItem!!) + it
+            }
+        )
     }
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
