@@ -120,13 +120,16 @@ fun NestedTaskCard(
 data class MagicTree(val tasks: List<Task>) {
 
     fun withTaskMovedToBottom(task: Task): MagicTree {
-        return copy(tasks = tasks.toMutableList().apply {
-            val freshTask = removeAt(indexOfFirst { it.id == task.id })
-            add(freshTask)
-        })
+        val (filteredTasks, removedTask) = withExtractedElement(task)
+        return copy(tasks = filteredTasks.plus(removedTask))
     }
 
     fun withTaskMovedToTop(task: Task): MagicTree {
+        val (filteredTasks, removedTask) = withExtractedElement(task)
+        return copy(tasks = listOf(removedTask) + filteredTasks)
+    }
+
+    private fun withExtractedElement(task: Task): Pair<List<Task>, Task> {
         var movedItem: Task? = null
         val onItemFoundAndRemoved: (Task) -> Unit = {
             if (movedItem != null) {
@@ -134,7 +137,7 @@ data class MagicTree(val tasks: List<Task>) {
             }
             movedItem = it
         }
-        return copy(tasks = tasks
+        val withExtractedElement = tasks
             .filter {
                 if (it.id == task.id) {
                     movedItem = it
@@ -145,10 +148,8 @@ data class MagicTree(val tasks: List<Task>) {
             }
             .map {
                 it.withoutChild(task, onItemFoundAndRemoved)
-            }.let {
-                listOf(movedItem!!) + it
             }
-        )
+        return withExtractedElement to movedItem!!
     }
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
