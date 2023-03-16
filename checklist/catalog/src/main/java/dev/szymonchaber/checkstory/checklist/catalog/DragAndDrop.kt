@@ -130,15 +130,10 @@ data class MagicTree(val tasks: List<Task>) {
     }
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
-        return copy(tasks = tasks.toMutableList().apply {
-            val freshTask = removeAt(indexOfFirst { it.id == task.id })
-            val targetIndex = indexOfFirst { it.id == below.id } + 1
-            if (targetIndex > lastIndex) {
-                add(freshTask)
-            } else {
-                add(targetIndex, freshTask)
-            }
-        })
+        val (filteredTasks, movedItem) = withExtractedTask(task.id)
+        val newTaskIndex = filteredTasks.indexOfFirst { it.id == below.id } + 1
+        val new = filteredTasks.withTaskAtIndex(movedItem, newTaskIndex)
+        return copy(tasks = new)
     }
 
     fun withChildMovedUnderTask(childTask: Task, targetTask: Task): MagicTree {
