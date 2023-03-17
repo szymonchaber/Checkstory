@@ -28,8 +28,6 @@ import androidx.compose.ui.unit.dp
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 
-val colors = listOf(Color.Blue, Color.Red, Color.Magenta, Color.Gray, Color.DarkGray, Color.Cyan, Color.Green)
-
 const val NEW_TASK_ID = -50
 
 val indexGenerator = AtomicInteger(0)
@@ -37,9 +35,9 @@ val indexGenerator = AtomicInteger(0)
 val tasks = List(10) {
     val index = indexGenerator.getAndIncrement()
 
-    Task(index, "Task ${index + 1}", colors[index % colors.size], List(2) {
+    Task(index, "Task ${index + 1}", List(2) {
         val localIndex = indexGenerator.getAndIncrement()
-        Task(localIndex, "Task ${localIndex + 1}", colors[index % colors.size], listOf())
+        Task(localIndex, "Task ${localIndex + 1}", listOf())
     })
 }
 
@@ -117,7 +115,7 @@ fun Experiment() {
         DropTargetIndicatorLine()
         Draggable(
             modifier = Modifier.align(Alignment.BottomStart),
-            dataToDrop = Task(id = NEW_TASK_ID, "", Color.LightGray, listOf()),
+            dataToDrop = Task(id = NEW_TASK_ID, "", listOf()),
             onDragStart = {}
         ) {
             Box(
@@ -173,7 +171,7 @@ data class MagicTree(val tasks: List<Task>) {
     private fun withExtractedTask(taskId: Int): Pair<List<Task>, Task> {
         val index = indexGenerator.getAndIncrement()
         if (taskId == NEW_TASK_ID) {
-            return tasks to Task(id = index, "", colors[index % colors.size], listOf())
+            return tasks to Task(id = index, "", listOf())
         }
         var movedItem: Task? = null
         val onItemFoundAndRemoved: (Task) -> Unit = {
@@ -227,7 +225,7 @@ data class MagicTree(val tasks: List<Task>) {
     }
 }
 
-data class Task(val id: Int, val name: String, val color: Color, val children: List<Task>) {
+data class Task(val id: Int, val name: String, val children: List<Task>) {
 
     fun withoutChild(childTaskId: Int, onItemFoundAndRemoved: (Task) -> Unit): Task {
         return copy(
