@@ -24,7 +24,7 @@ internal class DraggableItemInfo {
     var isDragging by mutableStateOf(false)
     var dragPosition by mutableStateOf(Offset.Zero)
     var dragOffset by mutableStateOf(Offset.Zero)
-    var draggableComposable by mutableStateOf<(@Composable () -> Unit)?>(null)
+    var draggableComposable by mutableStateOf<(@Composable (Modifier) -> Unit)?>(null)
     var dataToDrop by mutableStateOf<Any?>(null)
 }
 
@@ -64,14 +64,14 @@ fun LongPressDraggableOverLazyList(
                         .graphicsLayer {
                             val offset = (draggableItemState.dragPosition + draggableItemState.dragOffset)
                             alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                            translationX = offset.x.minus(24.dp.toPx())
-                            translationY = offset.y.minus(targetSize.height * 2 + 8.dp.toPx())
+                            translationX = offset.x.minus(12.dp.toPx())
+                            translationY = offset.y.minus(targetSize.height * 2 + 0.dp.toPx())
                         }
                         .onGloballyPositioned {
                             targetSize = it.size
                         }
                 ) {
-                    draggableItemState.draggableComposable?.invoke()
+                    draggableItemState.draggableComposable?.invoke(Modifier)
                 }
             }
         }

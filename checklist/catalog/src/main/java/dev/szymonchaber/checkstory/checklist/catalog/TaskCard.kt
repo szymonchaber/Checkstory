@@ -38,7 +38,7 @@ fun TaskCard(
         Box(Modifier.height(IntrinsicSize.Min)) {
             Draggable(modifier = Modifier, dataToDrop = task, onDragStart = {
                 Timber.d("Starting the drag with data: $it for actual task: $task ")
-            }) {
+            }) { dragHandleModifier ->
                 Row(
                     modifier = Modifier
                         .background(Color.White)
@@ -46,7 +46,9 @@ fun TaskCard(
                         .fillMaxWidth()
                 ) {
                     Icon(
-                        modifier = Modifier.align(Alignment.CenterVertically),
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .then(dragHandleModifier),
                         painter = painterResource(id = R.drawable.drag_indicator),
                         contentDescription = null
                     )

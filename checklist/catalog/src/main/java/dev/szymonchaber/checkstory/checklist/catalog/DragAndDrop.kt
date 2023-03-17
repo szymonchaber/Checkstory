@@ -125,6 +125,7 @@ fun Experiment() {
                     .background(Color.Cyan)
                     .height(50.dp)
                     .padding(8.dp)
+                    .then(it)
             ) {
                 Text(modifier = Modifier.align(Alignment.Center), text = "New task")
             }
