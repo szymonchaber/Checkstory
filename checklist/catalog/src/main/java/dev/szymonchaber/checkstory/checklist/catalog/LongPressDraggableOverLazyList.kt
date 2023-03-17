@@ -3,6 +3,8 @@ package dev.szymonchaber.checkstory.checklist.catalog
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -36,37 +38,40 @@ internal val LocalDraggableItemInfo = compositionLocalOf { DraggableItemInfo() }
 internal val LocalDropTargetInfo = compositionLocalOf { DropTargetInfo() }
 
 @Composable
-fun LongPressDraggable(
+fun LongPressDraggableOverLazyList(
     modifier: Modifier = Modifier,
-    content: @Composable BoxScope.() -> Unit
+    content: @Composable BoxScope.(LazyListState) -> Unit
 ) {
     val targetState = remember { DropTargetInfo() }
-    val state = remember { DraggableItemInfo() }
+    val draggableItemState = remember { DraggableItemInfo() }
+    val lazyListState = rememberLazyListState()
+
     CompositionLocalProvider(
-        LocalDraggableItemInfo provides state,
+        LocalDraggableItemInfo provides draggableItemState,
         LocalDropTargetInfo provides targetState
     ) {
         Box(
             modifier = modifier
                 .fillMaxSize()
         ) {
-            content()
-            if (state.isDragging) {
+            content(lazyListState)
+            if (draggableItemState.isDragging) {
                 var targetSize by remember {
                     mutableStateOf(IntSize.Zero)
                 }
-                Box(modifier = Modifier
-                    .graphicsLayer {
-                        val offset = (state.dragPosition + state.dragOffset)
-                        alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                        translationX = offset.x.minus(24.dp.toPx())
-                        translationY = offset.y.minus(targetSize.height * 2 + 8.dp.toPx())
-                    }
-                    .onGloballyPositioned {
-                        targetSize = it.size
-                    }
+                Box(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            val offset = (draggableItemState.dragPosition + draggableItemState.dragOffset)
+                            alpha = if (targetSize == IntSize.Zero) 0f else .9f
+                            translationX = offset.x.minus(24.dp.toPx())
+                            translationY = offset.y.minus(targetSize.height * 2 + 8.dp.toPx())
+                        }
+                        .onGloballyPositioned {
+                            targetSize = it.size
+                        }
                 ) {
-                    state.draggableComposable?.invoke()
+                    draggableItemState.draggableComposable?.invoke()
                 }
             }
         }

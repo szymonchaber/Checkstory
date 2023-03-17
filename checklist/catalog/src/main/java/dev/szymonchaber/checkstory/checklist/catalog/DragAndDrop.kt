@@ -34,7 +34,7 @@ const val NEW_TASK_ID = -50
 
 val indexGenerator = AtomicInteger(0)
 
-val tasks = List(3) {
+val tasks = List(10) {
     val index = indexGenerator.getAndIncrement()
 
     Task(index, "Task ${index + 1}", colors[index % colors.size], List(2) {
@@ -54,10 +54,12 @@ fun Experiment() {
             magicTree.flattenWithNestedLevel()
         }
     }
-    LongPressDraggable(modifier = Modifier.fillMaxSize()) {
+
+    LongPressDraggableOverLazyList(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 10.dp)
+            contentPadding = PaddingValues(horizontal = 10.dp),
+            state = it
         ) {
             item {
                 DropTarget<Task>(
