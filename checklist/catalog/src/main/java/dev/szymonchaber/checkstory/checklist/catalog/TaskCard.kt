@@ -27,8 +27,8 @@ import timber.log.Timber
 fun TaskCard(
     modifier: Modifier,
     task: Task,
-    onSiblingTaskDropped: (Task) -> Unit,
-    onChildTaskDropped: (Task) -> Unit
+    onSiblingTaskDroppedOnto: (Task) -> Unit,
+    onChildTaskDroppedUnder: (Task) -> Unit
 ) {
     Card(
         elevation = 10.dp,
@@ -62,10 +62,10 @@ fun TaskCard(
             Receptacles(
                 task = task,
                 onSiblingTaskDropped = { siblingTask ->
-                    onSiblingTaskDropped(siblingTask)
+                    onSiblingTaskDroppedOnto(siblingTask)
                 },
                 onChildTaskDropped = { childTask ->
-                    onChildTaskDropped(childTask)
+                    onChildTaskDroppedUnder(childTask)
                 }
             )
         }

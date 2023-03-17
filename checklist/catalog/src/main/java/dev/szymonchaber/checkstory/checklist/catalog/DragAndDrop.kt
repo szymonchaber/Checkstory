@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
@@ -31,10 +34,6 @@ const val NEW_TASK_ID = -50
 
 val indexGenerator = AtomicInteger(0)
 
-//val taskList = List(50) {
-//    val index = indexGenerator.getAndIncrement()
-//    Task(index, "Task ${it + 1}", colors[index % colors.size], listOf())
-//}
 val tasks = List(3) {
     val index = indexGenerator.getAndIncrement()
 
@@ -49,6 +48,11 @@ val tasks = List(3) {
 fun Experiment() {
     var magicTree by remember {
         mutableStateOf(MagicTree(tasks))
+    }
+    val items by remember {
+        derivedStateOf {
+            magicTree.flattenWithNestedLevel()
+        }
     }
     LongPressDraggable(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -67,23 +71,28 @@ fun Experiment() {
                     debugTag = "Top task receptacle"
                 )
             }
-            items(items = magicTree.tasks) { task ->
-                NestedTaskCard(
-                    modifier = Modifier.animateItemPlacement(),
+            items(items = items, key = { it.first.id }) { (task, nestedLevel) ->
+                val startPadding: Dp by animateDpAsState(
+                    24.dp * nestedLevel
+                )
+                TaskCard(
+                    modifier = Modifier
+                        .animateItemPlacement()
+                        .padding(start = startPadding),
                     task = task,
-                    onSiblingTaskDroppedOnto = { taskToMove, existingSibling ->
-                        Timber.d("onSiblingTaskDroppedOnto: taskToMove: ${taskToMove.name} existingSibling: ${existingSibling.name}")
+                    onSiblingTaskDroppedOnto = { newSibling ->
+                        Timber.d("onSiblingTaskDroppedOnto: taskToMove: ${newSibling.name} existingSibling: ${task.name}")
                         Timber.d("Content before:\n")
                         magicTree.logMagicTree()
-                        magicTree = magicTree.withTaskMovedBelow(taskToMove, existingSibling)
+                        magicTree = magicTree.withTaskMovedBelow(newSibling, below = task)
                         Timber.d("Content after:\n")
                         magicTree.logMagicTree()
                     },
-                    onChildTaskDroppedUnder = { childTask, targetTask ->
-                        Timber.d("onChildTaskDroppedUnder: childTask: ${childTask.name} targetTask: ${targetTask.name}")
+                    onChildTaskDroppedUnder = { childTask ->
+                        Timber.d("onChildTaskDroppedUnder: childTask: ${childTask.name} targetTask: ${task.name}")
                         Timber.d("Content before:\n")
                         magicTree.logMagicTree()
-                        magicTree = magicTree.withChildMovedUnderTask(childTask, targetTask)
+                        magicTree = magicTree.withChildMovedUnderTask(childTask, targetTask = task)
                         Timber.d("Content after:\n")
                         magicTree.logMagicTree()
                     }
@@ -123,32 +132,6 @@ fun Experiment() {
     }
 }
 
-@Composable
-fun NestedTaskCard(
-    modifier: Modifier,
-    task: Task,
-    onSiblingTaskDroppedOnto: (Task, Task) -> Unit,
-    onChildTaskDroppedUnder: (Task, Task) -> Unit
-) {
-    TaskCard(
-        modifier = modifier,
-        task = task,
-        onSiblingTaskDropped = { newSibling ->
-            onSiblingTaskDroppedOnto(newSibling, task)
-        }
-    ) { childTask ->
-        onChildTaskDroppedUnder(childTask, task)
-    }
-    task.children.forEach {
-        NestedTaskCard(
-            modifier = modifier.padding(start = 24.dp),
-            task = it,
-            onSiblingTaskDroppedOnto = onSiblingTaskDroppedOnto,
-            onChildTaskDroppedUnder = onChildTaskDroppedUnder
-        )
-    }
-}
-
 data class MagicTree(val tasks: List<Task>) {
 
     fun withTaskMovedToBottom(task: Task): MagicTree {
@@ -163,16 +146,16 @@ data class MagicTree(val tasks: List<Task>) {
 
     fun withTaskMovedBelow(task: Task, below: Task): MagicTree {
         val (filteredTasks, movedItem) = withExtractedTask(task.id)
-//        val isSiblingTopLevel = filteredTasks.any { it.id == below.id }
-//        val new = if (isSiblingTopLevel) {
-//            val newTaskIndex = filteredTasks.indexOfFirst { it.id == below.id }
-//            filteredTasks.withTaskAtIndex(movedItem, newTaskIndex)
-//        } else {
-//            filteredTasks.map {
-//                it.withMovedSiblingRecursive(below.id, movedItem)
-//            } // Children logic
-//        }
-        return copy(tasks = filteredTasks)
+        val isSiblingTopLevel = filteredTasks.any { it.id == below.id }
+        val new = if (isSiblingTopLevel) {
+            val newTaskIndex = filteredTasks.indexOfFirst { it.id == below.id } + 1
+            filteredTasks.withTaskAtIndex(movedItem, newTaskIndex)
+        } else {
+            filteredTasks.map {
+                it.withMovedSiblingRecursive(below.id, movedItem)
+            }
+        }
+        return copy(tasks = new)
     }
 
     fun withChildMovedUnderTask(childTask: Task, targetTask: Task): MagicTree {
@@ -227,6 +210,18 @@ data class MagicTree(val tasks: List<Task>) {
             Timber.d("$indent$prefix${childTask.id} ${childTask.name}")
             logTaskChildren(childTask, nextIndent)
         }
+    }
+
+    fun flattenWithNestedLevel(): List<Pair<Task, Int>> {
+        val result = mutableListOf<Pair<Task, Int>>()
+
+        fun visit(task: Task, level: Int) {
+            result.add(Pair(task, level))
+            task.children.forEach { child -> visit(child, level + 1) }
+        }
+
+        tasks.forEach { task -> visit(task, 0) }
+        return result
     }
 }
 
