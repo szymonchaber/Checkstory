@@ -11,15 +11,22 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -55,7 +62,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -90,6 +99,7 @@ import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.time.Duration.*
@@ -340,43 +350,48 @@ fun NewEditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit,
     onAddedItemConsumed: () -> Unit
 ) {
-    val template = success.checklistTemplate
-    LazyColumn(
-        contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+    val dragDropState = rememberDragDropState(unwrappedTasks = success.unwrappedCheckboxes)
+    CompositionLocalProvider(
+        LocalDragDropState provides dragDropState,
     ) {
-        item {
-            ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
-        }
-        items(
-            items = success.unwrappedCheckboxes,
-            key = { (item, _) ->
-                item.viewKey
+        val template = success.checklistTemplate
+        LazyColumn(
+            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            item {
+                ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
             }
-        ) { (checkbox, nestingLevel) ->
-            Row(
-                Modifier
-                    .animateItemPlacement()
-                    .padding(start = 16.dp, end = 16.dp)
-            ) {
-                NewCommonCheckbox(
-                    checkbox = checkbox,
-                    paddingStart = nestedPaddingStart * nestingLevel,
-                    nestingLevel = nestingLevel,
-                    isLastChild = true,
-                    onAddedItemConsumed = onAddedItemConsumed,
-                    eventCollector = eventCollector
-                )
+            items(
+                items = success.unwrappedCheckboxes,
+                key = { (item, _) ->
+                    item.viewKey
+                }
+            ) { (checkbox, nestingLevel) ->
+                Row(
+                    Modifier
+                        .animateItemPlacement()
+                        .padding(start = 16.dp, end = 16.dp)
+                ) {
+                    NewCommonCheckbox(
+                        checkbox = checkbox,
+                        paddingStart = nestedPaddingStart * nestingLevel,
+                        nestingLevel = nestingLevel,
+                        isLastChild = true,
+                        onAddedItemConsumed = onAddedItemConsumed,
+                        eventCollector = eventCollector
+                    )
+                }
             }
-        }
-        item {
-            AddTaskButton(eventCollector)
-        }
-        item {
-            RemindersSection(template, eventCollector)
-        }
-        item {
-            DeleteTemplateButton(eventCollector)
+            item {
+                AddTaskButton(eventCollector)
+            }
+            item {
+                RemindersSection(template, eventCollector)
+            }
+            item {
+                DeleteTemplateButton(eventCollector)
+            }
         }
     }
 }
@@ -508,43 +523,55 @@ private fun NewCommonCheckbox(
 ) {
     val taskTopPadding = 8.dp
     val focusRequester = remember { FocusRequester() }
-    NewCheckboxItem(
-        modifier = Modifier
-            .drawBehind { // TODO check drawWithContent or withCache
-                if (nestingLevel > 0) {
-                    val heightFraction = if (!isLastChild) 1f else 0.5f
-                    val halfOfGlobalNesting = nestedPaddingStart.toPx() / 2
-                    drawLine(
-                        color = Color.Gray,
-                        start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = 0f),
-                        end = Offset(
-                            x = paddingStart.toPx() - halfOfGlobalNesting,
-                            y = size.height * heightFraction + taskTopPadding.toPx() / 2
-                        ),
-                        strokeWidth = 2.dp.toPx()
-                    )
-                    val visualCenterY = center.y + taskTopPadding.toPx() / 2
-                    drawLine(
-                        color = Color.Gray,
-                        start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = visualCenterY),
-                        end = Offset(x = paddingStart.toPx(), y = visualCenterY),
-                        strokeWidth = 2.dp.toPx()
-                    )
+    Box(Modifier.height(IntrinsicSize.Min)) {
+
+        NewCheckboxItem(
+            modifier = Modifier
+                .drawBehind { // TODO check drawWithContent or withCache
+                    if (nestingLevel > 0) {
+                        val heightFraction = if (!isLastChild) 1f else 0.5f
+                        val halfOfGlobalNesting = nestedPaddingStart.toPx() / 2
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = 0f),
+                            end = Offset(
+                                x = paddingStart.toPx() - halfOfGlobalNesting,
+                                y = size.height * heightFraction + taskTopPadding.toPx() / 2
+                            ),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                        val visualCenterY = center.y + taskTopPadding.toPx() / 2
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = visualCenterY),
+                            end = Offset(x = paddingStart.toPx(), y = visualCenterY),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
                 }
+                .padding(top = taskTopPadding, start = paddingStart),
+            title = checkbox.title,
+            placeholder = checkbox.placeholderTitle,
+            nestingLevel = nestingLevel,
+            focusRequester = focusRequester,
+            onTitleChange = {
+                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+            },
+            onAddSubtask = {
+                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
             }
-            .padding(top = taskTopPadding, start = paddingStart),
-        title = checkbox.title,
-        placeholder = checkbox.placeholderTitle,
-        nestingLevel = nestingLevel,
-        focusRequester = focusRequester,
-        onTitleChange = {
-            eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-        },
-        onAddSubtask = {
-            eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
+        ) {
+            eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
         }
-    ) {
-        eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+        Receptacles(
+            Modifier.padding(top = taskTopPadding, start = paddingStart),
+
+            onSiblingTaskDropped = { siblingTask ->
+//                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey)) TODO
+            }
+        ) { childTask ->
+//            eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey)) TODO
+        }
     }
     val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
     LaunchedEffect(recentlyAddedItem) {
@@ -694,3 +721,150 @@ val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
             this is ViewTemplateCheckbox.New
         )
     }
+
+class DragDropState(
+    val tasksWithNestedLevel: List<Pair<ViewTemplateCheckbox, Int>>,
+    val lazyListState: LazyListState,
+) {
+
+    // region mine
+    var isDragging by mutableStateOf(false)
+    var dragPosition by mutableStateOf(Offset.Zero)
+    var dragOffset by mutableStateOf(Offset.Zero)
+    var draggableComposable by mutableStateOf<(@Composable (Modifier) -> Unit)?>(null)
+    var dataToDrop by mutableStateOf<Int?>(null)
+
+    var currentDropTarget: ((ViewTemplateCheckboxKey) -> Unit)? by mutableStateOf(null)
+    var currentDropTargetPosition: Offset? by mutableStateOf(null)
+
+    // endregion
+
+    var draggedDistance by mutableStateOf(0f)
+
+    var initiallyDraggedElement by mutableStateOf<LazyListItemInfo?>(null)
+
+    var currentIndexOfDraggedItem by mutableStateOf<Int?>(null)
+
+    var overscrollJob by mutableStateOf<Job?>(null)
+
+    fun onDragStart(offset: Offset) {
+        lazyListState.layoutInfo.visibleItemsInfo
+            .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
+            ?.takeUnless { it.key !is Int }
+            ?.also { itemInfo ->
+                currentIndexOfDraggedItem = itemInfo.index
+                initiallyDraggedElement = itemInfo
+                dragPosition = Offset(0f, itemInfo.offset.toFloat())
+                isDragging = true
+                dataToDrop = itemInfo.key as Int
+                draggableComposable = { _ ->
+//                    TaskCardDetails(task = tasksWithNestedLevel.firstOrNull { it.first.id == itemInfo.key }?.first!!)
+                }
+            }
+    }
+
+    fun onDragInterrupted() {
+        draggedDistance = 0f
+        currentIndexOfDraggedItem = null
+        initiallyDraggedElement = null
+        overscrollJob?.cancel()
+        isDragging = false
+        dragOffset = Offset.Zero
+    }
+
+    fun onDrag(offset: Offset) {
+        draggedDistance += offset.y
+        dragOffset += offset
+    }
+
+    fun checkForOverScroll(): Float {
+        return initiallyDraggedElement?.let {
+            val startOffset = it.offset + draggedDistance
+            val endOffset = it.offsetEnd + draggedDistance
+
+            when {
+                draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
+                draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
+                else -> null
+            }
+        } ?: 0f
+    }
+}
+
+fun LazyListState.getVisibleItemInfoFor(absoluteIndex: Int): LazyListItemInfo? {
+    return this.layoutInfo.visibleItemsInfo.getOrNull(absoluteIndex - this.layoutInfo.visibleItemsInfo.first().index)
+}
+
+val LazyListItemInfo.offsetEnd: Int
+    get() = this.offset + this.size
+
+val LocalDragDropState = compositionLocalOf<DragDropState> {
+    error("You must provide LocalDragDropState")
+}
+
+@Composable
+fun rememberDragDropState(
+    lazyListState: LazyListState = rememberLazyListState(),
+    unwrappedTasks: List<Pair<ViewTemplateCheckbox, Int>>,
+): DragDropState {
+    return remember {
+        DragDropState(
+            tasksWithNestedLevel = unwrappedTasks,
+            lazyListState = lazyListState,
+        )
+    }
+}
+
+@Composable
+private fun Receptacles(
+    modifier: Modifier = Modifier,
+    onSiblingTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
+    onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit
+) {
+    Row(modifier.fillMaxSize()) {
+        DropTarget(
+            modifier = Modifier
+                .fillMaxHeight()
+//                .background(Color.Red.copy(alpha = 0.2f))
+                .width(24.dp), // TODO decide
+            onDataDropped = { siblingTask ->
+                onSiblingTaskDropped(siblingTask)
+            }
+        )
+        DropTarget(
+            modifier = Modifier
+                .fillMaxHeight()
+//                .background(Color.Yellow.copy(alpha = 0.2f))
+                .weight(1f),
+            onDataDropped = { childTask ->
+                onChildTaskDropped(childTask)
+            }
+        )
+    }
+}
+
+
+@Composable
+fun DropTarget(
+    modifier: Modifier,
+    onDataDropped: (ViewTemplateCheckboxKey) -> Unit,
+    content: @Composable (BoxScope.() -> Unit) = {},
+    placeTargetLineOnTop: Boolean = false
+) {
+    val dragInfo = LocalDragDropState.current
+    val dragPosition = dragInfo.dragPosition
+    val dragOffset = dragInfo.dragOffset
+    val density = LocalDensity.current
+
+    Box(modifier = modifier.onGloballyPositioned {
+        it.boundsInWindow().let { rect ->
+            val isCurrentDropTarget =
+                rect.contains(dragPosition + dragOffset + Offset(0f, density.run { 96.dp.toPx() }))
+            if (isCurrentDropTarget) {
+                dragInfo.currentDropTarget = onDataDropped
+                val yOffset = if (placeTargetLineOnTop) 0f else it.size.height.toFloat()
+                dragInfo.currentDropTargetPosition = it.positionInRoot().plus(Offset(x = 0f, y = yOffset))
+            }
+        }
+    }, content = content)
+}
