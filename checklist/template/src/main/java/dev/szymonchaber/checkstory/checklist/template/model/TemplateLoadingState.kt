@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.viewKey
-import dev.szymonchaber.checkstory.checklist.template.wrapReorderChanges
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -21,9 +20,21 @@ sealed interface TemplateLoadingState {
         val isOnboardingTemplate: Boolean = false
     ) : TemplateLoadingState {
 
-        private val unwrappedCheckboxes = checkboxes.flatMap {
-            listOf(it) + it.children
+
+        private val unwrappedCheckboxes = flattenWithNestedLevel()
+
+        private fun flattenWithNestedLevel(): List<Pair<ViewTemplateCheckbox, Int>> {
+            val result = mutableListOf<Pair<ViewTemplateCheckbox, Int>>()
+
+            fun visit(checkbox: ViewTemplateCheckbox, level: Int) {
+                result.add(Pair(checkbox, level))
+                checkbox.children.forEach { child -> visit(child, level + 1) }
+            }
+
+            checkboxes.forEach { checkbox -> visit(checkbox, 0) }
+            return result
         }
+
 
         fun isChanged(): Boolean {
             return originalChecklistTemplate != checklistTemplate
@@ -148,7 +159,7 @@ sealed interface TemplateLoadingState {
         }
 
         fun withMovedCheckbox(from: ViewTemplateCheckboxKey, to: ViewTemplateCheckboxKey): TemplateLoadingState {
-            return copy(checkboxes = wrapReorderChanges(unwrappedCheckboxes, from, to))
+            return copy(checkboxes = checkboxes) // TODO DO!
         }
 
         companion object {
