@@ -15,7 +15,6 @@ import timber.log.Timber
 @Composable
 fun DropTarget(
     modifier: Modifier,
-    key: Any,
     onDataDropped: (Int) -> Unit,
     content: @Composable (BoxScope.() -> Unit) = {}
 ) {

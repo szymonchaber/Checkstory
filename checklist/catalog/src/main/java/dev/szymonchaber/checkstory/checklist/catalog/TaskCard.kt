@@ -35,7 +35,7 @@ fun TaskCard(
         modifier = modifier.padding(8.dp)
     ) {
         Box(Modifier.height(IntrinsicSize.Min)) {
-            Draggable(dataToDrop = task.id, modifier = Modifier) { dragHandleModifier ->
+            Draggable(dataToDrop = task.id, modifier = Modifier) {
                 Row(
                     modifier = Modifier
                         .background(Color.White)
@@ -44,8 +44,7 @@ fun TaskCard(
                 ) {
                     Icon(
                         modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .then(dragHandleModifier),
+                            .align(Alignment.CenterVertically),
                         painter = painterResource(id = R.drawable.drag_indicator),
                         contentDescription = null
                     )
@@ -58,21 +57,18 @@ fun TaskCard(
                 }
             }
             Receptacles(
-                task = task,
                 onSiblingTaskDropped = { siblingTask ->
                     onSiblingTaskDroppedOnto(siblingTask)
-                },
-                onChildTaskDropped = { childTask ->
-                    onChildTaskDroppedUnder(childTask)
                 }
-            )
+            ) { childTask ->
+                onChildTaskDroppedUnder(childTask)
+            }
         }
     }
 }
 
 @Composable
 private fun Receptacles(
-    task: Task,
     onSiblingTaskDropped: (Int) -> Unit,
     onChildTaskDropped: (Int) -> Unit
 ) {
@@ -81,7 +77,6 @@ private fun Receptacles(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(24.dp), // TODO decide
-            key = task,
             onDataDropped = { siblingTask ->
                 onSiblingTaskDropped(siblingTask)
             }
@@ -90,7 +85,6 @@ private fun Receptacles(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
-            key = task,
             onDataDropped = { childTask ->
                 onChildTaskDropped(childTask)
             }

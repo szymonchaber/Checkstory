@@ -176,7 +176,6 @@ fun Experiment() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .fillMaxSize()
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -212,7 +211,6 @@ fun Experiment() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(96.dp),
-                        key = Unit,
                         onDataDropped = {
                             magicTree = magicTree.withTaskMovedToTop(it)
                         }
@@ -241,7 +239,6 @@ fun Experiment() {
                             .fillMaxSize()
                             .padding(8.dp)
                             .height(96.dp),
-                        key = true,
                         onDataDropped = {
                             magicTree = magicTree.withTaskMovedToBottom(it)
                         }
