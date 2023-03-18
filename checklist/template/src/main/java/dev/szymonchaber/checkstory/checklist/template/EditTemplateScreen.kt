@@ -287,7 +287,7 @@ private fun BackIcon(onBackClicked: () -> Unit) {
     }
 }
 
-private val nestedPaddingStart = 16.dp
+private val nestedPaddingStart = 32.dp
 
 @Composable
 fun EditTemplateView(
@@ -346,15 +346,18 @@ fun NewEditTemplateView(
             ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
         }
         items(
-            items = success.checkboxes,
-            key = { it.viewKey }
-        ) { checkbox ->
+            items = success.unwrappedCheckboxes,
+            key = { (item, _) ->
+                item.viewKey
+            }
+        ) { (checkbox, nestingLevel) ->
             Row(
                 Modifier.padding(start = 16.dp, end = 16.dp)
             ) {
                 NewCommonCheckbox(
                     checkbox = checkbox,
-                    paddingStart = nestedPaddingStart,
+                    paddingStart = nestedPaddingStart * nestingLevel,
+                    nestingLevel = nestingLevel,
                     isLastChild = true,
                     onAddedItemConsumed = onAddedItemConsumed,
                     eventCollector = eventCollector
@@ -494,91 +497,55 @@ private fun NewCommonCheckbox(
     checkbox: ViewTemplateCheckbox,
     paddingStart: Dp,
     isLastChild: Boolean,
-    nestingLevel: Int = 1,
+    nestingLevel: Int,
     onAddedItemConsumed: () -> Unit,
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
-    Column {
-        val taskTopPadding = 8.dp
-        val paddingStartActual = if (nestingLevel > 1) paddingStart else 0.dp
-        val focusRequester = remember { FocusRequester() }
-        CheckboxItem(
-            modifier = Modifier
-                .drawBehind { // TODO check drawWithContent or withCache
-                    if (nestingLevel > 1) {
-                        val heightFraction = if (!isLastChild) 1f else 0.5f
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset.Zero,
-                            end = Offset(0f, size.height * heightFraction + taskTopPadding.toPx() / 2),
-                            strokeWidth = 4.dp.toPx()
-                        )
-                        val visualCenterY = center.y + taskTopPadding.toPx() / 2
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(x = 0f, y = visualCenterY),
-                            end = Offset(x = paddingStart.toPx(), y = visualCenterY),
-                            strokeWidth = 2.dp.toPx()
-                        )
-                    }
-                }
-                .padding(top = taskTopPadding, start = paddingStartActual),
-            title = checkbox.title,
-            placeholder = checkbox.placeholderTitle,
-            nestingLevel = nestingLevel,
-            focusRequester = focusRequester,
-            onTitleChange = {
-                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-            },
-            onAddSubtask = {
-                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
-            }
-        ) {
-            eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
-        }
-        val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
-        LaunchedEffect(recentlyAddedItem) {
-            if (checkbox.viewKey == recentlyAddedItem) {
-                focusRequester.requestFocus()
-                onAddedItemConsumed()
-            }
-        }
-        val paddingMultiplier = if (nestingLevel == 1) {
-            1
-        } else {
-            2
-        }
-        Row {
-            val localDensity = LocalDensity.current
-            var columnHeightDp by remember {
-                mutableStateOf(0.dp)
-            }
-            if (!isLastChild) {
-                Box(
-                    modifier = Modifier
-                        .height(columnHeightDp)
-                        .background(Color.Gray)
-                        .width(2.dp)
-                )
-            }
-            Column(
-                Modifier
-                    .padding(start = paddingStart * paddingMultiplier)
-                    .animateContentSize()
-                    .onGloballyPositioned {
-                        columnHeightDp = with(localDensity) { it.size.height.toDp() }
-                    }) {
-                checkbox.children.forEachIndexed { index, child ->
-                    CommonCheckbox(
-                        checkbox = child,
-                        paddingStart = paddingStart,
-                        isLastChild = checkbox.children.lastIndex == index,
-                        nestingLevel = nestingLevel + 1,
-                        onAddedItemConsumed = onAddedItemConsumed,
-                        eventCollector = eventCollector,
+    val taskTopPadding = 8.dp
+    val focusRequester = remember { FocusRequester() }
+    CheckboxItem(
+        modifier = Modifier
+            .drawBehind { // TODO check drawWithContent or withCache
+                if (nestingLevel > 0) {
+                    val heightFraction = if (!isLastChild) 1f else 0.5f
+                    val halfOfGlobalNesting = nestedPaddingStart.toPx() / 2
+                    drawLine(
+                        color = Color.Gray,
+                        start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = 0f),
+                        end = Offset(
+                            x = paddingStart.toPx() - halfOfGlobalNesting,
+                            y = size.height * heightFraction + taskTopPadding.toPx() / 2
+                        ),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                    val visualCenterY = center.y + taskTopPadding.toPx() / 2
+                    drawLine(
+                        color = Color.Gray,
+                        start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = visualCenterY),
+                        end = Offset(x = paddingStart.toPx(), y = visualCenterY),
+                        strokeWidth = 2.dp.toPx()
                     )
                 }
             }
+            .padding(top = taskTopPadding, start = paddingStart),
+        title = checkbox.title,
+        placeholder = checkbox.placeholderTitle,
+        nestingLevel = nestingLevel,
+        focusRequester = focusRequester,
+        onTitleChange = {
+            eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+        },
+        onAddSubtask = {
+            eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
+        }
+    ) {
+        eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+    }
+    val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
+    LaunchedEffect(recentlyAddedItem) {
+        if (checkbox.viewKey == recentlyAddedItem) {
+            focusRequester.requestFocus()
+            onAddedItemConsumed() // TODO consume in-place by editing the mutableStateOf
         }
     }
 }
