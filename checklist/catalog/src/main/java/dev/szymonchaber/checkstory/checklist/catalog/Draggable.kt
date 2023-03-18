@@ -16,7 +16,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 fun Draggable(
     dataToDrop: Int,
     modifier: Modifier = Modifier,
-    onDragStart: (Int) -> Unit,
     content: @Composable (Modifier) -> Unit
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
@@ -32,7 +31,6 @@ fun Draggable(
             detectDragGestures(
                 onDragStart = {
                     currentState.dataToDrop = dataToDrop
-                    onDragStart(dataToDrop)
                     currentState.isDragging = true
                     currentState.dragPosition = currentPosition + it
                     currentState.draggableComposable = content

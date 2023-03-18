@@ -58,7 +58,6 @@ val tasks = List(10) {
 class DragDropListStateMine(
     val unwrappedTasks: List<Pair<Task, Int>>,
     val lazyListState: LazyListState,
-    private val onMove: (Int, Int) -> Unit,
     private val draggableItemState: DragDropState
 ) {
     var draggedDistance by mutableStateOf(0f)
@@ -66,9 +65,6 @@ class DragDropListStateMine(
     var initiallyDraggedElement by mutableStateOf<LazyListItemInfo?>(null)
 
     var currentIndexOfDraggedItem by mutableStateOf<Int?>(null)
-
-    val initialOffsets: Pair<Int, Int>?
-        get() = initiallyDraggedElement?.let { Pair(it.offset, it.offsetEnd) }
 
     val elementDisplacement: Float?
         get() = currentIndexOfDraggedItem
@@ -130,15 +126,13 @@ class DragDropListStateMine(
 fun rememberDragDropListStateMine(
     lazyListState: LazyListState = rememberLazyListState(),
     unwrappedTasks: List<Pair<Task, Int>>,
-    onMove: (Int, Int) -> Unit,
     draggableItemState: DragDropState,
 ): DragDropListStateMine {
     return remember {
         DragDropListStateMine(
-            lazyListState = lazyListState,
             unwrappedTasks = unwrappedTasks,
-            draggableItemState = draggableItemState,
-            onMove = onMove
+            lazyListState = lazyListState,
+            draggableItemState = draggableItemState
         )
     }
 }
@@ -176,9 +170,9 @@ fun Experiment() {
         var overscrollJob by remember { mutableStateOf<Job?>(null) }
         val dragDropListStateMine =
             rememberDragDropListStateMine(
-                draggableItemState = dragDropState,
                 unwrappedTasks = items,
-                onMove = { _, _ -> })
+                draggableItemState = dragDropState
+            )
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -256,9 +250,8 @@ fun Experiment() {
             }
             DropTargetIndicatorLine()
             Draggable(
-                modifier = Modifier.align(Alignment.BottomStart),
                 dataToDrop = NEW_TASK_ID,
-                onDragStart = {}
+                modifier = Modifier.align(Alignment.BottomStart)
             ) {
                 Box(
                     modifier = Modifier

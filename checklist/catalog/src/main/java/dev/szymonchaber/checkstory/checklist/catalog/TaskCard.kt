@@ -21,7 +21,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import timber.log.Timber
 
 @Composable
 fun TaskCard(
@@ -36,9 +35,7 @@ fun TaskCard(
         modifier = modifier.padding(8.dp)
     ) {
         Box(Modifier.height(IntrinsicSize.Min)) {
-            Draggable(modifier = Modifier, dataToDrop = task.id, onDragStart = {
-                Timber.d("Starting the drag with data: $it for actual task: $task ")
-            }) { dragHandleModifier ->
+            Draggable(dataToDrop = task.id, modifier = Modifier) { dragHandleModifier ->
                 Row(
                     modifier = Modifier
                         .background(Color.White)
