@@ -45,6 +45,8 @@ sealed interface EditTemplateEvent {
         val newChild: ViewTemplateCheckboxKey
     ) : EditTemplateEvent
 
+    data class CheckboxMovedToTop(val checkboxKey: ViewTemplateCheckboxKey) : EditTemplateEvent
+
     object AddCheckboxClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent

@@ -61,6 +61,7 @@ class EditTemplateViewModel @Inject constructor(
             handleOnCheckboxMoved(),
             handleSiblingMoved(),
             handleChildMoved(),
+            handleCheckboxMovedToTop(),
             handleItemTitleChanged(),
             handleSaveTemplateClicked(),
             handleDeleteTemplateClicked(),
@@ -173,7 +174,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.SiblingMovedBelow>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                tracker.logEvent("sibling_moved")
+                tracker.logEvent("checkbox_moved_to_sibling")
                 EditTemplateState(loadingState.withSiblingMovedBelow(event.target, event.newSibling)) to null
             }
     }
@@ -182,8 +183,17 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ChildMovedBelow>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                tracker.logEvent("child_moved")
+                tracker.logEvent("checkbox_moved_to_child")
                 EditTemplateState(loadingState.withChildMovedBelow(event.target, event.newChild)) to null
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleCheckboxMovedToTop(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.CheckboxMovedToTop>()
+            .withSuccessState()
+            .map { (loadingState, event) ->
+                tracker.logEvent("checkbox_moved_to_top")
+                EditTemplateState(loadingState.withCheckboxMovedToTop(event.checkboxKey)) to null
             }
     }
 

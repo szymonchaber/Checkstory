@@ -642,15 +642,26 @@ private fun ChecklistTemplateDetails(
     onboardingPlaceholders: OnboardingPlaceholders?,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    TitleTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
-    DescriptionTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
-    SectionLabel(
-        modifier = Modifier.padding(
-            top = 8.dp,
-            start = 16.dp
-        ),
-        text = stringResource(R.string.items)
-    )
+    Box(Modifier.height(IntrinsicSize.Min)) {
+        Column {
+            TitleTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
+            DescriptionTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
+            SectionLabel(
+                modifier = Modifier.padding(
+                    top = 8.dp,
+                    start = 16.dp
+                ),
+                text = stringResource(R.string.items)
+            )
+        }
+        DropTarget(
+            modifier = Modifier
+                .fillMaxSize(),
+            onDataDropped = { taskKey ->
+                eventCollector(EditTemplateEvent.CheckboxMovedToTop(taskKey))
+            },
+        )
+    }
 }
 
 @Composable
