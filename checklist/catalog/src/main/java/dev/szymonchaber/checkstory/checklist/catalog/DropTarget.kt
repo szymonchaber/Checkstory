@@ -26,7 +26,7 @@ fun DropTarget(
     Box(modifier = modifier.onGloballyPositioned {
         it.boundsInWindow().let { rect ->
             val isCurrentDropTarget =
-                rect.contains(dragPosition + dragOffset + Offset(0f, density.run { 64.dp.toPx() }))
+                rect.contains(dragPosition + dragOffset + Offset(0f, density.run { 96.dp.toPx() }))
             if (isCurrentDropTarget) {
                 dragInfo.currentDropTarget = onDataDropped
                 val yOffset = if (placeTargetLineOnTop) 0f else it.size.height.toFloat()

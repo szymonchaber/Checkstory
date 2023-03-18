@@ -36,25 +36,7 @@ fun TaskCard(
     ) {
         Box(Modifier.height(IntrinsicSize.Min)) {
             Draggable(dataToDrop = task.id, modifier = Modifier) {
-                Row(
-                    modifier = Modifier
-                        .background(Color.White)
-                        .padding(10.dp)
-                        .fillMaxWidth()
-                ) {
-                    Icon(
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically),
-                        painter = painterResource(id = R.drawable.drag_indicator),
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Text(
-                        text = task.name,
-                        fontSize = 22.sp,
-                        color = Color.DarkGray
-                    )
-                }
+                TaskCardDetails(task)
             }
             Receptacles(
                 onSiblingTaskDropped = { siblingTask ->
@@ -64,6 +46,29 @@ fun TaskCard(
                 onChildTaskDroppedUnder(childTask)
             }
         }
+    }
+}
+
+@Composable
+fun TaskCardDetails(task: Task) {
+    Row(
+        modifier = Modifier
+            .background(Color.White)
+            .padding(10.dp)
+            .fillMaxWidth()
+    ) {
+        Icon(
+            modifier = Modifier
+                .align(Alignment.CenterVertically),
+            painter = painterResource(id = R.drawable.drag_indicator),
+            contentDescription = null
+        )
+        Spacer(modifier = Modifier.width(20.dp))
+        Text(
+            text = task.name,
+            fontSize = 22.sp,
+            color = Color.DarkGray
+        )
     }
 }
 

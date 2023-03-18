@@ -1,16 +1,13 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.Job
 
 class DragDropState(
@@ -49,10 +46,7 @@ class DragDropState(
                 isDragging = true
                 dataToDrop = itemInfo.key as Int
                 draggableComposable = { _ ->
-                    Text(
-                        modifier = Modifier.background(Color.White),
-                        text = "Task with name ${tasksWithNestedLevel.firstOrNull { it.first.id == itemInfo.key }?.first?.name}"
-                    )
+                    TaskCardDetails(task = tasksWithNestedLevel.firstOrNull { it.first.id == itemInfo.key }?.first!!)
                 }
             }
     }
