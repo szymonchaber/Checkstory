@@ -372,6 +372,15 @@ fun NewEditTemplateView(
             dragDropState.currentDropTarget?.invoke(it)
         }
     }
+    val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
+    LaunchedEffect(key1 = recentlyAddedItem) {
+        recentlyAddedItem?.let { newItem ->
+            val isNewItemNotVisible = dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key == newItem }
+            if (isNewItemNotVisible) {
+                dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.viewKey == newItem } + 1)
+            }
+        }
+    }
     CompositionLocalProvider(
         LocalDragDropState provides dragDropState,
     ) {
