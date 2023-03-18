@@ -165,7 +165,7 @@ fun NewCheckboxItem(
             trailingIcon = {
                 if (isFunctional) {
                     Row {
-                        if (nestingLevel < 4) {
+                        if (nestingLevel < 3) {
                             IconButton(onClick = { onAddSubtask() }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_add_subtask),
