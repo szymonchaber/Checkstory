@@ -156,7 +156,7 @@ fun Experiment() {
                     )
                 }
                 item {
-                    TaskDropTarget {
+                    TaskDropTarget(placeTargetLineOnTop = true) {
                         magicTree = magicTree.withTaskMovedToBottom(it)
                     }
                 }
@@ -204,12 +204,12 @@ fun Experiment() {
 }
 
 @Composable
-private fun TaskDropTarget(onTaskDropped: (Int) -> Unit) {
+private fun TaskDropTarget(placeTargetLineOnTop: Boolean = false, onTaskDropped: (Int) -> Unit) {
     DropTarget(
         modifier = Modifier
             .fillMaxWidth()
             .height(96.dp),
         onDataDropped = onTaskDropped,
-        placeTargetLineOnTop = true
+        placeTargetLineOnTop = placeTargetLineOnTop
     )
 }
