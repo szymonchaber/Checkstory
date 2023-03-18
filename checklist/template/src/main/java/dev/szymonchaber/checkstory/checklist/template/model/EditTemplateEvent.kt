@@ -35,6 +35,16 @@ sealed interface EditTemplateEvent {
         val to: ViewTemplateCheckboxKey
     ) : EditTemplateEvent
 
+    data class SiblingMovedBelow(
+        val target: ViewTemplateCheckboxKey,
+        val newSibling: ViewTemplateCheckboxKey
+    ) : EditTemplateEvent
+
+    data class ChildMovedBelow(
+        val target: ViewTemplateCheckboxKey,
+        val newChild: ViewTemplateCheckboxKey
+    ) : EditTemplateEvent
+
     object AddCheckboxClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent

@@ -162,6 +162,62 @@ sealed interface TemplateLoadingState {
             return copy(checkboxes = checkboxes) // TODO DO!
         }
 
+        fun withSiblingMovedBelow(
+            below: ViewTemplateCheckboxKey,
+            newSiblingKey: ViewTemplateCheckboxKey
+        ): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(newSiblingKey)
+            val isSiblingTopLevel = filteredTasks.any { it.viewKey == below }
+            val new = if (isSiblingTopLevel) {
+                val newTaskIndex = filteredTasks.indexOfFirst { it.viewKey == below } + 1
+                filteredTasks.withCheckboxAtIndex(movedItem, newTaskIndex)
+            } else {
+                filteredTasks.map {
+                    it.withMovedSiblingRecursive(below, movedItem)
+                }
+            }
+            return copy(checkboxes = new)
+        }
+
+        fun withChildMovedBelow(
+            below: ViewTemplateCheckboxKey,
+            newChildKey: ViewTemplateCheckboxKey
+        ): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(newChildKey)
+            return copy(
+                checkboxes = filteredTasks
+                    .map {
+                        it.withMovedChildRecursive(below, movedItem)
+                    },
+            )
+        }
+
+        private fun withExtractedTask(viewKey: ViewTemplateCheckboxKey): Pair<List<ViewTemplateCheckbox>, ViewTemplateCheckbox> {
+            val index = 1000
+//            val index = indexGenerator.getAndIncrement() // TODO
+//            if (viewKey == -50) {
+//                return checkboxes to Task(id = index, "", listOf())
+//            }
+            var movedItem: ViewTemplateCheckbox? = null
+            val onItemFoundAndRemoved: (ViewTemplateCheckbox) -> Unit = {
+                movedItem = it
+            }
+            val withExtractedElement = checkboxes
+                .filter {
+                    if (it.viewKey == viewKey) {
+                        movedItem = it
+                        false
+                    } else {
+                        true
+                    }
+                }
+                .map {
+                    it.withoutChild(viewKey, onItemFoundAndRemoved)
+                }
+            return withExtractedElement to movedItem!!
+        }
+
+
         companion object {
 
             fun fromTemplate(checklistTemplate: ChecklistTemplate): Success {
@@ -179,3 +235,10 @@ sealed interface TemplateLoadingState {
 }
 
 data class OnboardingPlaceholders(val title: String, val description: String)
+
+fun List<ViewTemplateCheckbox>.withCheckboxAtIndex(
+    checkbox: ViewTemplateCheckbox,
+    index: Int
+): List<ViewTemplateCheckbox> {
+    return take(index) + checkbox + drop(index)
+}

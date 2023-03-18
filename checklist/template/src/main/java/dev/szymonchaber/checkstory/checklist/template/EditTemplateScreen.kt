@@ -307,7 +307,7 @@ private fun BackIcon(onBackClicked: () -> Unit) {
     }
 }
 
-private val nestedPaddingStart = 32.dp
+val nestedPaddingStart = 32.dp
 
 @Composable
 fun EditTemplateView(
@@ -358,7 +358,20 @@ fun NewEditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit,
     onAddedItemConsumed: () -> Unit
 ) {
-    val dragDropState = rememberDragDropState(unwrappedTasks = success.unwrappedCheckboxes)
+    val dragDropState = rememberDragDropState(currentTasksProvider = {
+        success.unwrappedCheckboxes
+    })
+    LaunchedEffect(dragDropState.isDragging) {
+        val data = if (!dragDropState.isDragging) {
+            dragDropState.dataToDrop
+        } else {
+            null
+        }
+        data?.let {
+            dragDropState.dataToDrop = null
+            dragDropState.currentDropTarget?.invoke(it)
+        }
+    }
     CompositionLocalProvider(
         LocalDragDropState provides dragDropState,
     ) {
@@ -589,28 +602,7 @@ private fun NewCommonCheckbox(
 
         NewCheckboxItem(
             modifier = Modifier
-                .drawBehind { // TODO check drawWithContent or withCache
-                    if (nestingLevel > 0) {
-                        val heightFraction = if (!isLastChild) 1f else 0.5f
-                        val halfOfGlobalNesting = nestedPaddingStart.toPx() / 2
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = 0f),
-                            end = Offset(
-                                x = paddingStart.toPx() - halfOfGlobalNesting,
-                                y = size.height * heightFraction + taskTopPadding.toPx() / 2
-                            ),
-                            strokeWidth = 2.dp.toPx()
-                        )
-                        val visualCenterY = center.y + taskTopPadding.toPx() / 2
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(x = paddingStart.toPx() - halfOfGlobalNesting, y = visualCenterY),
-                            end = Offset(x = paddingStart.toPx(), y = visualCenterY),
-                            strokeWidth = 2.dp.toPx()
-                        )
-                    }
-                }
+//                .drawFolderStructure(nestingLevel, isLastChild, paddingStart, taskTopPadding) TODO decide if this should stay
                 .padding(top = taskTopPadding, start = paddingStart),
             title = checkbox.title,
             placeholder = checkbox.placeholderTitle,
@@ -626,14 +618,14 @@ private fun NewCommonCheckbox(
             eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
         }
         Receptacles(
-            Modifier.padding(top = taskTopPadding, start = paddingStart),
-
+            modifier = Modifier.padding(top = taskTopPadding, start = paddingStart),
             onSiblingTaskDropped = { siblingTask ->
-//                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey)) TODO
+                eventCollector(EditTemplateEvent.SiblingMovedBelow(checkbox.viewKey, siblingTask))
+            },
+            onChildTaskDropped = { childTask ->
+                eventCollector(EditTemplateEvent.ChildMovedBelow(checkbox.viewKey, childTask))
             }
-        ) { childTask ->
-//            eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey)) TODO
-        }
+        )
     }
     val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
     LaunchedEffect(recentlyAddedItem) {
@@ -785,7 +777,7 @@ val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
     }
 
 class DragDropState(
-    val tasksWithNestedLevel: List<Pair<ViewTemplateCheckbox, Int>>,
+    val getCurrentTasks: () -> List<Pair<ViewTemplateCheckbox, Int>>,
     val lazyListState: LazyListState,
 ) {
 
@@ -820,7 +812,7 @@ class DragDropState(
                 isDragging = true
                 dataToDrop = itemInfo.key as ViewTemplateCheckboxKey
                 draggableComposable = { _ ->
-                    val (task, nestingLevel) = tasksWithNestedLevel.firstOrNull { it.first.viewKey == itemInfo.key }!!
+                    val (task, nestingLevel) = getCurrentTasks().firstOrNull { it.first.viewKey == itemInfo.key }!!
                     val focusRequester = remember { FocusRequester() }
                     NewCheckboxItem(
                         title = task.title,
@@ -878,11 +870,11 @@ val LocalDragDropState = compositionLocalOf<DragDropState> {
 @Composable
 fun rememberDragDropState(
     lazyListState: LazyListState = rememberLazyListState(),
-    unwrappedTasks: List<Pair<ViewTemplateCheckbox, Int>>,
+    currentTasksProvider: () -> List<Pair<ViewTemplateCheckbox, Int>>,
 ): DragDropState {
     return remember {
         DragDropState(
-            tasksWithNestedLevel = unwrappedTasks,
+            getCurrentTasks = currentTasksProvider,
             lazyListState = lazyListState,
         )
     }
@@ -890,9 +882,9 @@ fun rememberDragDropState(
 
 @Composable
 private fun Receptacles(
-    modifier: Modifier = Modifier,
     onSiblingTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
-    onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit
+    onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Row(modifier.fillMaxSize()) {
         DropTarget(
