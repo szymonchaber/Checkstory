@@ -10,47 +10,27 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import timber.log.Timber
 
 @Composable
 fun DropTarget(
     modifier: Modifier,
     onDataDropped: (Int) -> Unit,
-    content: @Composable (BoxScope.() -> Unit) = {}
+    content: @Composable (BoxScope.() -> Unit) = {},
+    placeTargetLineOnTop: Boolean = false
 ) {
     val dragInfo = LocalDragDropState.current
     val dragPosition = dragInfo.dragPosition
     val dragOffset = dragInfo.dragOffset
-//    var isCurrentDropTarget by remember {
-//        mutableStateOf(false)
-//    }
-
-//    val data = if (!dragInfo.isDragging && dragInfo.dataToDrop != key) {
-//        dragInfo.dataToDrop
-//    } else {
-//        null
-//    }
-//    LaunchedEffect(key1 = data) {
-//        data?.let {
-//            dragInfo.dataToDrop = null
-////            onDataDropped(it)
-//            dragInfo.currentDropTargetSet.firstOrNull()?.invoke(it)
-//        }
-//    }
     val density = LocalDensity.current
 
     Box(modifier = modifier.onGloballyPositioned {
         it.boundsInWindow().let { rect ->
             val isCurrentDropTarget =
                 rect.contains(dragPosition + dragOffset + Offset(0f, density.run { 64.dp.toPx() }))
-//            Timber.d("Is $debugTag current drop target: $isCurrentDropTarget")
             if (isCurrentDropTarget) {
                 dragInfo.currentDropTarget = onDataDropped
-                Timber.d("Setting drop target")
-                dragInfo.currentDropTargetPosition =
-                    it.positionInRoot().plus(Offset.Zero.copy(y = it.size.height.toFloat()))
-            } else {
-//                dragInfo.currentDropTargetSet = dragInfo.currentDropTargetSet.minus(onDataDropped)
+                val yOffset = if (placeTargetLineOnTop) 0f else it.size.height.toFloat()
+                dragInfo.currentDropTargetPosition = it.positionInRoot().plus(Offset(x = 0f, y = yOffset))
             }
         }
     }, content = content)
