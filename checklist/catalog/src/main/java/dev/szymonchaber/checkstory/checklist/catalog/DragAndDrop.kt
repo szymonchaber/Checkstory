@@ -55,8 +55,8 @@ val tasks = List(10) {
     })
 }
 
-class DragDropListStateMine(
-    val unwrappedTasks: List<Pair<Task, Int>>,
+class DragDropListState(
+    val tasksWithNestedLevel: List<Pair<Task, Int>>,
     val lazyListState: LazyListState,
     private val draggableItemState: DragDropState
 ) {
@@ -88,7 +88,7 @@ class DragDropListStateMine(
                 draggableItemState.draggableComposable = { _ ->
                     Text(
                         modifier = Modifier.background(Color.White),
-                        text = "Task with name ${unwrappedTasks.firstOrNull { it.first.id == itemInfo.key }?.first?.name}"
+                        text = "Task with name ${tasksWithNestedLevel.firstOrNull { it.first.id == itemInfo.key }?.first?.name}"
                     )
                 }
             }
@@ -113,7 +113,7 @@ class DragDropListStateMine(
             val startOffset = it.offset + draggedDistance
             val endOffset = it.offsetEnd + draggedDistance
 
-            return@let when {
+            when {
                 draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
                 draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
                 else -> null
@@ -127,10 +127,10 @@ fun rememberDragDropListStateMine(
     lazyListState: LazyListState = rememberLazyListState(),
     unwrappedTasks: List<Pair<Task, Int>>,
     draggableItemState: DragDropState,
-): DragDropListStateMine {
+): DragDropListState {
     return remember {
-        DragDropListStateMine(
-            unwrappedTasks = unwrappedTasks,
+        DragDropListState(
+            tasksWithNestedLevel = unwrappedTasks,
             lazyListState = lazyListState,
             draggableItemState = draggableItemState
         )
