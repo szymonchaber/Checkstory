@@ -20,49 +20,44 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
 
-internal class DraggableItemInfo {
+class DragDropState {
     var isDragging by mutableStateOf(false)
     var dragPosition by mutableStateOf(Offset.Zero)
     var dragOffset by mutableStateOf(Offset.Zero)
     var draggableComposable by mutableStateOf<(@Composable (Modifier) -> Unit)?>(null)
-    var dataToDrop by mutableStateOf<Any?>(null)
-}
+    var dataToDrop by mutableStateOf<Int?>(null)
 
-internal class DropTargetInfo {
-    var currentDropTargetSet: Set<Any> by mutableStateOf(setOf())
+    var currentDropTarget: ((Int) -> Unit)? by mutableStateOf(null)
     var currentDropTargetPosition: Offset? by mutableStateOf(null)
 }
 
-internal val LocalDraggableItemInfo = compositionLocalOf { DraggableItemInfo() }
+val LocalDragDropState = compositionLocalOf { DragDropState() }
 
-internal val LocalDropTargetInfo = compositionLocalOf { DropTargetInfo() }
 
 @Composable
 fun LongPressDraggableOverLazyList(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.(LazyListState) -> Unit
 ) {
-    val targetState = remember { DropTargetInfo() }
-    val draggableItemState = remember { DraggableItemInfo() }
+    val dragDropState = remember { DragDropState() }
     val lazyListState = rememberLazyListState()
 
     CompositionLocalProvider(
-        LocalDraggableItemInfo provides draggableItemState,
-        LocalDropTargetInfo provides targetState
+        LocalDragDropState provides dragDropState
     ) {
         Box(
             modifier = modifier
                 .fillMaxSize()
         ) {
             content(lazyListState)
-            if (draggableItemState.isDragging) {
+            if (dragDropState.isDragging) {
                 var targetSize by remember {
                     mutableStateOf(IntSize.Zero)
                 }
                 Box(
                     modifier = Modifier
                         .graphicsLayer {
-                            val offset = (draggableItemState.dragPosition + draggableItemState.dragOffset)
+                            val offset = (dragDropState.dragPosition + dragDropState.dragOffset)
                             alpha = if (targetSize == IntSize.Zero) 0f else .9f
                             translationX = offset.x.minus(12.dp.toPx())
                             translationY = offset.y.minus(targetSize.height * 2 + 0.dp.toPx())
@@ -71,7 +66,7 @@ fun LongPressDraggableOverLazyList(
                             targetSize = it.size
                         }
                 ) {
-                    draggableItemState.draggableComposable?.invoke(Modifier)
+                    dragDropState.draggableComposable?.invoke(Modifier)
                 }
             }
         }

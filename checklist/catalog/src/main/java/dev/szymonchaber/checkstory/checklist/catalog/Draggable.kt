@@ -13,18 +13,19 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 
 @Composable
-fun <T> Draggable(
-    dataToDrop: T,
+fun Draggable(
+    dataToDrop: Int,
     modifier: Modifier = Modifier,
-    onDragStart: (T) -> Unit,
+    onDragStart: (Int) -> Unit,
     content: @Composable (Modifier) -> Unit
 ) {
     var currentPosition by remember { mutableStateOf(Offset.Zero) }
-    val currentState = LocalDraggableItemInfo.current
+    val currentState = LocalDragDropState.current
 
-    Box(modifier = modifier
-        .onGloballyPositioned {
-            currentPosition = it.localToWindow(Offset.Zero)
+    Box(
+        modifier = modifier
+            .onGloballyPositioned {
+                currentPosition = it.localToWindow(Offset.Zero)
         }
     ) {
         val dragHandleModifier = Modifier.pointerInput(Unit) {

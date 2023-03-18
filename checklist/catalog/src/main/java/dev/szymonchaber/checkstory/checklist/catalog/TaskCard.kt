@@ -27,8 +27,8 @@ import timber.log.Timber
 fun TaskCard(
     modifier: Modifier,
     task: Task,
-    onSiblingTaskDroppedOnto: (Task) -> Unit,
-    onChildTaskDroppedUnder: (Task) -> Unit
+    onSiblingTaskDroppedOnto: (Int) -> Unit,
+    onChildTaskDroppedUnder: (Int) -> Unit
 ) {
     Card(
         elevation = 10.dp,
@@ -36,7 +36,7 @@ fun TaskCard(
         modifier = modifier.padding(8.dp)
     ) {
         Box(Modifier.height(IntrinsicSize.Min)) {
-            Draggable(modifier = Modifier, dataToDrop = task, onDragStart = {
+            Draggable(modifier = Modifier, dataToDrop = task.id, onDragStart = {
                 Timber.d("Starting the drag with data: $it for actual task: $task ")
             }) { dragHandleModifier ->
                 Row(
@@ -76,29 +76,27 @@ fun TaskCard(
 @Composable
 private fun Receptacles(
     task: Task,
-    onSiblingTaskDropped: (Task) -> Unit,
-    onChildTaskDropped: (Task) -> Unit
+    onSiblingTaskDropped: (Int) -> Unit,
+    onChildTaskDropped: (Int) -> Unit
 ) {
     Row(Modifier.fillMaxSize()) {
-        DropTarget<Task>(
+        DropTarget(
             modifier = Modifier
                 .fillMaxHeight()
                 .width(24.dp), // TODO decide
             key = task,
             onDataDropped = { siblingTask ->
                 onSiblingTaskDropped(siblingTask)
-            },
-            debugTag = "Sibling receptacle ${task.name}"
+            }
         )
-        DropTarget<Task>(
+        DropTarget(
             modifier = Modifier
                 .fillMaxHeight()
                 .weight(1f),
             key = task,
             onDataDropped = { childTask ->
                 onChildTaskDropped(childTask)
-            },
-            debugTag = "Child receptacle ${task.name}"
+            }
         )
     }
 }

@@ -15,11 +15,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun DropTargetIndicatorLine() {
-    val state = LocalDraggableItemInfo.current
-    val targetState = LocalDropTargetInfo.current
+    val state = LocalDragDropState.current
 
     val targetValue = LocalDensity.current.run {
-        (targetState.currentDropTargetPosition ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx())
+        (state.currentDropTargetPosition ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx())
     }
     val offset by animateOffsetAsState(targetValue = targetValue)
     if (state.isDragging) {
