@@ -106,11 +106,11 @@ fun NewCheckboxItem(
     title: String,
     placeholder: String? = null,
     isFunctional: Boolean = true,
-    nestingLevel: Int,
     focusRequester: FocusRequester,
     onTitleChange: (String) -> Unit,
     onAddSubtask: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    acceptChildren: Boolean
 ) {
     var showActualValue by remember {
         mutableStateOf(false)
@@ -165,7 +165,7 @@ fun NewCheckboxItem(
             trailingIcon = {
                 if (isFunctional) {
                     Row {
-                        if (nestingLevel < 3) {
+                        if (acceptChildren) {
                             IconButton(onClick = { onAddSubtask() }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_add_subtask),

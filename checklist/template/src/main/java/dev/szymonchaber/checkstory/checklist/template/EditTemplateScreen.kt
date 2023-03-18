@@ -429,7 +429,6 @@ fun NewEditTemplateView(
                             checkbox = checkbox,
                             paddingStart = startPadding,
                             nestingLevel = nestingLevel,
-                            isLastChild = true,
                             onAddedItemConsumed = onAddedItemConsumed,
                             eventCollector = eventCollector
                         )
@@ -591,7 +590,6 @@ private fun CommonCheckbox(
 private fun NewCommonCheckbox(
     checkbox: ViewTemplateCheckbox,
     paddingStart: Dp,
-    isLastChild: Boolean,
     nestingLevel: Int,
     onAddedItemConsumed: () -> Unit,
     eventCollector: (EditTemplateEvent) -> Unit,
@@ -599,26 +597,28 @@ private fun NewCommonCheckbox(
     val taskTopPadding = 8.dp
     val focusRequester = remember { FocusRequester() }
     Box(Modifier.height(IntrinsicSize.Min)) {
-
+        val acceptChildren = nestingLevel < 3
         NewCheckboxItem(
             modifier = Modifier
-//                .drawFolderStructure(nestingLevel, isLastChild, paddingStart, taskTopPadding) TODO decide if this should stay
+//                .drawFolderStructure(nestingLevel, paddingStart, taskTopPadding) TODO decide if this should stay
                 .padding(top = taskTopPadding, start = paddingStart),
             title = checkbox.title,
             placeholder = checkbox.placeholderTitle,
-            nestingLevel = nestingLevel,
             focusRequester = focusRequester,
             onTitleChange = {
                 eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
             },
             onAddSubtask = {
                 eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
-            }
-        ) {
-            eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
-        }
+            },
+            onDeleteClick = {
+                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+            },
+            acceptChildren = acceptChildren
+        )
         Receptacles(
             modifier = Modifier.padding(top = taskTopPadding, start = paddingStart),
+            acceptChildren = acceptChildren,
             onSiblingTaskDropped = { siblingTask ->
                 eventCollector(EditTemplateEvent.SiblingMovedBelow(checkbox.viewKey, siblingTask))
             },
@@ -829,11 +829,11 @@ class DragDropState(
                         title = task.title,
                         placeholder = task.placeholderTitle,
                         isFunctional = false,
-                        nestingLevel = nestingLevel,
                         focusRequester = focusRequester,
                         onTitleChange = {},
                         onAddSubtask = {},
-                        onDeleteClick = {}
+                        onDeleteClick = {},
+                        acceptChildren = nestingLevel < 3
                     )
                 }
             }
@@ -896,27 +896,38 @@ private fun Receptacles(
     onSiblingTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
     onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
     modifier: Modifier = Modifier,
+    acceptChildren: Boolean,
 ) {
     Row(modifier.fillMaxSize()) {
         DropTarget(
             modifier = Modifier
                 .fillMaxHeight()
-//                .background(Color.Red.copy(alpha = 0.2f))
-                .width(24.dp), // TODO decide
+                .then {
+                    if (acceptChildren) {
+                        width(24.dp)
+                    } else {
+                        fillMaxWidth()
+                    }
+                },
             onDataDropped = { siblingTask ->
                 onSiblingTaskDropped(siblingTask)
             }
         )
-        DropTarget(
-            modifier = Modifier
-                .fillMaxHeight()
-//                .background(Color.Yellow.copy(alpha = 0.2f))
-                .weight(1f),
-            onDataDropped = { childTask ->
-                onChildTaskDropped(childTask)
-            }
-        )
+        if (acceptChildren) {
+            DropTarget(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .weight(1f),
+                onDataDropped = { childTask ->
+                    onChildTaskDropped(childTask)
+                }
+            )
+        }
     }
+}
+
+fun Modifier.then(modifier: Modifier.() -> Modifier): Modifier {
+    return then(modifier(Modifier))
 }
 
 

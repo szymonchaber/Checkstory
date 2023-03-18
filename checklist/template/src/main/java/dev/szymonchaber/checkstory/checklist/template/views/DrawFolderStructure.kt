@@ -12,11 +12,11 @@ import dev.szymonchaber.checkstory.checklist.template.nestedPaddingStart
 @Composable
 fun Modifier.drawFolderStructure(
     nestingLevel: Int,
-    isLastChild: Boolean,
     paddingStart: Dp,
     taskTopPadding: Dp
 ): Modifier = drawBehind { // TODO check drawWithContent or withCache
     if (nestingLevel > 0) {
+        val isLastChild = true
         val heightFraction = if (!isLastChild) 1f else 0.5f
         val halfOfGlobalNesting = nestedPaddingStart.toPx() / 2
         drawLine(
