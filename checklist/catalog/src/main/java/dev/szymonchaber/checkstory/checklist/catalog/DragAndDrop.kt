@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -21,6 +20,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -54,84 +53,19 @@ val tasks = List(10) {
     })
 }
 
-class DragDropListState(
-    val tasksWithNestedLevel: List<Pair<Task, Int>>,
-    val lazyListState: LazyListState,
-    private val draggableItemState: DragDropState
-) {
-    var draggedDistance by mutableStateOf(0f)
-
-    var initiallyDraggedElement by mutableStateOf<LazyListItemInfo?>(null)
-
-    var currentIndexOfDraggedItem by mutableStateOf<Int?>(null)
-
-    val elementDisplacement: Float?
-        get() = currentIndexOfDraggedItem
-            ?.let { lazyListState.getVisibleItemInfoFor(absoluteIndex = it) }
-            ?.let { item ->
-                (initiallyDraggedElement?.offset ?: 0f).toFloat() + draggedDistance - item.offset
-            }
-
-    var overscrollJob by mutableStateOf<Job?>(null)
-
-    fun onDragStart(offset: Offset) {
-        lazyListState.layoutInfo.visibleItemsInfo
-            .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
-            ?.takeUnless { it.key !is Int }
-            ?.also { itemInfo ->
-                currentIndexOfDraggedItem = itemInfo.index
-                initiallyDraggedElement = itemInfo
-                draggableItemState.dragPosition = Offset(0f, itemInfo.offset.toFloat())
-                draggableItemState.isDragging = true
-                draggableItemState.dataToDrop = itemInfo.key as Int
-                draggableItemState.draggableComposable = { _ ->
-                    Text(
-                        modifier = Modifier.background(Color.White),
-                        text = "Task with name ${tasksWithNestedLevel.firstOrNull { it.first.id == itemInfo.key }?.first?.name}"
-                    )
-                }
-            }
-    }
-
-    fun onDragInterrupted() {
-        draggedDistance = 0f
-        currentIndexOfDraggedItem = null
-        initiallyDraggedElement = null
-        overscrollJob?.cancel()
-        draggableItemState.isDragging = false
-        draggableItemState.dragOffset = Offset.Zero
-    }
-
-    fun onDrag(offset: Offset) {
-        draggedDistance += offset.y
-        draggableItemState.dragOffset += offset
-    }
-
-    fun checkForOverScroll(): Float {
-        return initiallyDraggedElement?.let {
-            val startOffset = it.offset + draggedDistance
-            val endOffset = it.offsetEnd + draggedDistance
-
-            when {
-                draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
-                draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
-                else -> null
-            }
-        } ?: 0f
-    }
+val LocalDragDropState = compositionLocalOf<DragDropState> {
+    error("You must provide LocalDragDropState")
 }
 
 @Composable
-fun rememberDragDropListStateMine(
+fun rememberDragDropState(
     lazyListState: LazyListState = rememberLazyListState(),
     unwrappedTasks: List<Pair<Task, Int>>,
-    draggableItemState: DragDropState,
-): DragDropListState {
+): DragDropState {
     return remember {
-        DragDropListState(
+        DragDropState(
             tasksWithNestedLevel = unwrappedTasks,
             lazyListState = lazyListState,
-            draggableItemState = draggableItemState
         )
     }
 }
@@ -147,7 +81,7 @@ fun Experiment() {
             magicTree.flattenWithNestedLevel()
         }
     }
-    val dragDropState = remember { DragDropState() }
+    val dragDropState = rememberDragDropState(unwrappedTasks = items)
 
     LaunchedEffect(dragDropState.isDragging) {
         val data = if (!dragDropState.isDragging) {
@@ -166,11 +100,6 @@ fun Experiment() {
     ) {
         val scope = rememberCoroutineScope()
         var overscrollJob by remember { mutableStateOf<Job?>(null) }
-        val dragDropListStateMine =
-            rememberDragDropListStateMine(
-                unwrappedTasks = items,
-                draggableItemState = dragDropState
-            )
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -182,27 +111,27 @@ fun Experiment() {
                         detectDragGesturesAfterLongPress(
                             onDrag = { change, offset ->
                                 change.consume()
-                                dragDropListStateMine.onDrag(offset)
+                                dragDropState.onDrag(offset)
 
                                 if (overscrollJob?.isActive == true)
                                     return@detectDragGesturesAfterLongPress
 
-                                dragDropListStateMine
+                                dragDropState
                                     .checkForOverScroll()
                                     .takeIf { it != 0f }
                                     ?.let {
                                         overscrollJob =
-                                            scope.launch { dragDropListStateMine.lazyListState.scrollBy(it) }
+                                            scope.launch { dragDropState.lazyListState.scrollBy(it) }
                                     }
                                     ?: run { overscrollJob?.cancel() }
                             },
-                            onDragStart = { offset -> dragDropListStateMine.onDragStart(offset) },
-                            onDragEnd = { dragDropListStateMine.onDragInterrupted() },
-                            onDragCancel = { dragDropListStateMine.onDragInterrupted() }
+                            onDragStart = { offset -> dragDropState.onDragStart(offset) },
+                            onDragEnd = { dragDropState.onDragInterrupted() },
+                            onDragCancel = { dragDropState.onDragInterrupted() }
                         )
                     },
                 contentPadding = PaddingValues(horizontal = 10.dp),
-                state = dragDropListStateMine.lazyListState
+                state = dragDropState.lazyListState
             ) {
                 item {
                     TaskDropTarget {
@@ -256,7 +185,6 @@ fun Experiment() {
                 Box(
                     modifier = Modifier
                         .graphicsLayer {
-                            dragDropListStateMine.elementDisplacement
                             val offset = (dragDropState.dragPosition + dragDropState.dragOffset)
                             alpha = if (targetSize == IntSize.Zero) 0f else .9f
                             translationX = offset.x//.minus(12.dp.toPx())
