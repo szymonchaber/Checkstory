@@ -79,6 +79,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
 import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
+import dev.szymonchaber.checkstory.checklist.template.views.NewCheckboxItem
 import dev.szymonchaber.checkstory.checklist.template.views.pleasantCharacterRemovalAnimationDurationMillis
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
@@ -507,7 +508,7 @@ private fun NewCommonCheckbox(
 ) {
     val taskTopPadding = 8.dp
     val focusRequester = remember { FocusRequester() }
-    CheckboxItem(
+    NewCheckboxItem(
         modifier = Modifier
             .drawBehind { // TODO check drawWithContent or withCache
                 if (nestingLevel > 0) {
