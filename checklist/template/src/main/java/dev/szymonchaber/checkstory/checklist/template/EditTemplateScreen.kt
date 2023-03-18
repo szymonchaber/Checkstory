@@ -5,6 +5,7 @@ package dev.szymonchaber.checkstory.checklist.template
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
@@ -376,11 +377,14 @@ fun NewEditTemplateView(
                     Row(
                         Modifier
                             .animateItemPlacement()
-                            .padding(start = 16.dp, end = 16.dp)
+                            .padding(start = 16.dp, end = 16.dp) // TODO what this?
                     ) {
+                        val startPadding by animateDpAsState(
+                            nestedPaddingStart * nestingLevel
+                        )
                         NewCommonCheckbox(
                             checkbox = checkbox,
-                            paddingStart = nestedPaddingStart * nestingLevel,
+                            paddingStart = startPadding,
                             nestingLevel = nestingLevel,
                             isLastChild = true,
                             onAddedItemConsumed = onAddedItemConsumed,
