@@ -7,6 +7,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -331,6 +332,7 @@ fun EditTemplateView(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NewEditTemplateView(
     success: TemplateLoadingState.Success,
@@ -352,7 +354,9 @@ fun NewEditTemplateView(
             }
         ) { (checkbox, nestingLevel) ->
             Row(
-                Modifier.padding(start = 16.dp, end = 16.dp)
+                Modifier
+                    .animateItemPlacement()
+                    .padding(start = 16.dp, end = 16.dp)
             ) {
                 NewCommonCheckbox(
                     checkbox = checkbox,
