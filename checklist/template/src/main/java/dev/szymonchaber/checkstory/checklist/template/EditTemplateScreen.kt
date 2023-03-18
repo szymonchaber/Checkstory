@@ -6,7 +6,9 @@ import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -62,6 +64,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -71,6 +74,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -354,43 +358,67 @@ fun NewEditTemplateView(
     CompositionLocalProvider(
         LocalDragDropState provides dragDropState,
     ) {
-        val template = success.checklistTemplate
-        LazyColumn(
-            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            item {
-                ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
-            }
-            items(
-                items = success.unwrappedCheckboxes,
-                key = { (item, _) ->
-                    item.viewKey
+        Box(Modifier.fillMaxSize()) {
+            val template = success.checklistTemplate
+            LazyColumn(
+                contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                item {
+                    ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
                 }
-            ) { (checkbox, nestingLevel) ->
-                Row(
-                    Modifier
-                        .animateItemPlacement()
-                        .padding(start = 16.dp, end = 16.dp)
+                items(
+                    items = success.unwrappedCheckboxes,
+                    key = { (item, _) ->
+                        item.viewKey
+                    }
+                ) { (checkbox, nestingLevel) ->
+                    Row(
+                        Modifier
+                            .animateItemPlacement()
+                            .padding(start = 16.dp, end = 16.dp)
+                    ) {
+                        NewCommonCheckbox(
+                            checkbox = checkbox,
+                            paddingStart = nestedPaddingStart * nestingLevel,
+                            nestingLevel = nestingLevel,
+                            isLastChild = true,
+                            onAddedItemConsumed = onAddedItemConsumed,
+                            eventCollector = eventCollector
+                        )
+                    }
+                }
+                item {
+                    AddTaskButton(eventCollector)
+                }
+                item {
+                    RemindersSection(template, eventCollector)
+                }
+                item {
+                    DeleteTemplateButton(eventCollector)
+                }
+            }
+            DropTargetIndicatorLine()
+            if (dragDropState.isDragging) {
+                var targetSize by remember {
+                    mutableStateOf(IntSize.Zero)
+                }
+                Box(
+                    modifier = Modifier
+                        .graphicsLayer {
+                            val offset = (dragDropState.dragPosition + dragDropState.dragOffset)
+                            alpha = if (targetSize == IntSize.Zero) 0f else .9f
+                            translationX = offset.x//.minus(12.dp.toPx())
+//                            translationY = offset.y//.minus(targetSize.height * 2 + 0.dp.toPx())
+                            translationY = offset.y
+//                                dragDropState.dragPosition.y + (dragDropListStateMine.elementDisplacement ?: 0f)
+                        }
+                        .onGloballyPositioned {
+                            targetSize = it.size
+                        }
                 ) {
-                    NewCommonCheckbox(
-                        checkbox = checkbox,
-                        paddingStart = nestedPaddingStart * nestingLevel,
-                        nestingLevel = nestingLevel,
-                        isLastChild = true,
-                        onAddedItemConsumed = onAddedItemConsumed,
-                        eventCollector = eventCollector
-                    )
+                    dragDropState.draggableComposable?.invoke(Modifier)
                 }
-            }
-            item {
-                AddTaskButton(eventCollector)
-            }
-            item {
-                RemindersSection(template, eventCollector)
-            }
-            item {
-                DeleteTemplateButton(eventCollector)
             }
         }
     }
@@ -867,4 +895,31 @@ fun DropTarget(
             }
         }
     }, content = content)
+}
+
+@Composable
+fun DropTargetIndicatorLine() {
+    val state = LocalDragDropState.current
+
+    val targetValue = LocalDensity.current.run {
+        (state.currentDropTargetPosition ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx())
+    }
+    val offset by animateOffsetAsState(targetValue = targetValue)
+    if (state.isDragging) {
+        Canvas(
+            modifier = Modifier
+                .padding(end = 20.dp)
+                .fillMaxWidth()
+                .graphicsLayer {
+                    translationY = offset.y
+                }
+        ) {
+            drawLine(
+                color = Color.Red,
+                start = offset.copy(y = 0f),
+                end = offset.copy(x = this.size.width, y = 0f),
+                strokeWidth = 2.dp.toPx()
+            )
+        }
+    }
 }
