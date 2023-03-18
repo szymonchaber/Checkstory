@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.R
+import dev.szymonchaber.checkstory.checklist.template.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @Composable
@@ -140,6 +141,7 @@ fun NewCheckboxItem(
     ) {
         Icon(
             modifier = Modifier
+                .detectReorder()
                 .align(Alignment.CenterVertically),
             painter = painterResource(id = R.drawable.drag_indicator),
             contentDescription = null

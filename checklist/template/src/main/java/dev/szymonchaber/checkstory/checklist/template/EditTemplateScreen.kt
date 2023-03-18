@@ -12,7 +12,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.drag
+import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -61,6 +62,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
@@ -68,7 +70,12 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.input.pointer.PointerInputChange
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -385,34 +392,11 @@ fun NewEditTemplateView(
         LocalDragDropState provides dragDropState,
     ) {
         Box(Modifier.fillMaxSize()) {
-            val scope = rememberCoroutineScope()
-            var overscrollJob by remember { mutableStateOf<Job?>(null) }
             val template = success.checklistTemplate
             LazyColumn(
                 Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectDragGesturesAfterLongPress(
-                            onDrag = { change, offset ->
-                                change.consume()
-                                dragDropState.onDrag(offset)
-                                if (overscrollJob?.isActive == true)
-                                    return@detectDragGesturesAfterLongPress
-
-                                dragDropState
-                                    .checkForOverScroll()
-                                    .takeIf { it != 0f }
-                                    ?.let {
-                                        overscrollJob =
-                                            scope.launch { dragDropState.lazyListState.scrollBy(it) }
-                                    }
-                                    ?: run { overscrollJob?.cancel() }
-                            },
-                            onDragStart = { offset -> dragDropState.onDragStart(offset) },
-                            onDragEnd = { dragDropState.onDragInterrupted() },
-                            onDragCancel = { dragDropState.onDragInterrupted() }
-                        )
-                    },
+                    .detectLazyListReorder()
+                    .fillMaxSize(),
                 state = dragDropState.lazyListState,
                 contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -908,6 +892,79 @@ fun DropTargetIndicatorLine() {
                 end = offset.copy(x = this.size.width, y = 0f),
                 strokeWidth = 2.dp.toPx()
             )
+        }
+    }
+}
+
+
+internal suspend fun PointerInputScope.detectDrag(
+    down: PointerId,
+    onDragEnd: () -> Unit = { },
+    onDragCancel: () -> Unit = { },
+    onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit,
+) {
+    awaitPointerEventScope {
+        if (
+            drag(down) {
+                onDrag(it, it.positionChange())
+                it.consume()
+            }
+        ) {
+            // consume up if we quit drag gracefully with the up
+            currentEvent.changes.forEach {
+                if (it.changedToUp()) it.consume()
+            }
+            onDragEnd()
+        } else {
+            onDragCancel()
+        }
+    }
+}
+
+fun Modifier.detectLazyListReorder(): Modifier {
+    return composed {
+        val scope = rememberCoroutineScope()
+        var overscrollJob by remember { mutableStateOf<Job?>(null) }
+        val dragDropState = LocalDragDropState.current
+
+        pointerInput(Unit) {
+            forEachGesture {
+                val dragStart = dragDropState.interactions.receive()
+                val down = awaitPointerEventScope {
+                    currentEvent.changes.fastFirstOrNull { it.id == dragStart.id }
+                }
+                if (down != null) {
+                    dragDropState.onDragStart(down.position)
+                    dragStart.offset?.apply {
+                        dragDropState.onDrag(this)
+                    }
+                    detectDrag(
+                        down.id,
+                        onDragEnd = {
+                            dragDropState.onDragInterrupted()
+                        },
+                        onDragCancel = {
+                            dragDropState.onDragInterrupted()
+                        },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            dragDropState.onDrag(dragAmount)
+
+                            if (overscrollJob?.isActive == true) {
+                                return@detectDrag
+                            }
+
+                            dragDropState
+                                .checkForOverScroll()
+                                .takeIf { it != 0f }
+                                ?.let {
+                                    overscrollJob =
+                                        scope.launch { dragDropState.lazyListState.scrollBy(it) }
+                                }
+                                ?: run { overscrollJob?.cancel() }
+                        })
+                }
+            }
         }
     }
 }
