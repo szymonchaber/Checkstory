@@ -102,9 +102,10 @@ fun CheckboxItem(
 
 @Composable
 fun NewCheckboxItem(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     title: String,
     placeholder: String? = null,
+    isFunctional: Boolean = true,
     nestingLevel: Int,
     focusRequester: FocusRequester,
     onTitleChange: (String) -> Unit,
@@ -160,18 +161,21 @@ fun NewCheckboxItem(
             placeholder = placeholder?.let {
                 { Text(text = it) }
             },
+            enabled = isFunctional,
             trailingIcon = {
-                Row {
-                    if (nestingLevel < 4) {
-                        IconButton(onClick = { onAddSubtask() }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_add_subtask),
-                                null,
-                            )
+                if (isFunctional) {
+                    Row {
+                        if (nestingLevel < 4) {
+                            IconButton(onClick = { onAddSubtask() }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_add_subtask),
+                                    null,
+                                )
+                            }
                         }
-                    }
-                    IconButton(onClick = onDeleteClick) {
-                        Icon(Icons.Filled.Delete, "")
+                        IconButton(onClick = onDeleteClick) {
+                            Icon(Icons.Filled.Delete, "")
+                        }
                     }
                 }
             }

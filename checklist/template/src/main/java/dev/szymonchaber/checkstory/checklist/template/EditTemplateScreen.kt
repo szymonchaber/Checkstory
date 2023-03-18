@@ -12,6 +12,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -66,6 +68,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
@@ -360,8 +363,35 @@ fun NewEditTemplateView(
         LocalDragDropState provides dragDropState,
     ) {
         Box(Modifier.fillMaxSize()) {
+            val scope = rememberCoroutineScope()
+            var overscrollJob by remember { mutableStateOf<Job?>(null) }
             val template = success.checklistTemplate
             LazyColumn(
+                Modifier
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectDragGesturesAfterLongPress(
+                            onDrag = { change, offset ->
+                                change.consume()
+                                dragDropState.onDrag(offset)
+                                if (overscrollJob?.isActive == true)
+                                    return@detectDragGesturesAfterLongPress
+
+                                dragDropState
+                                    .checkForOverScroll()
+                                    .takeIf { it != 0f }
+                                    ?.let {
+                                        overscrollJob =
+                                            scope.launch { dragDropState.lazyListState.scrollBy(it) }
+                                    }
+                                    ?: run { overscrollJob?.cancel() }
+                            },
+                            onDragStart = { offset -> dragDropState.onDragStart(offset) },
+                            onDragEnd = { dragDropState.onDragInterrupted() },
+                            onDragCancel = { dragDropState.onDragInterrupted() }
+                        )
+                    },
+                state = dragDropState.lazyListState,
                 contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
@@ -764,7 +794,7 @@ class DragDropState(
     var dragPosition by mutableStateOf(Offset.Zero)
     var dragOffset by mutableStateOf(Offset.Zero)
     var draggableComposable by mutableStateOf<(@Composable (Modifier) -> Unit)?>(null)
-    var dataToDrop by mutableStateOf<Int?>(null)
+    var dataToDrop by mutableStateOf<ViewTemplateCheckboxKey?>(null)
 
     var currentDropTarget: ((ViewTemplateCheckboxKey) -> Unit)? by mutableStateOf(null)
     var currentDropTargetPosition: Offset? by mutableStateOf(null)
@@ -782,15 +812,26 @@ class DragDropState(
     fun onDragStart(offset: Offset) {
         lazyListState.layoutInfo.visibleItemsInfo
             .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
-            ?.takeUnless { it.key !is Int }
+            ?.takeUnless { it.key !is ViewTemplateCheckboxKey }
             ?.also { itemInfo ->
                 currentIndexOfDraggedItem = itemInfo.index
                 initiallyDraggedElement = itemInfo
                 dragPosition = Offset(0f, itemInfo.offset.toFloat())
                 isDragging = true
-                dataToDrop = itemInfo.key as Int
+                dataToDrop = itemInfo.key as ViewTemplateCheckboxKey
                 draggableComposable = { _ ->
-//                    TaskCardDetails(task = tasksWithNestedLevel.firstOrNull { it.first.id == itemInfo.key }?.first!!)
+                    val (task, nestingLevel) = tasksWithNestedLevel.firstOrNull { it.first.viewKey == itemInfo.key }!!
+                    val focusRequester = remember { FocusRequester() }
+                    NewCheckboxItem(
+                        title = task.title,
+                        placeholder = task.placeholderTitle,
+                        isFunctional = false,
+                        nestingLevel = nestingLevel,
+                        focusRequester = focusRequester,
+                        onTitleChange = {},
+                        onAddSubtask = {},
+                        onDeleteClick = {}
+                    )
                 }
             }
     }
