@@ -80,7 +80,7 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
-                    EditTemplateState(TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())) to null
+                    EditTemplateState(generateOnboardingTemplate(application.resources)) to null
                 }
             }
     }

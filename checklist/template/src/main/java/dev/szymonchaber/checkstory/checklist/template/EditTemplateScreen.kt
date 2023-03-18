@@ -260,9 +260,7 @@ private fun EditTemplateScaffold(
                     }
                     CompositionLocalProvider(RecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem) {
                         EditTemplateView(
-                            loadingState.checklistTemplate,
-                            loadingState.onboardingPlaceholders,
-                            loadingState.checkboxes,
+                            loadingState,
                             viewModel::onEvent
                         ) {
                             recentlyAddedUnconsumedItem = null
@@ -292,21 +290,20 @@ private val nestedPaddingStart = 16.dp
 
 @Composable
 fun EditTemplateView(
-    checklistTemplate: ChecklistTemplate,
-    onboardingPlaceholders: OnboardingPlaceholders?,
-    checkboxes: List<ViewTemplateCheckbox>,
+    success: TemplateLoadingState.Success,
     eventCollector: (EditTemplateEvent) -> Unit,
     onAddedItemConsumed: () -> Unit
 ) {
+    val template = success.checklistTemplate
     LazyColumn(
         contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         item {
-            ChecklistTemplateDetails(checklistTemplate, onboardingPlaceholders, eventCollector)
+            ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
         }
         items(
-            items = checkboxes,
+            items = success.checkboxes,
             key = { it.viewKey }
         ) { checkbox ->
             Row(
@@ -325,7 +322,7 @@ fun EditTemplateView(
             AddTaskButton(eventCollector)
         }
         item {
-            RemindersSection(checklistTemplate, eventCollector)
+            RemindersSection(template, eventCollector)
         }
         item {
             DeleteTemplateButton(eventCollector)

@@ -21,7 +21,7 @@ sealed interface TemplateLoadingState {
     ) : TemplateLoadingState {
 
 
-        private val unwrappedCheckboxes = flattenWithNestedLevel()
+        val unwrappedCheckboxes = flattenWithNestedLevel()
 
         private fun flattenWithNestedLevel(): List<Pair<ViewTemplateCheckbox, Int>> {
             val result = mutableListOf<Pair<ViewTemplateCheckbox, Int>>()
