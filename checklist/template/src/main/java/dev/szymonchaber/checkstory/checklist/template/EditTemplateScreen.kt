@@ -117,6 +117,7 @@ import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
+import timber.log.Timber
 import java.time.Duration.*
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -612,6 +613,7 @@ private fun NewCommonCheckbox(
         Receptacles(
             modifier = Modifier.padding(top = taskTopPadding, start = paddingStart),
             acceptChildren = acceptChildren,
+            forCheckbox = checkbox.viewKey,
             onSiblingTaskDropped = { siblingTask ->
                 eventCollector(EditTemplateEvent.SiblingMovedBelow(checkbox.viewKey, siblingTask))
             },
@@ -769,7 +771,11 @@ data class ViewTemplateCheckboxKey(
     val viewId: Long,
     val parentKey: ViewTemplateCheckboxKey?,
     val isNew: Boolean
-) : Parcelable
+) : Parcelable {
+    fun hasKeyInAncestors(key: ViewTemplateCheckboxKey): Boolean {
+        return parentKey == key || parentKey?.hasKeyInAncestors(key) ?: false
+    }
+}
 
 val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
     get() {
@@ -806,6 +812,7 @@ fun rememberDragDropState(
 
 @Composable
 private fun Receptacles(
+    forCheckbox: ViewTemplateCheckboxKey?,
     onSiblingTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
     onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
     modifier: Modifier = Modifier,
@@ -822,6 +829,7 @@ private fun Receptacles(
                         fillMaxWidth()
                     }
                 },
+            key = forCheckbox,
             onDataDropped = { siblingTask ->
                 onSiblingTaskDropped(siblingTask)
             }
@@ -831,6 +839,7 @@ private fun Receptacles(
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(1f),
+                key = forCheckbox,
                 onDataDropped = { childTask ->
                     onChildTaskDropped(childTask)
                 }
@@ -849,18 +858,34 @@ fun DropTarget(
     modifier: Modifier,
     onDataDropped: (ViewTemplateCheckboxKey) -> Unit,
     content: @Composable (BoxScope.() -> Unit) = {},
-    placeTargetLineOnTop: Boolean = false
+    placeTargetLineOnTop: Boolean = false,
+    key: ViewTemplateCheckboxKey? = null
 ) {
     val dragInfo = LocalDragDropState.current
     val dragPosition = dragInfo.dragPosition
     val dragOffset = dragInfo.dragOffset
     val density = LocalDensity.current
 
+    fun canReceive(viewTemplateCheckboxKey: ViewTemplateCheckboxKey?): Boolean {
+
+        return let(key, viewTemplateCheckboxKey) { current, other ->
+            Timber.d(
+                """
+                Can receive based on comparison: ${current != other}
+                Can receive based on parent: ${!other.hasKeyInAncestors(current)}
+                This key: $key
+                checkedKey: $viewTemplateCheckboxKey
+            """.trimIndent()
+            )
+            current != other && !current.hasKeyInAncestors(other)
+        } ?: true
+    }
+
     Box(modifier = modifier.onGloballyPositioned {
         it.boundsInWindow().let { rect ->
             val isCurrentDropTarget =
                 rect.contains(dragPosition + dragOffset + Offset(0f, density.run { 96.dp.toPx() }))
-            if (isCurrentDropTarget) {
+            if (isCurrentDropTarget && canReceive(dragInfo.dataToDrop)) {
                 dragInfo.currentDropTarget = onDataDropped
                 val yOffset = if (placeTargetLineOnTop) 0f else it.size.height.toFloat()
                 dragInfo.currentDropTargetPosition = it.positionInRoot().plus(Offset(x = 0f, y = yOffset))
@@ -965,6 +990,14 @@ fun Modifier.detectLazyListReorder(): Modifier {
                         })
                 }
             }
+        }
+    }
+}
+
+fun <T, U, R> let(first: T?, second: U?, block: (T, U) -> R): R? {
+    return first?.let { nonNullFirst ->
+        second?.let { nonNullSecond ->
+            block(nonNullFirst, nonNullSecond)
         }
     }
 }
