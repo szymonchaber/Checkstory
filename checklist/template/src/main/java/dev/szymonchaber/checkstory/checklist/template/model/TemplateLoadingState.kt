@@ -197,6 +197,13 @@ sealed interface TemplateLoadingState {
             )
         }
 
+        fun withCheckboxMovedToBottom(checkboxKey: ViewTemplateCheckboxKey): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(checkboxKey)
+            return copy(
+                checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentKey(null), filteredTasks.size)
+            )
+        }
+
         private fun withExtractedTask(viewKey: ViewTemplateCheckboxKey): Pair<List<ViewTemplateCheckbox>, ViewTemplateCheckbox> {
             val index = 1000
 //            val index = indexGenerator.getAndIncrement() // TODO

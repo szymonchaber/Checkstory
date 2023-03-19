@@ -429,13 +429,22 @@ fun NewEditTemplateView(
                     }
                 }
                 item {
-                    AddTaskButton(eventCollector)
-                }
-                item {
-                    RemindersSection(template, eventCollector)
-                }
-                item {
-                    DeleteTemplateButton(eventCollector)
+                    Box(Modifier.height(IntrinsicSize.Min)) {
+                        Column {
+                            AddTaskButton(eventCollector)
+                            RemindersSection(template, eventCollector)
+                            DeleteTemplateButton(eventCollector)
+                        }
+                        DropTarget(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            placeTargetLineOnTop = true,
+                            onDataDropped = { taskKey ->
+                                eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                            }
+                        )
+                    }
+
                 }
             }
             DropTargetIndicatorLine()
