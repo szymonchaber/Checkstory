@@ -4,14 +4,11 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEvent
@@ -24,17 +21,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.dp
-import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
-import dev.szymonchaber.checkstory.checklist.template.views.NewCheckboxItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-class DragDropState(
-    val getCurrentTasks: () -> List<Pair<ViewTemplateCheckbox, Int>>,
-    val lazyListState: LazyListState,
-) {
+class DragDropState(val lazyListState: LazyListState) {
 
     val interactions = Channel<StartDrag>()
 
@@ -42,7 +34,7 @@ class DragDropState(
     var isDragging by mutableStateOf(false)
     var dragPosition by mutableStateOf(Offset.Zero)
     var dragOffset by mutableStateOf(Offset.Zero)
-    var draggableComposable by mutableStateOf<(@Composable (Modifier) -> Unit)?>(null)
+    var checkboxViewId by mutableStateOf<ViewTemplateCheckboxId?>(null)
     var dataToDrop by mutableStateOf<ViewTemplateCheckboxKey?>(null)
 
     var currentDropTarget: ((ViewTemplateCheckboxKey) -> Unit)? by mutableStateOf(null)
@@ -61,27 +53,13 @@ class DragDropState(
     fun onDragStart(offset: Offset) {
         lazyListState.layoutInfo.visibleItemsInfo
             .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
-            ?.takeUnless { it.key !is ViewTemplateCheckboxKey }
+            ?.takeUnless { it.key !is ViewTemplateCheckboxId }
             ?.also { itemInfo ->
                 currentIndexOfDraggedItem = itemInfo.index
                 initiallyDraggedElement = itemInfo
                 dragPosition = Offset(0f, itemInfo.offset.toFloat())
                 isDragging = true
-                dataToDrop = itemInfo.key as ViewTemplateCheckboxKey
-                draggableComposable = { _ ->
-                    val (task, nestingLevel) = getCurrentTasks().firstOrNull { it.first.viewKey == itemInfo.key }!!
-                    val focusRequester = remember { FocusRequester() }
-                    NewCheckboxItem(
-                        title = task.title,
-                        placeholder = task.placeholderTitle,
-                        isFunctional = false,
-                        focusRequester = focusRequester,
-                        onTitleChange = {},
-                        onAddSubtask = {},
-                        onDeleteClick = {},
-                        acceptChildren = nestingLevel < 3
-                    )
-                }
+                checkboxViewId = itemInfo.key as? ViewTemplateCheckboxId
             }
     }
 

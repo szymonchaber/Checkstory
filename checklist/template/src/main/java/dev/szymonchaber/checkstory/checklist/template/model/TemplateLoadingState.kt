@@ -1,11 +1,13 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
+import dev.szymonchaber.checkstory.checklist.template.viewId
 import dev.szymonchaber.checkstory.checklist.template.viewKey
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
+import java.util.concurrent.atomic.AtomicLong
 
 sealed interface TemplateLoadingState {
 
@@ -17,7 +19,8 @@ sealed interface TemplateLoadingState {
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
         val mostRecentlyAddedItem: ViewTemplateCheckboxKey? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
-        val isOnboardingTemplate: Boolean = false
+        val isOnboardingTemplate: Boolean = false,
+        val newItemIndexGenerator: AtomicLong = AtomicLong()
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
@@ -50,7 +53,7 @@ sealed interface TemplateLoadingState {
 
         fun plusNewCheckbox(title: String): Success {
             val newCheckbox = ViewTemplateCheckbox.New(
-                TemplateCheckboxId(checkboxes.size.toLong()),
+                TemplateCheckboxId(newItemIndexGenerator.getAndIncrement()),
                 null,
                 true,
                 title,
@@ -67,7 +70,7 @@ sealed interface TemplateLoadingState {
 
         fun plusNestedCheckbox(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
             val parent = ViewTemplateCheckbox.New(
-                id = TemplateCheckboxId(checkboxes.size.toLong()),
+                id = TemplateCheckboxId(newItemIndexGenerator.getAndIncrement()),
                 parentViewKey = null,
                 isParent = true,
                 title = "",
@@ -114,7 +117,7 @@ sealed interface TemplateLoadingState {
             }
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusChildCheckboxRecursive(parentId, onItemActuallyAdded)
+                    it.plusChildCheckboxRecursive(newItemIndexGenerator, parentId, onItemActuallyAdded)
                 },
                 mostRecentlyAddedItem = addedItem
             )
@@ -127,7 +130,7 @@ sealed interface TemplateLoadingState {
         ): Success {
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusNestedChildCheckboxRecursive(parentId, placeholderTitle, children)
+                    it.plusNestedChildCheckboxRecursive(newItemIndexGenerator, parentId, placeholderTitle, children)
                 }
             )
         }
@@ -165,7 +168,7 @@ sealed interface TemplateLoadingState {
             val isSiblingTopLevel = filteredTasks.any { it.viewKey == below }
             val new = if (isSiblingTopLevel) {
                 val newTaskIndex = filteredTasks.indexOfFirst { it.viewKey == below } + 1
-                filteredTasks.withCheckboxAtIndex(movedItem, newTaskIndex)
+                filteredTasks.withCheckboxAtIndex(movedItem.updateParentKey(null), newTaskIndex)
             } else {
                 filteredTasks.map {
                     it.withMovedSiblingRecursive(below, movedItem)
@@ -190,7 +193,7 @@ sealed interface TemplateLoadingState {
         fun withCheckboxMovedToTop(checkboxKey: ViewTemplateCheckboxKey): TemplateLoadingState {
             val (filteredTasks, movedItem) = withExtractedTask(checkboxKey)
             return copy(
-                checkboxes = filteredTasks.withCheckboxAtIndex(movedItem, 0)
+                checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentKey(null), 0)
             )
         }
 
@@ -206,7 +209,7 @@ sealed interface TemplateLoadingState {
             }
             val withExtractedElement = checkboxes
                 .filter {
-                    if (it.viewKey == viewKey) {
+                    if (it.viewId == viewKey.viewId) {
                         movedItem = it
                         false
                     } else {
@@ -246,7 +249,7 @@ fun List<ViewTemplateCheckbox>.withCheckboxAtIndex(
 }
 
 fun List<ViewTemplateCheckbox>.updateParentKeys(parentKey: ViewTemplateCheckboxKey? = null): List<ViewTemplateCheckbox> {
-    this.map {
+    return map {
         val updatedCheckbox = it.abstractCopy(parentViewKey = parentKey)
         updatedCheckbox.abstractCopy(children = updatedCheckbox.children.updateParentKeys(updatedCheckbox.viewKey))
     }

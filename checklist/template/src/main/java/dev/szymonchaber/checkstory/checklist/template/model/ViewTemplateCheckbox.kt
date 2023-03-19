@@ -1,10 +1,12 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
+import dev.szymonchaber.checkstory.checklist.template.viewId
 import dev.szymonchaber.checkstory.checklist.template.viewKey
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicLong
 
 sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
@@ -30,7 +32,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     ): ViewTemplateCheckbox {
         val updatedChildren = children
             .firstOrNull {
-                it.viewKey == childTaskViewKey
+                it.viewId == childTaskViewKey.viewId
             }
             ?.let {
                 onItemFoundAndRemoved(it)
@@ -46,8 +48,8 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         parentTask: ViewTemplateCheckboxKey,
         childTask: ViewTemplateCheckbox
     ): ViewTemplateCheckbox {
-        val updatedChildren = if (viewKey == parentTask) {
-            children.withCheckboxAtIndex(childTask, 0)
+        val updatedChildren = if (viewId == parentTask.viewId) {
+            children.withCheckboxAtIndex(childTask.updateParentKey(viewKey), 0)
         } else {
             children.map { it.withMovedChildRecursive(parentTask, childTask) }
         }
@@ -58,10 +60,10 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         siblingViewKey: ViewTemplateCheckboxKey,
         movedItem: ViewTemplateCheckbox
     ): ViewTemplateCheckbox {
-        val siblingIndex = children.indexOfFirst { it.viewKey == siblingViewKey }
+        val siblingIndex = children.indexOfFirst { it.viewId == siblingViewKey.viewId }
         val isSiblingOnThisLevel = siblingIndex > -1
         val updatedChildren = if (isSiblingOnThisLevel) {
-            children.withCheckboxAtIndex(movedItem, siblingIndex + 1)
+            children.withCheckboxAtIndex(movedItem.updateParentKey(this.viewKey), siblingIndex + 1)
         } else {
             children.map {
                 it.withMovedSiblingRecursive(siblingViewKey, movedItem)
@@ -71,7 +73,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     }
 
     fun withUpdatedTitleRecursive(checkbox: ViewTemplateCheckbox, newTitle: String): ViewTemplateCheckbox {
-        return if (viewKey == checkbox.viewKey) {
+        return if (viewId == checkbox.viewId) {
             abstractCopy(title = newTitle)
         } else {
             abstractCopy(children = children.map { it.withUpdatedTitleRecursive(checkbox, newTitle) })
@@ -79,6 +81,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     }
 
     fun plusChildCheckboxRecursive(
+        newItemIndexGenerator: AtomicLong,
         parentId: ViewTemplateCheckboxKey,
         onItemAdded: (ViewTemplateCheckboxKey) -> Unit
     ): ViewTemplateCheckbox {
@@ -86,7 +89,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             children = if (viewKey == parentId) {
                 children.plus(
                     New(
-                        TemplateCheckboxId(children.size.toLong()),
+                        TemplateCheckboxId(newItemIndexGenerator.getAndIncrement()),
                         viewKey,
                         false,
                         "",
@@ -98,13 +101,14 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                 )
             } else {
                 children.map {
-                    it.plusChildCheckboxRecursive(parentId, onItemAdded)
+                    it.plusChildCheckboxRecursive(newItemIndexGenerator, parentId, onItemAdded)
                 }
             }
         )
     }
 
     fun plusNestedChildCheckboxRecursive(
+        newItemIndexGenerator: AtomicLong,
         parentId: ViewTemplateCheckboxKey,
         placeholderTitle: String = "",
         checkboxes: List<CheckboxToChildren>
@@ -112,7 +116,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         return abstractCopy(
             children = if (viewKey == parentId) {
                 val newElement = New(
-                    id = TemplateCheckboxId(children.size.toLong()),
+                    id = TemplateCheckboxId(newItemIndexGenerator.getAndIncrement()),
                     parentViewKey = viewKey,
                     isParent = false,
                     title = "",
@@ -123,6 +127,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                 val newUpdatedElement =
                     checkboxes.fold(newElement) { acc: ViewTemplateCheckbox, checkboxToChildren ->
                         acc.plusNestedChildCheckboxRecursive(
+                            newItemIndexGenerator,
                             newElement.viewKey,
                             checkboxToChildren.placeholderTitle,
                             checkboxToChildren.children
@@ -130,7 +135,14 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                     }
                 children.plus(newUpdatedElement)
             } else {
-                children.map { it.plusNestedChildCheckboxRecursive(parentId, placeholderTitle, checkboxes) }
+                children.map {
+                    it.plusNestedChildCheckboxRecursive(
+                        newItemIndexGenerator,
+                        parentId,
+                        placeholderTitle,
+                        checkboxes
+                    )
+                }
             }
         )
     }
@@ -141,6 +153,11 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
         return abstractCopy(isLastChild = isLastChild)
+    }
+
+    fun updateParentKey(parentKey: ViewTemplateCheckboxKey?): ViewTemplateCheckbox {
+        val updatedCheckbox = abstractCopy(parentViewKey = parentKey)
+        return updatedCheckbox.abstractCopy(children = updatedCheckbox.children.updateParentKeys(updatedCheckbox.viewKey))
     }
 
     fun abstractCopy(
@@ -238,7 +255,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
             fun fromDomainModel(
                 templateCheckbox: TemplateCheckbox,
                 ancestorViewKey: ViewTemplateCheckboxKey? = templateCheckbox.parentId?.let {
-                    ViewTemplateCheckboxKey(viewId = it.id, parentKey = null, isNew = false)
+                    ViewTemplateCheckboxKey(id = it.id, parentKey = null, isNew = false)
                 }
             ): Existing {
                 return with(templateCheckbox) {
@@ -249,7 +266,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         title = title,
                         children = children.map {
                             fromDomainModel(it, it.parentId?.let {
-                                ViewTemplateCheckboxKey(viewId = it.id, parentKey = ancestorViewKey, isNew = false)
+                                ViewTemplateCheckboxKey(id = it.id, parentKey = ancestorViewKey, isNew = false)
                             })
                         }.reindexed(),
                         false

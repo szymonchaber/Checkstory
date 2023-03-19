@@ -55,6 +55,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -366,9 +367,7 @@ fun NewEditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit,
     onAddedItemConsumed: () -> Unit
 ) {
-    val dragDropState = rememberDragDropState(currentTasksProvider = {
-        success.unwrappedCheckboxes
-    })
+    val dragDropState = rememberDragDropState()
     LaunchedEffect(dragDropState.isDragging) {
         val data = if (!dragDropState.isDragging) {
             dragDropState.dataToDrop
@@ -377,6 +376,7 @@ fun NewEditTemplateView(
         }
         data?.let {
             dragDropState.dataToDrop = null
+            dragDropState.checkboxViewId = null
             dragDropState.currentDropTarget?.invoke(it)
         }
     }
@@ -408,7 +408,7 @@ fun NewEditTemplateView(
                 items(
                     items = success.unwrappedCheckboxes,
                     key = { (item, _) ->
-                        item.viewKey
+                        item.viewId
                     }
                 ) { (checkbox, nestingLevel) ->
                     Row(
@@ -457,7 +457,29 @@ fun NewEditTemplateView(
                             targetSize = it.size
                         }
                 ) {
-                    dragDropState.draggableComposable?.invoke(Modifier)
+                    val task by remember(success.unwrappedCheckboxes, dragDropState.checkboxViewId) {
+                        derivedStateOf {
+                            success.unwrappedCheckboxes
+                                .find {
+                                    it.first.viewId == dragDropState.checkboxViewId
+                                }
+                        }
+                    }
+                    task?.let { (foundTask, _) ->
+                        LaunchedEffect(key1 = foundTask) {
+                            dragDropState.dataToDrop = foundTask.viewKey
+                        }
+                        NewCheckboxItem(
+                            title = foundTask.title,
+                            placeholder = foundTask.placeholderTitle,
+                            isFunctional = false,
+                            focusRequester = remember { FocusRequester() },
+                            onTitleChange = {},
+                            onAddSubtask = {},
+                            onDeleteClick = {},
+                            acceptChildren = false
+                        )
+                    }
                 }
             }
         }
@@ -768,7 +790,7 @@ private fun TextFieldWithFixedPlaceholder(
 
 @Parcelize
 data class ViewTemplateCheckboxKey(
-    val viewId: Long,
+    val id: Long,
     val parentKey: ViewTemplateCheckboxKey?,
     val isNew: Boolean
 ) : Parcelable {
@@ -786,6 +808,26 @@ val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
         )
     }
 
+@Parcelize
+data class ViewTemplateCheckboxId(
+    val viewId: Long,
+    val isNew: Boolean
+) : Parcelable
+
+val ViewTemplateCheckbox.viewId: ViewTemplateCheckboxId
+    get() {
+        return ViewTemplateCheckboxId(id.id, this is ViewTemplateCheckbox.New)
+    }
+
+val ViewTemplateCheckboxKey.viewId: ViewTemplateCheckboxId
+    get() {
+        return ViewTemplateCheckboxId(
+            id,
+            isNew
+        )
+    }
+
+
 fun LazyListState.getVisibleItemInfoFor(absoluteIndex: Int): LazyListItemInfo? {
     return this.layoutInfo.visibleItemsInfo.getOrNull(absoluteIndex - this.layoutInfo.visibleItemsInfo.first().index)
 }
@@ -798,15 +840,9 @@ val LocalDragDropState = compositionLocalOf<DragDropState> {
 }
 
 @Composable
-fun rememberDragDropState(
-    lazyListState: LazyListState = rememberLazyListState(),
-    currentTasksProvider: () -> List<Pair<ViewTemplateCheckbox, Int>>,
-): DragDropState {
+fun rememberDragDropState(lazyListState: LazyListState = rememberLazyListState()): DragDropState {
     return remember {
-        DragDropState(
-            getCurrentTasks = currentTasksProvider,
-            lazyListState = lazyListState,
-        )
+        DragDropState(lazyListState = lazyListState)
     }
 }
 
