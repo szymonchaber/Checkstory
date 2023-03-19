@@ -287,12 +287,11 @@ private fun EditTemplateScaffold(
                     LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
                         recentlyAddedUnconsumedItem = loadingState.mostRecentlyAddedItem
                     }
-                    CompositionLocalProvider(RecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem) {
-//                        EditTemplateView(
-                        NewEditTemplateView(
-                            loadingState,
-                            viewModel::onEvent
-                        ) {
+                    CompositionLocalProvider(
+                        RecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
+                        LocalDragDropState provides rememberDragDropState()
+                    ) {
+                        NewEditTemplateView(loadingState, viewModel::onEvent) {
                             recentlyAddedUnconsumedItem = null
                         }
                     }
@@ -367,7 +366,7 @@ fun NewEditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit,
     onAddedItemConsumed: () -> Unit
 ) {
-    val dragDropState = rememberDragDropState()
+    val dragDropState = LocalDragDropState.current
     LaunchedEffect(dragDropState.isDragging) {
         val data = if (!dragDropState.isDragging) {
             dragDropState.dataToDrop
@@ -389,106 +388,102 @@ fun NewEditTemplateView(
             }
         }
     }
-    CompositionLocalProvider(
-        LocalDragDropState provides dragDropState,
-    ) {
-        Box(Modifier.fillMaxSize()) {
-            val template = success.checklistTemplate
-            LazyColumn(
-                Modifier
-                    .detectLazyListReorder()
-                    .fillMaxSize(),
-                state = dragDropState.lazyListState,
-                contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                item {
-                    ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
+    Box(Modifier.fillMaxSize()) {
+        val template = success.checklistTemplate
+        LazyColumn(
+            Modifier
+                .detectLazyListReorder()
+                .fillMaxSize(),
+            state = dragDropState.lazyListState,
+            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            item {
+                ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
+            }
+            items(
+                items = success.unwrappedCheckboxes,
+                key = { (item, _) ->
+                    item.viewId
                 }
-                items(
-                    items = success.unwrappedCheckboxes,
-                    key = { (item, _) ->
-                        item.viewId
-                    }
-                ) { (checkbox, nestingLevel) ->
-                    Row(
-                        Modifier
-                            .animateItemPlacement()
-                            .padding(start = 16.dp, end = 16.dp) // TODO what this?
-                    ) {
-                        val startPadding by animateDpAsState(
-                            nestedPaddingStart * nestingLevel
-                        )
-                        NewCommonCheckbox(
-                            checkbox = checkbox,
-                            paddingStart = startPadding,
-                            nestingLevel = nestingLevel,
-                            onAddedItemConsumed = onAddedItemConsumed,
-                            eventCollector = eventCollector
-                        )
-                    }
-                }
-                item {
-                    Box(Modifier.height(IntrinsicSize.Min)) {
-                        Column {
-                            AddTaskButton(eventCollector)
-                            RemindersSection(template, eventCollector)
-                            DeleteTemplateButton(eventCollector)
-                        }
-                        DropTarget(
-                            modifier = Modifier
-                                .fillMaxSize(),
-                            placeTargetLineOnTop = true,
-                            onDataDropped = { taskKey ->
-                                eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
-                            }
-                        )
-                    }
-
+            ) { (checkbox, nestingLevel) ->
+                Row(
+                    Modifier
+                        .animateItemPlacement()
+                        .padding(start = 16.dp, end = 16.dp) // TODO what this?
+                ) {
+                    val startPadding by animateDpAsState(
+                        nestedPaddingStart * nestingLevel
+                    )
+                    NewCommonCheckbox(
+                        checkbox = checkbox,
+                        paddingStart = startPadding,
+                        nestingLevel = nestingLevel,
+                        onAddedItemConsumed = onAddedItemConsumed,
+                        eventCollector = eventCollector
+                    )
                 }
             }
-            DropTargetIndicatorLine()
-            if (dragDropState.isDragging) {
-                var targetSize by remember {
-                    mutableStateOf(IntSize.Zero)
+            item {
+                Box(Modifier.height(IntrinsicSize.Min)) {
+                    Column {
+                        AddTaskButton(eventCollector)
+                        RemindersSection(template, eventCollector)
+                        DeleteTemplateButton(eventCollector)
+                    }
+                    DropTarget(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        placeTargetLineOnTop = true,
+                        onDataDropped = { taskKey ->
+                            eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                        }
+                    )
                 }
-                Box(
-                    modifier = Modifier
-                        .graphicsLayer {
-                            val offset = (dragDropState.dragPosition + dragDropState.dragOffset)
-                            alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                            translationX = offset.x//.minus(12.dp.toPx())
+
+            }
+        }
+        DropTargetIndicatorLine()
+        if (dragDropState.isDragging) {
+            var targetSize by remember {
+                mutableStateOf(IntSize.Zero)
+            }
+            Box(
+                modifier = Modifier
+                    .graphicsLayer {
+                        val offset = (dragDropState.dragPosition + dragDropState.dragOffset)
+                        alpha = if (targetSize == IntSize.Zero) 0f else .9f
+                        translationX = offset.x//.minus(12.dp.toPx())
 //                            translationY = offset.y//.minus(targetSize.height * 2 + 0.dp.toPx())
-                            translationY = offset.y
+                        translationY = offset.y
 //                                dragDropState.dragPosition.y + (dragDropListStateMine.elementDisplacement ?: 0f)
-                        }
-                        .onGloballyPositioned {
-                            targetSize = it.size
-                        }
-                ) {
-                    val task by remember(success.unwrappedCheckboxes, dragDropState.checkboxViewId) {
-                        derivedStateOf {
-                            success.unwrappedCheckboxes
-                                .find {
-                                    it.first.viewId == dragDropState.checkboxViewId
-                                }
-                        }
                     }
-                    task?.let { (foundTask, _) ->
-                        LaunchedEffect(key1 = foundTask) {
-                            dragDropState.dataToDrop = foundTask.viewKey
-                        }
-                        NewCheckboxItem(
-                            title = foundTask.title,
-                            placeholder = foundTask.placeholderTitle,
-                            isFunctional = false,
-                            focusRequester = remember { FocusRequester() },
-                            onTitleChange = {},
-                            onAddSubtask = {},
-                            onDeleteClick = {},
-                            acceptChildren = false
-                        )
+                    .onGloballyPositioned {
+                        targetSize = it.size
                     }
+            ) {
+                val task by remember(success.unwrappedCheckboxes, dragDropState.checkboxViewId) {
+                    derivedStateOf {
+                        success.unwrappedCheckboxes
+                            .find {
+                                it.first.viewId == dragDropState.checkboxViewId
+                            }
+                    }
+                }
+                task?.let { (foundTask, _) ->
+                    LaunchedEffect(key1 = foundTask) {
+                        dragDropState.dataToDrop = foundTask.viewKey
+                    }
+                    NewCheckboxItem(
+                        title = foundTask.title,
+                        placeholder = foundTask.placeholderTitle,
+                        isFunctional = false,
+                        focusRequester = remember { FocusRequester() },
+                        onTitleChange = {},
+                        onAddSubtask = {},
+                        onDeleteClick = {},
+                        acceptChildren = false
+                    )
                 }
             }
         }
