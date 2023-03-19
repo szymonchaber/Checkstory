@@ -20,7 +20,6 @@ sealed interface TemplateLoadingState {
         val isOnboardingTemplate: Boolean = false
     ) : TemplateLoadingState {
 
-
         val unwrappedCheckboxes = flattenWithNestedLevel()
 
         private fun flattenWithNestedLevel(): List<Pair<ViewTemplateCheckbox, Int>> {
@@ -158,10 +157,6 @@ sealed interface TemplateLoadingState {
             }.copy(remindersToDelete = updatedRemindersToDelete)
         }
 
-        fun withMovedCheckbox(from: ViewTemplateCheckboxKey, to: ViewTemplateCheckboxKey): TemplateLoadingState {
-            return copy(checkboxes = checkboxes) // TODO DO!
-        }
-
         fun withSiblingMovedBelow(
             below: ViewTemplateCheckboxKey,
             newSiblingKey: ViewTemplateCheckboxKey
@@ -248,4 +243,11 @@ fun List<ViewTemplateCheckbox>.withCheckboxAtIndex(
     index: Int
 ): List<ViewTemplateCheckbox> {
     return take(index) + checkbox + drop(index)
+}
+
+fun List<ViewTemplateCheckbox>.updateParentKeys(parentKey: ViewTemplateCheckboxKey? = null): List<ViewTemplateCheckbox> {
+    this.map {
+        val updatedCheckbox = it.abstractCopy(parentViewKey = parentKey)
+        updatedCheckbox.abstractCopy(children = updatedCheckbox.children.updateParentKeys(updatedCheckbox.viewKey))
+    }
 }
