@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.checklist.template
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -15,7 +14,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
@@ -37,7 +35,7 @@ fun CommonCheckbox(
         CheckboxItem(
             modifier = Modifier
 //                .drawFolderStructure(nestingLevel, paddingStart, taskTopPadding) TODO decide if this should stay
-                .padding(top = taskTopPadding, start = paddingStart),
+                .padding(top = taskTopPadding, start = paddingStart + 16.dp, end = 16.dp),
             title = checkbox.title,
             placeholder = checkbox.placeholderTitle,
             focusRequester = focusRequester,
@@ -53,7 +51,8 @@ fun CommonCheckbox(
             acceptChildren = acceptChildren
         )
         Receptacles(
-            modifier = Modifier.padding(top = 0.dp, start = paddingStart),
+            modifier = Modifier,
+            dropTargetOffset = paddingStart + 16.dp,
             acceptChildren = acceptChildren,
             forCheckbox = checkbox.viewKey,
             onSiblingTaskDropped = { siblingTask ->
@@ -80,6 +79,7 @@ private fun Receptacles(
     onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
     modifier: Modifier = Modifier,
     acceptChildren: Boolean,
+    dropTargetOffset: Dp,
 ) {
     Row(modifier.fillMaxSize()) {
         DropTarget(
@@ -87,13 +87,15 @@ private fun Receptacles(
                 .fillMaxHeight()
                 .then {
                     if (acceptChildren) {
-                        width(24.dp)
+                        val siblingLevelTargetSizeMinimum = 24.dp
+                        width(dropTargetOffset + siblingLevelTargetSizeMinimum)
                     } else {
                         fillMaxWidth()
                     }
-                }
-                .background(Color.Red.copy(alpha = 0.2f)),
+                },
+//                .background(Color.Red.copy(alpha = 0.2f)),
             key = forCheckbox,
+            dropTargetOffset = dropTargetOffset,
             onDataDropped = { siblingTask ->
                 onSiblingTaskDropped(siblingTask)
             }
@@ -102,8 +104,8 @@ private fun Receptacles(
             DropTarget(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .weight(1f)
-                    .background(Color.Yellow.copy(alpha = 0.2f)),
+                    .weight(1f),
+//                    .background(Color.Yellow.copy(alpha = 0.2f)),
                 key = forCheckbox,
                 onDataDropped = { childTask ->
                     onChildTaskDropped(childTask)

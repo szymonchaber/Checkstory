@@ -8,12 +8,10 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -329,7 +327,6 @@ fun EditTemplateView(
                 .detectLazyListReorder()
                 .fillMaxSize(),
             state = dragDropState.lazyListState,
-            contentPadding = PaddingValues(top = 16.dp, bottom = 0.dp),
             verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             item {
@@ -342,9 +339,7 @@ fun EditTemplateView(
                 }
             ) { (checkbox, nestingLevel) ->
                 Row(
-                    Modifier
-                        .animateItemPlacement()
-                        .padding(start = 16.dp, end = 16.dp) // TODO what this?
+                    Modifier.animateItemPlacement()
                 ) {
                     val startPadding by animateDpAsState(
                         nestedPaddingStart * nestingLevel
@@ -366,12 +361,12 @@ fun EditTemplateView(
                     }
                     DropTarget(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Red.copy(alpha = 0.2f)),
+                            .fillMaxSize(),
+//                            .background(Color.Green.copy(alpha = 0.2f)),
                         placeTargetLineOnTop = true,
                         onDataDropped = { taskKey ->
                             eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
-                        }
+                        },
                     )
                 }
             }
@@ -410,7 +405,7 @@ private fun ChecklistTemplateDetails(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Box(Modifier.height(IntrinsicSize.Min)) {
-        Column {
+        Column(Modifier.padding(top = 16.dp)) {
             TitleTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
             DescriptionTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
             SectionLabel(
@@ -424,6 +419,7 @@ private fun ChecklistTemplateDetails(
         DropTarget(
             modifier = Modifier
                 .fillMaxSize(),
+//                .background(Color.Blue.copy(alpha = 0.2f)),
             onDataDropped = { taskKey ->
                 eventCollector(EditTemplateEvent.CheckboxMovedToTop(taskKey))
             },

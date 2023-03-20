@@ -9,6 +9,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.common.extensions.let
@@ -20,7 +21,8 @@ fun DropTarget(
     onDataDropped: (ViewTemplateCheckboxKey) -> Unit,
     content: @Composable (BoxScope.() -> Unit) = {},
     placeTargetLineOnTop: Boolean = false,
-    key: ViewTemplateCheckboxKey? = null
+    key: ViewTemplateCheckboxKey? = null,
+    dropTargetOffset: Dp = 0.dp
 ) {
     val dragInfo = LocalDragDropState.current
     val dragPosition = dragInfo.dragPosition
@@ -44,12 +46,18 @@ fun DropTarget(
 
     Box(modifier = modifier.onGloballyPositioned {
         it.boundsInWindow().let { rect ->
-            val isCurrentDropTarget =
-                rect.contains(dragPosition + dragOffset + Offset(0f, density.run { 96.dp.toPx() }))
-            if (isCurrentDropTarget && canReceive(dragInfo.dataToDrop)) {
-                dragInfo.currentDropTarget = onDataDropped
-                val yOffset = if (placeTargetLineOnTop) 0f else it.size.height.toFloat()
-                dragInfo.currentDropTargetPosition = it.positionInRoot().plus(Offset(x = 0f, y = yOffset))
+            with(density) {
+                val isCurrentDropTarget = rect.contains(dragPosition + dragOffset + Offset(0f, 96.dp.toPx()))
+                if (isCurrentDropTarget && canReceive(dragInfo.dataToDrop)) {
+                    dragInfo.currentDropTarget = onDataDropped
+                    val yOffset = if (placeTargetLineOnTop) {
+                        0f
+                    } else {
+                        it.size.height.toFloat()
+                    }
+                    dragInfo.currentDropTargetPosition =
+                        it.positionInRoot().plus(Offset(x = dropTargetOffset.toPx(), y = yOffset))
+                }
             }
         }
     }, content = content)
