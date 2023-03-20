@@ -4,14 +4,12 @@ package dev.szymonchaber.checkstory.checklist.template
 
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.scrollBy
@@ -64,7 +62,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -103,7 +100,6 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderView
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
-import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
 import dev.szymonchaber.checkstory.checklist.template.views.NewCheckboxItem
 import dev.szymonchaber.checkstory.checklist.template.views.pleasantCharacterRemovalAnimationDurationMillis
 import dev.szymonchaber.checkstory.common.trackScreenName
@@ -321,48 +317,6 @@ private fun BackIcon(onBackClicked: () -> Unit) {
 
 val nestedPaddingStart = 32.dp
 
-@Composable
-fun EditTemplateView(
-    success: TemplateLoadingState.Success,
-    eventCollector: (EditTemplateEvent) -> Unit,
-    onAddedItemConsumed: () -> Unit
-) {
-    val template = success.checklistTemplate
-    LazyColumn(
-        contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        item {
-            ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
-        }
-        items(
-            items = success.checkboxes,
-            key = { it.viewKey }
-        ) { checkbox ->
-            Row(
-                Modifier.padding(start = 16.dp, end = 16.dp)
-            ) {
-                CommonCheckbox(
-                    checkbox = checkbox,
-                    paddingStart = nestedPaddingStart,
-                    isLastChild = true,
-                    onAddedItemConsumed = onAddedItemConsumed,
-                    eventCollector = eventCollector
-                )
-            }
-        }
-        item {
-            AddTaskButton(eventCollector)
-        }
-        item {
-            RemindersSection(template, eventCollector)
-        }
-        item {
-            DeleteTemplateButton(eventCollector)
-        }
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NewEditTemplateView(
@@ -511,100 +465,6 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
                 .align(Alignment.TopCenter)
         ) {
             eventCollector(EditTemplateEvent.DeleteTemplateClicked)
-        }
-    }
-}
-
-@Composable
-private fun CommonCheckbox(
-    checkbox: ViewTemplateCheckbox,
-    paddingStart: Dp,
-    isLastChild: Boolean,
-    nestingLevel: Int = 1,
-    onAddedItemConsumed: () -> Unit,
-    eventCollector: (EditTemplateEvent) -> Unit,
-) {
-    Column {
-        val taskTopPadding = 8.dp
-        val paddingStartActual = if (nestingLevel > 1) paddingStart else 0.dp
-        val focusRequester = remember { FocusRequester() }
-        CheckboxItem(
-            modifier = Modifier
-                .drawBehind { // TODO check drawWithContent or withCache
-                    if (nestingLevel > 1) {
-                        val heightFraction = if (!isLastChild) 1f else 0.5f
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset.Zero,
-                            end = Offset(0f, size.height * heightFraction + taskTopPadding.toPx() / 2),
-                            strokeWidth = 4.dp.toPx()
-                        )
-                        val visualCenterY = center.y + taskTopPadding.toPx() / 2
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(x = 0f, y = visualCenterY),
-                            end = Offset(x = paddingStart.toPx(), y = visualCenterY),
-                            strokeWidth = 2.dp.toPx()
-                        )
-                    }
-                }
-                .padding(top = taskTopPadding, start = paddingStartActual),
-            title = checkbox.title,
-            placeholder = checkbox.placeholderTitle,
-            nestingLevel = nestingLevel,
-            focusRequester = focusRequester,
-            onTitleChange = {
-                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-            },
-            onAddSubtask = {
-                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
-            }
-        ) {
-            eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
-        }
-        val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
-        LaunchedEffect(recentlyAddedItem.item) {
-            if (checkbox.viewKey == recentlyAddedItem.item) {
-                focusRequester.requestFocus()
-                onAddedItemConsumed()
-            }
-        }
-        val paddingMultiplier = if (nestingLevel == 1) {
-            1
-        } else {
-            2
-        }
-        Row {
-            val localDensity = LocalDensity.current
-            var columnHeightDp by remember {
-                mutableStateOf(0.dp)
-            }
-            if (!isLastChild) {
-                Box(
-                    modifier = Modifier
-                        .height(columnHeightDp)
-                        .background(Color.Gray)
-                        .width(2.dp)
-                )
-            }
-            Column(
-                Modifier
-                    .padding(start = paddingStart * paddingMultiplier)
-                    .animateContentSize()
-                    .onGloballyPositioned {
-                        columnHeightDp = with(localDensity) { it.size.height.toDp() }
-                    }) {
-                checkbox.children.forEachIndexed { index, child ->
-                    CommonCheckbox(
-                        checkbox = child,
-                        paddingStart = paddingStart,
-                        isLastChild = checkbox.children.lastIndex == index,
-                        nestingLevel = nestingLevel + 1,
-                        onAddedItemConsumed = onAddedItemConsumed,
-                        eventCollector = eventCollector,
-                    )
-                }
-            }
         }
     }
 }
