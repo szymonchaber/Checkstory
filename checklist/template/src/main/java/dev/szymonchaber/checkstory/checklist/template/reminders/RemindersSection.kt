@@ -31,7 +31,7 @@ fun RemindersSection(
         Row {
             SectionLabel(
                 modifier = Modifier
-                    .padding(start = 16.dp)
+                    .padding(start = 16.dp, top = 4.dp)
                     .align(Alignment.CenterVertically),
                 text = stringResource(id = R.string.reminders_label),
             )

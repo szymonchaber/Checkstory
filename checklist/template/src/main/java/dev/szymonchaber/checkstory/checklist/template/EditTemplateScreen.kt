@@ -8,6 +8,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -328,8 +329,8 @@ fun EditTemplateView(
                 .detectLazyListReorder()
                 .fillMaxSize(),
             state = dragDropState.lazyListState,
-            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 0.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             item {
                 ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
@@ -365,7 +366,8 @@ fun EditTemplateView(
                     }
                     DropTarget(
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .background(Color.Red.copy(alpha = 0.2f)),
                         placeTargetLineOnTop = true,
                         onDataDropped = { taskKey ->
                             eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
@@ -382,7 +384,7 @@ fun EditTemplateView(
 @Composable
 private fun AddTaskButton(eventCollector: (EditTemplateEvent) -> Unit) {
     AddButton(
-        modifier = Modifier.padding(start = 8.dp),
+        modifier = Modifier.padding(start = 8.dp, top = 4.dp),
         onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
         text = stringResource(R.string.new_checkbox)
     )
@@ -393,7 +395,7 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
     Box(Modifier.fillMaxWidth()) {
         DeleteButton(
             modifier = Modifier
-                .padding(top = 16.dp)
+                .padding(top = 20.dp, bottom = 96.dp)
                 .align(Alignment.TopCenter)
         ) {
             eventCollector(EditTemplateEvent.DeleteTemplateClicked)

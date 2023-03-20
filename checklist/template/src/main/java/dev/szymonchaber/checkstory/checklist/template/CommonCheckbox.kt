@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
@@ -28,7 +30,7 @@ fun CommonCheckbox(
     nestingLevel: Int,
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
-    val taskTopPadding = 8.dp
+    val taskTopPadding = 12.dp
     val focusRequester = remember { FocusRequester() }
     Box(Modifier.height(IntrinsicSize.Min)) {
         val acceptChildren = nestingLevel < 3
@@ -51,7 +53,7 @@ fun CommonCheckbox(
             acceptChildren = acceptChildren
         )
         Receptacles(
-            modifier = Modifier.padding(top = taskTopPadding, start = paddingStart),
+            modifier = Modifier.padding(top = 0.dp, start = paddingStart),
             acceptChildren = acceptChildren,
             forCheckbox = checkbox.viewKey,
             onSiblingTaskDropped = { siblingTask ->
@@ -89,7 +91,8 @@ private fun Receptacles(
                     } else {
                         fillMaxWidth()
                     }
-                },
+                }
+                .background(Color.Red.copy(alpha = 0.2f)),
             key = forCheckbox,
             onDataDropped = { siblingTask ->
                 onSiblingTaskDropped(siblingTask)
@@ -99,7 +102,8 @@ private fun Receptacles(
             DropTarget(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .weight(1f),
+                    .weight(1f)
+                    .background(Color.Yellow.copy(alpha = 0.2f)),
                 key = forCheckbox,
                 onDataDropped = { childTask ->
                     onChildTaskDropped(childTask)
