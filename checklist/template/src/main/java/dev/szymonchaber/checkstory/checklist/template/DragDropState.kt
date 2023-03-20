@@ -21,6 +21,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.dp
+import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlin.contracts.ExperimentalContracts

@@ -6,31 +6,21 @@ import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.drag
-import androidx.compose.foundation.gestures.forEachGesture
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListItemInfo
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,7 +43,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,29 +50,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.PointerId
-import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.changedToUp
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -99,8 +72,13 @@ import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
+import dev.szymonchaber.checkstory.checklist.template.reoder.DropTarget
+import dev.szymonchaber.checkstory.checklist.template.reoder.DropTargetIndicatorLine
+import dev.szymonchaber.checkstory.checklist.template.reoder.FloatingDraggable
+import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
+import dev.szymonchaber.checkstory.checklist.template.reoder.detectLazyListReorder
+import dev.szymonchaber.checkstory.checklist.template.reoder.rememberDragDropState
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
-import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
 import dev.szymonchaber.checkstory.checklist.template.views.pleasantCharacterRemovalAnimationDurationMillis
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
@@ -111,10 +89,8 @@ import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
-import timber.log.Timber
 import java.time.Duration.*
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -230,7 +206,6 @@ class RecentlyAddedUnconsumedItem {
 
     var item by mutableStateOf<ViewTemplateCheckboxKey?>(null)
 }
-
 
 @Composable
 private fun EditTemplateScaffold(
@@ -397,53 +372,10 @@ fun EditTemplateView(
                         }
                     )
                 }
-
             }
         }
         DropTargetIndicatorLine()
-        if (dragDropState.isDragging) {
-            var targetSize by remember {
-                mutableStateOf(IntSize.Zero)
-            }
-            Box(
-                modifier = Modifier
-                    .graphicsLayer {
-                        val offset = (dragDropState.dragPosition + dragDropState.dragOffset)
-                        alpha = if (targetSize == IntSize.Zero) 0f else .9f
-                        translationX = offset.x//.minus(12.dp.toPx())
-//                            translationY = offset.y//.minus(targetSize.height * 2 + 0.dp.toPx())
-                        translationY = offset.y
-//                                dragDropState.dragPosition.y + (dragDropListStateMine.elementDisplacement ?: 0f)
-                    }
-                    .onGloballyPositioned {
-                        targetSize = it.size
-                    }
-            ) {
-                val task by remember(success.unwrappedCheckboxes, dragDropState.checkboxViewId) {
-                    derivedStateOf {
-                        success.unwrappedCheckboxes
-                            .find {
-                                it.first.viewId == dragDropState.checkboxViewId
-                            }
-                    }
-                }
-                task?.let { (foundTask, _) ->
-                    LaunchedEffect(key1 = foundTask) {
-                        dragDropState.dataToDrop = foundTask.viewKey
-                    }
-                    CheckboxItem(
-                        title = foundTask.title,
-                        placeholder = foundTask.placeholderTitle,
-                        isFunctional = false,
-                        focusRequester = remember { FocusRequester() },
-                        onTitleChange = {},
-                        onAddSubtask = {},
-                        onDeleteClick = {},
-                        acceptChildren = false
-                    )
-                }
-            }
-        }
+        FloatingDraggable(success)
     }
 }
 
@@ -465,56 +397,6 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
                 .align(Alignment.TopCenter)
         ) {
             eventCollector(EditTemplateEvent.DeleteTemplateClicked)
-        }
-    }
-}
-
-@Composable
-private fun CommonCheckbox(
-    checkbox: ViewTemplateCheckbox,
-    paddingStart: Dp,
-    nestingLevel: Int,
-    eventCollector: (EditTemplateEvent) -> Unit,
-) {
-    val taskTopPadding = 8.dp
-    val focusRequester = remember { FocusRequester() }
-    Box(Modifier.height(IntrinsicSize.Min)) {
-        val acceptChildren = nestingLevel < 3
-        CheckboxItem(
-            modifier = Modifier
-//                .drawFolderStructure(nestingLevel, paddingStart, taskTopPadding) TODO decide if this should stay
-                .padding(top = taskTopPadding, start = paddingStart),
-            title = checkbox.title,
-            placeholder = checkbox.placeholderTitle,
-            focusRequester = focusRequester,
-            onTitleChange = {
-                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-            },
-            onAddSubtask = {
-                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
-            },
-            onDeleteClick = {
-                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
-            },
-            acceptChildren = acceptChildren
-        )
-        Receptacles(
-            modifier = Modifier.padding(top = taskTopPadding, start = paddingStart),
-            acceptChildren = acceptChildren,
-            forCheckbox = checkbox.viewKey,
-            onSiblingTaskDropped = { siblingTask ->
-                eventCollector(EditTemplateEvent.SiblingMovedBelow(checkbox.viewKey, siblingTask))
-            },
-            onChildTaskDropped = { childTask ->
-                eventCollector(EditTemplateEvent.ChildMovedBelow(checkbox.viewKey, childTask))
-            }
-        )
-    }
-    val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
-    LaunchedEffect(recentlyAddedItem.item) {
-        if (checkbox.viewKey == recentlyAddedItem.item) {
-            focusRequester.requestFocus()
-            recentlyAddedItem.item = null
         }
     }
 }
@@ -693,213 +575,9 @@ val ViewTemplateCheckboxKey.viewId: ViewTemplateCheckboxId
         )
     }
 
-
-fun LazyListState.getVisibleItemInfoFor(absoluteIndex: Int): LazyListItemInfo? {
-    return this.layoutInfo.visibleItemsInfo.getOrNull(absoluteIndex - this.layoutInfo.visibleItemsInfo.first().index)
-}
-
 val LazyListItemInfo.offsetEnd: Int
     get() = this.offset + this.size
 
-val LocalDragDropState = compositionLocalOf<DragDropState> {
-    error("You must provide LocalDragDropState")
-}
-
-@Composable
-fun rememberDragDropState(lazyListState: LazyListState = rememberLazyListState()): DragDropState {
-    return remember {
-        DragDropState(lazyListState = lazyListState)
-    }
-}
-
-@Composable
-private fun Receptacles(
-    forCheckbox: ViewTemplateCheckboxKey?,
-    onSiblingTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
-    onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
-    modifier: Modifier = Modifier,
-    acceptChildren: Boolean,
-) {
-    Row(modifier.fillMaxSize()) {
-        DropTarget(
-            modifier = Modifier
-                .fillMaxHeight()
-                .then {
-                    if (acceptChildren) {
-                        width(24.dp)
-                    } else {
-                        fillMaxWidth()
-                    }
-                },
-            key = forCheckbox,
-            onDataDropped = { siblingTask ->
-                onSiblingTaskDropped(siblingTask)
-            }
-        )
-        if (acceptChildren) {
-            DropTarget(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .weight(1f),
-                key = forCheckbox,
-                onDataDropped = { childTask ->
-                    onChildTaskDropped(childTask)
-                }
-            )
-        }
-    }
-}
-
 fun Modifier.then(modifier: Modifier.() -> Modifier): Modifier {
     return then(modifier(Modifier))
-}
-
-
-@Composable
-fun DropTarget(
-    modifier: Modifier,
-    onDataDropped: (ViewTemplateCheckboxKey) -> Unit,
-    content: @Composable (BoxScope.() -> Unit) = {},
-    placeTargetLineOnTop: Boolean = false,
-    key: ViewTemplateCheckboxKey? = null
-) {
-    val dragInfo = LocalDragDropState.current
-    val dragPosition = dragInfo.dragPosition
-    val dragOffset = dragInfo.dragOffset
-    val density = LocalDensity.current
-
-    fun canReceive(viewTemplateCheckboxKey: ViewTemplateCheckboxKey?): Boolean {
-
-        return let(key, viewTemplateCheckboxKey) { current, other ->
-            Timber.d(
-                """
-                Can receive based on comparison: ${current != other}
-                Can receive based on parent: ${!other.hasKeyInAncestors(current)}
-                This key: $key
-                checkedKey: $viewTemplateCheckboxKey
-            """.trimIndent()
-            )
-            current != other && !current.hasKeyInAncestors(other)
-        } ?: true
-    }
-
-    Box(modifier = modifier.onGloballyPositioned {
-        it.boundsInWindow().let { rect ->
-            val isCurrentDropTarget =
-                rect.contains(dragPosition + dragOffset + Offset(0f, density.run { 96.dp.toPx() }))
-            if (isCurrentDropTarget && canReceive(dragInfo.dataToDrop)) {
-                dragInfo.currentDropTarget = onDataDropped
-                val yOffset = if (placeTargetLineOnTop) 0f else it.size.height.toFloat()
-                dragInfo.currentDropTargetPosition = it.positionInRoot().plus(Offset(x = 0f, y = yOffset))
-            }
-        }
-    }, content = content)
-}
-
-@Composable
-fun DropTargetIndicatorLine() {
-    val state = LocalDragDropState.current
-
-    val targetValue = LocalDensity.current.run {
-        (state.currentDropTargetPosition ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx())
-    }
-    val offset by animateOffsetAsState(targetValue = targetValue)
-    if (state.isDragging) {
-        Canvas(
-            modifier = Modifier
-                .padding(end = 20.dp)
-                .fillMaxWidth()
-                .graphicsLayer {
-                    translationY = offset.y
-                }
-        ) {
-            drawLine(
-                color = Color.Red,
-                start = offset.copy(y = 0f),
-                end = offset.copy(x = this.size.width, y = 0f),
-                strokeWidth = 2.dp.toPx()
-            )
-        }
-    }
-}
-
-
-internal suspend fun PointerInputScope.detectDrag(
-    down: PointerId,
-    onDragEnd: () -> Unit = { },
-    onDragCancel: () -> Unit = { },
-    onDrag: (change: PointerInputChange, dragAmount: Offset) -> Unit,
-) {
-    awaitPointerEventScope {
-        if (
-            drag(down) {
-                onDrag(it, it.positionChange())
-                it.consume()
-            }
-        ) {
-            // consume up if we quit drag gracefully with the up
-            currentEvent.changes.forEach {
-                if (it.changedToUp()) it.consume()
-            }
-            onDragEnd()
-        } else {
-            onDragCancel()
-        }
-    }
-}
-
-fun Modifier.detectLazyListReorder(): Modifier {
-    return composed {
-        val scope = rememberCoroutineScope()
-        var overscrollJob by remember { mutableStateOf<Job?>(null) }
-        val dragDropState = LocalDragDropState.current
-
-        pointerInput(Unit) {
-            forEachGesture {
-                val dragStart = dragDropState.interactions.receive()
-                val down = awaitPointerEventScope {
-                    currentEvent.changes.fastFirstOrNull { it.id == dragStart.id }
-                }
-                if (down != null) {
-                    dragDropState.onDragStart(down.position)
-                    dragStart.offset?.apply {
-                        dragDropState.onDrag(this)
-                    }
-                    detectDrag(
-                        down.id,
-                        onDragEnd = {
-                            dragDropState.onDragInterrupted()
-                        },
-                        onDragCancel = {
-                            dragDropState.onDragInterrupted()
-                        },
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            dragDropState.onDrag(dragAmount)
-
-                            if (overscrollJob?.isActive == true) {
-                                return@detectDrag
-                            }
-
-                            dragDropState
-                                .checkForOverScroll()
-                                .takeIf { it != 0f }
-                                ?.let {
-                                    overscrollJob =
-                                        scope.launch { dragDropState.lazyListState.scrollBy(it) }
-                                }
-                                ?: run { overscrollJob?.cancel() }
-                        })
-                }
-            }
-        }
-    }
-}
-
-fun <T, U, R> let(first: T?, second: U?, block: (T, U) -> R): R? {
-    return first?.let { nonNullFirst ->
-        second?.let { nonNullSecond ->
-            block(nonNullFirst, nonNullSecond)
-        }
-    }
 }
