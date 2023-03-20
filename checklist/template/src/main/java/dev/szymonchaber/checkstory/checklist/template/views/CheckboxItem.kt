@@ -34,74 +34,6 @@ import dev.szymonchaber.checkstory.checklist.template.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @Composable
-fun CheckboxItem(
-    modifier: Modifier,
-    title: String,
-    placeholder: String? = null,
-    nestingLevel: Int,
-    focusRequester: FocusRequester,
-    onTitleChange: (String) -> Unit,
-    onAddSubtask: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    var showActualValue by remember {
-        mutableStateOf(false)
-    }
-    var placeholderCharactersDisplayed by remember(placeholder) {
-        mutableStateOf(placeholder?.count() ?: 0)
-    }
-    val animatedCharacterCount by animateIntAsState(
-        targetValue = placeholderCharactersDisplayed,
-        animationSpec = tween(
-            durationMillis = pleasantCharacterRemovalAnimationDurationMillis * (placeholder?.length ?: 1)
-        )
-    ) {
-        if (it == 0) {
-            showActualValue = true
-        }
-    }
-    val textValue = if (showActualValue || title.isNotEmpty()) {
-        title
-    } else {
-        placeholder?.take(animatedCharacterCount) ?: ""
-    }
-    OutlinedTextField(
-        modifier = Modifier
-            .background(MaterialTheme.colors.surface)
-            .then(modifier)
-            .focusRequester(focusRequester = focusRequester)
-            .fillMaxWidth()
-            .onFocusChanged { focusState ->
-                if (focusState.isFocused) {
-                    placeholderCharactersDisplayed = 0
-                }
-            },
-        keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-        value = textValue,
-        onValueChange = onTitleChange,
-        label = { Text(text = stringResource(R.string.task_name)) },
-        placeholder = placeholder?.let {
-            { Text(text = it) }
-        },
-        trailingIcon = {
-            Row {
-                if (nestingLevel < 4) {
-                    IconButton(onClick = { onAddSubtask() }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_add_subtask),
-                            null,
-                        )
-                    }
-                }
-                IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Filled.Delete, "")
-                }
-            }
-        }
-    )
-}
-
-@Composable
 fun NewCheckboxItem(
     modifier: Modifier = Modifier,
     title: String,
@@ -189,17 +121,16 @@ fun NewCheckboxItem(
 @Composable
 fun CheckboxItemPreview() {
     rememberReorderableLazyListState({ _, _ -> })
-    CheckboxItem(
+    NewCheckboxItem(
         modifier = Modifier,
         title = "Checkbox",
         placeholder = null,
-        nestingLevel = 4,
         focusRequester = remember {
             FocusRequester()
         },
         onTitleChange = { },
-        onAddSubtask = {}
-    ) {
-
-    }
+        onAddSubtask = {},
+        acceptChildren = false,
+        onDeleteClick = {}
+    )
 }
