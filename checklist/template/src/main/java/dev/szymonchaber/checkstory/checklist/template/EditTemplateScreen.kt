@@ -100,7 +100,7 @@ import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderView
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
-import dev.szymonchaber.checkstory.checklist.template.views.NewCheckboxItem
+import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
 import dev.szymonchaber.checkstory.checklist.template.views.pleasantCharacterRemovalAnimationDurationMillis
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
@@ -293,7 +293,7 @@ private fun EditTemplateScaffold(
                         LocalRecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
                         LocalDragDropState provides rememberDragDropState()
                     ) {
-                        NewEditTemplateView(loadingState, viewModel::onEvent)
+                        EditTemplateView(loadingState, viewModel::onEvent)
                     }
                 }
             }
@@ -319,7 +319,7 @@ val nestedPaddingStart = 32.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun NewEditTemplateView(
+fun EditTemplateView(
     success: TemplateLoadingState.Success,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
@@ -373,7 +373,7 @@ fun NewEditTemplateView(
                     val startPadding by animateDpAsState(
                         nestedPaddingStart * nestingLevel
                     )
-                    NewCommonCheckbox(
+                    CommonCheckbox(
                         checkbox = checkbox,
                         paddingStart = startPadding,
                         nestingLevel = nestingLevel,
@@ -431,7 +431,7 @@ fun NewEditTemplateView(
                     LaunchedEffect(key1 = foundTask) {
                         dragDropState.dataToDrop = foundTask.viewKey
                     }
-                    NewCheckboxItem(
+                    CheckboxItem(
                         title = foundTask.title,
                         placeholder = foundTask.placeholderTitle,
                         isFunctional = false,
@@ -470,7 +470,7 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
 }
 
 @Composable
-private fun NewCommonCheckbox(
+private fun CommonCheckbox(
     checkbox: ViewTemplateCheckbox,
     paddingStart: Dp,
     nestingLevel: Int,
@@ -480,7 +480,7 @@ private fun NewCommonCheckbox(
     val focusRequester = remember { FocusRequester() }
     Box(Modifier.height(IntrinsicSize.Min)) {
         val acceptChildren = nestingLevel < 3
-        NewCheckboxItem(
+        CheckboxItem(
             modifier = Modifier
 //                .drawFolderStructure(nestingLevel, paddingStart, taskTopPadding) TODO decide if this should stay
                 .padding(top = taskTopPadding, start = paddingStart),

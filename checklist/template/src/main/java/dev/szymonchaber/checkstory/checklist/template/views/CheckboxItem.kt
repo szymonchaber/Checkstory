@@ -34,7 +34,7 @@ import dev.szymonchaber.checkstory.checklist.template.detectReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @Composable
-fun NewCheckboxItem(
+fun CheckboxItem(
     modifier: Modifier = Modifier,
     title: String,
     placeholder: String? = null,
@@ -121,7 +121,7 @@ fun NewCheckboxItem(
 @Composable
 fun CheckboxItemPreview() {
     rememberReorderableLazyListState({ _, _ -> })
-    NewCheckboxItem(
+    CheckboxItem(
         modifier = Modifier,
         title = "Checkbox",
         placeholder = null,
