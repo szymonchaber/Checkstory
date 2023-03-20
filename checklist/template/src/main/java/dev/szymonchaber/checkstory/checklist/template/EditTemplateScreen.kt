@@ -226,9 +226,15 @@ fun EditTemplateScreen(
     }
 }
 
-val RecentlyAddedUnconsumedItem = compositionLocalOf<ViewTemplateCheckboxKey?> {
-    null
+val LocalRecentlyAddedUnconsumedItem = compositionLocalOf {
+    RecentlyAddedUnconsumedItem()
 }
+
+class RecentlyAddedUnconsumedItem {
+
+    var item by mutableStateOf<ViewTemplateCheckboxKey?>(null)
+}
+
 
 @Composable
 private fun EditTemplateScaffold(
@@ -281,19 +287,17 @@ private fun EditTemplateScaffold(
                     FullSizeLoadingView()
                 }
                 is TemplateLoadingState.Success -> {
-                    var recentlyAddedUnconsumedItem by remember {
-                        mutableStateOf<ViewTemplateCheckboxKey?>(null)
+                    val recentlyAddedUnconsumedItem = remember {
+                        RecentlyAddedUnconsumedItem()
                     }
                     LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
-                        recentlyAddedUnconsumedItem = loadingState.mostRecentlyAddedItem
+                        recentlyAddedUnconsumedItem.item = loadingState.mostRecentlyAddedItem
                     }
                     CompositionLocalProvider(
-                        RecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
+                        LocalRecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
                         LocalDragDropState provides rememberDragDropState()
                     ) {
-                        NewEditTemplateView(loadingState, viewModel::onEvent) {
-                            recentlyAddedUnconsumedItem = null
-                        }
+                        NewEditTemplateView(loadingState, viewModel::onEvent)
                     }
                 }
             }
@@ -363,8 +367,7 @@ fun EditTemplateView(
 @Composable
 fun NewEditTemplateView(
     success: TemplateLoadingState.Success,
-    eventCollector: (EditTemplateEvent) -> Unit,
-    onAddedItemConsumed: () -> Unit
+    eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val dragDropState = LocalDragDropState.current
     LaunchedEffect(dragDropState.isDragging) {
@@ -379,10 +382,11 @@ fun NewEditTemplateView(
             dragDropState.currentDropTarget?.invoke(it)
         }
     }
-    val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
-    LaunchedEffect(key1 = recentlyAddedItem) {
-        recentlyAddedItem?.let { newItem ->
-            val isNewItemNotVisible = dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key == newItem }
+    val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
+    LaunchedEffect(recentlyAddedItem.item) {
+        recentlyAddedItem.item?.let { newItem ->
+            val isNewItemNotVisible =
+                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key == newItem }
             if (isNewItemNotVisible) {
                 dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.viewKey == newItem } + 1)
             }
@@ -419,7 +423,6 @@ fun NewEditTemplateView(
                         checkbox = checkbox,
                         paddingStart = startPadding,
                         nestingLevel = nestingLevel,
-                        onAddedItemConsumed = onAddedItemConsumed,
                         eventCollector = eventCollector
                     )
                 }
@@ -559,9 +562,9 @@ private fun CommonCheckbox(
         ) {
             eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
         }
-        val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
-        LaunchedEffect(recentlyAddedItem) {
-            if (checkbox.viewKey == recentlyAddedItem) {
+        val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
+        LaunchedEffect(recentlyAddedItem.item) {
+            if (checkbox.viewKey == recentlyAddedItem.item) {
                 focusRequester.requestFocus()
                 onAddedItemConsumed()
             }
@@ -611,7 +614,6 @@ private fun NewCommonCheckbox(
     checkbox: ViewTemplateCheckbox,
     paddingStart: Dp,
     nestingLevel: Int,
-    onAddedItemConsumed: () -> Unit,
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
     val taskTopPadding = 8.dp
@@ -648,11 +650,11 @@ private fun NewCommonCheckbox(
             }
         )
     }
-    val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
-    LaunchedEffect(recentlyAddedItem) {
-        if (checkbox.viewKey == recentlyAddedItem) {
+    val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
+    LaunchedEffect(recentlyAddedItem.item) {
+        if (checkbox.viewKey == recentlyAddedItem.item) {
             focusRequester.requestFocus()
-            onAddedItemConsumed() // TODO consume in-place by editing the mutableStateOf
+            recentlyAddedItem.item = null
         }
     }
 }
