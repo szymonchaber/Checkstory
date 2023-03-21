@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -19,6 +20,7 @@ import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -27,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -62,7 +65,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
 
     fun onDragStart(offset: Offset, dragSource: DragSource) {
         when (dragSource) {
-            DragSource.LazyList -> {
+            is DragSource.LazyList -> {
                 lazyListState.layoutInfo.visibleItemsInfo
                     .firstOrNull { item ->
                         offset.y.toInt() in item.offset..(item.offsetEnd)
@@ -70,8 +73,8 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
                     ?.takeUnless { it.key !is ViewTemplateCheckboxId }
                     ?.also { itemInfo ->
                         currentIndexOfDraggedItem = itemInfo.index
-                        initialDragPosition = Offset(0f, itemInfo.offset.toFloat())
-                        initialDragSize = IntSize(width = 0, height = itemInfo.size)
+                        initialDragPosition = Offset(dragSource.handlePosition.x, itemInfo.offset.toFloat())
+                        initialDragSize = IntSize(width = dragSource.handleSize.width, height = itemInfo.size)
                         isDragging = true
                         checkboxViewId = itemInfo.key as? ViewTemplateCheckboxId
                     }
@@ -144,10 +147,15 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
     }
 }
 
-fun Modifier.detectReorder(): Modifier {
-    return this.composed {
+fun Modifier.detectDragHandleReorder(): Modifier {
+    return composed {
         val state = LocalDragDropState.current
-        Modifier.pointerInput(Unit) {
+        var currentPosition by remember { mutableStateOf(Offset.Zero) }
+        var size by remember { mutableStateOf(IntSize.Zero) }
+        onGloballyPositioned {
+            currentPosition = it.localToWindow(Offset.Zero)
+            size = it.size
+        }.pointerInput(Unit) {
             forEachGesture {
                 awaitPointerEventScope {
                     val down = awaitFirstDown(requireUnconsumed = false)
@@ -160,7 +168,13 @@ fun Modifier.detectReorder(): Modifier {
                         }
                     } while (drag != null && !drag.isConsumed)
                     if (drag != null) {
-                        state.interactions.trySend(StartDrag(down.id, overSlop))
+                        Timber.d(
+                            """Sending
+                            |size: $size
+                            |currentPosition: $currentPosition
+                        """.trimMargin()
+                        )
+                        state.interactions.trySend(StartDrag(down.id, overSlop, currentPosition, size))
                     }
                 }
             }
@@ -229,7 +243,7 @@ inline fun <T> List<T>.fastForEach(action: (T) -> Unit) {
     }
 }
 
-data class StartDrag(val id: PointerId, val offset: Offset)
+data class StartDrag(val id: PointerId, val offset: Offset, val handlePosition: Offset, val handleSize: IntSize)
 
 private fun PointerEvent.isPointerUp(pointerId: PointerId): Boolean =
     changes.fastFirstOrNull { it.id == pointerId }?.pressed != true
@@ -258,12 +272,12 @@ private val mouseToTouchSlopRatio = mouseSlop / defaultTouchSlop
 
 sealed interface DragSource {
 
-    object LazyList : DragSource
-
     data class NewTaskDraggable(
         val initialPosition: Offset,
         val initialSize: IntSize
     ) : DragSource
+
+    data class LazyList(val handlePosition: Offset, val handleSize: IntSize) : DragSource
 }
 
 data class DropTargetInfo(val offset: Offset, val onDataDropped: (ViewTemplateCheckboxKey) -> Unit)

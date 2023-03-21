@@ -18,10 +18,11 @@ fun Modifier.detectLazyListReorder(): Modifier {
                     currentEvent.changes.fastFirstOrNull { it.id == dragStart.id }
                 }
                 if (down != null) {
-                    dragDropState.onDragStart(down.position, DragSource.LazyList)
-                    dragStart.offset?.apply {
-                        dragDropState.onDrag(this) // TODO what if we applied it in onDragStart?
-                    }
+                    dragDropState.onDragStart(
+                        down.position,
+                        DragSource.LazyList(dragStart.handlePosition, dragStart.handleSize)
+                    )
+                    dragDropState.onDrag(dragStart.offset)
                     detectDrag(
                         down.id,
                         onDragEnd = {

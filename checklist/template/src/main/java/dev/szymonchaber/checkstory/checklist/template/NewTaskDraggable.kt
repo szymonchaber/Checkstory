@@ -51,8 +51,7 @@ fun Draggable(
         modifier = modifier
             .onGloballyPositioned {
                 currentSize = it.size
-                currentPosition =
-                    it.localToWindow(Offset.Zero) //- Offset(0f, it.size.height.toFloat()) TODO this almost fixes things
+                currentPosition = it.localToWindow(Offset.Zero)
             }
     ) {
         val dragHandleModifier = Modifier.pointerInput(Unit) {
