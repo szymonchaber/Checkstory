@@ -58,7 +58,13 @@ fun Draggable(
         val dragHandleModifier = Modifier.pointerInput(Unit) {
             detectDragGestures(
                 onDragStart = {
-                    currentState.onDragStart(it, DragSource.NewTaskDraggable(currentPosition, currentSize))
+                    currentState.onDragStart(
+                        it,
+                        DragSource.NewTaskDraggable(
+                            currentPosition.copy(y = currentPosition.y - currentSize.height.toFloat() * 2),
+                            currentSize
+                        )
+                    )
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()

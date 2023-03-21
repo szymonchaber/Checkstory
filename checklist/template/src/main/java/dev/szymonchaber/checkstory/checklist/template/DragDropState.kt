@@ -80,7 +80,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
                 dataToDrop = ViewTemplateCheckboxKey(-50, null, true)
                 checkboxViewId = ViewTemplateCheckboxId(-50, true)
                 isDragging = true
-                initialDragPosition = dragSource.initialPosition + offset
+                initialDragPosition = dragSource.initialPosition
                 initialDragSize = dragSource.initialSize
             }
         }
