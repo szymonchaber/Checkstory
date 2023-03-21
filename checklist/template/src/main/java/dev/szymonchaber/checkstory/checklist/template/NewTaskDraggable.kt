@@ -3,7 +3,6 @@ package dev.szymonchaber.checkstory.checklist.template
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,19 +24,17 @@ import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
 
 @Composable
-fun BoxScope.NewTaskDraggable() {
-    Draggable(Modifier.align(Alignment.BottomStart)) {
-        Box(
-            modifier = Modifier
-                .padding(16.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.Cyan)
-                .height(50.dp)
-                .padding(8.dp)
-                .then(it)
-        ) {
-            Text(modifier = Modifier.align(Alignment.Center), text = "New task")
-        }
+fun NewTask(modifier: Modifier = Modifier) {
+    Box(
+        modifier = Modifier
+            .padding(16.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.Cyan)
+            .height(50.dp)
+            .padding(8.dp)
+            .then(modifier)
+    ) {
+        Text(modifier = Modifier.align(Alignment.Center), text = "New task")
     }
 }
 
