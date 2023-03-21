@@ -70,15 +70,13 @@ fun Draggable(
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()
-                    currentState.dragOffset += Offset(dragAmount.x, dragAmount.y)
+                    currentState.onDrag(dragAmount)
                 },
                 onDragEnd = {
-                    currentState.isDragging = false
-                    currentState.dragOffset = Offset.Zero
+                    currentState.onDragInterrupted()
                 },
                 onDragCancel = {
-                    currentState.dragOffset = Offset.Zero
-                    currentState.isDragging = false
+                    currentState.onDragInterrupted()
                 })
         }
         content(dragHandleModifier)

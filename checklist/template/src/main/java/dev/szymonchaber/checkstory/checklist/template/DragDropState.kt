@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
@@ -23,14 +24,18 @@ import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-class DragDropState(val lazyListState: LazyListState) {
+class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope) {
 
     val interactions = Channel<StartDrag>()
+
+    var debugPoints by mutableStateOf<Pair<Offset, Offset>?>(null)
 
     // region mine
     var isDragging by mutableStateOf(false)
@@ -71,6 +76,9 @@ class DragDropState(val lazyListState: LazyListState) {
         draggedDistance = 0f
         currentIndexOfDraggedItem = null
         initiallyDraggedElement = null
+        initialDragSize = null
+        initialDragPosition = null
+        debugPoints = null
         overscrollJob?.cancel()
         isDragging = false
         dragOffset = Offset.Zero
@@ -79,13 +87,24 @@ class DragDropState(val lazyListState: LazyListState) {
     fun onDrag(offset: Offset) {
         draggedDistance += offset.y
         dragOffset += offset
+
+        if (overscrollJob?.isActive == true) {
+            return
+        }
+        checkForOverScroll()
+            .takeIf { it != 0f }
+            ?.let {
+                overscrollJob = scope.launch { lazyListState.scrollBy(it) }
+            }
+            ?: run { overscrollJob?.cancel() }
     }
 
-    fun checkForOverScroll(): Float {
-        return initiallyDraggedElement?.let {
-            val startOffset = it.offset + draggedDistance
-            val endOffset = it.offsetEnd + draggedDistance
-
+    private fun checkForOverScroll(): Float {
+        return initialDragPosition?.let {
+            val startOffset = it.y + draggedDistance
+            val itemSize = initialDragSize?.height?.toFloat() ?: 0f
+            val endOffset = it.y + itemSize + draggedDistance
+            debugPoints = Offset(150f, startOffset) to Offset(150f, endOffset)
             when {
                 draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
                 draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
