@@ -51,7 +51,6 @@ fun Draggable(
     var currentSize by remember {
         mutableStateOf(IntSize.Zero)
     }
-
     Box(
         modifier = modifier
             .onGloballyPositioned {
@@ -62,22 +61,19 @@ fun Draggable(
         val dragHandleModifier = Modifier.pointerInput(Unit) {
             detectDragGestures(
                 onDragStart = {
-                    currentState.dataToDrop = ViewTemplateCheckboxKey(-50, null, true)
-                    currentState.checkboxViewId = ViewTemplateCheckboxId(-50, true)
-                    currentState.isDragging = true
-                    currentState.initialDragPosition = currentPosition + it
-                    currentState.initialDragSize = currentSize
+                    currentState.onDragStart(it, DragSource.NewTaskDraggable(currentPosition + it, currentSize))
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()
                     currentState.onDrag(dragAmount)
                 },
                 onDragEnd = {
-                    currentState.onDragInterrupted()
+                    currentState.onDragInterrupt()
                 },
                 onDragCancel = {
-                    currentState.onDragInterrupted()
-                })
+                    currentState.onDragInterrupt()
+                }
+            )
         }
         content(dragHandleModifier)
     }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.input.pointer.pointerInput
+import dev.szymonchaber.checkstory.checklist.template.DragSource
 import dev.szymonchaber.checkstory.checklist.template.fastFirstOrNull
 
 fun Modifier.detectLazyListReorder(): Modifier {
@@ -17,17 +18,17 @@ fun Modifier.detectLazyListReorder(): Modifier {
                     currentEvent.changes.fastFirstOrNull { it.id == dragStart.id }
                 }
                 if (down != null) {
-                    dragDropState.onDragStart(down.position)
+                    dragDropState.onDragStart(down.position, DragSource.LazyList)
                     dragStart.offset?.apply {
                         dragDropState.onDrag(this)
                     }
                     detectDrag(
                         down.id,
                         onDragEnd = {
-                            dragDropState.onDragInterrupted()
+                            dragDropState.onDragInterrupt()
                         },
                         onDragCancel = {
-                            dragDropState.onDragInterrupted()
+                            dragDropState.onDragInterrupt()
                         },
                         onDrag = { change, dragAmount ->
                             change.consume()

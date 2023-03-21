@@ -55,20 +55,33 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
 
     var overscrollJob by mutableStateOf<Job?>(null)
 
-    fun onDragStart(offset: Offset) {
-        lazyListState.layoutInfo.visibleItemsInfo
-            .firstOrNull { item -> offset.y.toInt() in item.offset..(item.offset + item.size) }
-            ?.takeUnless { it.key !is ViewTemplateCheckboxId }
-            ?.also { itemInfo ->
-                currentIndexOfDraggedItem = itemInfo.index
-                initialDragPosition = Offset(0f, itemInfo.offset.toFloat())
-                initialDragSize = IntSize(width = 0, height = itemInfo.size)
-                isDragging = true
-                checkboxViewId = itemInfo.key as? ViewTemplateCheckboxId
+    fun onDragStart(offset: Offset, dragSource: DragSource) {
+        when (dragSource) {
+            DragSource.LazyList -> {
+                lazyListState.layoutInfo.visibleItemsInfo
+                    .firstOrNull { item ->
+                        offset.y.toInt() in item.offset..(item.offsetEnd)
+                    }
+                    ?.takeUnless { it.key !is ViewTemplateCheckboxId }
+                    ?.also { itemInfo ->
+                        currentIndexOfDraggedItem = itemInfo.index
+                        initialDragPosition = Offset(0f, itemInfo.offset.toFloat())
+                        initialDragSize = IntSize(width = 0, height = itemInfo.size)
+                        isDragging = true
+                        checkboxViewId = itemInfo.key as? ViewTemplateCheckboxId
+                    }
             }
+            is DragSource.NewTaskDraggable -> {
+                dataToDrop = ViewTemplateCheckboxKey(-50, null, true)
+                checkboxViewId = ViewTemplateCheckboxId(-50, true)
+                isDragging = true
+                initialDragPosition = dragSource.initialPosition + offset
+                initialDragSize = dragSource.initialSize
+            }
+        }
     }
 
-    fun onDragInterrupted() {
+    fun onDragInterrupt() {
         draggedDistance = 0f
         currentIndexOfDraggedItem = null
         initialDragSize = null
@@ -220,3 +233,13 @@ private fun ViewConfiguration.pointerSlop(pointerType: PointerType): Float {
 private val mouseSlop = 0.125.dp
 private val defaultTouchSlop = 18.dp // The default touch slop on Android devices
 private val mouseToTouchSlopRatio = mouseSlop / defaultTouchSlop
+
+sealed interface DragSource {
+
+    object LazyList : DragSource
+
+    data class NewTaskDraggable(
+        val initialPosition: Offset,
+        val initialSize: IntSize
+    ) : DragSource
+}
