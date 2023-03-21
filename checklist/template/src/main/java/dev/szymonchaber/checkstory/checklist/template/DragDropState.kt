@@ -86,6 +86,11 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
     }
 
     fun onDragInterrupt() {
+        dataToDrop?.let {
+            dataToDrop = null
+            checkboxViewId = null
+            currentDropTargetInfo?.onDataDropped?.invoke(it)
+        }
         draggedDistance = 0f
         currentIndexOfDraggedItem = null
         initialDragSize = null
@@ -95,7 +100,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
         isDragging = false
         dragOffset = Offset.Zero
         previousDropTargetInfo = null
-//        currentDropTargetInfo = null
+        currentDropTargetInfo = null
     }
 
     fun onDrag(offset: Offset) {

@@ -304,19 +304,6 @@ fun EditTemplateView(
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val dragDropState = LocalDragDropState.current
-    LaunchedEffect(dragDropState.isDragging) {
-        val data = if (!dragDropState.isDragging) {
-            dragDropState.dataToDrop
-        } else {
-            null
-        }
-        data?.let {
-            dragDropState.dataToDrop = null
-            dragDropState.checkboxViewId = null
-            dragDropState.currentDropTargetInfo?.onDataDropped?.invoke(it)
-            dragDropState.currentDropTargetInfo = null
-        }
-    }
     val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
     LaunchedEffect(recentlyAddedItem.item) {
         recentlyAddedItem.item?.let { newItem ->
