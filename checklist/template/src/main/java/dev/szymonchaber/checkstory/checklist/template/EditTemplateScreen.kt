@@ -368,13 +368,20 @@ fun EditTemplateView(
         }
         DropTargetIndicatorLine()
         FloatingDraggable(success)
-        Draggable(Modifier.align(Alignment.BottomStart)) {
+        Draggable(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
+        ) {
             NewTask(it)
         }
-        //        dragDropState.debugPoints?.let { (top, bottom) ->
-//            DebugFloatingPoint(top, Color.Blue)
-//            DebugFloatingPoint(bottom, Color.Red)
-//        }
+        dragDropState.scrollComparisonDebugPoints?.let { (top, bottom) ->
+            DebugFloatingPoint(top, Color.Blue)
+            DebugFloatingPoint(bottom, Color.Red)
+        }
+        dragDropState.pointerDebugPoint?.let {
+            DebugFloatingPoint(offset = it, color = Color.Green)
+        }
     }
 }
 

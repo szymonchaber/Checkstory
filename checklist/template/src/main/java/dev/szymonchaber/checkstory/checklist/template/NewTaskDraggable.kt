@@ -27,7 +27,6 @@ import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
 fun NewTask(modifier: Modifier = Modifier) {
     Box(
         modifier = Modifier
-            .padding(16.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(Color.Cyan)
             .height(50.dp)
@@ -51,14 +50,15 @@ fun Draggable(
     Box(
         modifier = modifier
             .onGloballyPositioned {
-                currentPosition = it.localToWindow(Offset.Zero)
                 currentSize = it.size
+                currentPosition =
+                    it.localToWindow(Offset.Zero) //- Offset(0f, it.size.height.toFloat()) TODO this almost fixes things
             }
     ) {
         val dragHandleModifier = Modifier.pointerInput(Unit) {
             detectDragGestures(
                 onDragStart = {
-                    currentState.onDragStart(it, DragSource.NewTaskDraggable(currentPosition + it, currentSize))
+                    currentState.onDragStart(it, DragSource.NewTaskDraggable(currentPosition, currentSize))
                 },
                 onDrag = { change, dragAmount ->
                     change.consume()

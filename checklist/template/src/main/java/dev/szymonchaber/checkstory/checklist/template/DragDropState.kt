@@ -34,7 +34,8 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
 
     val interactions = Channel<StartDrag>()
 
-    var debugPoints by mutableStateOf<Pair<Offset, Offset>?>(null)
+    var scrollComparisonDebugPoints by mutableStateOf<Pair<Offset, Offset>?>(null)
+    var pointerDebugPoint by mutableStateOf<Offset?>(null)
 
     // region mine
     var isDragging by mutableStateOf(false)
@@ -83,6 +84,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
                 initialDragSize = dragSource.initialSize
             }
         }
+        pointerDebugPoint = initialDragPosition
     }
 
     fun onDragInterrupt() {
@@ -95,7 +97,8 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
         currentIndexOfDraggedItem = null
         initialDragSize = null
         initialDragPosition = null
-        debugPoints = null
+        scrollComparisonDebugPoints = null
+        pointerDebugPoint = null
         overscrollJob?.cancel()
         isDragging = false
         dragOffset = Offset.Zero
@@ -106,6 +109,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
     fun onDrag(offset: Offset) {
         draggedDistance += offset.y
         dragOffset += offset
+        pointerDebugPoint = pointerDebugPoint?.plus(offset)
 
         if (overscrollJob?.isActive == true) {
             return
@@ -125,7 +129,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
             val startOffset = it.y + draggedDistance
             val itemSize = initialDragSize?.height?.toFloat() ?: 0f
             val endOffset = it.y + itemSize + draggedDistance
-            debugPoints = Offset(150f, startOffset) to Offset(150f, endOffset)
+            scrollComparisonDebugPoints = Offset(150f, startOffset) to Offset(150f, endOffset)
             when {
                 draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
                 draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
@@ -225,7 +229,7 @@ inline fun <T> List<T>.fastForEach(action: (T) -> Unit) {
     }
 }
 
-data class StartDrag(val id: PointerId, val offset: Offset? = null)
+data class StartDrag(val id: PointerId, val offset: Offset)
 
 private fun PointerEvent.isPointerUp(pointerId: PointerId): Boolean =
     changes.fastFirstOrNull { it.id == pointerId }?.pressed != true
