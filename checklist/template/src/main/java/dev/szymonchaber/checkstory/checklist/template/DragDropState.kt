@@ -3,7 +3,6 @@ package dev.szymonchaber.checkstory.checklist.template
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,8 +51,6 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
 
     var draggedDistance by mutableStateOf(0f)
 
-    var initiallyDraggedElement by mutableStateOf<LazyListItemInfo?>(null)
-
     var currentIndexOfDraggedItem by mutableStateOf<Int?>(null)
 
     var overscrollJob by mutableStateOf<Job?>(null)
@@ -64,7 +61,6 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
             ?.takeUnless { it.key !is ViewTemplateCheckboxId }
             ?.also { itemInfo ->
                 currentIndexOfDraggedItem = itemInfo.index
-                initiallyDraggedElement = itemInfo
                 initialDragPosition = Offset(0f, itemInfo.offset.toFloat())
                 initialDragSize = IntSize(width = 0, height = itemInfo.size)
                 isDragging = true
@@ -75,7 +71,6 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
     fun onDragInterrupted() {
         draggedDistance = 0f
         currentIndexOfDraggedItem = null
-        initiallyDraggedElement = null
         initialDragSize = null
         initialDragPosition = null
         debugPoints = null
