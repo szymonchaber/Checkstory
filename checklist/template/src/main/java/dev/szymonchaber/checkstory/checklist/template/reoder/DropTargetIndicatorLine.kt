@@ -18,7 +18,8 @@ fun DropTargetIndicatorLine() {
     val state = LocalDragDropState.current
 
     val targetValue = LocalDensity.current.run {
-        (state.currentDropTargetPosition ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx())
+        (state.currentDropTargetInfo?.offset
+            ?: Offset.Zero) - Offset.Zero.copy(y = 48.dp.toPx()) // TODO more debug lines still?
     }
     val offset by animateOffsetAsState(targetValue = targetValue)
     if (state.isDragging) {

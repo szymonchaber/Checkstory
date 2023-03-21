@@ -38,14 +38,17 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
 
     // region mine
     var isDragging by mutableStateOf(false)
+        private set
     var initialDragPosition by mutableStateOf<Offset?>(null)
+        private set
     var initialDragSize by mutableStateOf<IntSize?>(null)
+        private set
     var dragOffset by mutableStateOf(Offset.Zero)
+        private set
     var checkboxViewId by mutableStateOf<ViewTemplateCheckboxId?>(null)
     var dataToDrop by mutableStateOf<ViewTemplateCheckboxKey?>(null)
 
-    var currentDropTarget: ((ViewTemplateCheckboxKey) -> Unit)? by mutableStateOf(null)
-    var currentDropTargetPosition: Offset? by mutableStateOf(null)
+    var currentDropTargetInfo: DropTargetInfo? by mutableStateOf(null)
 
     // endregion
 
@@ -243,3 +246,5 @@ sealed interface DragSource {
         val initialSize: IntSize
     ) : DragSource
 }
+
+data class DropTargetInfo(val offset: Offset, val onDataDropped: (ViewTemplateCheckboxKey) -> Unit)

@@ -11,6 +11,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import dev.szymonchaber.checkstory.checklist.template.DropTargetInfo
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.common.extensions.let
 import timber.log.Timber
@@ -44,22 +45,26 @@ fun DropTarget(
         } ?: true
     }
 
-    Box(modifier = modifier.onGloballyPositioned { coordinates ->
-        val boundsInWindow = coordinates.boundsInWindow()
-        dragPosition?.let {
-            with(density) {
-                val isCurrentDropTarget = boundsInWindow.contains(it + dragOffset + Offset(0f, 96.dp.toPx()))
-                if (isCurrentDropTarget && canReceive(dragInfo.dataToDrop)) {
-                    dragInfo.currentDropTarget = onDataDropped
-                    val yOffset = if (placeTargetLineOnTop) {
-                        0f
-                    } else {
-                        coordinates.size.height.toFloat()
+    Box(
+        modifier = modifier
+            .onGloballyPositioned { coordinates ->
+                val boundsInWindow = coordinates.boundsInWindow()  // TODO more debug shapes?
+                dragPosition?.let {
+                    with(density) {
+                        val isCurrentDropTarget = boundsInWindow.contains(it + dragOffset + Offset(0f, 96.dp.toPx()))
+                        if (isCurrentDropTarget && canReceive(dragInfo.dataToDrop)) {
+                            val yOffset = if (placeTargetLineOnTop) {
+                                0f
+                            } else {
+                                coordinates.size.height.toFloat()
+                            }
+                            val offset =
+                                coordinates.positionInRoot().plus(Offset(x = dropTargetOffset.toPx(), y = yOffset))
+                            dragInfo.currentDropTargetInfo = DropTargetInfo(offset, onDataDropped)
+                        }
                     }
-                    dragInfo.currentDropTargetPosition =
-                        coordinates.positionInRoot().plus(Offset(x = dropTargetOffset.toPx(), y = yOffset))
                 }
-            }
-        }
-    }, content = content)
+            },
+        content = content
+    )
 }
