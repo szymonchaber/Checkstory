@@ -102,12 +102,14 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
         if (overscrollJob?.isActive == true) {
             return
         }
-        checkForOverScroll()
-            .takeIf { it != 0f }
-            ?.let {
-                overscrollJob = scope.launch { lazyListState.scrollBy(it) }
+        val overscroll = checkForOverScroll()
+        if (overscroll != 0f) {
+            overscrollJob = scope.launch {
+                lazyListState.scrollBy(overscroll)
             }
-            ?: run { overscrollJob?.cancel() }
+        } else {
+            overscrollJob?.cancel()
+        }
     }
 
     private fun checkForOverScroll(): Float {
