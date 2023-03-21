@@ -85,7 +85,6 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                 }
             )
         }, content = {
-//            Experiment()
             ChecklistCatalogView(viewModel, navigator)
         },
         floatingActionButton = {
