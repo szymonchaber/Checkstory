@@ -374,6 +374,7 @@ fun EditTemplateView(
                         onDataDropped = { taskKey ->
                             eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
                         },
+                        dropTargetOffset = 16.dp
                     )
                 }
             }
@@ -447,6 +448,7 @@ private fun ChecklistTemplateDetails(
             onDataDropped = { taskKey ->
                 eventCollector(EditTemplateEvent.CheckboxMovedToTop(taskKey))
             },
+            dropTargetOffset = 16.dp
         )
     }
 }
