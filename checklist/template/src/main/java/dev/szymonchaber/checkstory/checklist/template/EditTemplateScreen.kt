@@ -314,6 +314,7 @@ fun EditTemplateView(
             dragDropState.dataToDrop = null
             dragDropState.checkboxViewId = null
             dragDropState.currentDropTargetInfo?.onDataDropped?.invoke(it)
+            dragDropState.currentDropTargetInfo = null
         }
     }
     val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current

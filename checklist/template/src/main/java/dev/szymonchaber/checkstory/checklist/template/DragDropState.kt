@@ -48,6 +48,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
     var checkboxViewId by mutableStateOf<ViewTemplateCheckboxId?>(null)
     var dataToDrop by mutableStateOf<ViewTemplateCheckboxKey?>(null)
 
+    var previousDropTargetInfo: DropTargetInfo? by mutableStateOf(null)
     var currentDropTargetInfo: DropTargetInfo? by mutableStateOf(null)
 
     // endregion
@@ -93,6 +94,8 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
         overscrollJob?.cancel()
         isDragging = false
         dragOffset = Offset.Zero
+        previousDropTargetInfo = null
+//        currentDropTargetInfo = null
     }
 
     fun onDrag(offset: Offset) {
@@ -124,6 +127,11 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
                 else -> null
             }
         } ?: 0f
+    }
+
+    fun onDropTargetAcquired(dropTargetInfo: DropTargetInfo) {
+        previousDropTargetInfo = currentDropTargetInfo
+        currentDropTargetInfo = dropTargetInfo
     }
 }
 

@@ -31,6 +31,9 @@ fun DropTarget(
     val density = LocalDensity.current
 
     fun canReceive(viewTemplateCheckboxKey: ViewTemplateCheckboxKey?): Boolean {
+        if (key == null) {
+            return true
+        }
 
         return let(key, viewTemplateCheckboxKey) { current, other ->
             Timber.d(
@@ -42,7 +45,7 @@ fun DropTarget(
             """.trimIndent()
             )
             current != other && !current.hasKeyInAncestors(other)
-        } ?: true
+        } ?: false
     }
 
     Box(
@@ -60,7 +63,7 @@ fun DropTarget(
                             }
                             val offset =
                                 coordinates.positionInRoot().plus(Offset(x = dropTargetOffset.toPx(), y = yOffset))
-                            dragInfo.currentDropTargetInfo = DropTargetInfo(offset, onDataDropped)
+                            dragInfo.onDropTargetAcquired(DropTargetInfo(offset, onDataDropped))
                         }
                     }
                 }
