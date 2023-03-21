@@ -25,7 +25,7 @@ fun DropTarget(
     dropTargetOffset: Dp = 0.dp
 ) {
     val dragInfo = LocalDragDropState.current
-    val dragPosition = dragInfo.dragPosition
+    val dragPosition = dragInfo.initialDragPosition
     val dragOffset = dragInfo.dragOffset
     val density = LocalDensity.current
 
@@ -44,19 +44,20 @@ fun DropTarget(
         } ?: true
     }
 
-    Box(modifier = modifier.onGloballyPositioned {
-        it.boundsInWindow().let { rect ->
+    Box(modifier = modifier.onGloballyPositioned { coordinates ->
+        val boundsInWindow = coordinates.boundsInWindow()
+        dragPosition?.let {
             with(density) {
-                val isCurrentDropTarget = rect.contains(dragPosition + dragOffset + Offset(0f, 96.dp.toPx()))
+                val isCurrentDropTarget = boundsInWindow.contains(it + dragOffset + Offset(0f, 96.dp.toPx()))
                 if (isCurrentDropTarget && canReceive(dragInfo.dataToDrop)) {
                     dragInfo.currentDropTarget = onDataDropped
                     val yOffset = if (placeTargetLineOnTop) {
                         0f
                     } else {
-                        it.size.height.toFloat()
+                        coordinates.size.height.toFloat()
                     }
                     dragInfo.currentDropTargetPosition =
-                        it.positionInRoot().plus(Offset(x = dropTargetOffset.toPx(), y = yOffset))
+                        coordinates.positionInRoot().plus(Offset(x = dropTargetOffset.toPx(), y = yOffset))
                 }
             }
         }

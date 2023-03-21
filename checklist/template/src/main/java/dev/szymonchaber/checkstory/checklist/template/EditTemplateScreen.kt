@@ -373,6 +373,7 @@ fun EditTemplateView(
         }
         DropTargetIndicatorLine()
         FloatingDraggable(success)
+        NewTaskDraggable()
     }
 }
 

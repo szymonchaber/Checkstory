@@ -205,11 +205,17 @@ sealed interface TemplateLoadingState {
         }
 
         private fun withExtractedTask(viewKey: ViewTemplateCheckboxKey): Pair<List<ViewTemplateCheckbox>, ViewTemplateCheckbox> {
-            val index = 1000
-//            val index = indexGenerator.getAndIncrement() // TODO
-//            if (viewKey == -50) {
-//                return checkboxes to Task(id = index, "", listOf())
-//            }
+            if (viewKey.id == -50L) {
+                return checkboxes to ViewTemplateCheckbox.New(
+                    TemplateCheckboxId(newItemIndexGenerator.getAndIncrement()),
+                    null,
+                    false,
+                    "",
+                    listOf(),
+                    false,
+//                    "New task" TODO maybe
+                )
+            }
             var movedItem: ViewTemplateCheckbox? = null
             val onItemFoundAndRemoved: (ViewTemplateCheckbox) -> Unit = {
                 movedItem = it

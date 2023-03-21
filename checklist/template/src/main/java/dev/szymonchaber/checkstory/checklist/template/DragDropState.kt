@@ -20,6 +20,7 @@ import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.ViewConfiguration
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
 import kotlinx.coroutines.Job
@@ -33,7 +34,8 @@ class DragDropState(val lazyListState: LazyListState) {
 
     // region mine
     var isDragging by mutableStateOf(false)
-    var dragPosition by mutableStateOf(Offset.Zero)
+    var initialDragPosition by mutableStateOf<Offset?>(null)
+    var initialDragSize by mutableStateOf<IntSize?>(null)
     var dragOffset by mutableStateOf(Offset.Zero)
     var checkboxViewId by mutableStateOf<ViewTemplateCheckboxId?>(null)
     var dataToDrop by mutableStateOf<ViewTemplateCheckboxKey?>(null)
@@ -58,7 +60,8 @@ class DragDropState(val lazyListState: LazyListState) {
             ?.also { itemInfo ->
                 currentIndexOfDraggedItem = itemInfo.index
                 initiallyDraggedElement = itemInfo
-                dragPosition = Offset(0f, itemInfo.offset.toFloat())
+                initialDragPosition = Offset(0f, itemInfo.offset.toFloat())
+                initialDragSize = IntSize(width = 0, height = itemInfo.size)
                 isDragging = true
                 checkboxViewId = itemInfo.key as? ViewTemplateCheckboxId
             }
