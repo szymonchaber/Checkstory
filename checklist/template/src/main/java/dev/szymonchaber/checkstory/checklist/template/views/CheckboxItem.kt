@@ -71,12 +71,10 @@ fun CheckboxItem(
             .background(MaterialTheme.colors.surface)
             .then(modifier)
     ) {
-        Icon(
-            modifier = Modifier
+        DragHandle(
+            Modifier
                 .detectDragHandleReorder()
-                .align(Alignment.CenterVertically),
-            painter = painterResource(id = R.drawable.drag_indicator),
-            contentDescription = null
+                .align(Alignment.CenterVertically)
         )
         OutlinedTextField(
             modifier = Modifier
