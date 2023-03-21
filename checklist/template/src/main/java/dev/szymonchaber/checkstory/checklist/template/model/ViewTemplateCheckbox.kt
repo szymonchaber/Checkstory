@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxId
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.viewId
 import dev.szymonchaber.checkstory.checklist.template.viewKey
@@ -83,7 +84,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     fun plusChildCheckboxRecursive(
         newItemIndexGenerator: AtomicLong,
         parentId: ViewTemplateCheckboxKey,
-        onItemAdded: (ViewTemplateCheckboxKey) -> Unit
+        onItemAdded: (ViewTemplateCheckboxId) -> Unit
     ): ViewTemplateCheckbox {
         return abstractCopy(
             children = if (viewKey == parentId) {
@@ -96,7 +97,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         listOf(),
                         true
                     ).also { newItem ->
-                        onItemAdded(newItem.viewKey)
+                        onItemAdded(newItem.viewId)
                     }
                 )
             } else {

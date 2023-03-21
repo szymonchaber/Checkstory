@@ -209,7 +209,7 @@ val LocalRecentlyAddedUnconsumedItem = compositionLocalOf {
 
 class RecentlyAddedUnconsumedItem {
 
-    var item by mutableStateOf<ViewTemplateCheckboxKey?>(null)
+    var item by mutableStateOf<ViewTemplateCheckboxId?>(null)
 }
 
 @Composable
@@ -308,9 +308,9 @@ fun EditTemplateView(
     LaunchedEffect(recentlyAddedItem.item) {
         recentlyAddedItem.item?.let { newItem ->
             val isNewItemNotVisible =
-                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key == newItem }
+                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { (it.key as? ViewTemplateCheckboxKey)?.viewId == newItem }
             if (isNewItemNotVisible) {
-                dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.viewKey == newItem } + 1)
+                dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.viewId == newItem } + 1)
             }
         }
     }
@@ -359,7 +359,11 @@ fun EditTemplateView(
 //                            .background(Color.Green.copy(alpha = 0.2f)),
                         placeTargetLineOnTop = true,
                         onDataDropped = { taskKey ->
-                            eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                            if (taskKey.id == NEW_TASK_ID) {
+                                eventCollector(EditTemplateEvent.NewCheckboxDraggedToBottom)
+                            } else {
+                                eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                            }
                         },
                         dropTargetOffset = 16.dp
                     )
@@ -442,7 +446,11 @@ private fun ChecklistTemplateDetails(
                 .fillMaxSize(),
 //                .background(Color.Blue.copy(alpha = 0.2f)),
             onDataDropped = { taskKey ->
-                eventCollector(EditTemplateEvent.CheckboxMovedToTop(taskKey))
+                if (taskKey.id == NEW_TASK_ID) {
+                    eventCollector(EditTemplateEvent.NewCheckboxDraggedToTop)
+                } else {
+                    eventCollector(EditTemplateEvent.CheckboxMovedToTop(taskKey))
+                }
             },
             dropTargetOffset = 16.dp
         )

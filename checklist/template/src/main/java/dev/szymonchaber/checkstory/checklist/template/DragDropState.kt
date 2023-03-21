@@ -33,6 +33,8 @@ import timber.log.Timber
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
+const val NEW_TASK_ID = -50L
+
 class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope) {
 
     val interactions = Channel<StartDrag>()
@@ -80,8 +82,8 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
                     }
             }
             is DragSource.NewTaskDraggable -> {
-                dataToDrop = ViewTemplateCheckboxKey(-50, null, true)
-                checkboxViewId = ViewTemplateCheckboxId(-50, true)
+                dataToDrop = ViewTemplateCheckboxKey(NEW_TASK_ID, null, true)
+                checkboxViewId = ViewTemplateCheckboxId(NEW_TASK_ID, true)
                 isDragging = true
                 initialDragPosition = dragSource.initialPosition
                 initialDragSize = dragSource.initialSize

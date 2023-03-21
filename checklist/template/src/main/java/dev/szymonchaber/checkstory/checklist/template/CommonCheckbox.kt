@@ -51,21 +51,16 @@ fun CommonCheckbox(
             acceptChildren = acceptChildren
         )
         Receptacles(
-            modifier = Modifier,
-            dropTargetOffset = paddingStart + 16.dp,
-            acceptChildren = acceptChildren,
             forCheckbox = checkbox.viewKey,
-            onSiblingTaskDropped = { siblingTask ->
-                eventCollector(EditTemplateEvent.SiblingMovedBelow(checkbox.viewKey, siblingTask))
-            },
-            onChildTaskDropped = { childTask ->
-                eventCollector(EditTemplateEvent.ChildMovedBelow(checkbox.viewKey, childTask))
-            }
+            modifier = Modifier,
+            acceptChildren = acceptChildren,
+            dropTargetOffset = paddingStart + 16.dp,
+            eventCollector = eventCollector
         )
     }
     val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
     LaunchedEffect(recentlyAddedItem.item) {
-        if (checkbox.viewKey == recentlyAddedItem.item) {
+        if (checkbox.viewId == recentlyAddedItem.item) {
             focusRequester.requestFocus()
             recentlyAddedItem.item = null
         }
@@ -74,12 +69,11 @@ fun CommonCheckbox(
 
 @Composable
 private fun Receptacles(
-    forCheckbox: ViewTemplateCheckboxKey?,
-    onSiblingTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
-    onChildTaskDropped: (ViewTemplateCheckboxKey) -> Unit,
+    forCheckbox: ViewTemplateCheckboxKey,
     modifier: Modifier = Modifier,
     acceptChildren: Boolean,
     dropTargetOffset: Dp,
+    eventCollector: (EditTemplateEvent) -> Unit,
 ) {
     Row(modifier.fillMaxSize()) {
         DropTarget(
@@ -97,7 +91,11 @@ private fun Receptacles(
             key = forCheckbox,
             dropTargetOffset = dropTargetOffset,
             onDataDropped = { siblingTask ->
-                onSiblingTaskDropped(siblingTask)
+                if (siblingTask.id == NEW_TASK_ID) {
+                    eventCollector(EditTemplateEvent.NewSiblingDraggedBelow(forCheckbox))
+                } else {
+                    eventCollector(EditTemplateEvent.SiblingMovedBelow(forCheckbox, siblingTask))
+                }
             }
         )
         if (acceptChildren) {
@@ -108,7 +106,11 @@ private fun Receptacles(
 //                    .background(Color.Yellow.copy(alpha = 0.2f)),
                 key = forCheckbox,
                 onDataDropped = { childTask ->
-                    onChildTaskDropped(childTask)
+                    if (childTask.id == NEW_TASK_ID) {
+                        eventCollector(EditTemplateEvent.NewChildDraggedBelow(forCheckbox))
+                    } else {
+                        eventCollector(EditTemplateEvent.ChildMovedBelow(forCheckbox, childTask))
+                    }
                 }
             )
         }
