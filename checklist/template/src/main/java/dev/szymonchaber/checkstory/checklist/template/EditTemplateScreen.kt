@@ -380,11 +380,11 @@ fun EditTemplateView(
             NewTask(it)
         }
         dragDropState.scrollComparisonDebugPoints?.let { (top, bottom) ->
-            DebugFloatingPoint(top, Color.Blue)
-            DebugFloatingPoint(bottom, Color.Red)
+//            DebugFloatingPoint(top, Color.Blue)
+//            DebugFloatingPoint(bottom, Color.Red)
         }
         dragDropState.pointerDebugPoint?.let {
-            DebugFloatingPoint(offset = it, color = Color.Green)
+//            DebugFloatingPoint(offset = it, color = Color.Green)
         }
     }
 }
