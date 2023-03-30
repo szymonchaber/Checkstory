@@ -36,12 +36,15 @@ import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarHost
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -153,6 +156,8 @@ fun EditTemplateScreen(
         }
     }
 
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
+
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
@@ -185,6 +190,13 @@ fun EditTemplateScreen(
             is EditTemplateEffect.OpenTemplateHistory -> {
                 navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
             }
+            is EditTemplateEffect.ShowTryDraggingSnackbar -> {
+                scope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = "Drag me to where you want a new task 🎯"
+                    )
+                }
+            }
             null -> Unit
         }
     }
@@ -200,7 +212,7 @@ fun EditTemplateScreen(
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     ) {
-        EditTemplateScaffold(generateOnboarding, templateId == null, state, viewModel)
+        EditTemplateScaffold(scaffoldState, generateOnboarding, templateId == null, state, viewModel)
     }
 }
 
@@ -215,12 +227,17 @@ class RecentlyAddedUnconsumedItem {
 
 @Composable
 private fun EditTemplateScaffold(
+    scaffoldState: ScaffoldState,
     isOnboarding: Boolean,
     isNewTemplate: Boolean,
     state: EditTemplateState,
     viewModel: EditTemplateViewModel
 ) {
     Scaffold(
+        scaffoldState = scaffoldState,
+        snackbarHost = {
+            SnackbarHost(it, Modifier.padding(bottom = 48.dp))
+        },
         topBar = {
             val titleText = when {
                 isOnboarding -> {
@@ -408,7 +425,7 @@ fun BottomActionBar(eventCollector: (EditTemplateEvent) -> Unit) {
                     .align(Alignment.CenterVertically)
             ) {
                 NewTask(it.fillMaxWidth()) {
-                    eventCollector(EditTemplateEvent.OnNewTaskDraggableClick)
+                    eventCollector(EditTemplateEvent.NewTaskDraggableClicked)
                 }
             }
             Button(

@@ -66,6 +66,7 @@ class EditTemplateViewModel @Inject constructor(
             handleNewCheckboxDraggedToBottom(),
             handleCheckboxMovedToTop(),
             handleCheckboxMovedToBottom(),
+            handleNewCheckboxDraggableClicked(),
             handleItemTitleChanged(),
             handleSaveTemplateClicked(),
             handleDeleteTemplateClicked(),
@@ -225,6 +226,15 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_bottom")
                 EditTemplateState(loadingState.withCheckboxMovedToBottom(event.checkboxKey)) to null
+            }
+    }
+
+    private fun Flow<EditTemplateEvent>.handleNewCheckboxDraggableClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.NewTaskDraggableClicked>()
+            .withSuccessState()
+            .map { (loadingState, _) ->
+                tracker.logEvent("new_checkbox_draggable_clicked")
+                EditTemplateState(loadingState) to EditTemplateEffect.ShowTryDraggingSnackbar()
             }
     }
 

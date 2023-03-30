@@ -22,4 +22,7 @@ sealed interface EditTemplateEffect {
     class ShowFreeRemindersUsed : EditTemplateEffect
 
     data class OpenTemplateHistory(val templateId: ChecklistTemplateId) : EditTemplateEffect
+
+    @Suppress("CanSealedSubClassBeObject")
+    class ShowTryDraggingSnackbar : EditTemplateEffect
 }
