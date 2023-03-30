@@ -1,12 +1,16 @@
 package dev.szymonchaber.checkstory.checklist.template
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.Card
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -17,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
@@ -25,12 +30,18 @@ import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
 import dev.szymonchaber.checkstory.checklist.template.views.DragHandle
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun NewTask(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
-    Card(
-        modifier = modifier,
-        onClick = onClick
+    Box(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .background(Color.White)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.disabled),
+                shape = RoundedCornerShape(4.dp)
+            )
+            .padding(horizontal = 8.dp),
     ) {
         Row(Modifier.height(36.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
