@@ -6,12 +6,12 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -37,6 +37,7 @@ fun DropTargetIndicatorLine() {
         }
     )
     if (state.isDragging) {
+        val colors = MaterialTheme.colors
         Canvas(
             modifier = Modifier
                 .padding(end = 16.dp)
@@ -46,7 +47,7 @@ fun DropTargetIndicatorLine() {
                 }
         ) {
             drawLine(
-                color = Color.Red,
+                color = colors.primary,
                 start = offset.copy(y = 0f),
                 end = offset.copy(x = this.size.width, y = 0f),
                 strokeWidth = 2.dp.toPx()
