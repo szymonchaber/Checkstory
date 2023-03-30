@@ -1,12 +1,12 @@
 package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -19,22 +19,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
 import dev.szymonchaber.checkstory.checklist.template.views.DragHandle
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun NewTask(modifier: Modifier = Modifier) {
+fun NewTask(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Card(
-        modifier = Modifier
-            .height(50.dp)
-            .then(modifier),
-        shape = RoundedCornerShape(12.dp)
+        modifier = modifier,
+        onClick = onClick
     ) {
-        Row(Modifier.padding(8.dp)) {
+        Row(Modifier.padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
-                modifier = Modifier.align(Alignment.CenterVertically),
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .weight(1f),
+                textAlign = TextAlign.Center,
                 text = "New task",
                 style = MaterialTheme.typography.button,
             )

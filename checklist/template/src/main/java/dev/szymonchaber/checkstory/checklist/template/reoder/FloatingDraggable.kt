@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.reoder
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -65,7 +66,7 @@ fun FloatingDraggable(success: TemplateLoadingState.Success) {
                     acceptChildren = false
                 )
             } ?: run {
-                NewTask()
+                NewTask(Modifier.fillMaxWidth(0.45f))
             }
         }
     }

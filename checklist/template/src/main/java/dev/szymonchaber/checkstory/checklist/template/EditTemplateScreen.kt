@@ -26,18 +26,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -86,7 +88,6 @@ import dev.szymonchaber.checkstory.checklist.template.reoder.rememberDragDropSta
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
 import dev.szymonchaber.checkstory.checklist.template.views.pleasantCharacterRemovalAnimationDurationMillis
 import dev.szymonchaber.checkstory.common.trackScreenName
-import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
@@ -219,7 +220,7 @@ private fun EditTemplateScaffold(
     state: EditTemplateState,
     viewModel: EditTemplateViewModel
 ) {
-    AdvertScaffold(
+    Scaffold(
         topBar = {
             val titleText = when {
                 isOnboarding -> {
@@ -258,33 +259,30 @@ private fun EditTemplateScaffold(
             )
         },
         content = {
-            when (val loadingState = state.templateLoadingState) {
-                TemplateLoadingState.Loading -> {
-                    FullSizeLoadingView()
-                }
-                is TemplateLoadingState.Success -> {
-                    val recentlyAddedUnconsumedItem = remember {
-                        RecentlyAddedUnconsumedItem()
+            Box(
+                Modifier.padding(it)
+            ) {
+                when (val loadingState = state.templateLoadingState) {
+                    TemplateLoadingState.Loading -> {
+                        FullSizeLoadingView()
                     }
-                    LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
-                        recentlyAddedUnconsumedItem.item = loadingState.mostRecentlyAddedItem
-                    }
-                    CompositionLocalProvider(
-                        LocalRecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
-                        LocalDragDropState provides rememberDragDropState()
-                    ) {
-                        EditTemplateView(loadingState, viewModel::onEvent)
+                    is TemplateLoadingState.Success -> {
+                        val recentlyAddedUnconsumedItem = remember {
+                            RecentlyAddedUnconsumedItem()
+                        }
+                        LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
+                            recentlyAddedUnconsumedItem.item = loadingState.mostRecentlyAddedItem
+                        }
+                        CompositionLocalProvider(
+                            LocalRecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
+                            LocalDragDropState provides rememberDragDropState()
+                        ) {
+                            EditTemplateView(loadingState, viewModel::onEvent)
+                        }
                     }
                 }
             }
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                viewModel.onEvent(EditTemplateEvent.SaveTemplateClicked)
-            }) {
-                Icon(imageVector = Icons.Filled.Check, contentDescription = null)
-            }
-        }
     )
 }
 
@@ -315,70 +313,72 @@ fun EditTemplateView(
         }
     }
     Box(Modifier.fillMaxSize()) {
-        val template = success.checklistTemplate
-        LazyColumn(
-            Modifier
-                .detectLazyListReorder()
-                .fillMaxSize(),
-            state = dragDropState.lazyListState,
-            verticalArrangement = Arrangement.spacedBy(0.dp),
-        ) {
-            item {
-                ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
-            }
-            items(
-                items = success.unwrappedCheckboxes,
-                key = { (item, _) ->
-                    item.viewId
-                }
-            ) { (checkbox, nestingLevel) ->
-                Row(
-                    Modifier.animateItemPlacement()
+        Column(Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                val template = success.checklistTemplate
+                LazyColumn(
+                    Modifier
+                        .detectLazyListReorder()
+                        .fillMaxWidth(),
+                    state = dragDropState.lazyListState,
+                    verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
-                    val startPadding by animateDpAsState(
-                        nestedPaddingStart * nestingLevel
-                    )
-                    CommonCheckbox(
-                        checkbox = checkbox,
-                        paddingStart = startPadding,
-                        nestingLevel = nestingLevel,
-                        eventCollector = eventCollector
-                    )
-                }
-            }
-            item {
-                Box(Modifier.height(IntrinsicSize.Min)) {
-                    Column {
-                        AddTaskButton(eventCollector)
-                        RemindersSection(template, eventCollector)
-                        DeleteTemplateButton(eventCollector)
+                    item {
+                        ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
                     }
-                    DropTarget(
-                        modifier = Modifier
-                            .fillMaxSize(),
-//                            .background(Color.Green.copy(alpha = 0.2f)),
-                        placeTargetLineOnTop = true,
-                        onDataDropped = { taskKey ->
-                            if (taskKey.id == NEW_TASK_ID) {
-                                eventCollector(EditTemplateEvent.NewCheckboxDraggedToBottom)
-                            } else {
-                                eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                    items(
+                        items = success.unwrappedCheckboxes,
+                        key = { (item, _) ->
+                            item.viewId
+                        }
+                    ) { (checkbox, nestingLevel) ->
+                        Row(
+                            Modifier.animateItemPlacement()
+                        ) {
+                            val startPadding by animateDpAsState(
+                                nestedPaddingStart * nestingLevel
+                            )
+                            CommonCheckbox(
+                                checkbox = checkbox,
+                                paddingStart = startPadding,
+                                nestingLevel = nestingLevel,
+                                eventCollector = eventCollector
+                            )
+                        }
+                    }
+                    item {
+                        Box(Modifier.height(IntrinsicSize.Min)) {
+                            Column {
+                                AddTaskButton(eventCollector)
+                                RemindersSection(template, eventCollector)
+                                DeleteTemplateButton(eventCollector)
                             }
-                        },
-                        dropTargetOffset = 16.dp
-                    )
+                            DropTarget(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+//                            .background(Color.Green.copy(alpha = 0.2f)),
+                                placeTargetLineOnTop = true,
+                                onDataDropped = { taskKey ->
+                                    if (taskKey.id == NEW_TASK_ID) {
+                                        eventCollector(EditTemplateEvent.NewCheckboxDraggedToBottom)
+                                    } else {
+                                        eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                                    }
+                                },
+                                dropTargetOffset = 16.dp
+                            )
+                        }
+                    }
                 }
+                DropTargetIndicatorLine()
             }
+            BottomActionBar(eventCollector = eventCollector)
         }
-        DropTargetIndicatorLine()
         FloatingDraggable(success)
-        Draggable(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(16.dp)
-        ) {
-            NewTask(it)
-        }
         dragDropState.scrollComparisonDebugPoints?.let { (top, bottom) ->
 //            DebugFloatingPoint(top, Color.Blue)
 //            DebugFloatingPoint(bottom, Color.Red)
@@ -388,6 +388,44 @@ fun EditTemplateView(
         }
     }
 }
+
+@Composable
+fun BottomActionBar(eventCollector: (EditTemplateEvent) -> Unit) {
+    Card(
+        elevation = 8.dp,
+        modifier = Modifier
+            .fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Draggable(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .align(Alignment.CenterVertically)
+            ) {
+                NewTask(it.fillMaxWidth()) {
+                    eventCollector(EditTemplateEvent.OnNewTaskDraggableClick)
+                }
+            }
+            Button(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .align(Alignment.CenterVertically),
+                shape = MaterialTheme.shapes.medium,
+                onClick = {
+                    eventCollector(EditTemplateEvent.SaveTemplateClicked)
+                }) {
+                Text(text = stringResource(R.string.save_template))
+            }
+        }
+    }
+
+}
+
 
 @Composable
 private fun DebugFloatingPoint(offset: Offset, color: Color) {

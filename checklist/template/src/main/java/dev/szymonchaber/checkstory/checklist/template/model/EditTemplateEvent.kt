@@ -65,4 +65,6 @@ sealed interface EditTemplateEvent {
     object ConfirmExitClicked : EditTemplateEvent
 
     object TemplateHistoryClicked : EditTemplateEvent
+
+    object OnNewTaskDraggableClick : EditTemplateEvent
 }

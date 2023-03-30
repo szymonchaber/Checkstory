@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.design.views
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -84,6 +85,7 @@ fun AdvertScaffold(
     topBar: @Composable () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
     floatingActionButton: @Composable () -> Unit = {},
+    contentAboveBottomBar: @Composable () -> Unit = {}
 ) {
     val activeUser = ActiveUser.current
     Scaffold(
@@ -97,8 +99,11 @@ fun AdvertScaffold(
         },
         floatingActionButton = floatingActionButton,
         bottomBar = {
-            if (activeUser.isPaidUser.not()) {
-                AdvertView()
+            Column {
+                contentAboveBottomBar()
+                if (activeUser.isPaidUser.not()) {
+                    AdvertView()
+                }
             }
         }
     )
