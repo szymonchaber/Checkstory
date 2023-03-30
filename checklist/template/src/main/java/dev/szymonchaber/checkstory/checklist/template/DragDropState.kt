@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
@@ -32,10 +33,13 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import kotlin.math.absoluteValue
+import kotlin.math.min
+import kotlin.math.sign
 
 const val NEW_TASK_ID = -50L
 
-class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope) {
+class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope, val maxScroll: Float) {
 
     val interactions = Channel<StartDrag>()
 
@@ -116,20 +120,42 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
         dragOffset += offset
         pointerDebugPoint = pointerDebugPoint?.plus(offset)
 
-        if (overscrollJob?.isActive == true) {
-            return
-        }
-        val overscroll = checkForOverScroll()
+        val overscroll = checkForOverScroll(0L, maxScroll)
         if (overscroll != 0f) {
-            overscrollJob = scope.launch {
-                lazyListState.scrollBy(overscroll)
-            }
-        } else {
-            overscrollJob?.cancel()
+            autoscroll(overscroll)
         }
     }
 
-    private fun checkForOverScroll(): Float {
+    private fun autoscroll(scrollOffset: Float) {
+        if (scrollOffset != 0f) {
+            if (overscrollJob?.isActive == true) {
+                return
+            }
+            overscrollJob = scope.launch {
+                var scroll = scrollOffset
+                var start = 0L
+                while (scroll != 0f && overscrollJob?.isActive == true) {
+                    withFrameMillis {
+                        if (start == 0L) {
+                            start = it
+                        } else {
+                            scroll = checkForOverScroll(it - start, maxScroll)
+                        }
+                    }
+                    lazyListState.scrollBy(scroll)
+                }
+            }
+        } else {
+            cancelAutoScroll()
+        }
+    }
+
+    private fun cancelAutoScroll() {
+        overscrollJob?.cancel()
+        overscrollJob = null
+    }
+
+    private fun checkForOverScroll(time: Long, maxScroll: Float): Float {
         return initialDragPosition?.let {
             val startOffset = it.y + draggedDistance
             val itemSize = initialDragSize?.height?.toFloat() ?: 0f
@@ -137,8 +163,12 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
             scrollComparisonDebugPoints = Offset(150f, startOffset) to Offset(150f, endOffset)
             when {
                 draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
+                    ?: 0f
                 draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
-                else -> null
+                    ?: 0f
+                else -> 0f
+            }.let {
+                interpolateOutOfBoundsScroll((endOffset - startOffset).toInt(), it, time, maxScroll)
             }
         } ?: 0f
     }
@@ -146,6 +176,39 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope)
     fun onDropTargetAcquired(dropTargetInfo: DropTargetInfo) {
         previousDropTargetInfo = currentDropTargetInfo
         currentDropTargetInfo = dropTargetInfo
+    }
+
+    companion object {
+
+        private const val ACCELERATION_LIMIT_TIME_MS: Long = 1500
+
+        private val easeOutQuadInterpolator: (Float) -> (Float) = {
+            val t = 1 - it
+            1 - t * t * t * t
+        }
+
+        private val easeInQuintInterpolator: (Float) -> (Float) = {
+            it * it * it * it * it
+        }
+
+        private fun interpolateOutOfBoundsScroll(
+            viewSize: Int,
+            viewSizeOutOfBounds: Float,
+            time: Long,
+            maxScroll: Float,
+        ): Float {
+            if (viewSizeOutOfBounds == 0f) return 0f
+            val outOfBoundsRatio = min(1f, 1f * viewSizeOutOfBounds.absoluteValue / viewSize)
+            val cappedScroll = sign(viewSizeOutOfBounds) * maxScroll * easeOutQuadInterpolator(outOfBoundsRatio)
+            val timeRatio = if (time > ACCELERATION_LIMIT_TIME_MS) 1f else time.toFloat() / ACCELERATION_LIMIT_TIME_MS
+            return (cappedScroll * easeInQuintInterpolator(timeRatio)).let {
+                if (it == 0f) {
+                    if (viewSizeOutOfBounds > 0) 1f else -1f
+                } else {
+                    it
+                }
+            }
+        }
     }
 }
 

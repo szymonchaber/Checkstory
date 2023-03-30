@@ -342,7 +342,6 @@ fun EditTemplateView(
                         .detectLazyListReorder()
                         .fillMaxWidth(),
                     state = dragDropState.lazyListState,
-                    verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
                     item {
                         ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
