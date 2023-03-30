@@ -4,7 +4,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -32,7 +32,7 @@ fun NewTask(modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
         modifier = modifier,
         onClick = onClick
     ) {
-        Row(Modifier.padding(8.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+        Row(Modifier.height(36.dp), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
