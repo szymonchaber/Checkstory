@@ -29,7 +29,7 @@ class Dependencies : Plugin<Project> {
             "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion"
         )
 
-        const val composeVersion = "1.4.0-rc01"
+        const val composeVersion = "1.4.0"
         val compose = listOf(
             "androidx.compose.ui:ui:$composeVersion",
             "androidx.compose.ui:ui-tooling-preview:$composeVersion",
