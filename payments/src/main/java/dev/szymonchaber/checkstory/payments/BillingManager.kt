@@ -34,8 +34,9 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) {
                         Timber.d("Billing service connected")
                         continuation.resume(billingClient.right())
                     } else {
-                        Timber.d("Billing client setup failed")
-                        continuation.resume(mapBillingError(billingResult).left())
+                        val mapBillingError = mapBillingError(billingResult)
+                        Timber.e("Billing client setup failed: $mapBillingError")
+                        continuation.resume(mapBillingError.left())
                     }
                 }
 

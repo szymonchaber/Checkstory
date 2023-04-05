@@ -25,8 +25,11 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
+import com.google.android.gms.ads.LoadAdError
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.BuildConfig
+import timber.log.Timber
 
 @SuppressLint("MissingPermission")
 @Composable
@@ -47,10 +50,11 @@ fun AdvertView(modifier: Modifier = Modifier) {
                 text = "Advert Here",
             )
         } else {
-            var isLoaded by remember {
-                mutableStateOf(false)
+            var shouldShowLoading by remember {
+                mutableStateOf(true)
             }
-            if (!isLoaded) {
+
+            if (shouldShowLoading) {
                 LoadingViewNoPadding()
             }
             AndroidView(
@@ -59,13 +63,20 @@ fun AdvertView(modifier: Modifier = Modifier) {
                     AdView(context).apply {
                         setAdSize(AdSize.BANNER)
                         adUnitId = BuildConfig.BANNER_AD_UNIT_ID
-                        loadAd(AdRequest.Builder().build())
                         adListener = object : AdListener() {
 
                             override fun onAdLoaded() {
-                                isLoaded = true
+                                shouldShowLoading = false
+                            }
+
+                            override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                                Timber.e(loadAdError.toString())
+                                FirebaseCrashlytics.getInstance()
+                                    .recordException(Exception("Loading an ad failed! $loadAdError"))
+                                shouldShowLoading = false
                             }
                         }
+                        loadAd(AdRequest.Builder().build())
                     }
                 }
             )

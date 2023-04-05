@@ -4,38 +4,47 @@ package dev.szymonchaber.checkstory.checklist.template
 
 import android.os.Parcelable
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
+import androidx.compose.material.ScaffoldState
+import androidx.compose.material.SnackbarHost
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.rememberModalBottomSheetState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -48,19 +57,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -76,11 +82,15 @@ import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
+import dev.szymonchaber.checkstory.checklist.template.reoder.DropTarget
+import dev.szymonchaber.checkstory.checklist.template.reoder.DropTargetIndicatorLine
+import dev.szymonchaber.checkstory.checklist.template.reoder.FloatingDraggable
+import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
+import dev.szymonchaber.checkstory.checklist.template.reoder.detectLazyListReorder
+import dev.szymonchaber.checkstory.checklist.template.reoder.rememberDragDropState
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
-import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
 import dev.szymonchaber.checkstory.checklist.template.views.pleasantCharacterRemovalAnimationDurationMillis
 import dev.szymonchaber.checkstory.common.trackScreenName
-import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
@@ -146,6 +156,8 @@ fun EditTemplateScreen(
         }
     }
 
+    val scaffoldState: ScaffoldState = rememberScaffoldState()
+
     val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
@@ -178,6 +190,13 @@ fun EditTemplateScreen(
             is EditTemplateEffect.OpenTemplateHistory -> {
                 navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
             }
+            is EditTemplateEffect.ShowTryDraggingSnackbar -> {
+                scope.launch {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = "Drag me to where you want a new task 🎯"
+                    )
+                }
+            }
             null -> Unit
         }
     }
@@ -193,22 +212,32 @@ fun EditTemplateScreen(
         sheetState = modalBottomSheetState,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
     ) {
-        EditTemplateScaffold(generateOnboarding, templateId == null, state, viewModel)
+        EditTemplateScaffold(scaffoldState, generateOnboarding, templateId == null, state, viewModel)
     }
 }
 
-val RecentlyAddedUnconsumedItem = compositionLocalOf<ViewTemplateCheckboxKey?> {
-    null
+val LocalRecentlyAddedUnconsumedItem = compositionLocalOf {
+    RecentlyAddedUnconsumedItem()
+}
+
+class RecentlyAddedUnconsumedItem {
+
+    var item by mutableStateOf<ViewTemplateCheckboxId?>(null)
 }
 
 @Composable
 private fun EditTemplateScaffold(
+    scaffoldState: ScaffoldState,
     isOnboarding: Boolean,
     isNewTemplate: Boolean,
     state: EditTemplateState,
     viewModel: EditTemplateViewModel
 ) {
-    AdvertScaffold(
+    Scaffold(
+        scaffoldState = scaffoldState,
+        snackbarHost = {
+            SnackbarHost(it, Modifier.padding(bottom = 48.dp))
+        },
         topBar = {
             val titleText = when {
                 isOnboarding -> {
@@ -247,37 +276,30 @@ private fun EditTemplateScaffold(
             )
         },
         content = {
-            when (val loadingState = state.templateLoadingState) {
-                TemplateLoadingState.Loading -> {
-                    FullSizeLoadingView()
-                }
-                is TemplateLoadingState.Success -> {
-                    var recentlyAddedUnconsumedItem by remember {
-                        mutableStateOf<ViewTemplateCheckboxKey?>(null)
+            Box(
+                Modifier.padding(it)
+            ) {
+                when (val loadingState = state.templateLoadingState) {
+                    TemplateLoadingState.Loading -> {
+                        FullSizeLoadingView()
                     }
-                    LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
-                        recentlyAddedUnconsumedItem = loadingState.mostRecentlyAddedItem
-                    }
-                    CompositionLocalProvider(RecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem) {
-                        EditTemplateView(
-                            loadingState.checklistTemplate,
-                            loadingState.onboardingPlaceholders,
-                            loadingState.checkboxes,
-                            viewModel::onEvent
+                    is TemplateLoadingState.Success -> {
+                        val recentlyAddedUnconsumedItem = remember {
+                            RecentlyAddedUnconsumedItem()
+                        }
+                        LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
+                            recentlyAddedUnconsumedItem.item = loadingState.mostRecentlyAddedItem
+                        }
+                        CompositionLocalProvider(
+                            LocalRecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
+                            LocalDragDropState provides rememberDragDropState()
                         ) {
-                            recentlyAddedUnconsumedItem = null
+                            EditTemplateView(loadingState, viewModel::onEvent)
                         }
                     }
                 }
             }
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                viewModel.onEvent(EditTemplateEvent.SaveTemplateClicked)
-            }) {
-                Icon(imageVector = Icons.Filled.Check, contentDescription = null)
-            }
-        }
     )
 }
 
@@ -288,55 +310,155 @@ private fun BackIcon(onBackClicked: () -> Unit) {
     }
 }
 
-private val nestedPaddingStart = 16.dp
+val nestedPaddingStart = 32.dp
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
-    checklistTemplate: ChecklistTemplate,
-    onboardingPlaceholders: OnboardingPlaceholders?,
-    checkboxes: List<ViewTemplateCheckbox>,
-    eventCollector: (EditTemplateEvent) -> Unit,
-    onAddedItemConsumed: () -> Unit
+    success: TemplateLoadingState.Success,
+    eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    LazyColumn(
-        contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        item {
-            ChecklistTemplateDetails(checklistTemplate, onboardingPlaceholders, eventCollector)
-        }
-        items(
-            items = checkboxes,
-            key = { it.viewKey }
-        ) { checkbox ->
-            Row(
-                Modifier.padding(start = 16.dp, end = 16.dp)
-            ) {
-                CommonCheckbox(
-                    checkbox = checkbox,
-                    paddingStart = nestedPaddingStart,
-                    isLastChild = true,
-                    onAddedItemConsumed = onAddedItemConsumed,
-                    eventCollector = eventCollector
-                )
+    val dragDropState = LocalDragDropState.current
+    val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
+    LaunchedEffect(recentlyAddedItem.item) {
+        recentlyAddedItem.item?.let { newItem ->
+            val isNewItemNotVisible =
+                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { (it.key as? ViewTemplateCheckboxKey)?.viewId == newItem }
+            if (isNewItemNotVisible) {
+                dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.viewId == newItem } + 1)
             }
         }
-        item {
-            AddTaskButton(eventCollector)
+    }
+    Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                val template = success.checklistTemplate
+                LazyColumn(
+                    Modifier
+                        .detectLazyListReorder()
+                        .fillMaxWidth(),
+                    state = dragDropState.lazyListState,
+                ) {
+                    item {
+                        ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
+                    }
+                    items(
+                        items = success.unwrappedCheckboxes,
+                        key = { (item, _) ->
+                            item.viewId
+                        }
+                    ) { (checkbox, nestingLevel) ->
+                        Row(
+                            Modifier.animateItemPlacement()
+                        ) {
+                            val startPadding by animateDpAsState(
+                                nestedPaddingStart * nestingLevel
+                            )
+                            CommonCheckbox(
+                                checkbox = checkbox,
+                                paddingStart = startPadding,
+                                nestingLevel = nestingLevel,
+                                eventCollector = eventCollector
+                            )
+                        }
+                    }
+                    item {
+                        Box(Modifier.height(IntrinsicSize.Min)) {
+                            Column {
+                                AddTaskButton(eventCollector)
+                                RemindersSection(template, eventCollector)
+                                DeleteTemplateButton(eventCollector)
+                            }
+                            DropTarget(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+//                            .background(Color.Green.copy(alpha = 0.2f)),
+                                placeTargetLineOnTop = true,
+                                onDataDropped = { taskKey ->
+                                    if (taskKey.id == NEW_TASK_ID) {
+                                        eventCollector(EditTemplateEvent.NewCheckboxDraggedToBottom)
+                                    } else {
+                                        eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                                    }
+                                },
+                                dropTargetOffset = 16.dp
+                            )
+                        }
+                    }
+                }
+                DropTargetIndicatorLine()
+            }
+            BottomActionBar(eventCollector = eventCollector)
         }
-        item {
-            RemindersSection(checklistTemplate, eventCollector)
+        FloatingDraggable(success)
+        dragDropState.scrollComparisonDebugPoints?.let { (top, bottom) ->
+//            DebugFloatingPoint(top, Color.Blue)
+//            DebugFloatingPoint(bottom, Color.Red)
         }
-        item {
-            DeleteTemplateButton(eventCollector)
+        dragDropState.pointerDebugPoint?.let {
+//            DebugFloatingPoint(offset = it, color = Color.Green)
         }
     }
 }
 
 @Composable
+fun BottomActionBar(eventCollector: (EditTemplateEvent) -> Unit) {
+    Card(
+        elevation = 8.dp,
+        modifier = Modifier
+            .fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Draggable(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .align(Alignment.CenterVertically)
+            ) {
+                NewTask(it.fillMaxWidth()) {
+                    eventCollector(EditTemplateEvent.NewTaskDraggableClicked)
+                }
+            }
+            Button(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .align(Alignment.CenterVertically),
+                shape = MaterialTheme.shapes.medium,
+                onClick = {
+                    eventCollector(EditTemplateEvent.SaveTemplateClicked)
+                }) {
+                Text(text = stringResource(R.string.save_template))
+            }
+        }
+    }
+
+}
+
+
+@Composable
+private fun DebugFloatingPoint(offset: Offset, color: Color) {
+    Box(modifier = Modifier
+        .graphicsLayer {
+            translationX = offset.x
+            translationY = offset.y
+        }
+        .background(color)
+        .size(4.dp)
+        .clip(CircleShape))
+}
+
+@Composable
 private fun AddTaskButton(eventCollector: (EditTemplateEvent) -> Unit) {
     AddButton(
-        modifier = Modifier.padding(start = 8.dp),
+        modifier = Modifier.padding(start = 8.dp, top = 4.dp),
         onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
         text = stringResource(R.string.new_checkbox)
     )
@@ -347,104 +469,10 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
     Box(Modifier.fillMaxWidth()) {
         DeleteButton(
             modifier = Modifier
-                .padding(top = 16.dp)
+                .padding(top = 20.dp, bottom = 96.dp)
                 .align(Alignment.TopCenter)
         ) {
             eventCollector(EditTemplateEvent.DeleteTemplateClicked)
-        }
-    }
-}
-
-@Composable
-private fun CommonCheckbox(
-    checkbox: ViewTemplateCheckbox,
-    paddingStart: Dp,
-    isLastChild: Boolean,
-    nestingLevel: Int = 1,
-    onAddedItemConsumed: () -> Unit,
-    eventCollector: (EditTemplateEvent) -> Unit,
-) {
-    Column {
-        val taskTopPadding = 8.dp
-        val paddingStartActual = if (nestingLevel > 1) paddingStart else 0.dp
-        val focusRequester = remember { FocusRequester() }
-        CheckboxItem(
-            modifier = Modifier
-                .drawBehind { // TODO check drawWithContent or withCache
-                    if (nestingLevel > 1) {
-                        val heightFraction = if (!isLastChild) 1f else 0.5f
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset.Zero,
-                            end = Offset(0f, size.height * heightFraction + taskTopPadding.toPx() / 2),
-                            strokeWidth = 4.dp.toPx()
-                        )
-                        val visualCenterY = center.y + taskTopPadding.toPx() / 2
-                        drawLine(
-                            color = Color.Gray,
-                            start = Offset(x = 0f, y = visualCenterY),
-                            end = Offset(x = paddingStart.toPx(), y = visualCenterY),
-                            strokeWidth = 2.dp.toPx()
-                        )
-                    }
-                }
-                .padding(top = taskTopPadding, start = paddingStartActual),
-            title = checkbox.title,
-            placeholder = checkbox.placeholderTitle,
-            nestingLevel = nestingLevel,
-            focusRequester = focusRequester,
-            onTitleChange = {
-                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
-            },
-            onAddSubtask = {
-                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
-            }
-        ) {
-            eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
-        }
-        val recentlyAddedItem = RecentlyAddedUnconsumedItem.current
-        LaunchedEffect(recentlyAddedItem) {
-            if (checkbox.viewKey == recentlyAddedItem) {
-                focusRequester.requestFocus()
-                onAddedItemConsumed()
-            }
-        }
-        val paddingMultiplier = if (nestingLevel == 1) {
-            1
-        } else {
-            2
-        }
-        Row {
-            val localDensity = LocalDensity.current
-            var columnHeightDp by remember {
-                mutableStateOf(0.dp)
-            }
-            if (!isLastChild) {
-                Box(
-                    modifier = Modifier
-                        .height(columnHeightDp)
-                        .background(Color.Gray)
-                        .width(2.dp)
-                )
-            }
-            Column(
-                Modifier
-                    .padding(start = paddingStart * paddingMultiplier)
-                    .animateContentSize()
-                    .onGloballyPositioned {
-                        columnHeightDp = with(localDensity) { it.size.height.toDp() }
-                    }) {
-                checkbox.children.forEachIndexed { index, child ->
-                    CommonCheckbox(
-                        checkbox = child,
-                        paddingStart = paddingStart,
-                        isLastChild = checkbox.children.lastIndex == index,
-                        nestingLevel = nestingLevel + 1,
-                        onAddedItemConsumed = onAddedItemConsumed,
-                        eventCollector = eventCollector,
-                    )
-                }
-            }
         }
     }
 }
@@ -455,15 +483,32 @@ private fun ChecklistTemplateDetails(
     onboardingPlaceholders: OnboardingPlaceholders?,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
-    TitleTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
-    DescriptionTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
-    SectionLabel(
-        modifier = Modifier.padding(
-            top = 8.dp,
-            start = 16.dp
-        ),
-        text = stringResource(R.string.items)
-    )
+    Box(Modifier.height(IntrinsicSize.Min)) {
+        Column(Modifier.padding(top = 16.dp)) {
+            TitleTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
+            DescriptionTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
+            SectionLabel(
+                modifier = Modifier.padding(
+                    top = 8.dp,
+                    start = 16.dp
+                ),
+                text = stringResource(R.string.items)
+            )
+        }
+        DropTarget(
+            modifier = Modifier
+                .fillMaxSize(),
+//                .background(Color.Blue.copy(alpha = 0.2f)),
+            onDataDropped = { taskKey ->
+                if (taskKey.id == NEW_TASK_ID) {
+                    eventCollector(EditTemplateEvent.NewCheckboxDraggedToTop)
+                } else {
+                    eventCollector(EditTemplateEvent.CheckboxMovedToTop(taskKey))
+                }
+            },
+            dropTargetOffset = 16.dp
+        )
+    }
 }
 
 @Composable
@@ -575,10 +620,14 @@ private fun TextFieldWithFixedPlaceholder(
 
 @Parcelize
 data class ViewTemplateCheckboxKey(
-    val viewId: Long,
+    val id: Long,
     val parentKey: ViewTemplateCheckboxKey?,
     val isNew: Boolean
-) : Parcelable
+) : Parcelable {
+    fun hasKeyInAncestors(key: ViewTemplateCheckboxKey): Boolean {
+        return parentKey == key || parentKey?.hasKeyInAncestors(key) ?: false
+    }
+}
 
 val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
     get() {
@@ -588,3 +637,29 @@ val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
             this is ViewTemplateCheckbox.New
         )
     }
+
+@Parcelize
+data class ViewTemplateCheckboxId(
+    val viewId: Long,
+    val isNew: Boolean
+) : Parcelable
+
+val ViewTemplateCheckbox.viewId: ViewTemplateCheckboxId
+    get() {
+        return ViewTemplateCheckboxId(id.id, this is ViewTemplateCheckbox.New)
+    }
+
+val ViewTemplateCheckboxKey.viewId: ViewTemplateCheckboxId
+    get() {
+        return ViewTemplateCheckboxId(
+            id,
+            isNew
+        )
+    }
+
+val LazyListItemInfo.offsetEnd: Int
+    get() = this.offset + this.size
+
+fun Modifier.then(modifier: Modifier.() -> Modifier): Modifier {
+    return then(modifier(Modifier))
+}

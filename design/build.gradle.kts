@@ -44,6 +44,9 @@ dependencies {
 
     implementation(Dependencies.ads)
 
+    implementation(platform(Dependencies.firebasePlatform))
+    implementation(Dependencies.crashlytics)
+
     debugImplementation(Dependencies.debugUiTooling)
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

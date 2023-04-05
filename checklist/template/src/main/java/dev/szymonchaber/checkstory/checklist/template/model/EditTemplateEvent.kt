@@ -30,10 +30,27 @@ sealed interface EditTemplateEvent {
 
     data class DeleteReminderClicked(val reminder: Reminder) : EditTemplateEvent
 
-    data class OnCheckboxMoved(
-        val from: ViewTemplateCheckboxKey,
-        val to: ViewTemplateCheckboxKey
+    data class SiblingMovedBelow(
+        val target: ViewTemplateCheckboxKey,
+        val newSibling: ViewTemplateCheckboxKey
     ) : EditTemplateEvent
+
+    data class NewSiblingDraggedBelow(val target: ViewTemplateCheckboxKey) : EditTemplateEvent
+
+    data class ChildMovedBelow(
+        val target: ViewTemplateCheckboxKey,
+        val newChild: ViewTemplateCheckboxKey
+    ) : EditTemplateEvent
+
+    data class NewChildDraggedBelow(val target: ViewTemplateCheckboxKey) : EditTemplateEvent
+
+    object NewCheckboxDraggedToTop : EditTemplateEvent
+
+    object NewCheckboxDraggedToBottom : EditTemplateEvent
+
+    data class CheckboxMovedToTop(val checkboxKey: ViewTemplateCheckboxKey) : EditTemplateEvent
+
+    data class CheckboxMovedToBottom(val checkboxKey: ViewTemplateCheckboxKey) : EditTemplateEvent
 
     object AddCheckboxClicked : EditTemplateEvent
 
@@ -48,4 +65,6 @@ sealed interface EditTemplateEvent {
     object ConfirmExitClicked : EditTemplateEvent
 
     object TemplateHistoryClicked : EditTemplateEvent
+
+    object NewTaskDraggableClicked : EditTemplateEvent
 }

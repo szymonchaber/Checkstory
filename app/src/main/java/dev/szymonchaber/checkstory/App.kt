@@ -9,6 +9,7 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
+import dev.szymonchaber.checkstory.common.LogStorage
 import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
@@ -36,10 +37,15 @@ class App : Application() {
     @Inject
     lateinit var isProUserUseCase: IsProUserUseCase
 
+    @Inject
+    lateinit var logStorage: LogStorage
+
     private val alarmManager by lazy { getSystemService(Context.ALARM_SERVICE) as AlarmManager }
 
     override fun onCreate() {
         super.onCreate()
+        plantProductionDebugTree()
+
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
@@ -50,7 +56,33 @@ class App : Application() {
                 Timber.w("Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
             }
-            Timber.d("Token: ${task.result}")
+//            Timber.d("Token: ${task.result}")
+        })
+    }
+
+    private fun plantProductionDebugTree() {
+        Timber.plant(object : Timber.DebugTree() {
+            override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+                if (message.length < MAX_LOG_LENGTH) {
+                    logStorage.append("$tag: $message")
+                    return
+                }
+
+                // Split by line, then ensure each line can fit into Log's maximum length.
+                var i = 0
+                val length = message.length
+                while (i < length) {
+                    var newline = message.indexOf('\n', i)
+                    newline = if (newline != -1) newline else length
+                    do {
+                        val end = Math.min(newline, i + MAX_LOG_LENGTH)
+                        val part = message.substring(i, end)
+                        logStorage.append("$tag: $part")
+                        i = end
+                    } while (i < newline)
+                    i++
+                }
+            }
         })
     }
 
@@ -93,5 +125,7 @@ class App : Application() {
         private const val SUBSCRIPTION_TIER = "subscription_tier"
         private const val SUBSCRIPTION_TIER_FREE = "free"
         private const val SUBSCRIPTION_TIER_PRO = "pro"
+
+        private const val MAX_LOG_LENGTH = 4000
     }
 }

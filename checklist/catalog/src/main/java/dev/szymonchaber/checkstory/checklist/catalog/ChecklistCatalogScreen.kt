@@ -81,6 +81,11 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                         }) {
                             Text(text = stringResource(id = R.string.about))
                         }
+                        DropdownMenuItem(onClick = {
+                            navigator.navigate("debug_screen")
+                        }) {
+                            Text(text = "Debug menu")
+                        }
                     }
                 }
             )
