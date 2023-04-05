@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.data.database.datasource
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
@@ -15,9 +16,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 
 class ChecklistRoomDataSource @Inject constructor(
@@ -82,6 +85,13 @@ class ChecklistRoomDataSource @Inject constructor(
 
     private fun combineIntoDomainChecklist(checklist: ChecklistEntity): Flow<Checklist> {
         return checklistTemplateDao.getById(checklist.templateId)
+            .onEach {
+                if (it == null) {
+                    FirebaseCrashlytics.getInstance()
+                        .recordException(Exception("Attempted fetching template data for non-existent template!"))
+                    Timber.e("Attempted fetching template data for non-existent template!")
+                }
+            }
             .filterNotNull()
             .combine(getCheckboxes(checklist.checklistId)) { template, checkboxes ->
                 checklist.toDomainChecklist(

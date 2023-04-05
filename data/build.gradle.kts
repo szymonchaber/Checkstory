@@ -44,6 +44,8 @@ dependencies {
     implementation(Dependencies.rrule)
     implementation(Dependencies.dataStore)
 
+    implementation(Dependencies.crashlytics)
+
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)
 }
