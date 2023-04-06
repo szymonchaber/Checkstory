@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.gms.ads.MobileAds
 import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.AdViewModel
@@ -27,6 +28,7 @@ import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.navigation.Navigation
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -37,6 +39,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MobileAds.initialize(this) { initializationStatus ->
+            Timber.d(initializationStatus.adapterStatusMap.map { (name, status) ->
+                "$name: ${status.initializationState.name}"
+            }.joinToString())
+        }
         setContent {
             CheckstoryTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
@@ -52,7 +59,6 @@ class MainActivity : ComponentActivity() {
             val browserIntent = Intent(Intent.ACTION_VIEW, it.toUri())
             startActivity(browserIntent)
         }
-        MobileAds.initialize(this)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
                 appReviewViewModel.displayReviewEventFlow.collect {
@@ -63,8 +69,7 @@ class MainActivity : ComponentActivity() {
                             val flow = manager.launchReviewFlow(this@MainActivity, reviewInfo)
                             flow.addOnCompleteListener { }
                         } else {
-                            // TODO There was some problem, log or handle the error code.
-                            val exception = task.exception
+                            task.exception?.let(FirebaseCrashlytics.getInstance()::recordException)
                         }
                     }
                 }

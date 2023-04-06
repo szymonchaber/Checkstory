@@ -67,7 +67,7 @@ class Dependencies : Plugin<Project> {
 
         val ui = listOf(androidXCore, appCompat) + compose + lifecycle + accompanist
 
-        val ads = "com.google.android.gms:play-services-ads:21.5.0"
+        val ads = "com.google.android.gms:play-services-ads:22.0.0"
 
         // region firebase
         val firebasePlatform = "com.google.firebase:firebase-bom:31.2.1"

@@ -50,36 +50,41 @@ fun AdvertView(modifier: Modifier = Modifier) {
                 text = "Advert Here",
             )
         } else {
-            var shouldShowLoading by remember {
-                mutableStateOf(true)
+            var adLoadingFailed by remember {
+                mutableStateOf(false)
             }
-
-            if (shouldShowLoading) {
-                LoadingViewNoPadding()
-            }
-            AndroidView(
-                modifier = modifier.fillMaxWidth(),
-                factory = { context ->
-                    AdView(context).apply {
-                        setAdSize(AdSize.BANNER)
-                        adUnitId = BuildConfig.BANNER_AD_UNIT_ID
-                        adListener = object : AdListener() {
-
-                            override fun onAdLoaded() {
-                                shouldShowLoading = false
-                            }
-
-                            override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                                Timber.e(loadAdError.toString())
-                                FirebaseCrashlytics.getInstance()
-                                    .recordException(Exception("Loading an ad failed! $loadAdError"))
-                                shouldShowLoading = false
-                            }
-                        }
-                        loadAd(AdRequest.Builder().build())
-                    }
+            if (!adLoadingFailed) {
+                var shouldShowLoading by remember {
+                    mutableStateOf(true)
                 }
-            )
+                if (shouldShowLoading) {
+                    LoadingViewNoPadding()
+                }
+                AndroidView(
+                    modifier = modifier.fillMaxWidth(),
+                    factory = { context ->
+                        AdView(context).apply {
+                            setAdSize(AdSize.BANNER)
+                            adUnitId = BuildConfig.BANNER_AD_UNIT_ID
+                            adListener = object : AdListener() {
+
+                                override fun onAdLoaded() {
+                                    shouldShowLoading = false
+                                }
+
+                                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                                    Timber.e(loadAdError.toString())
+                                    FirebaseCrashlytics.getInstance()
+                                        .recordException(Exception("Loading an ad failed! $loadAdError"))
+                                    shouldShowLoading = false
+                                    adLoadingFailed = true
+                                }
+                            }
+                            loadAd(AdRequest.Builder().build())
+                        }
+                    }
+                )
+            }
         }
     }
 }
