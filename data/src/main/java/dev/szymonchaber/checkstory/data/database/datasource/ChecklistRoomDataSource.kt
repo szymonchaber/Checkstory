@@ -12,10 +12,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -29,10 +31,12 @@ class ChecklistRoomDataSource @Inject constructor(
     private val checkboxDao: CheckboxDao
 ) {
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun getById(id: Long): Flow<Checklist> {
         return checklistDao.getById(id)
             .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklist)
+            .filterNotNull()
             .take(1)
     }
 
@@ -79,26 +83,31 @@ class ChecklistRoomDataSource @Inject constructor(
 
     private fun Flow<List<ChecklistEntity>>.toDomainChecklistFlow(): Flow<List<Checklist>> {
         return flatMapLatest {
-            it.map(::combineIntoDomainChecklist).toFlowOfLists()
+            it.map(::combineIntoDomainChecklist)
+                .toFlowOfLists()
+                .map {
+                    it.filterNotNull()
+                }
         }
     }
 
-    private fun combineIntoDomainChecklist(checklist: ChecklistEntity): Flow<Checklist> {
+    private fun combineIntoDomainChecklist(checklist: ChecklistEntity): Flow<Checklist?> {
         return checklistTemplateDao.getById(checklist.templateId)
             .onEach {
                 if (it == null) {
                     FirebaseCrashlytics.getInstance()
-                        .recordException(Exception("Attempted fetching template data for non-existent template!"))
-                    Timber.e("Attempted fetching template data for non-existent template!")
+                        .recordException(Exception("Found orphaned checklist (no related checklist template found). Cascading deletion seems to be broken"))
+                    Timber.e("Found orphaned checklist (no related checklist template found). Cascading deletion seems to be broken")
                 }
             }
-            .filterNotNull()
             .combine(getCheckboxes(checklist.checklistId)) { template, checkboxes ->
-                checklist.toDomainChecklist(
-                    template.title,
-                    template.description,
-                    groupToDomain(checkboxes)
-                )
+                template?.let {
+                    checklist.toDomainChecklist(
+                        it.title,
+                        template.description,
+                        groupToDomain(checkboxes)
+                    )
+                }
             }
     }
 
