@@ -34,26 +34,26 @@ import timber.log.Timber
 @SuppressLint("MissingPermission")
 @Composable
 fun AdvertView(modifier: Modifier = Modifier) {
-    Box(
-        modifier = Modifier
-            .height(50.dp)
-    ) {
-        val isInEditMode = LocalInspectionMode.current
-        if (isInEditMode) {
-            Text(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .background(Color.Red)
-                    .padding(horizontal = 2.dp, vertical = 6.dp),
-                textAlign = TextAlign.Center,
-                color = Color.White,
-                text = "Advert Here",
-            )
-        } else {
-            var adLoadingFailed by remember {
-                mutableStateOf(false)
-            }
-            if (!adLoadingFailed) {
+    var adLoadingFailed by remember {
+        mutableStateOf(false)
+    }
+    if (!adLoadingFailed) {
+        Box(
+            modifier = Modifier
+                .height(50.dp)
+        ) {
+            val isInEditMode = LocalInspectionMode.current
+            if (isInEditMode) {
+                Text(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .background(Color.Red)
+                        .padding(horizontal = 2.dp, vertical = 6.dp),
+                    textAlign = TextAlign.Center,
+                    color = Color.White,
+                    text = "Advert Here",
+                )
+            } else {
                 var shouldShowLoading by remember {
                     mutableStateOf(true)
                 }
