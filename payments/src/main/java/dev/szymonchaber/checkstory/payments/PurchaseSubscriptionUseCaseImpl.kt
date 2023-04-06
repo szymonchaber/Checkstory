@@ -105,8 +105,7 @@ class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingMan
                 this,
                 it.offerToken,
                 planDuration,
-                price,
-                "$8.99/mo"
+                price
             )
         }
     }

@@ -9,14 +9,23 @@ import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import javax.inject.Singleton
 
+@Singleton
 class BillingManager @Inject constructor(@ApplicationContext context: Context) {
 
     var purchasesUpdatedListener: ((result: BillingResult, purchases: List<Purchase>?) -> Unit)? = null
+
+    private val internalConnectionState = MutableStateFlow<InternalConnectionState>(InternalConnectionState.Idle)
 
     val billingClient = BillingClient.newBuilder(context)
         .enablePendingPurchases()
@@ -25,27 +34,54 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) {
         }
         .build()
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun connectBillingClient(): Either<BillingError, BillingClient> {
-        return suspendCoroutine { continuation ->
-            billingClient.startConnection(object : BillingClientStateListener {
+        return internalConnectionState
+            .onEach {
+                when (it) {
+                    InternalConnectionState.Idle -> {
+                        internalConnectionState.emit(InternalConnectionState.Connecting)
+                        startConnection()
+                    }
 
-                override fun onBillingSetupFinished(billingResult: BillingResult) {
-                    if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                        Timber.d("Billing service connected")
-                        continuation.resume(billingClient.right())
-                    } else {
-                        val mapBillingError = mapBillingError(billingResult)
-                        Timber.e("Billing client setup failed: $mapBillingError")
-                        continuation.resume(mapBillingError.left())
+                    else -> Unit
+                }
+            }
+            .filterIsInstance<ConnectionResultState>()
+            .flatMapLatest {
+                when (it) {
+                    InternalConnectionState.Connected -> {
+                        flowOf(billingClient.right())
+                    }
+
+                    is InternalConnectionState.Error -> {
+                        flowOf(it.error.left())
                     }
                 }
+            }
+            .first()
+    }
 
-                override fun onBillingServiceDisconnected() {
-                    Timber.d("Billing service disconnected")
-//                    continuation.resumeWithException(IllegalStateException("Billing service disconnected")) TODO see if lack of this breaks anything
+    private fun startConnection() {
+        billingClient.startConnection(object : BillingClientStateListener {
+
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    Timber.d("Billing service connected")
+                    internalConnectionState.tryEmit(InternalConnectionState.Connected)
+                } else {
+                    val mapBillingError = mapBillingError(billingResult)
+                    Timber.e("Billing client setup failed: $mapBillingError")
+                    internalConnectionState.tryEmit(InternalConnectionState.Error(mapBillingError))
                 }
-            })
-        }
+            }
+
+            override fun onBillingServiceDisconnected() {
+                Timber.d("Billing service disconnected")
+                internalConnectionState.tryEmit(InternalConnectionState.Idle)
+            }
+        })
+
     }
 
     private fun mapBillingError(billingResult: BillingResult): BillingError {
@@ -55,5 +91,18 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) {
             BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> BillingError.ConnectionError(billingResult.debugMessage)
             else -> BillingError.Unhandled(billingResult.responseCode, billingResult.debugMessage)
         }
+    }
+
+    sealed interface ConnectionResultState
+
+    sealed interface InternalConnectionState {
+
+        object Idle : InternalConnectionState
+
+        object Connecting : InternalConnectionState
+
+        object Connected : InternalConnectionState, ConnectionResultState
+
+        class Error(val error: BillingError) : InternalConnectionState, ConnectionResultState
     }
 }
