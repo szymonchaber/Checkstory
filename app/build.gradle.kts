@@ -22,8 +22,8 @@ android {
         applicationId = "dev.szymonchaber.checkstory"
         minSdk = 24
         targetSdk = 31
-        versionCode = 44
-        versionName = "1.6.0-internal-05"
+        versionCode = 46
+        versionName = "1.6.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
