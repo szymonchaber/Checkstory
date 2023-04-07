@@ -9,9 +9,6 @@ import java.time.LocalDateTime
 fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
     return generateOnboardingCheckboxes()
-        .plus(generateOnboardingCheckboxes())
-        .plus(generateOnboardingCheckboxes())
-        .plus(generateOnboardingCheckboxes())
         .fold(templateLoadingState) { state, checkboxToChildren ->
             state.plusNestedCheckbox(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
         }

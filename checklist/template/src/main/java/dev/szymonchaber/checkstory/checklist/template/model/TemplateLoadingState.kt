@@ -61,7 +61,7 @@ sealed interface TemplateLoadingState {
         }
 
         fun plusNestedCheckbox(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
-            val parent = newCheckbox(placeholderTitle)
+            val parent = newCheckbox(placeholderTitle = placeholderTitle)
             return copy(
                 checkboxes = checkboxes.plus(parent)
             ).let {
