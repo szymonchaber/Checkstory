@@ -90,6 +90,7 @@ dependencies {
     implementation(project(":payments"))
     implementation(project(":about"))
     implementation(project(":onboarding"))
+    implementation(project(":account"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
