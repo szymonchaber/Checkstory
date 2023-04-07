@@ -41,7 +41,8 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
                     TemplateCheckboxId(it.id),
                     null,
                     it.title,
-                    listOf()
+                    listOf(),
+                    0 // TODO
                 )
             },
             createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),

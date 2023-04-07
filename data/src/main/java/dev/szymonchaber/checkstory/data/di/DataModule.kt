@@ -5,7 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
-fimport dagger.Binds
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,8 +19,6 @@ import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.TemplateCheckboxRepository
 import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
-import javax.inject.Named
-import javax.inject.Singleton
 import dev.szymonchaber.checkstory.domain.usecase.Synchronizer
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -36,6 +34,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import kotlinx.serialization.json.Json
 import timber.log.Timber
+import javax.inject.Named
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
