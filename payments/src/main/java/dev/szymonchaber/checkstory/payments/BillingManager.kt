@@ -5,6 +5,7 @@ import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClient.ConnectionState
 import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.Purchase
@@ -41,7 +42,9 @@ class BillingManager @Inject constructor(@ApplicationContext context: Context) {
                 when (it) {
                     InternalConnectionState.Idle -> {
                         internalConnectionState.emit(InternalConnectionState.Connecting)
-                        startConnection()
+                        if (billingClient.connectionState != ConnectionState.CONNECTING) {
+                            startConnection()
+                        }
                     }
 
                     else -> Unit
