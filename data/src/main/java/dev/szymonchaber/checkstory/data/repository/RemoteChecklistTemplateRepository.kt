@@ -67,6 +67,10 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
         TODO()
     }
 
+    override suspend fun helloWorld(token: String): String {
+        return checklistTemplateApi.helloWorld(token)
+    }
+
     suspend fun pushAll(checklistTemplates: List<ChecklistTemplate>): List<ChecklistTemplate> {
         val payload = checklistTemplates.map {
             ChecklistTemplateDto(

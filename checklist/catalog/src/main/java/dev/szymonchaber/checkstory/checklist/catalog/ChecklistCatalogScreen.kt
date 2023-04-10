@@ -86,6 +86,11 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
 //                        }) {
 //                            Text(text = "Debug menu")
 //                        }
+                        DropdownMenuItem(onClick = {
+                            navigator.navigate("account_screen")
+                        }) {
+                            Text(text = "Account")
+                        }
                     }
                 }
             )

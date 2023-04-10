@@ -24,4 +24,10 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
             body = checklistTemplates
         }
     }
+
+    suspend fun helloWorld(token: String): String {
+        return httpClient.get("http://10.0.2.2:8080/hello") {
+            header("Authorization", "Bearer $token")
+        }
+    }
 }

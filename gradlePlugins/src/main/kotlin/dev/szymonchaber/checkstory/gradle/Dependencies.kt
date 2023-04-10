@@ -76,6 +76,7 @@ class Dependencies : Plugin<Project> {
         val crashlytics = "com.google.firebase:firebase-crashlytics"
         val performance = "com.google.firebase:firebase-perf"
         val messaging = "com.google.firebase:firebase-messaging-ktx"
+        val auth = "com.google.firebase:firebase-auth-ktx"
         //endregion
 
         val rrule = "com.github.PhilJay:RRule:1.0.3"

@@ -21,6 +21,10 @@ class LocalChecklistTemplateRepository @Inject constructor(
         return dataSource.getById(checklistTemplateId.id)
     }
 
+    override suspend fun helloWorld(token: String): String {
+        return "local repo"
+    }
+
     override suspend fun getOrNull(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
         return dataSource.getByIdOrNull(checklistTemplateId.id)
     }

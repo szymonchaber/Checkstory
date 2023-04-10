@@ -42,6 +42,7 @@ dependencies {
     implementation(platform(Dependencies.firebasePlatform))
     implementation(Dependencies.crashlytics)
     implementation(Dependencies.analytics)
+    implementation(Dependencies.auth)
 
     debugImplementation(Dependencies.debugUiTooling)
     Dependencies.unitTest.forEach(::testImplementation)
