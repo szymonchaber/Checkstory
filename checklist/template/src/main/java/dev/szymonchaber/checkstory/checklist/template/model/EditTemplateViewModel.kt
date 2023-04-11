@@ -18,6 +18,8 @@ import javax.inject.Inject
 
 private val CHECKLIST_TEMPLATE_ID = 90L
 private val CHECKLIST_TEMPLATE_UUID = UUID.randomUUID().toString()
+private val TEMPLATE_TASK_UUID: String
+    get() = UUID.randomUUID().toString()
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
@@ -283,6 +285,11 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 val newLoadingState = loadingState.plusNewCheckbox("")
+                    .plusEvent(
+                        EditTemplateDomainEvent.AddTemplateTask(
+                            CHECKLIST_TEMPLATE_UUID, TEMPLATE_TASK_UUID, null, System.currentTimeMillis()
+                        )
+                    )
                 tracker.logEvent("add_checkbox_clicked")
                 EditTemplateState(newLoadingState) to null
             }

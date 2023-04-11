@@ -8,4 +8,10 @@ sealed interface EditTemplateDomainEvent {
 
     data class RenameTemplate(val id: String, val newTitle: String, override val timestamp: Long) :
         EditTemplateDomainEvent
+
+    class AddTemplateTask(
+        val templateId: String, val taskId: String, val parentTaskId: String?,
+        override val timestamp: Long
+    ) : EditTemplateDomainEvent {
+    }
 }
