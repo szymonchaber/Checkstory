@@ -13,9 +13,11 @@ import dev.szymonchaber.checkstory.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 private val CHECKLIST_TEMPLATE_ID = 90L
+private val CHECKLIST_TEMPLATE_UUID = UUID.randomUUID().toString()
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
@@ -85,7 +87,7 @@ class EditTemplateViewModel @Inject constructor(
                         .copy(
                             events = listOf(
                                 EditTemplateDomainEvent.CreateNewTemplate(
-                                    90L,
+                                    CHECKLIST_TEMPLATE_UUID,
                                     System.currentTimeMillis()
                                 )
                             )
@@ -147,7 +149,7 @@ class EditTemplateViewModel @Inject constructor(
                     }
                     .plusEvent(
                         EditTemplateDomainEvent.RenameTemplate(
-                            CHECKLIST_TEMPLATE_ID,
+                            CHECKLIST_TEMPLATE_UUID,
                             event.newTitle,
                             System.currentTimeMillis()
                         )
