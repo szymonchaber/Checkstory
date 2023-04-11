@@ -45,7 +45,10 @@ dependencies {
     implementation(Dependencies.rrule)
     implementation(Dependencies.dataStore)
 
+
+    implementation(platform(Dependencies.firebasePlatform))
     implementation(Dependencies.crashlytics)
+    implementation(Dependencies.auth)
 
     Dependencies.ktor.forEach(::implementation)
     implementation(Dependencies.kotlinx_datetime)

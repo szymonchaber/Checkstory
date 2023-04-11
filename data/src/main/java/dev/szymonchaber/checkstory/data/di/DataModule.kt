@@ -10,10 +10,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
-import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
-import dev.szymonchaber.checkstory.data.repository.TemplateCheckboxRepositoryImpl
-import dev.szymonchaber.checkstory.data.repository.TemplateReminderRepositoryImpl
+import dev.szymonchaber.checkstory.data.repository.*
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizerImpl
 import dev.szymonchaber.checkstory.domain.repository.*
 import io.ktor.client.HttpClient
@@ -40,11 +37,11 @@ internal interface DataModule {
     @Binds
     fun bindChecklistRepository(repository: ChecklistRepositoryImpl): ChecklistRepository
 
-//    @Binds
-//    fun bindChecklistTemplateRepository(repository: LocalChecklistTemplateRepository): ChecklistTemplateRepository
-
     @Binds
-    fun bindChecklistTemplateRepository(repository: RemoteChecklistTemplateRepository): ChecklistTemplateRepository
+    fun bindChecklistTemplateRepository(repository: LocalChecklistTemplateRepository): ChecklistTemplateRepository
+
+//    @Binds
+//    fun bindChecklistTemplateRepository(repository: RemoteChecklistTemplateRepository): ChecklistTemplateRepository
 
     @Binds
     fun bindTemplateCheckboxRepository(repository: TemplateCheckboxRepositoryImpl): TemplateCheckboxRepository

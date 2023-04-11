@@ -1,10 +1,14 @@
 package dev.szymonchaber.checkstory.data.api
 
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dev.szymonchaber.checkstory.data.api.dto.ChecklistTemplateDto
+import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
 internal class ChecklistTemplateApi @Inject constructor(private val httpClient: HttpClient) {
@@ -30,4 +34,20 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
             header("Authorization", "Bearer $token")
         }
     }
+
+    suspend fun pushEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
+        val token = Firebase.auth.currentUser!!.getIdToken(false).result!!.token
+        val eventDtos = editTemplateDomainEvents.map {
+            when (it) {
+                is EditTemplateDomainEvent.CreateNewTemplate -> DomainEventDto("createTemplate", it.id.toString())
+            }
+        }
+        return httpClient.post("http://10.0.2.2:8080/events") {
+            header("Authorization", "Bearer $token")
+            body = eventDtos
+        }
+    }
 }
+
+@Serializable
+data class DomainEventDto(val eventType: String, val stringData: String)

@@ -5,10 +5,10 @@ import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import javax.inject.Inject
 
 class SynchronizeEventsUseCase @Inject constructor(
-    val synchronizer: Synchronizer,
+    private val synchronizer: Synchronizer,
 ) {
 
-    fun synchronizeEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
-
+    suspend fun synchronizeEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
+        synchronizer.synchronizeEvents(editTemplateDomainEvents)
     }
 }

@@ -2,18 +2,19 @@ package dev.szymonchaber.checkstory.data.synchronization
 
 import dev.szymonchaber.checkstory.data.Event
 import dev.szymonchaber.checkstory.data.State
+import dev.szymonchaber.checkstory.data.api.ChecklistTemplateApi
 import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateRepository
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
+import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
-import kotlinx.coroutines.flow.first
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SynchronizerImpl @Inject internal constructor(
     private val checklistTemplateRepository: LocalChecklistTemplateRepository,
-    private val remoteChecklistTemplateRepository: RemoteChecklistTemplateRepository
+    private val remoteChecklistTemplateRepository: RemoteChecklistTemplateRepository,
+    private val checklistTemplateApi: ChecklistTemplateApi
 ) : Synchronizer {
 
     private val _events = mutableListOf<Event>()
@@ -44,9 +45,13 @@ class SynchronizerImpl @Inject internal constructor(
     // get all data from backend - updating if it's already there
 
     override suspend fun synchronize() {
-        val checklistTemplates = checklistTemplateRepository.getAll().first()
-        val checklistTemplatesWithRemoteId = remoteChecklistTemplateRepository.pushAll(checklistTemplates)
-        Timber.d("Response: $checklistTemplatesWithRemoteId")
+//        val checklistTemplates = checklistTemplateRepository.getAll().first()
+//        val checklistTemplatesWithRemoteId = remoteChecklistTemplateRepositor.pushAll(checklistTemplates)
+//        Timber.d("Response: $checklistTemplatesWithRemoteId")
 //        checklistTemplateRepository.updateAll(checklistTemplatesWithRemoteId)
+    }
+
+    override suspend fun synchronizeEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
+        checklistTemplateApi.pushEvents(editTemplateDomainEvents)
     }
 }
