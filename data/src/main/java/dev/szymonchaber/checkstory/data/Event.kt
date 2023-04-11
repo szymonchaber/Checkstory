@@ -1,36 +1,5 @@
 package dev.szymonchaber.checkstory.data
 
-import javax.inject.Inject
-import javax.inject.Singleton
-
-@Singleton
-class EventStore @Inject constructor() {
-
-    private val _events = mutableListOf<Event>()
-    val events: List<Event>
-        get() = _events
-
-    fun checklistTitleChanged(id: String, newTitle: String) {
-        _events.add(Event.TemplateTitleChanged(id, newTitle))
-    }
-
-    fun checklistTemplateTitleChanged() {
-
-    }
-
-    fun checklistTemplateCreated(id: String, title: String, description: String, tasks: List<String>) {
-        _events.add(Event.TemplateCreated(id, title, description, tasks))
-    }
-
-    fun getState(): State {
-        return events.fold(State()) { state, event ->
-            with(event) {
-                state.apply()
-            }
-        }
-    }
-}
-
 sealed interface Event {
 
     fun State.apply(): State

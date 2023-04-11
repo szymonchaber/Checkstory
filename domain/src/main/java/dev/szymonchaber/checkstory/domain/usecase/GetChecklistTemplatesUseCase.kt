@@ -17,17 +17,3 @@ class GetChecklistTemplatesUseCase @Inject constructor(
         }
     }
 }
-
-class SynchronizeDataUseCase @Inject constructor(
-    private val synchronizer: Synchronizer
-) {
-
-    suspend fun synchronizeData() {
-        synchronizer.synchronize()
-    }
-}
-
-interface Synchronizer {
-
-    suspend fun synchronize()
-}

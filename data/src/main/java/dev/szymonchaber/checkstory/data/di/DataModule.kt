@@ -15,11 +15,7 @@ import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateReposi
 import dev.szymonchaber.checkstory.data.repository.TemplateCheckboxRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.TemplateReminderRepositoryImpl
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizerImpl
-import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
-import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
-import dev.szymonchaber.checkstory.domain.repository.TemplateCheckboxRepository
-import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
-import dev.szymonchaber.checkstory.domain.usecase.Synchronizer
+import dev.szymonchaber.checkstory.domain.repository.*
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.features.DefaultRequest

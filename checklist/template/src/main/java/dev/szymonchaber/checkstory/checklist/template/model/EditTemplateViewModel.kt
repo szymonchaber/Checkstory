@@ -5,27 +5,17 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteRemindersUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+private val CHECKLIST_TEMPLATE_ID = 90L
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
@@ -36,6 +26,7 @@ class EditTemplateViewModel @Inject constructor(
     private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
     private val deleteRemindersUseCase: DeleteRemindersUseCase,
     private val getUserUseCase: GetUserUseCase,
+    private val synchronizeEventsUseCase: SynchronizeEventsUseCase,
     private val tracker: Tracker
 ) : BaseViewModel<
         EditTemplateEvent,
@@ -88,7 +79,11 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
-                    EditTemplateState(TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())) to null
+                    val checklistTemplate =
+                        emptyChecklistTemplate().copy(id = ChecklistTemplateId(CHECKLIST_TEMPLATE_ID))
+                    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
+                        .copy(events = listOf(EditTemplateDomainEvent.CreateNewTemplate(90L)))
+                    EditTemplateState(templateLoadingState) to null
                 }
             }
     }
@@ -295,6 +290,7 @@ class EditTemplateViewModel @Inject constructor(
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
+                synchronizeEventsUseCase.synchronizeEvents(loadingState.events)
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
                         "title_length" to checklistTemplate.title.length,

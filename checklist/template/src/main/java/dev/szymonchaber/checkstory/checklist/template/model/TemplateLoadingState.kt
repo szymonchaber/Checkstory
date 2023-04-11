@@ -4,6 +4,7 @@ import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxId
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.viewId
 import dev.szymonchaber.checkstory.checklist.template.viewKey
+import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -15,13 +16,14 @@ sealed interface TemplateLoadingState {
     data class Success(
         val originalChecklistTemplate: ChecklistTemplate,
         val checkboxes: List<ViewTemplateCheckbox>,
-        val checkboxesToDelete: List<TemplateCheckbox>,
-        val remindersToDelete: List<Reminder>,
+        val checkboxesToDelete: List<TemplateCheckbox> = listOf(),
+        val remindersToDelete: List<Reminder> = listOf(),
         val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
         val mostRecentlyAddedItem: ViewTemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
-        val newItemIndexGenerator: AtomicLong = AtomicLong()
+        val newItemIndexGenerator: AtomicLong = AtomicLong(),
+        val events: List<EditTemplateDomainEvent> = listOf()
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
