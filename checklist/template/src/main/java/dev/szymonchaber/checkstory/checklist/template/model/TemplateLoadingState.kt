@@ -261,6 +261,9 @@ sealed interface TemplateLoadingState {
             placeholderTitle = placeholderTitle
         )
 
+        fun plusEvent(event: EditTemplateDomainEvent): Success {
+            return copy(events = events.plus(event))
+        }
 
         companion object {
 

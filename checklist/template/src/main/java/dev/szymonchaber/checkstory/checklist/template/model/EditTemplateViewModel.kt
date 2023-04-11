@@ -134,9 +134,11 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.TitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = loadingState.updateTemplate {
-                    copy(title = event.newTitle)
-                }
+                val newLoadingState = loadingState
+                    .updateTemplate {
+                        copy(title = event.newTitle)
+                    }
+                    .plusEvent(EditTemplateDomainEvent.RenameTemplate(CHECKLIST_TEMPLATE_ID, event.newTitle))
                 EditTemplateState(newLoadingState) to null
             }
     }

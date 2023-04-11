@@ -9,6 +9,8 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import javax.inject.Inject
 
 internal class ChecklistTemplateApi @Inject constructor(private val httpClient: HttpClient) {
@@ -39,9 +41,23 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
         val token = Firebase.auth.currentUser!!.getIdToken(false).result!!.token
         val eventDtos = editTemplateDomainEvents.map {
             when (it) {
-                is EditTemplateDomainEvent.CreateNewTemplate -> DomainEventDto("createTemplate", it.id.toString())
+                is EditTemplateDomainEvent.CreateNewTemplate -> {
+                    val data = Json.encodeToJsonElement(
+                        CreateTemplateEventData.serializer(),
+                        CreateTemplateEventData(it.id.toInt())
+                    )
+                    DomainEventDto("createTemplate", data)
+                }
+                is EditTemplateDomainEvent.RenameTemplate -> {
+                    val data = Json.encodeToJsonElement(
+                        EditTemplateTitleEventData.serializer(),
+                        EditTemplateTitleEventData(it.id.toInt(), it.newTitle)
+                    )
+                    DomainEventDto("editTemplateTitle", data)
+                }
             }
         }
+        //.shuffled()
         return httpClient.post("http://10.0.2.2:8080/events") {
             header("Authorization", "Bearer $token")
             body = eventDtos
@@ -50,4 +66,10 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
 }
 
 @Serializable
-data class DomainEventDto(val eventType: String, val stringData: String)
+data class DomainEventDto(val eventType: String, val data: JsonElement)
+
+@Serializable
+data class CreateTemplateEventData(val id: Int)
+
+@Serializable
+data class EditTemplateTitleEventData(val id: Int, val newTitle: String)
