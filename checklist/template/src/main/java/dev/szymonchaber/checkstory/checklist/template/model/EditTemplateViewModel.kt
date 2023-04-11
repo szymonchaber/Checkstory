@@ -305,7 +305,7 @@ class EditTemplateViewModel @Inject constructor(
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
-                synchronizeEventsUseCase.synchronizeEvents(loadingState.events)
+                synchronizeEventsUseCase.synchronizeEvents(deduplicateEvents(loadingState.events))
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
                         "title_length" to checklistTemplate.title.length,
@@ -319,6 +319,18 @@ class EditTemplateViewModel @Inject constructor(
                 }
                 null to EditTemplateEffect.CloseScreen
             }
+    }
+
+    private fun deduplicateEvents(events: List<EditTemplateDomainEvent>): List<EditTemplateDomainEvent> {
+        val deduplicatedRename = events.filterIsInstance<EditTemplateDomainEvent.RenameTemplate>()
+            .groupBy {
+                it.id
+            }.map { (_, events) ->
+                events.sortedBy { it.timestamp }.takeLast(1)
+            }
+            .flatten()
+        val eventsWithoutRename = events.filterNot { it is EditTemplateDomainEvent.RenameTemplate }
+        return eventsWithoutRename.plus(deduplicatedRename)
     }
 
     private fun Flow<EditTemplateEvent>.handleDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
