@@ -1,8 +1,11 @@
 package dev.szymonchaber.checkstory.domain.model
 
-sealed class EditTemplateDomainEvent {
+sealed interface EditTemplateDomainEvent {
 
-    data class CreateNewTemplate(val id: Long) : EditTemplateDomainEvent()
+    val timestamp: Long
 
-    data class RenameTemplate(val id: Long, val newTitle: String) : EditTemplateDomainEvent()
+    data class CreateNewTemplate(val id: Long, override val timestamp: Long) : EditTemplateDomainEvent
+
+    data class RenameTemplate(val id: Long, val newTitle: String, override val timestamp: Long) :
+        EditTemplateDomainEvent
 }

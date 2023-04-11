@@ -82,7 +82,14 @@ class EditTemplateViewModel @Inject constructor(
                     val checklistTemplate =
                         emptyChecklistTemplate().copy(id = ChecklistTemplateId(CHECKLIST_TEMPLATE_ID))
                     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
-                        .copy(events = listOf(EditTemplateDomainEvent.CreateNewTemplate(90L)))
+                        .copy(
+                            events = listOf(
+                                EditTemplateDomainEvent.CreateNewTemplate(
+                                    90L,
+                                    System.currentTimeMillis()
+                                )
+                            )
+                        )
                     EditTemplateState(templateLoadingState) to null
                 }
             }
@@ -138,7 +145,13 @@ class EditTemplateViewModel @Inject constructor(
                     .updateTemplate {
                         copy(title = event.newTitle)
                     }
-                    .plusEvent(EditTemplateDomainEvent.RenameTemplate(CHECKLIST_TEMPLATE_ID, event.newTitle))
+                    .plusEvent(
+                        EditTemplateDomainEvent.RenameTemplate(
+                            CHECKLIST_TEMPLATE_ID,
+                            event.newTitle,
+                            System.currentTimeMillis()
+                        )
+                    )
                 EditTemplateState(newLoadingState) to null
             }
     }

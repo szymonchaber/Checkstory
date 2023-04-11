@@ -46,18 +46,18 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                         CreateTemplateEventData.serializer(),
                         CreateTemplateEventData(it.id.toInt())
                     )
-                    DomainEventDto("createTemplate", data)
+                    DomainEventDto("createTemplate", it.timestamp, data)
                 }
                 is EditTemplateDomainEvent.RenameTemplate -> {
                     val data = Json.encodeToJsonElement(
                         EditTemplateTitleEventData.serializer(),
                         EditTemplateTitleEventData(it.id.toInt(), it.newTitle)
                     )
-                    DomainEventDto("editTemplateTitle", data)
+                    DomainEventDto("editTemplateTitle", it.timestamp, data)
                 }
             }
         }
-        //.shuffled()
+            .shuffled() // TODO delete when it's confirmed to be working
         return httpClient.post("http://10.0.2.2:8080/events") {
             header("Authorization", "Bearer $token")
             body = eventDtos
@@ -66,7 +66,7 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
 }
 
 @Serializable
-data class DomainEventDto(val eventType: String, val data: JsonElement)
+data class DomainEventDto(val eventType: String, val timestamp: Long, val data: JsonElement)
 
 @Serializable
 data class CreateTemplateEventData(val id: Int)
