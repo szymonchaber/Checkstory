@@ -108,7 +108,8 @@ class Dependencies : Plugin<Project> {
 
         val unitTest = listOf(
             "junit:junit:4.13.2",
-            "com.google.truth:truth:1.1.3"
+            "com.google.truth:truth:1.1.3",
+            "androidx.room:room-testing:$roomVersion"
         )
 
         val uiTest = listOf(

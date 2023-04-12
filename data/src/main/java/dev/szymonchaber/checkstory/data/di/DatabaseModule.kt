@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
+import dev.szymonchaber.checkstory.data.database.Migration5to6
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
@@ -42,9 +43,11 @@ object DatabaseModule {
             .setQueryCallback({ sqlQuery, bindArgs ->
                 println("SQL Query: $sqlQuery SQL Args: $bindArgs")
             }, Executors.newSingleThreadExecutor())
+            .addMigrations(Migration5to6())
             .build()
 //            .apply { insertDummyData() }
     }
+
 
     private fun AppDatabase.insertDummyData() {
         GlobalScope.launch {

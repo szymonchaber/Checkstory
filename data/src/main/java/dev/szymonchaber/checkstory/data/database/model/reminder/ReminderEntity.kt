@@ -12,15 +12,19 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.util.*
 
 @Entity
 data class ReminderEntity(
     @PrimaryKey(autoGenerate = true)
     val reminderId: Long,
+    //    @PrimaryKey
+//    val reminderId: UUID,
     val templateId: Long,
     val startDateUtc: LocalDateTime,
     val isRecurring: Boolean,
-    val recurrencePattern: String?
+    val recurrencePattern: String?,
+    val actualUuid: UUID? = UUID.randomUUID()
 ) {
 
     fun toDomainReminder(): Reminder {

@@ -23,7 +23,7 @@ import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
         CheckboxEntity::class,
         ReminderEntity::class
     ],
-    version = 5,
+    version = 6,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
