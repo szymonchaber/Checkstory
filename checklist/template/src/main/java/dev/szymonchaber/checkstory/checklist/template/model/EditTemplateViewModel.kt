@@ -292,14 +292,14 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 val (newLoadingState, newCheckboxId) = loadingState.plusNewCheckbox("")
-                newLoadingState
+                val withEvent = newLoadingState
                     .plusEvent(
                         EditTemplateDomainEvent.AddTemplateTask(
                             loadingState.checklistTemplate.id, newCheckboxId, null, System.currentTimeMillis()
                         )
                     )
                 tracker.logEvent("add_checkbox_clicked")
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(withEvent) to null
             }
     }
 

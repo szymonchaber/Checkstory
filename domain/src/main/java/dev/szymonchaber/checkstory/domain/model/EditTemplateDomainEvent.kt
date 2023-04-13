@@ -19,4 +19,6 @@ sealed interface EditTemplateDomainEvent {
         val parentTaskId: UUID?,
         override val timestamp: Long
     ) : EditTemplateDomainEvent
+
+    class DeleteTemplateTask(val id: TemplateCheckboxId, override val timestamp: Long) : EditTemplateDomainEvent
 }

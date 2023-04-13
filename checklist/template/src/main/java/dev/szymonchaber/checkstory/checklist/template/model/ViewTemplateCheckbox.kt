@@ -178,7 +178,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
         override fun toDomainModel(parentId: TemplateCheckboxId?, position: Int): TemplateCheckbox {
             return TemplateCheckbox(
-                id = TemplateCheckboxId(UUID.randomUUID()),
+                id = id,
                 parentId = parentId,
                 title = title,
                 children = children.mapIndexed { index, it ->

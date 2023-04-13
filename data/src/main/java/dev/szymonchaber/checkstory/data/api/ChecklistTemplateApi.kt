@@ -66,6 +66,16 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                     )
                     DomainEventDto("addTemplateTask", it.timestamp, data)
                 }
+
+                is EditTemplateDomainEvent.DeleteTemplateTask -> {
+                    val data = Json.encodeToJsonElement(
+                        DeleteTemplateTaskData.serializer(),
+                        DeleteTemplateTaskData(
+                            taskId = it.id.id.toString(),
+                        )
+                    )
+                    DomainEventDto("deleteTemplateTask", it.timestamp, data)
+                }
             }
         }
             .shuffled() // TODO delete when it's confirmed to be working
@@ -87,3 +97,6 @@ data class EditTemplateTitleEventData(val id: String, val newTitle: String)
 
 @Serializable
 data class AddTemplateTaskEventData(val templateId: String, val taskId: String, val parentTaskId: String?)
+
+@Serializable
+data class DeleteTemplateTaskData(val taskId: String)
