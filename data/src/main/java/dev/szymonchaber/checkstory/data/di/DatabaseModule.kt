@@ -63,8 +63,8 @@ object DatabaseModule {
                     )
                 )
                 templateCheckboxDao.insertAll(
-                    TemplateCheckboxEntity(1, 1, "Checkbox item", null, 0),
-                    TemplateCheckboxEntity(2, 1, "Checkbox item 2", null, 0)
+                    TemplateCheckboxEntity(UUID.randomUUID(), 1, "Checkbox item", null, 0),
+                    TemplateCheckboxEntity(UUID.randomUUID(), 1, "Checkbox item 2", null, 0)
                 )
                 insert {
                     checklist(1, 1, "This was an awesome session") {

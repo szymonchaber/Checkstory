@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "08094072fca5b033299a2d90b69c181a",
+    "identityHash": "54241f48ca6577730ef14bc07ab59961",
     "entities": [
       {
         "tableName": "ChecklistTemplateEntity",
@@ -44,12 +44,12 @@
       },
       {
         "tableName": "TemplateCheckboxEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`checkboxId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `templateId` INTEGER NOT NULL, `checkboxTitle` TEXT NOT NULL, `parentId` INTEGER, `sortPosition` INTEGER NOT NULL DEFAULT 0)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`checkboxId` BLOB NOT NULL, `templateId` INTEGER NOT NULL, `checkboxTitle` TEXT NOT NULL, `parentId` BLOB, `sortPosition` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`checkboxId`))",
         "fields": [
           {
             "fieldPath": "checkboxId",
             "columnName": "checkboxId",
-            "affinity": "INTEGER",
+            "affinity": "BLOB",
             "notNull": true
           },
           {
@@ -67,7 +67,7 @@
           {
             "fieldPath": "parentId",
             "columnName": "parentId",
-            "affinity": "INTEGER",
+            "affinity": "BLOB",
             "notNull": false
           },
           {
@@ -82,7 +82,7 @@
           "columnNames": [
             "checkboxId"
           ],
-          "autoGenerate": true
+          "autoGenerate": false
         },
         "indices": [],
         "foreignKeys": []
@@ -217,7 +217,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '08094072fca5b033299a2d90b69c181a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '54241f48ca6577730ef14bc07ab59961')"
     ]
   }
 }

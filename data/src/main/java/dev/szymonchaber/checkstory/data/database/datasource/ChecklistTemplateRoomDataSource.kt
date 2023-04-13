@@ -112,14 +112,14 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         checklistTemplateId: Long,
         parentId: TemplateCheckboxId?
     ) {
-        val nestedParentId = templateCheckboxDao.insert(
+        templateCheckboxDao.insert(
             TemplateCheckboxEntity.fromDomainTemplateCheckbox(
                 templateCheckbox,
                 checklistTemplateId
             ).copy(parentId = parentId?.id)
         )
         templateCheckbox.children.forEach { child ->
-            insertCheckboxRecursive(child, checklistTemplateId, TemplateCheckboxId(nestedParentId))
+            insertCheckboxRecursive(child, checklistTemplateId, templateCheckbox.id)
         }
     }
 

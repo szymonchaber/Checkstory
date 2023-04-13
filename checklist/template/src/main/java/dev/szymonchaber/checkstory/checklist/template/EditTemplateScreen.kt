@@ -101,6 +101,7 @@ import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 import java.time.Duration.*
+import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination("edit_template_screen", start = true)
@@ -620,7 +621,7 @@ private fun TextFieldWithFixedPlaceholder(
 
 @Parcelize
 data class ViewTemplateCheckboxKey(
-    val id: Long,
+    val id: UUID,
     val parentKey: ViewTemplateCheckboxKey?,
     val isNew: Boolean
 ) : Parcelable {
@@ -640,7 +641,7 @@ val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
 
 @Parcelize
 data class ViewTemplateCheckboxId(
-    val viewId: Long,
+    val viewId: UUID,
     val isNew: Boolean
 ) : Parcelable
 

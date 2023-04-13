@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 @Dao
 interface TemplateCheckboxDao {
@@ -20,7 +21,7 @@ interface TemplateCheckboxDao {
     fun getAllForChecklistTemplate(templateId: Long): Flow<List<TemplateCheckboxEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(templateCheckbox: TemplateCheckboxEntity): Long
+    suspend fun insert(templateCheckbox: TemplateCheckboxEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg templateCheckboxes: TemplateCheckboxEntity)
@@ -30,7 +31,7 @@ interface TemplateCheckboxDao {
                 "WHERE templateCheckboxEntity.checkboxId = :templateCheckboxId " +
                 "OR templateCheckboxEntity.parentId = :templateCheckboxId"
     )
-    suspend fun deleteCascading(templateCheckboxId: Long)
+    suspend fun deleteCascading(templateCheckboxId: UUID)
 
     @Query("DELETE FROM templateCheckboxEntity WHERE templateCheckboxEntity.templateId = :templateId")
     suspend fun deleteAllFromTemplate(templateId: Long)

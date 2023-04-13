@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TemplateCheckboxDto(
-    val id: Long,
+    val id: String,
     val title: String,
     val templateId: Long,
 )

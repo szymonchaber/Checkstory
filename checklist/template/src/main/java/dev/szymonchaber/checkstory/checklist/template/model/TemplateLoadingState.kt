@@ -9,7 +9,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import java.util.concurrent.atomic.AtomicLong
+import java.util.*
 
 sealed interface TemplateLoadingState {
 
@@ -22,7 +22,6 @@ sealed interface TemplateLoadingState {
         val mostRecentlyAddedItem: ViewTemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
-        val newItemIndexGenerator: AtomicLong = AtomicLong(),
         val events: List<EditTemplateDomainEvent> = listOf()
     ) : TemplateLoadingState {
 
@@ -103,7 +102,7 @@ sealed interface TemplateLoadingState {
             }
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusChildCheckboxRecursive(newItemIndexGenerator, parentId, onItemActuallyAdded)
+                    it.plusChildCheckboxRecursive(parentId, onItemActuallyAdded)
                 },
                 mostRecentlyAddedItem = addedItem
             )
@@ -116,7 +115,7 @@ sealed interface TemplateLoadingState {
         ): Success {
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusNestedChildCheckboxRecursive(newItemIndexGenerator, parentId, placeholderTitle, children)
+                    it.plusNestedChildCheckboxRecursive(parentId, placeholderTitle, children)
                 }
             )
         }
@@ -252,7 +251,7 @@ sealed interface TemplateLoadingState {
         }
 
         private fun newCheckbox(title: String = "", placeholderTitle: String? = null) = ViewTemplateCheckbox.New(
-            id = TemplateCheckboxId(newItemIndexGenerator.getAndIncrement()),
+            id = TemplateCheckboxId(UUID.randomUUID()),
             parentViewKey = null,
             isParent = true,
             title = title,

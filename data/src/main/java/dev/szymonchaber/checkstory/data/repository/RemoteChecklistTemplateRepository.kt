@@ -15,6 +15,7 @@ import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinInstant
 import kotlinx.datetime.toLocalDateTime
 import java.time.ZoneOffset
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,7 +39,7 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
             description,
             items = templateCheckboxes.map {
                 TemplateCheckbox(
-                    TemplateCheckboxId(it.id),
+                    TemplateCheckboxId(UUID.fromString(it.id)),
                     null,
                     it.title,
                     listOf(),
@@ -79,7 +80,7 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
                 it.description,
                 it.items.map {
                     TemplateCheckboxDto(
-                        0,
+                        UUID.randomUUID().toString(),
                         it.title,
                         0
                     )

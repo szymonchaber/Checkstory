@@ -44,6 +44,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import java.time.LocalDateTime
+import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -221,7 +222,7 @@ fun ChecklistTemplateViewPreview() {
             "Description",
             listOf(
                 TemplateCheckbox(
-                    TemplateCheckboxId(0),
+                    TemplateCheckboxId(UUID.randomUUID()),
                     null,
                     "Checkbox 1",
                     listOf(),

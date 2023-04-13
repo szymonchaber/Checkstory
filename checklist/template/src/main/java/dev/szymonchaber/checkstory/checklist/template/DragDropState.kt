@@ -31,13 +31,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.math.absoluteValue
 import kotlin.math.min
 import kotlin.math.sign
 
-const val NEW_TASK_ID = -50L
+val NEW_TASK_ID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
 class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope, val maxScroll: Float) {
 

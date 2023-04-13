@@ -4,14 +4,15 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import java.util.*
 
 @Entity
 data class TemplateCheckboxEntity(
-    @PrimaryKey(autoGenerate = true)
-    val checkboxId: Long,
+    @PrimaryKey
+    val checkboxId: UUID,
     val templateId: Long,
     val checkboxTitle: String,
-    val parentId: Long?,
+    val parentId: UUID?,
     @ColumnInfo(defaultValue = "0")
     val sortPosition: Long
 ) {
