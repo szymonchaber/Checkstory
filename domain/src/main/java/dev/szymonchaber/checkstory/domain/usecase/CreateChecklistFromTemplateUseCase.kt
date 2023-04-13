@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
+import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 
@@ -44,7 +45,7 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
 
     private fun toCheckbox(basedOn: TemplateCheckbox, idGenerator: AtomicLong): Checkbox {
         return Checkbox(
-            CheckboxId(idGenerator.getAndIncrement()),
+            CheckboxId(UUID.randomUUID()),
             null,
             ChecklistId(0),
             basedOn.title,

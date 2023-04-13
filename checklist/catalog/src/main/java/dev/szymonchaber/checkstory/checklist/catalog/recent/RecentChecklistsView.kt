@@ -30,6 +30,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import java.time.LocalDateTime
+import java.util.*
 
 @Composable
 fun RecentChecklistsView(
@@ -119,8 +120,8 @@ fun RecentChecklistsLoadingPreview() {
 fun RecentChecklistsSuccessPreview() {
     Column {
         val items = listOf(
-            Checkbox(CheckboxId(0), null, ChecklistId(0), "Check this", true, listOf()),
-            Checkbox(CheckboxId(0), null, ChecklistId(0), "Do not check that", false, listOf())
+            Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId(0), "Check this", true, listOf()),
+            Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId(0), "Do not check that", false, listOf())
         )
         val checklists = listOf(
             Checklist(

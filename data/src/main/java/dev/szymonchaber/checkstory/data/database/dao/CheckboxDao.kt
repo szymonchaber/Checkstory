@@ -14,7 +14,7 @@ interface CheckboxDao {
     suspend fun getById(checkboxId: Long): CheckboxEntity
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(checkbox: CheckboxEntity): Long
+    suspend fun insert(checkbox: CheckboxEntity)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg checkboxes: CheckboxEntity)

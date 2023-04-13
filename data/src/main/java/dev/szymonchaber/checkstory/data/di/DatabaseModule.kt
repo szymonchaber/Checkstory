@@ -26,6 +26,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
+import java.util.*
 import java.util.concurrent.Executors
 import javax.inject.Singleton
 
@@ -67,20 +68,20 @@ object DatabaseModule {
                 )
                 insert {
                     checklist(1, 1, "This was an awesome session") {
-                        checkbox(1, "Clean the table", true)
-                        checkbox(2, "Dust the lamp shade", false)
-                        checkbox(3, "Clean all the windows", false)
-                        checkbox(4, "Be awesome", true)
+                        checkbox("Clean the table", true)
+                        checkbox("Dust the lamp shade", false)
+                        checkbox("Clean all the windows", false)
+                        checkbox("Be awesome", true)
                     }
                     checklist(
                         2,
                         1,
                         "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
                     ) {
-                        checkbox(5, "Clean the table", false)
-                        checkbox(6, "Dust the lamp shade", false)
-                        checkbox(7, "Clean all the windows", false)
-                        checkbox(8, "Be totally awesome", true)
+                        checkbox("Clean the table", false)
+                        checkbox("Dust the lamp shade", false)
+                        checkbox("Clean all the windows", false)
+                        checkbox("Be totally awesome", true)
                     }
                 }
             }
@@ -123,8 +124,8 @@ class InsertDsl {
 
         val checkboxes = mutableListOf<Checkbox>()
 
-        fun checkbox(id: Long, title: String, isChecked: Boolean = false) {
-            checkboxes.add(Checkbox(CheckboxId(id), null, ChecklistId(0), title, isChecked, listOf()))
+        fun checkbox(title: String, isChecked: Boolean = false) {
+            checkboxes.add(Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId(0), title, isChecked, listOf()))
         }
     }
 

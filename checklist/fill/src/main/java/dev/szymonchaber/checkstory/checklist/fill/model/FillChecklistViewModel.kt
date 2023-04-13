@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -162,7 +163,7 @@ class FillChecklistViewModel @Inject constructor(
                     success.checklist
                 } else {
                     val itemsWithoutTemporaryIds = success.checklist.items.map { checkbox ->
-                        checkbox.clearIdsRecursive()
+                        checkbox.setUuidsRecursive()
                     }
                     success.checklist.copy(items = itemsWithoutTemporaryIds)
                 }
@@ -228,11 +229,11 @@ class FillChecklistViewModel @Inject constructor(
     }
 }
 
-private fun Checkbox.clearIdsRecursive(): Checkbox {
+private fun Checkbox.setUuidsRecursive(): Checkbox {
     return copy(
-        id = CheckboxId(0),
+        id = CheckboxId(UUID.randomUUID()),
         children = children.map {
-            it.clearIdsRecursive()
+            it.setUuidsRecursive()
         }
     )
 }

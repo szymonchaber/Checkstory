@@ -20,7 +20,7 @@ class MigrationTest {
 
     private val uuidCounter = AtomicInteger(0)
 
-    private val knownUuids = listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
+    private val knownUuids = List(15) { UUID.randomUUID() }
 
     @get:Rule
     val helper: MigrationTestHelper = MigrationTestHelper(
