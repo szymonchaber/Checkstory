@@ -6,7 +6,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
@@ -28,12 +27,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
-import java.util.*
 import javax.inject.Inject
-
-// TODO remove this
-private val TEMPLATE_TASK_UUID: UUID
-    get() = UUID.randomUUID()
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
@@ -53,8 +47,6 @@ class EditTemplateViewModel @Inject constructor(
         >(
     EditTemplateState.initial
 ) {
-
-    private val CHECKLIST_TEMPLATE_UUID = UUID.randomUUID()
 
     override fun buildMviFlow(eventFlow: Flow<EditTemplateEvent>): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return eventFlow.buildMviFlowActual()
@@ -99,13 +91,12 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
-                    val checklistTemplate =
-                        emptyChecklistTemplate().copy(id = ChecklistTemplateId(CHECKLIST_TEMPLATE_UUID))
+                    val checklistTemplate = emptyChecklistTemplate()
                     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
                         .copy(
                             events = listOf(
                                 EditTemplateDomainEvent.CreateNewTemplate(
-                                    CHECKLIST_TEMPLATE_UUID,
+                                    checklistTemplate.id,
                                     System.currentTimeMillis()
                                 )
                             )
@@ -167,7 +158,7 @@ class EditTemplateViewModel @Inject constructor(
                     }
                     .plusEvent(
                         EditTemplateDomainEvent.RenameTemplate(
-                            CHECKLIST_TEMPLATE_UUID,
+                            loadingState.checklistTemplate.id,
                             event.newTitle,
                             System.currentTimeMillis()
                         )
@@ -300,10 +291,11 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
-                val newLoadingState = loadingState.plusNewCheckbox("")
+                val (newLoadingState, newCheckboxId) = loadingState.plusNewCheckbox("")
+                newLoadingState
                     .plusEvent(
                         EditTemplateDomainEvent.AddTemplateTask(
-                            CHECKLIST_TEMPLATE_UUID, TEMPLATE_TASK_UUID, null, System.currentTimeMillis()
+                            loadingState.checklistTemplate.id, newCheckboxId, null, System.currentTimeMillis()
                         )
                     )
                 tracker.logEvent("add_checkbox_clicked")

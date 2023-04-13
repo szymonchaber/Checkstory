@@ -53,12 +53,12 @@ sealed interface TemplateLoadingState {
             return copy(checklistTemplate = checklistTemplate.block())
         }
 
-        fun plusNewCheckbox(title: String): Success {
+        fun plusNewCheckbox(title: String): Pair<Success, TemplateCheckboxId> {
             val newCheckbox = newCheckbox(title)
             return copy(
                 checkboxes = checkboxes.plus(newCheckbox),
                 mostRecentlyAddedItem = newCheckbox.viewId
-            )
+            ) to newCheckbox.id
         }
 
         fun plusNestedCheckbox(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
@@ -250,15 +250,17 @@ sealed interface TemplateLoadingState {
             return withExtractedElement to movedItem!!
         }
 
-        private fun newCheckbox(title: String = "", placeholderTitle: String? = null) = ViewTemplateCheckbox.New(
-            id = TemplateCheckboxId(UUID.randomUUID()),
-            parentViewKey = null,
-            isParent = true,
-            title = title,
-            children = listOf(),
-            isLastChild = true,
-            placeholderTitle = placeholderTitle
-        )
+        private fun newCheckbox(title: String = "", placeholderTitle: String? = null): ViewTemplateCheckbox.New {
+            return ViewTemplateCheckbox.New(
+                id = TemplateCheckboxId(UUID.randomUUID()),
+                parentViewKey = null,
+                isParent = true,
+                title = title,
+                children = listOf(),
+                isLastChild = true,
+                placeholderTitle = placeholderTitle
+            )
+        }
 
         fun plusEvent(event: EditTemplateDomainEvent): Success {
             return copy(events = events.plus(event))

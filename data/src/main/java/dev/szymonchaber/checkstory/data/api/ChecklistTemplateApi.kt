@@ -44,14 +44,14 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                 is EditTemplateDomainEvent.CreateNewTemplate -> {
                     val data = Json.encodeToJsonElement(
                         CreateTemplateEventData.serializer(),
-                        CreateTemplateEventData(it.id.toString())
+                        CreateTemplateEventData(it.id.id.toString())
                     )
                     DomainEventDto("createTemplate", it.timestamp, data)
                 }
                 is EditTemplateDomainEvent.RenameTemplate -> {
                     val data = Json.encodeToJsonElement(
                         EditTemplateTitleEventData.serializer(),
-                        EditTemplateTitleEventData(it.id.toString(), it.newTitle)
+                        EditTemplateTitleEventData(it.id.id.toString(), it.newTitle)
                     )
                     DomainEventDto("editTemplateTitle", it.timestamp, data)
                 }
@@ -59,8 +59,8 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                     val data = Json.encodeToJsonElement(
                         AddTemplateTaskEventData.serializer(),
                         AddTemplateTaskEventData(
-                            templateId = it.templateId.toString(),
-                            taskId = it.taskId.toString(),
+                            templateId = it.templateId.id.toString(),
+                            taskId = it.taskId.id.toString(),
                             parentTaskId = null
                         )
                     )
