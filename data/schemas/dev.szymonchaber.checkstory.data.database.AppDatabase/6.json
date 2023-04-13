@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "54241f48ca6577730ef14bc07ab59961",
+    "identityHash": "c000e6b2c8139d79649b7d1f0e1c8dd5",
     "entities": [
       {
         "tableName": "ChecklistTemplateEntity",
@@ -89,12 +89,12 @@
       },
       {
         "tableName": "ChecklistEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`checklistId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `templateId` INTEGER NOT NULL, `notes` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`checklistId` BLOB NOT NULL, `templateId` INTEGER NOT NULL, `notes` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`checklistId`))",
         "fields": [
           {
             "fieldPath": "checklistId",
             "columnName": "checklistId",
-            "affinity": "INTEGER",
+            "affinity": "BLOB",
             "notNull": true
           },
           {
@@ -120,14 +120,14 @@
           "columnNames": [
             "checklistId"
           ],
-          "autoGenerate": true
+          "autoGenerate": false
         },
         "indices": [],
         "foreignKeys": []
       },
       {
         "tableName": "CheckboxEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`checkboxId` BLOB NOT NULL, `checklistId` INTEGER NOT NULL, `checkboxTitle` TEXT NOT NULL, `isChecked` INTEGER NOT NULL, `parentId` BLOB, PRIMARY KEY(`checkboxId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`checkboxId` BLOB NOT NULL, `checklistId` BLOB NOT NULL, `checkboxTitle` TEXT NOT NULL, `isChecked` INTEGER NOT NULL, `parentId` BLOB, PRIMARY KEY(`checkboxId`))",
         "fields": [
           {
             "fieldPath": "checkboxId",
@@ -138,7 +138,7 @@
           {
             "fieldPath": "checklistId",
             "columnName": "checklistId",
-            "affinity": "INTEGER",
+            "affinity": "BLOB",
             "notNull": true
           },
           {
@@ -217,7 +217,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '54241f48ca6577730ef14bc07ab59961')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c000e6b2c8139d79649b7d1f0e1c8dd5')"
     ]
   }
 }

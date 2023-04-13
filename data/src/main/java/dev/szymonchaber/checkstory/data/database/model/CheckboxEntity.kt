@@ -11,7 +11,7 @@ import java.util.*
 data class CheckboxEntity(
     @PrimaryKey
     val checkboxId: UUID,
-    val checklistId: Long,
+    val checklistId: UUID,
     val checkboxTitle: String,
     val isChecked: Boolean,
     val parentId: UUID?

@@ -7,11 +7,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import java.time.LocalDateTime
+import java.util.*
 
 @Entity
 data class ChecklistEntity(
-    @PrimaryKey(autoGenerate = true)
-    val checklistId: Long,
+    @PrimaryKey
+    val checklistId: UUID,
     val templateId: Long,
     val notes: String,
     val createdAt: LocalDateTime

@@ -10,6 +10,7 @@ import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,6 +24,7 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.*
 import javax.inject.Inject
 
 class ChecklistRoomDataSource @Inject constructor(
@@ -32,7 +34,7 @@ class ChecklistRoomDataSource @Inject constructor(
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun getById(id: Long): Flow<Checklist> {
+    fun getById(id: UUID): Flow<Checklist> {
         return checklistDao.getById(id)
             .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklist)
@@ -45,19 +47,19 @@ class ChecklistRoomDataSource @Inject constructor(
             .toDomainChecklistFlow()
     }
 
-    private fun getCheckboxes(checklistId: Long) = checklistDao.getCheckboxesForChecklist(checklistId)
+    private fun getCheckboxes(checklistId: UUID) = checklistDao.getCheckboxesForChecklist(checklistId)
 
-    suspend fun insert(checklist: Checklist): Long {
-        val checklistId = checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        insertCheckboxes(checklist.items, checklistId)
-        return checklistId
+    suspend fun insert(checklist: Checklist): ChecklistId {
+        checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
+        insertCheckboxes(checklist.items, checklist.id)
+        return checklist.id
     }
 
-    private suspend fun insertCheckboxes(checkboxes: List<Checkbox>, checklistId: Long) {
+    private suspend fun insertCheckboxes(checkboxes: List<Checkbox>, checklistId: ChecklistId) {
         checkboxes.forEach {
             withContext(Dispatchers.Default) {
                 launch {
-                    insertCheckboxRecursive(it, checklistId, null)
+                    insertCheckboxRecursive(it, checklistId.id, null)
                 }
             }
         }
@@ -65,7 +67,7 @@ class ChecklistRoomDataSource @Inject constructor(
 
     private suspend fun insertCheckboxRecursive(
         checkbox: Checkbox,
-        checklistId: Long,
+        checklistId: UUID,
         parentId: CheckboxId?
     ) {
         val nestedParentId = checkbox.id

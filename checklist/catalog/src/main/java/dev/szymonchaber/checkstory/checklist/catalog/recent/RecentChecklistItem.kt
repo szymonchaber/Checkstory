@@ -90,11 +90,18 @@ private fun NotesTextView(notes: String) {
 @Composable
 fun RecentChecklistItemPreview() {
     val items = listOf(
-        Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId(0), "Check this", true, listOf()),
-        Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId(0), "Do not check that", false, listOf())
+        Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId(UUID.randomUUID()), "Check this", true, listOf()),
+        Checkbox(
+            CheckboxId(UUID.randomUUID()),
+            null,
+            ChecklistId(UUID.randomUUID()),
+            "Do not check that",
+            false,
+            listOf()
+        )
     )
     val checklist = Checklist(
-        ChecklistId(0),
+        ChecklistId(UUID.randomUUID()),
         ChecklistTemplateId(0),
         "Recent checklist",
         "Description",

@@ -67,14 +67,14 @@ object DatabaseModule {
                     TemplateCheckboxEntity(UUID.randomUUID(), 1, "Checkbox item 2", null, 0)
                 )
                 insert {
-                    checklist(1, 1, "This was an awesome session") {
+                    checklist(UUID.randomUUID(), 1, "This was an awesome session") {
                         checkbox("Clean the table", true)
                         checkbox("Dust the lamp shade", false)
                         checkbox("Clean all the windows", false)
                         checkbox("Be awesome", true)
                     }
                     checklist(
-                        2,
+                        UUID.randomUUID(),
                         1,
                         "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
                     ) {
@@ -116,7 +116,7 @@ object DatabaseModule {
 
 class InsertDsl {
 
-    class Checklist(val checklistId: Long, val templateId: Long, val notes: String = "")
+    class Checklist(val checklistId: UUID, val templateId: Long, val notes: String = "")
 
     private val items = mutableMapOf<Checklist, List<Checkbox>>()
 
@@ -125,11 +125,20 @@ class InsertDsl {
         val checkboxes = mutableListOf<Checkbox>()
 
         fun checkbox(title: String, isChecked: Boolean = false) {
-            checkboxes.add(Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId(0), title, isChecked, listOf()))
+            checkboxes.add(
+                Checkbox(
+                    CheckboxId(UUID.randomUUID()),
+                    null,
+                    ChecklistId(UUID.randomUUID()),
+                    title,
+                    isChecked,
+                    listOf()
+                )
+            )
         }
     }
 
-    fun checklist(checklistId: Long, templateId: Long, notes: String = "", checkboxesBlock: CheckboxDsl.() -> Unit) {
+    fun checklist(checklistId: UUID, templateId: Long, notes: String = "", checkboxesBlock: CheckboxDsl.() -> Unit) {
         items[Checklist(checklistId, templateId, notes)] = CheckboxDsl().apply(checkboxesBlock).checkboxes
     }
 
@@ -144,7 +153,9 @@ class InsertDsl {
                             checklist.notes,
                             LocalDateTime.now().minusDays(2)
                         )
-                    ) to checkboxes
+                    )
+
+                    checklist.checklistId to checkboxes
                 }.forEach { (checklistId, checkboxes) ->
                     appDatabase.checkboxDao.insertAll(
                         *checkboxes.map {

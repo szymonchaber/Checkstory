@@ -4,6 +4,7 @@ import androidx.room.*
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 @Dao
 interface ChecklistDao {
@@ -25,13 +26,13 @@ interface ChecklistDao {
         "SELECT * FROM checklistEntity " +
                 "WHERE checklistEntity.checklistId=:id"
     )
-    fun getById(id: Long): Flow<ChecklistEntity?>
+    fun getById(id: UUID): Flow<ChecklistEntity?>
 
     @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checklistId=:checklistId")
-    fun getCheckboxesForChecklist(checklistId: Long): Flow<List<CheckboxEntity>>
+    fun getCheckboxesForChecklist(checklistId: UUID): Flow<List<CheckboxEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(checklistEntity: ChecklistEntity): Long
+    suspend fun insert(checklistEntity: ChecklistEntity)
 
     @Update
     suspend fun update(checklist: ChecklistEntity)

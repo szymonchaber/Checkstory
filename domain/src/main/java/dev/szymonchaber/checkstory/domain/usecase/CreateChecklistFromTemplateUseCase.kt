@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import java.util.*
-import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 
 class CreateChecklistFromTemplateUseCase @Inject constructor(
@@ -27,15 +26,15 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
     }
 
     private fun createChecklist(basedOn: ChecklistTemplate): Checklist {
-        val temporaryIdGenerator = AtomicLong(0)
         return with(basedOn) {
+            val checklistId = ChecklistId(UUID.randomUUID())
             Checklist(
-                ChecklistId(0),
+                checklistId,
                 basedOn.id,
                 title,
                 description,
                 items.map {
-                    toCheckbox(it, temporaryIdGenerator)
+                    toCheckbox(it, checklistId)
                 },
                 "",
                 LocalDateTime.now()
@@ -43,15 +42,15 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
         }
     }
 
-    private fun toCheckbox(basedOn: TemplateCheckbox, idGenerator: AtomicLong): Checkbox {
+    private fun toCheckbox(basedOn: TemplateCheckbox, checklistId: ChecklistId): Checkbox {
         return Checkbox(
             CheckboxId(UUID.randomUUID()),
             null,
-            ChecklistId(0),
+            checklistId, // TODO we already know it from checklist
             basedOn.title,
             false,
             basedOn.children.map { child ->
-                toCheckbox(child, idGenerator)
+                toCheckbox(child, checklistId)
             }
         )
     }
