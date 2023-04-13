@@ -13,18 +13,24 @@ class Migration5to6(
 ) : Migration(5, 6) {
 
     override fun migrate(database: SupportSQLiteDatabase) {
-        database.migrateReminderIds()
-        database.migrateTemplateCheckboxEntities()
-        database.migrateChecklistEntities()
+        database.migrateChecklistTemplateEntities()
     }
 
     private fun SupportSQLiteDatabase.migrateReminderIds() {
         execSQL("ALTER TABLE ReminderEntity ADD COLUMN uuid BLOB")
+        execSQL("ALTER TABLE ReminderEntity ADD COLUMN template_uuid BLOB")
         addTemporaryUuids(this, "ReminderEntity", "reminderId")
 
+        execSQL(
+            """
+            UPDATE ReminderEntity SET template_uuid = (
+            SELECT uuid FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = ReminderEntity.templateId
+            );
+        """.trimIndent()
+        )
 
-        execSQL("CREATE TABLE ReminderEntityNew (`reminderId` BLOB NOT NULL, `templateId` INTEGER NOT NULL, `startDateUtc` INTEGER NOT NULL, `isRecurring` INTEGER NOT NULL, `recurrencePattern` TEXT, PRIMARY KEY(`reminderId`))")
-        execSQL("INSERT INTO ReminderEntityNew (reminderId, templateId, startDateUtc, isRecurring, recurrencePattern) SELECT uuid, templateId, startDateUtc, isRecurring, recurrencePattern FROM ReminderEntity")
+        execSQL("CREATE TABLE ReminderEntityNew (`reminderId` BLOB NOT NULL, `templateId` BLOB NOT NULL, `startDateUtc` INTEGER NOT NULL, `isRecurring` INTEGER NOT NULL, `recurrencePattern` TEXT, PRIMARY KEY(`reminderId`))")
+        execSQL("INSERT INTO ReminderEntityNew (reminderId, templateId, startDateUtc, isRecurring, recurrencePattern) SELECT uuid, template_uuid, startDateUtc, isRecurring, recurrencePattern FROM ReminderEntity")
         execSQL("DROP TABLE ReminderEntity")
         execSQL("ALTER TABLE ReminderEntityNew RENAME TO ReminderEntity")
     }
@@ -60,6 +66,7 @@ class Migration5to6(
     private fun SupportSQLiteDatabase.migrateTemplateCheckboxEntities() {
         execSQL("ALTER TABLE TemplateCheckboxEntity ADD COLUMN uuid BLOB")
         execSQL("ALTER TABLE TemplateCheckboxEntity ADD COLUMN parent_uuid BLOB")
+        execSQL("ALTER TABLE TemplateCheckboxEntity ADD COLUMN template_uuid BLOB")
         addTemporaryUuids(this, "TemplateCheckboxEntity", "checkboxId")
 
         execSQL(
@@ -69,23 +76,53 @@ class Migration5to6(
             );
         """.trimIndent()
         )
+        execSQL(
+            """
+            UPDATE TemplateCheckboxEntity SET template_uuid = (
+            SELECT uuid FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = TemplateCheckboxEntity.templateId
+            );
+        """.trimIndent()
+        )
 
 
-        execSQL("CREATE TABLE TemplateCheckboxEntityNew (`checkboxId` BLOB NOT NULL, `templateId` INTEGER NOT NULL, `checkboxTitle` TEXT NOT NULL, `parentId` BLOB, `sortPosition` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`checkboxId`))")
-        execSQL("INSERT INTO TemplateCheckboxEntityNew (checkboxId, templateId, checkboxTitle, parentId, sortPosition) SELECT uuid, templateId, checkboxTitle, parent_uuid, sortPosition FROM TemplateCheckboxEntity")
+        execSQL("CREATE TABLE TemplateCheckboxEntityNew (`checkboxId` BLOB NOT NULL, `templateId` BLOB NOT NULL, `checkboxTitle` TEXT NOT NULL, `parentId` BLOB, `sortPosition` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`checkboxId`))")
+        execSQL("INSERT INTO TemplateCheckboxEntityNew (checkboxId, templateId, checkboxTitle, parentId, sortPosition) SELECT uuid, template_uuid, checkboxTitle, parent_uuid, sortPosition FROM TemplateCheckboxEntity")
         execSQL("DROP TABLE TemplateCheckboxEntity")
         execSQL("ALTER TABLE TemplateCheckboxEntityNew RENAME TO TemplateCheckboxEntity")
     }
 
     private fun SupportSQLiteDatabase.migrateChecklistEntities() {
         execSQL("ALTER TABLE ChecklistEntity ADD COLUMN uuid BLOB")
+        execSQL("ALTER TABLE ChecklistEntity ADD COLUMN template_uuid BLOB")
+
         addTemporaryUuids(this, "ChecklistEntity", "checklistId")
         migrateCheckboxEntities()
 
-        execSQL("CREATE TABLE ChecklistEntityNew (`checklistId` BLOB NOT NULL, `templateId` INTEGER NOT NULL, notes TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`checklistId`))")
-        execSQL("INSERT INTO ChecklistEntityNew (checklistId, templateId, notes, createdAt) SELECT uuid, templateId, notes, createdAt FROM ChecklistEntity")
+        execSQL(
+            """
+            UPDATE ChecklistEntity SET template_uuid = (
+            SELECT uuid FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = ChecklistEntity.templateId
+            );
+        """.trimIndent()
+        )
+
+        execSQL("CREATE TABLE ChecklistEntityNew (`checklistId` BLOB NOT NULL, `templateId` BLOB NOT NULL, notes TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`checklistId`))")
+        execSQL("INSERT INTO ChecklistEntityNew (checklistId, templateId, notes, createdAt) SELECT uuid, template_uuid, notes, createdAt FROM ChecklistEntity")
         execSQL("DROP TABLE ChecklistEntity")
         execSQL("ALTER TABLE ChecklistEntityNew RENAME TO ChecklistEntity")
+    }
+
+    private fun SupportSQLiteDatabase.migrateChecklistTemplateEntities() {
+        execSQL("ALTER TABLE ChecklistTemplateEntity ADD COLUMN uuid BLOB")
+        addTemporaryUuids(this, "ChecklistTemplateEntity", "id")
+        migrateReminderIds()
+        migrateTemplateCheckboxEntities()
+        migrateChecklistEntities()
+
+        execSQL("CREATE TABLE ChecklistTemplateEntityNew (`id` BLOB NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`id`))")
+        execSQL("INSERT INTO ChecklistTemplateEntityNew (id, title, description, createdAt) SELECT uuid, title, description, createdAt FROM ChecklistTemplateEntity")
+        execSQL("DROP TABLE ChecklistTemplateEntity")
+        execSQL("ALTER TABLE ChecklistTemplateEntityNew RENAME TO ChecklistTemplateEntity")
     }
 
 

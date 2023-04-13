@@ -9,17 +9,31 @@ import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import dev.szymonchaber.checkstory.domain.usecase.*
+import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteRemindersUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.SynchronizeEventsUseCase
+import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
 
-private val CHECKLIST_TEMPLATE_ID = 90L
-private val CHECKLIST_TEMPLATE_UUID = UUID.randomUUID().toString()
-private val TEMPLATE_TASK_UUID: String
-    get() = UUID.randomUUID().toString()
+// TODO remove this
+private val TEMPLATE_TASK_UUID: UUID
+    get() = UUID.randomUUID()
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
@@ -39,6 +53,8 @@ class EditTemplateViewModel @Inject constructor(
         >(
     EditTemplateState.initial
 ) {
+
+    private val CHECKLIST_TEMPLATE_UUID = UUID.randomUUID()
 
     override fun buildMviFlow(eventFlow: Flow<EditTemplateEvent>): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return eventFlow.buildMviFlowActual()
@@ -84,7 +100,7 @@ class EditTemplateViewModel @Inject constructor(
                     state.first() to null
                 } else {
                     val checklistTemplate =
-                        emptyChecklistTemplate().copy(id = ChecklistTemplateId(CHECKLIST_TEMPLATE_ID))
+                        emptyChecklistTemplate().copy(id = ChecklistTemplateId(CHECKLIST_TEMPLATE_UUID))
                     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
                         .copy(
                             events = listOf(

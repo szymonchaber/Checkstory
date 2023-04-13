@@ -1,16 +1,18 @@
 package dev.szymonchaber.checkstory.domain.model
 
+import java.util.*
+
 sealed interface EditTemplateDomainEvent {
 
     val timestamp: Long
 
-    data class CreateNewTemplate(val id: String, override val timestamp: Long) : EditTemplateDomainEvent
+    data class CreateNewTemplate(val id: UUID, override val timestamp: Long) : EditTemplateDomainEvent
 
-    data class RenameTemplate(val id: String, val newTitle: String, override val timestamp: Long) :
+    data class RenameTemplate(val id: UUID, val newTitle: String, override val timestamp: Long) :
         EditTemplateDomainEvent
 
     class AddTemplateTask(
-        val templateId: String, val taskId: String, val parentTaskId: String?,
+        val templateId: UUID, val taskId: UUID, val parentTaskId: String?,
         override val timestamp: Long
     ) : EditTemplateDomainEvent {
     }

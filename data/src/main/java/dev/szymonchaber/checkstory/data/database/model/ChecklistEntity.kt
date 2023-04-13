@@ -13,7 +13,7 @@ import java.util.*
 data class ChecklistEntity(
     @PrimaryKey
     val checklistId: UUID,
-    val templateId: Long,
+    val templateId: UUID,
     val notes: String,
     val createdAt: LocalDateTime
 ) {

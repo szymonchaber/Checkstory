@@ -18,7 +18,7 @@ import java.util.*
 data class ReminderEntity(
     @PrimaryKey
     val reminderId: UUID,
-    val templateId: Long,
+    val templateId: UUID,
     val startDateUtc: LocalDateTime,
     val isRecurring: Boolean,
     val recurrencePattern: String?
@@ -66,7 +66,7 @@ data class ReminderEntity(
 
     companion object {
 
-        fun fromDomainReminder(reminder: Reminder, templateId: Long): ReminderEntity {
+        fun fromDomainReminder(reminder: Reminder, templateId: UUID): ReminderEntity {
             return when (reminder) {
                 is Reminder.Exact -> {
                     ReminderEntity(

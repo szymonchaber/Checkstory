@@ -20,7 +20,7 @@ interface ChecklistDao {
                 "WHERE checklistEntity.templateId=:templateId " +
                 "ORDER BY checklistEntity.createdAt DESC"
     )
-    fun getAll(templateId: Long): Flow<List<ChecklistEntity>>
+    fun getAll(templateId: UUID): Flow<List<ChecklistEntity>>
 
     @Query(
         "SELECT * FROM checklistEntity " +

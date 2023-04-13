@@ -56,7 +56,7 @@ class EditReminderViewModel @Inject constructor(
             .map {
                 val newReminder = Reminder.Exact(
                     ReminderId(UUID.randomUUID()),
-                    ChecklistTemplateId(0),
+                    ChecklistTemplateId(UUID.randomUUID()),
                     LocalDateTime.now()
                 )
                 EditReminderState(EditReminderLoadingState.Success.fromReminder(newReminder)) to null

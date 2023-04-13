@@ -15,7 +15,7 @@ data class ChecklistTemplate(
 ) {
 
     val isStored: Boolean
-        get() = id.id != 0L
+        get() = false
 }
 
 data class TemplateCheckbox(

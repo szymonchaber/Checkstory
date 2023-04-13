@@ -25,12 +25,12 @@ class ReminderReceiver : BroadcastReceiver() {
     lateinit var getChecklistTemplateUseCase: GetChecklistTemplateUseCase
 
     override fun onReceive(context: Context, intent: Intent) {
-        val templateIdLong = intent.getLongExtra(KEY_TEMPLATE_ID, -1)
+        val templateIdLong = intent.getStringExtra(KEY_TEMPLATE_ID)
         val reminderIdString: String? = intent.getStringExtra(KEY_REMINDER_ID)
-        if (templateIdLong < 0 || reminderIdString == null) {
+        if (templateIdLong == null || reminderIdString == null) {
             return
         }
-        val templateId = ChecklistTemplateId(templateIdLong)
+        val templateId = ChecklistTemplateId(UUID.fromString(templateIdLong))
         val reminderId = ReminderId(UUID.fromString(reminderIdString))
         CoroutineScope(Dispatchers.Main)
             .launch {

@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 class ChecklistTemplateRoomDataSource @Inject constructor(
@@ -33,14 +34,14 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     private val checklistRoomDataSource: ChecklistRoomDataSource
 ) {
 
-    fun getById(id: Long): Flow<ChecklistTemplate> {
+    fun getById(id: UUID): Flow<ChecklistTemplate> {
         return checklistTemplateDao.getById(id)
             .filterNotNull()
             .flatMapLatest(::combineIntoDomainChecklistTemplate)
             .take(1)
     }
 
-    suspend fun getByIdOrNull(id: Long): ChecklistTemplate? {
+    suspend fun getByIdOrNull(id: UUID): ChecklistTemplate? {
         return checklistTemplateDao.getByIdOrNull(id)?.let { combineIntoDomainChecklistTemplate(it) }?.firstOrNull()
     }
 
@@ -53,7 +54,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             }
     }
 
-    suspend fun update(checklistTemplate: ChecklistTemplate): Long {
+    suspend fun update(checklistTemplate: ChecklistTemplate): UUID {
         return insert(checklistTemplate)
     }
 
@@ -69,9 +70,10 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         }
     }
 
-    suspend fun insert(checklistTemplate: ChecklistTemplate): Long {
+    suspend fun insert(checklistTemplate: ChecklistTemplate): UUID {
         return withContext(Dispatchers.Default) {
-            val checklistTemplateId = checklistTemplateDao.insert(
+            val checklistTemplateId = checklistTemplate.id.id
+            checklistTemplateDao.insert(
                 ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
             )
             awaitAll(
@@ -86,7 +88,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         }
     }
 
-    private suspend fun insertReminders(reminders: List<Reminder>, checklistTemplateId: Long) {
+    private suspend fun insertReminders(reminders: List<Reminder>, checklistTemplateId: UUID) {
         withContext(Dispatchers.Default) {
             launch {
                 val reminderEntities = reminders.map {
@@ -97,7 +99,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         }
     }
 
-    private suspend fun insertTemplateCheckboxes(checkboxes: List<TemplateCheckbox>, checklistTemplateId: Long) {
+    private suspend fun insertTemplateCheckboxes(checkboxes: List<TemplateCheckbox>, checklistTemplateId: UUID) {
         checkboxes.forEach {
             withContext(Dispatchers.Default) {
                 launch {
@@ -109,7 +111,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 
     private suspend fun insertCheckboxRecursive(
         templateCheckbox: TemplateCheckbox,
-        checklistTemplateId: Long,
+        checklistTemplateId: UUID,
         parentId: TemplateCheckboxId?
     ) {
         templateCheckboxDao.insert(

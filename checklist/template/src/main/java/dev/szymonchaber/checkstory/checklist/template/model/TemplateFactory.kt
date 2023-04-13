@@ -5,6 +5,7 @@ import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import java.time.LocalDateTime
+import java.util.*
 
 fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
@@ -121,7 +122,7 @@ fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
 
 fun emptyChecklistTemplate(): ChecklistTemplate {
     return ChecklistTemplate(
-        ChecklistTemplateId(0),
+        ChecklistTemplateId(UUID.randomUUID()),
         "",
         "",
         listOf(),

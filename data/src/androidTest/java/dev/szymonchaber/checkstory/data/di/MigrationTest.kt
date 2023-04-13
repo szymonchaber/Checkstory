@@ -34,15 +34,16 @@ class MigrationTest {
     fun migrate5to6() {
         helper.createDatabase(TEST_DB, 5)
             .apply {
-                execSQL(
-                    """
-                    INSERT INTO "ReminderEntity" (templateId, startDateUtc, isRecurring, recurrencePattern) 
-                    VALUES 
-                    (1, 1649818800, 1, 'Every Monday'),
-                    (2, 1650397200, 0, NULL),
-                    (3, 1650991200, 1, 'Every other day');
-                """.trimIndent()
-                )
+//                execSQL(
+//                    """
+//                    INSERT INTO "ReminderEntity" (templateId, startDateUtc, isRecurring, recurrencePattern)
+//                    VALUES
+//                    (1, 1649818800, 1, 'Every Monday'),
+//                    (2, 1650397200, 0, NULL),
+//                    (3, 1650991200, 1, 'Every other day');
+//                """.trimIndent()
+//                )
+                // It's null because I don't have the template!!
                 close()
             }
 

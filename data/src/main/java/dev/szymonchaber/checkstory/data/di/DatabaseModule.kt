@@ -30,6 +30,8 @@ import java.util.*
 import java.util.concurrent.Executors
 import javax.inject.Singleton
 
+private const val i = 1
+
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
@@ -54,20 +56,21 @@ object DatabaseModule {
         GlobalScope.launch {
             withContext(Dispatchers.IO) {
                 // TODO the app without below code will crash
+                val templateId = UUID.randomUUID()
                 checklistTemplateDao.insert(
                     ChecklistTemplateEntity(
-                        1,
+                        templateId,
                         "Cleaning something",
                         "It's good to do",
                         LocalDateTime.now().minusDays(2)
                     )
                 )
                 templateCheckboxDao.insertAll(
-                    TemplateCheckboxEntity(UUID.randomUUID(), 1, "Checkbox item", null, 0),
-                    TemplateCheckboxEntity(UUID.randomUUID(), 1, "Checkbox item 2", null, 0)
+                    TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item", null, 0),
+                    TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item 2", null, 0)
                 )
                 insert {
-                    checklist(UUID.randomUUID(), 1, "This was an awesome session") {
+                    checklist(UUID.randomUUID(), templateId, "This was an awesome session") {
                         checkbox("Clean the table", true)
                         checkbox("Dust the lamp shade", false)
                         checkbox("Clean all the windows", false)
@@ -75,7 +78,7 @@ object DatabaseModule {
                     }
                     checklist(
                         UUID.randomUUID(),
-                        1,
+                        templateId,
                         "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
                     ) {
                         checkbox("Clean the table", false)
@@ -116,7 +119,7 @@ object DatabaseModule {
 
 class InsertDsl {
 
-    class Checklist(val checklistId: UUID, val templateId: Long, val notes: String = "")
+    class Checklist(val checklistId: UUID, val templateId: UUID, val notes: String = "")
 
     private val items = mutableMapOf<Checklist, List<Checkbox>>()
 
@@ -138,7 +141,7 @@ class InsertDsl {
         }
     }
 
-    fun checklist(checklistId: UUID, templateId: Long, notes: String = "", checkboxesBlock: CheckboxDsl.() -> Unit) {
+    fun checklist(checklistId: UUID, templateId: UUID, notes: String = "", checkboxesBlock: CheckboxDsl.() -> Unit) {
         items[Checklist(checklistId, templateId, notes)] = CheckboxDsl().apply(checkboxesBlock).checkboxes
     }
 

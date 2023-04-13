@@ -10,7 +10,7 @@ import java.util.*
 data class TemplateCheckboxEntity(
     @PrimaryKey
     val checkboxId: UUID,
-    val templateId: Long,
+    val templateId: UUID,
     val checkboxTitle: String,
     val parentId: UUID?,
     @ColumnInfo(defaultValue = "0")
@@ -21,7 +21,7 @@ data class TemplateCheckboxEntity(
 
         fun fromDomainTemplateCheckbox(
             templateCheckbox: TemplateCheckbox,
-            templateId: Long
+            templateId: UUID
         ): TemplateCheckboxEntity {
             return with(templateCheckbox) {
                 TemplateCheckboxEntity(

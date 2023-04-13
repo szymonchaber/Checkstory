@@ -102,7 +102,7 @@ fun RecentChecklistItemPreview() {
     )
     val checklist = Checklist(
         ChecklistId(UUID.randomUUID()),
-        ChecklistTemplateId(0),
+        ChecklistTemplateId(UUID.randomUUID()),
         "Recent checklist",
         "Description",
         items,

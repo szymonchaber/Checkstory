@@ -34,7 +34,7 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
 
     private fun ChecklistTemplateDto.toChecklistTemplate(): ChecklistTemplate {
         return ChecklistTemplate(
-            ChecklistTemplateId(id),
+            ChecklistTemplateId(UUID.fromString(id)),
             title,
             description,
             items = templateCheckboxes.map {
@@ -75,7 +75,7 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
     suspend fun pushAll(checklistTemplates: List<ChecklistTemplate>): List<ChecklistTemplate> {
         val payload = checklistTemplates.map {
             ChecklistTemplateDto(
-                0,
+                it.id.id.toString(),
                 it.title,
                 it.description,
                 it.items.map {
