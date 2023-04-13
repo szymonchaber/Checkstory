@@ -28,10 +28,12 @@ class Migration5to6(
         """.trimIndent()
         )
 
-        execSQL("CREATE TABLE ReminderEntityNew (`reminderId` BLOB NOT NULL, `templateId` BLOB NOT NULL, `startDateUtc` INTEGER NOT NULL, `isRecurring` INTEGER NOT NULL, `recurrencePattern` TEXT, PRIMARY KEY(`reminderId`))")
-        execSQL("INSERT INTO ReminderEntityNew (reminderId, templateId, startDateUtc, isRecurring, recurrencePattern) SELECT uuid, template_uuid, startDateUtc, isRecurring, recurrencePattern FROM ReminderEntity")
-        execSQL("DROP TABLE ReminderEntity")
-        execSQL("ALTER TABLE ReminderEntityNew RENAME TO ReminderEntity")
+        migrateTable(
+            name = "ReminderEntity",
+            columnsToCreate = "`reminderId` BLOB NOT NULL, `templateId` BLOB NOT NULL, `startDateUtc` INTEGER NOT NULL, `isRecurring` INTEGER NOT NULL, `recurrencePattern` TEXT, PRIMARY KEY(`reminderId`)",
+            columnsToInsert = "reminderId, templateId, startDateUtc, isRecurring, recurrencePattern",
+            dataSourceColumns = "uuid, template_uuid, startDateUtc, isRecurring, recurrencePattern"
+        )
     }
 
     private fun SupportSQLiteDatabase.migrateCheckboxEntities() {
@@ -55,10 +57,12 @@ class Migration5to6(
         )
 
 
-        execSQL("CREATE TABLE CheckboxEntityNew (`checkboxId` BLOB NOT NULL, `checklistId` BLOB NOT NULL, `checkboxTitle` TEXT NOT NULL, `isChecked` INTEGER NOT NULL, `parentId` BLOB, PRIMARY KEY(`checkboxId`))")
-        execSQL("INSERT INTO CheckboxEntityNew (checkboxId, checklistId, checkboxTitle, isChecked, parentId) SELECT uuid, checklist_uuid, checkboxTitle, isChecked, parent_uuid FROM CheckboxEntity")
-        execSQL("DROP TABLE CheckboxEntity")
-        execSQL("ALTER TABLE CheckboxEntityNew RENAME TO CheckboxEntity")
+        migrateTable(
+            name = "CheckboxEntity",
+            columnsToCreate = "`checkboxId` BLOB NOT NULL, `checklistId` BLOB NOT NULL, `checkboxTitle` TEXT NOT NULL, `isChecked` INTEGER NOT NULL, `parentId` BLOB, PRIMARY KEY(`checkboxId`)",
+            columnsToInsert = "checkboxId, checklistId, checkboxTitle, isChecked, parentId",
+            dataSourceColumns = "uuid, checklist_uuid, checkboxTitle, isChecked, parent_uuid"
+        )
     }
 
     private fun SupportSQLiteDatabase.migrateTemplateCheckboxEntities() {
@@ -82,10 +86,12 @@ class Migration5to6(
         )
 
 
-        execSQL("CREATE TABLE TemplateCheckboxEntityNew (`checkboxId` BLOB NOT NULL, `templateId` BLOB NOT NULL, `checkboxTitle` TEXT NOT NULL, `parentId` BLOB, `sortPosition` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`checkboxId`))")
-        execSQL("INSERT INTO TemplateCheckboxEntityNew (checkboxId, templateId, checkboxTitle, parentId, sortPosition) SELECT uuid, template_uuid, checkboxTitle, parent_uuid, sortPosition FROM TemplateCheckboxEntity")
-        execSQL("DROP TABLE TemplateCheckboxEntity")
-        execSQL("ALTER TABLE TemplateCheckboxEntityNew RENAME TO TemplateCheckboxEntity")
+        migrateTable(
+            name = "TemplateCheckboxEntity",
+            columnsToCreate = "`checkboxId` BLOB NOT NULL, `templateId` BLOB NOT NULL, `checkboxTitle` TEXT NOT NULL, `parentId` BLOB, `sortPosition` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`checkboxId`)",
+            columnsToInsert = "checkboxId, templateId, checkboxTitle, parentId, sortPosition",
+            dataSourceColumns = "uuid, template_uuid, checkboxTitle, parent_uuid, sortPosition"
+        )
     }
 
     private fun SupportSQLiteDatabase.migrateChecklistEntities() {
@@ -102,10 +108,12 @@ class Migration5to6(
         """.trimIndent()
         )
 
-        execSQL("CREATE TABLE ChecklistEntityNew (`checklistId` BLOB NOT NULL, `templateId` BLOB NOT NULL, notes TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`checklistId`))")
-        execSQL("INSERT INTO ChecklistEntityNew (checklistId, templateId, notes, createdAt) SELECT uuid, template_uuid, notes, createdAt FROM ChecklistEntity")
-        execSQL("DROP TABLE ChecklistEntity")
-        execSQL("ALTER TABLE ChecklistEntityNew RENAME TO ChecklistEntity")
+        migrateTable(
+            name = "ChecklistEntity",
+            columnsToCreate = "`checklistId` BLOB NOT NULL, `templateId` BLOB NOT NULL, notes TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`checklistId`)",
+            columnsToInsert = "checklistId, templateId, notes, createdAt",
+            dataSourceColumns = "uuid, template_uuid, notes, createdAt"
+        )
     }
 
     private fun SupportSQLiteDatabase.migrateChecklistTemplateEntities() {
@@ -114,10 +122,24 @@ class Migration5to6(
         migrateTemplateCheckboxEntities()
         migrateChecklistEntities()
 
-        execSQL("CREATE TABLE ChecklistTemplateEntityNew (`id` BLOB NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`id`))")
-        execSQL("INSERT INTO ChecklistTemplateEntityNew (id, title, description, createdAt) SELECT uuid, title, description, createdAt FROM ChecklistTemplateEntity")
-        execSQL("DROP TABLE ChecklistTemplateEntity")
-        execSQL("ALTER TABLE ChecklistTemplateEntityNew RENAME TO ChecklistTemplateEntity")
+        migrateTable(
+            name = "ChecklistTemplateEntity",
+            columnsToCreate = "`id` BLOB NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`id`)",
+            columnsToInsert = "id, title, description, createdAt",
+            dataSourceColumns = "uuid, title, description, createdAt"
+        )
+    }
+
+    private fun SupportSQLiteDatabase.migrateTable(
+        name: String,
+        columnsToCreate: String,
+        columnsToInsert: String,
+        dataSourceColumns: String
+    ) {
+        execSQL("CREATE TABLE ${name}New ($columnsToCreate)")
+        execSQL("INSERT INTO ${name}New ($columnsToInsert) SELECT $dataSourceColumns FROM $name")
+        execSQL("DROP TABLE $name")
+        execSQL("ALTER TABLE ${name}New RENAME TO $name")
     }
 
 
