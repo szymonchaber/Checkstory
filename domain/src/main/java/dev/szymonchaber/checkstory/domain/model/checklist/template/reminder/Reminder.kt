@@ -6,6 +6,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
 sealed interface Reminder {
 
@@ -14,7 +15,7 @@ sealed interface Reminder {
     val startDateTime: LocalDateTime
 
     val isStored: Boolean
-        get() = id.id != 0L
+        get() = false //id.id != 0L TODO how else to check it?
 
     data class Exact(
         override val id: ReminderId,
@@ -46,7 +47,7 @@ sealed interface Reminder {
 }
 
 @JvmInline
-value class ReminderId(val id: Long) : Serializable
+value class ReminderId(val id: UUID) : Serializable
 
 sealed interface Interval {
 

@@ -12,12 +12,15 @@ import org.junit.Rule
 import org.junit.Test
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 class MigrationTest {
 
     private val TEST_DB = "migration-test"
 
-    private val knownUUID = UUID.randomUUID()
+    private val uuidCounter = AtomicInteger(0)
+
+    private val knownUuids = listOf(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())
 
     @get:Rule
     val helper: MigrationTestHelper = MigrationTestHelper(
@@ -40,20 +43,24 @@ class MigrationTest {
                     (3, 1650991200, 1, 'Every other day');
                 """.trimIndent()
                 )
-
                 close()
             }
 
-        val database = helper.runMigrationsAndValidate(TEST_DB, 6, true, Migration5to6 { knownUUID })
+        val database = helper.runMigrationsAndValidate(
+            TEST_DB,
+            6,
+            true,
+            Migration5to6 { knownUuids[uuidCounter.getAndIncrement()] })
         verify(database)
     }
 
     private fun verify(database: SupportSQLiteDatabase) {
         val cursor = database.query("SELECT * FROM ReminderEntity", null)
+        var index = 0
         if (cursor.moveToFirst()) {
             do {
-                val uuid = cursor.getBlob(cursor.getColumnIndexOrThrow("actualUuid"))
-                assertThat(UUIDUtil.convertBytesToUUID(uuid)).isEqualTo(knownUUID)
+                val uuid = cursor.getBlob(cursor.getColumnIndexOrThrow("reminderId"))
+                assertThat(UUIDUtil.convertBytesToUUID(uuid)).isEqualTo(knownUuids[index++])
             } while (cursor.moveToNext())
         }
         cursor.close()

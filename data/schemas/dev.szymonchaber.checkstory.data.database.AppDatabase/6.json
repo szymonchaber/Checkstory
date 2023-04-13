@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 6,
-    "identityHash": "b4e636ab83eb1aa815cde46d80d7f62f",
+    "identityHash": "e277c840ecfdc634921d65e2744b2187",
     "entities": [
       {
         "tableName": "ChecklistTemplateEntity",
@@ -171,12 +171,12 @@
       },
       {
         "tableName": "ReminderEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`reminderId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `templateId` INTEGER NOT NULL, `startDateUtc` INTEGER NOT NULL, `isRecurring` INTEGER NOT NULL, `recurrencePattern` TEXT, `uuid` TEXT, `actualUuid` BLOB)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`reminderId` BLOB NOT NULL, `templateId` INTEGER NOT NULL, `startDateUtc` INTEGER NOT NULL, `isRecurring` INTEGER NOT NULL, `recurrencePattern` TEXT, PRIMARY KEY(`reminderId`))",
         "fields": [
           {
             "fieldPath": "reminderId",
             "columnName": "reminderId",
-            "affinity": "INTEGER",
+            "affinity": "BLOB",
             "notNull": true
           },
           {
@@ -202,19 +202,13 @@
             "columnName": "recurrencePattern",
             "affinity": "TEXT",
             "notNull": false
-          },
-          {
-            "fieldPath": "actualUuid",
-            "columnName": "actualUuid",
-            "affinity": "BLOB",
-            "notNull": false
           }
         ],
         "primaryKey": {
           "columnNames": [
             "reminderId"
           ],
-          "autoGenerate": true
+          "autoGenerate": false
         },
         "indices": [],
         "foreignKeys": []
@@ -223,7 +217,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b4e636ab83eb1aa815cde46d80d7f62f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e277c840ecfdc634921d65e2744b2187')"
     ]
   }
 }

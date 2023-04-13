@@ -22,7 +22,7 @@ class NotificationsManager @Inject constructor(@ApplicationContext val context: 
         newChecklistIntent: Intent,
         recentChecklistIntent: Intent?
     ) {
-        val requestCode = reminderId.id.toInt()
+        val requestCode = reminderId.id.hashCode()
         val newChecklistPendingIntent =
             PendingIntent.getActivity(context, requestCode, newChecklistIntent, PendingIntent.FLAG_IMMUTABLE)
 

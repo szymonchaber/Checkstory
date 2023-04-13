@@ -17,25 +17,31 @@ class Migration5to6(
     }
 
     private fun SupportSQLiteDatabase.migrateReminderIds() {
-        execSQL("ALTER TABLE ReminderEntity ADD COLUMN actualUuid BLOB")
-        updateRowsWithUUIDs(this, "ReminderEntity")
+        execSQL("ALTER TABLE ReminderEntity ADD COLUMN uuid BLOB")
+        addTemporaryUuids(this, "ReminderEntity", "reminderId")
+
+
+        execSQL("CREATE TABLE ReminderEntityNew (`reminderId` BLOB NOT NULL, `templateId` INTEGER NOT NULL, `startDateUtc` INTEGER NOT NULL, `isRecurring` INTEGER NOT NULL, `recurrencePattern` TEXT, PRIMARY KEY(`reminderId`))")
+        execSQL("INSERT INTO ReminderEntityNew (reminderId, templateId, startDateUtc, isRecurring, recurrencePattern) SELECT uuid, templateId, startDateUtc, isRecurring, recurrencePattern FROM ReminderEntity")
+        execSQL("DROP TABLE ReminderEntity")
+        execSQL("ALTER TABLE ReminderEntityNew RENAME TO ReminderEntity")
     }
 
-    private fun updateRowsWithUUIDs(database: SupportSQLiteDatabase, tableName: String) {
-        val cursor = database.query("SELECT * FROM $tableName", null)
+    private fun addTemporaryUuids(database: SupportSQLiteDatabase, tableName: String, idColumnName: String) {
+        val cursor = database.query("SELECT * FROM $tableName")
         if (cursor.moveToFirst()) {
             do {
                 val uuid = uuidGenerator()
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow("reminderId"))
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(idColumnName))
                 val contentValues = ContentValues()
                     .apply {
-                        put("actualUuid", UUIDUtil.convertUUIDToBytes(uuid))
+                        put("uuid", UUIDUtil.convertUUIDToBytes(uuid))
                     }
                 database.update(
                     tableName,
                     SQLiteDatabase.CONFLICT_ABORT,
                     contentValues,
-                    "reminderId = ?",
+                    "$idColumnName = ?",
                     arrayOf(id.toString())
                 )
             } while (cursor.moveToNext())

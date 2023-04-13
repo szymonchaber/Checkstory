@@ -109,7 +109,7 @@ class ReminderScheduler @Inject constructor(
             .let {
                 PendingIntent.getBroadcast(
                     context,
-                    reminder.id.id.toInt(),
+                    reminder.id.id.hashCode(),
                     it,
                     PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )

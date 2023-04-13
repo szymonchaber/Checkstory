@@ -13,8 +13,15 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.take
 import java.time.LocalDateTime
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,7 +55,7 @@ class EditReminderViewModel @Inject constructor(
         return filterIsInstance<EditReminderEvent.CreateReminder>()
             .map {
                 val newReminder = Reminder.Exact(
-                    ReminderId(0),
+                    ReminderId(UUID.randomUUID()),
                     ChecklistTemplateId(0),
                     LocalDateTime.now()
                 )

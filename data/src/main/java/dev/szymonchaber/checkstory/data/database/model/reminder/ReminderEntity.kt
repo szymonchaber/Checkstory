@@ -16,15 +16,12 @@ import java.util.*
 
 @Entity
 data class ReminderEntity(
-    @PrimaryKey(autoGenerate = true)
-    val reminderId: Long,
-    //    @PrimaryKey
-//    val reminderId: UUID,
+    @PrimaryKey
+    val reminderId: UUID,
     val templateId: Long,
     val startDateUtc: LocalDateTime,
     val isRecurring: Boolean,
-    val recurrencePattern: String?,
-    val actualUuid: UUID? = UUID.randomUUID()
+    val recurrencePattern: String?
 ) {
 
     fun toDomainReminder(): Reminder {

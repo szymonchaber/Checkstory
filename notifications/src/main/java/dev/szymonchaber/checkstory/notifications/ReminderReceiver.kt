@@ -12,6 +12,7 @@ import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -25,12 +26,12 @@ class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val templateIdLong = intent.getLongExtra(KEY_TEMPLATE_ID, -1)
-        val reminderIdLong = intent.getLongExtra(KEY_REMINDER_ID, -1)
-        if (templateIdLong < 0 || reminderIdLong < 0) {
+        val reminderIdString: String? = intent.getStringExtra(KEY_REMINDER_ID)
+        if (templateIdLong < 0 || reminderIdString == null) {
             return
         }
         val templateId = ChecklistTemplateId(templateIdLong)
-        val reminderId = ReminderId(reminderIdLong)
+        val reminderId = ReminderId(UUID.fromString(reminderIdString))
         CoroutineScope(Dispatchers.Main)
             .launch {
                 val template = getChecklistTemplateUseCase.getChecklistTemplateOrNull(templateId) ?: return@launch

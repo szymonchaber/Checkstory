@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import org.junit.Test
 import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.util.*
 
 class ReminderEntityTest {
 
@@ -131,11 +132,11 @@ class ReminderEntityTest {
         Truth.assertThat((reminder as Reminder.Recurring).interval).isEqualTo(Interval.Yearly(150))
     }
 
-    private fun reminderEntity(rrule: String) = ReminderEntity(0, 0, LocalDateTime.now(), true, rrule)
+    private fun reminderEntity(rrule: String) = ReminderEntity(UUID.randomUUID(), 0, LocalDateTime.now(), true, rrule)
 
     private fun reminder(interval: Interval): Reminder.Recurring {
         return Reminder.Recurring(
-            ReminderId(0),
+            ReminderId(UUID.randomUUID()),
             ChecklistTemplateId(0),
             LocalDateTime.of(2022, 4, 18, 14, 0),
             interval = interval
