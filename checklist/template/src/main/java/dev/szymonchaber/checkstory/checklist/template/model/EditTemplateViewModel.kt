@@ -171,9 +171,17 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.DescriptionChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = loadingState.updateTemplate {
-                    copy(description = event.newDescription)
-                }
+                val newLoadingState = loadingState
+                    .updateTemplate {
+                        copy(description = event.newDescription)
+                    }
+                    .plusEvent(
+                        EditTemplateDomainEvent.ChangeTemplateDescription(
+                            loadingState.checklistTemplate.id,
+                            event.newDescription,
+                            System.currentTimeMillis()
+                        )
+                    )
                 EditTemplateState(newLoadingState) to null
             }
     }
@@ -322,7 +330,7 @@ class EditTemplateViewModel @Inject constructor(
                 updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
-                synchronizeEventsUseCase.synchronizeEvents(deduplicateEvents(loadingState.events))
+                synchronizeEventsUseCase.synchronizeEvents(consolidateEvents(loadingState.events))
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
                         "title_length" to checklistTemplate.title.length,
@@ -338,16 +346,22 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun deduplicateEvents(events: List<EditTemplateDomainEvent>): List<EditTemplateDomainEvent> {
-        val deduplicatedRename = events.filterIsInstance<EditTemplateDomainEvent.RenameTemplate>()
+    private fun consolidateEvents(events: List<EditTemplateDomainEvent>): List<EditTemplateDomainEvent> {
+        return events
+            .withLastEventOfType<EditTemplateDomainEvent.RenameTemplate>()
+            .withLastEventOfType<EditTemplateDomainEvent.ChangeTemplateDescription>()
+    }
+
+    private inline fun <reified T : EditTemplateDomainEvent> List<EditTemplateDomainEvent>.withLastEventOfType(): List<EditTemplateDomainEvent> {
+        val consolidatedEvent = filterIsInstance<T>()
             .groupBy {
                 it.id
             }.map { (_, events) ->
                 events.sortedBy { it.timestamp }.takeLast(1)
             }
             .flatten()
-        val eventsWithoutRename = events.filterNot { it is EditTemplateDomainEvent.RenameTemplate }
-        return eventsWithoutRename.plus(deduplicatedRename)
+        val eventsWithoutConsolidatedEvent = filterNot { it is T }
+        return eventsWithoutConsolidatedEvent.plus(consolidatedEvent)
     }
 
     private fun Flow<EditTemplateEvent>.handleDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {

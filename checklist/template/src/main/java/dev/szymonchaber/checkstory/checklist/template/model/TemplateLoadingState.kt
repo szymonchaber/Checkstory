@@ -87,7 +87,13 @@ sealed interface TemplateLoadingState {
             }
 
             val updatedEvents = if (shouldDeleteFromDatabase) {
-                events.plus(EditTemplateDomainEvent.DeleteTemplateTask(checkbox.id, System.currentTimeMillis()))
+                events.plus(
+                    EditTemplateDomainEvent.DeleteTemplateTask(
+                        originalChecklistTemplate.id,
+                        checkbox.id,
+                        System.currentTimeMillis()
+                    )
+                )
             } else {
                 events
             }

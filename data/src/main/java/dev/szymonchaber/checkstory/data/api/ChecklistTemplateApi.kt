@@ -48,6 +48,7 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                     )
                     DomainEventDto("createTemplate", it.eventId.toString(), it.timestamp, data)
                 }
+
                 is EditTemplateDomainEvent.RenameTemplate -> {
                     val data = Json.encodeToJsonElement(
                         EditTemplateTitleEventData.serializer(),
@@ -55,11 +56,20 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                     )
                     DomainEventDto("editTemplateTitle", it.eventId.toString(), it.timestamp, data)
                 }
+
+                is EditTemplateDomainEvent.ChangeTemplateDescription -> {
+                    val data = Json.encodeToJsonElement(
+                        EditTemplateDescriptionEventData.serializer(),
+                        EditTemplateDescriptionEventData(it.id.id.toString(), it.newDescription)
+                    )
+                    DomainEventDto("editTemplateDescription", it.eventId.toString(), it.timestamp, data)
+                }
+
                 is EditTemplateDomainEvent.AddTemplateTask -> {
                     val data = Json.encodeToJsonElement(
                         AddTemplateTaskEventData.serializer(),
                         AddTemplateTaskEventData(
-                            templateId = it.templateId.id.toString(),
+                            templateId = it.id.id.toString(),
                             taskId = it.taskId.id.toString(),
                             parentTaskId = null
                         )
@@ -71,7 +81,7 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                     val data = Json.encodeToJsonElement(
                         DeleteTemplateTaskData.serializer(),
                         DeleteTemplateTaskData(
-                            taskId = it.id.id.toString(),
+                            taskId = it.taskId.id.toString(),
                         )
                     )
                     DomainEventDto("deleteTemplateTask", it.eventId.toString(), it.timestamp, data)
@@ -94,6 +104,9 @@ data class CreateTemplateEventData(val templateId: String)
 
 @Serializable
 data class EditTemplateTitleEventData(val templateId: String, val newTitle: String)
+
+@Serializable
+data class EditTemplateDescriptionEventData(val templateId: String, val newDescription: String)
 
 @Serializable
 data class AddTemplateTaskEventData(val templateId: String, val taskId: String, val parentTaskId: String?)
