@@ -38,6 +38,14 @@ sealed interface EditTemplateDomainEvent {
         override val eventId: UUID = UUID.randomUUID()
     ) : EditTemplateDomainEvent
 
+    class RenameTemplateTask(
+        override val templateId: ChecklistTemplateId,
+        val taskId: TemplateCheckboxId,
+        val newTitle: String,
+        override val timestamp: Long,
+        override val eventId: UUID = UUID.randomUUID()
+    ) : EditTemplateDomainEvent
+
     class DeleteTemplateTask(
         override val templateId: ChecklistTemplateId,
         val taskId: TemplateCheckboxId,

@@ -291,7 +291,16 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ItemTitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                EditTemplateState(loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)) to null
+                val newState = loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)
+                    .plusEvent(
+                        EditTemplateDomainEvent.RenameTemplateTask(
+                            templateId = loadingState.originalChecklistTemplate.id,
+                            taskId = event.checkbox.id,
+                            newTitle = event.newTitle,
+                            timestamp = System.currentTimeMillis()
+                        )
+                    )
+                EditTemplateState(newState) to null
             }
     }
 
@@ -348,15 +357,21 @@ class EditTemplateViewModel @Inject constructor(
 
     private fun consolidateEvents(events: List<EditTemplateDomainEvent>): List<EditTemplateDomainEvent> {
         return events
-            .withLastEventOfType<EditTemplateDomainEvent.RenameTemplate>()
-            .withLastEventOfType<EditTemplateDomainEvent.ChangeTemplateDescription>()
+            .withLastEventOfType<EditTemplateDomainEvent.RenameTemplate> {
+                it.templateId
+            }
+            .withLastEventOfType<EditTemplateDomainEvent.ChangeTemplateDescription> {
+                it.templateId
+            }
+            .withLastEventOfType<EditTemplateDomainEvent.RenameTemplateTask> {
+                it.taskId
+            }
     }
 
-    private inline fun <reified T : EditTemplateDomainEvent> List<EditTemplateDomainEvent>.withLastEventOfType(): List<EditTemplateDomainEvent> {
+    private inline fun <reified T : EditTemplateDomainEvent> List<EditTemplateDomainEvent>.withLastEventOfType(groupBy: (T) -> Any): List<EditTemplateDomainEvent> {
         val consolidatedEvent = filterIsInstance<T>()
-            .groupBy {
-                it.templateId
-            }.map { (_, events) ->
+            .groupBy(groupBy)
+            .map { (_, events) ->
                 events.sortedBy { it.timestamp }.takeLast(1)
             }
             .flatten()
@@ -448,6 +463,7 @@ class EditTemplateViewModel @Inject constructor(
             is Reminder.Exact -> {
                 bundleOf("type" to "exact")
             }
+
             is Reminder.Recurring -> {
                 when (val interval = event.reminder.interval) {
                     Interval.Daily -> bundleOf("interval" to "daily")
