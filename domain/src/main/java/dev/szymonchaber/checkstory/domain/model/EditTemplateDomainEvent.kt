@@ -8,30 +8,30 @@ sealed interface EditTemplateDomainEvent {
 
     val timestamp: Long
     val eventId: UUID
-    val id: ChecklistTemplateId
+    val templateId: ChecklistTemplateId
 
     data class CreateNewTemplate(
-        override val id: ChecklistTemplateId,
+        override val templateId: ChecklistTemplateId,
         override val timestamp: Long,
         override val eventId: UUID = UUID.randomUUID()
     ) : EditTemplateDomainEvent
 
     data class RenameTemplate(
-        override val id: ChecklistTemplateId,
+        override val templateId: ChecklistTemplateId,
         val newTitle: String,
         override val timestamp: Long,
         override val eventId: UUID = UUID.randomUUID()
     ) : EditTemplateDomainEvent
 
     data class ChangeTemplateDescription(
-        override val id: ChecklistTemplateId,
+        override val templateId: ChecklistTemplateId,
         val newDescription: String,
         override val timestamp: Long,
         override val eventId: UUID = UUID.randomUUID()
     ) : EditTemplateDomainEvent
 
     class AddTemplateTask(
-        override val id: ChecklistTemplateId,
+        override val templateId: ChecklistTemplateId,
         val taskId: TemplateCheckboxId,
         val parentTaskId: UUID?,
         override val timestamp: Long,
@@ -39,7 +39,7 @@ sealed interface EditTemplateDomainEvent {
     ) : EditTemplateDomainEvent
 
     class DeleteTemplateTask(
-        override val id: ChecklistTemplateId,
+        override val templateId: ChecklistTemplateId,
         val taskId: TemplateCheckboxId,
         override val timestamp: Long,
         override val eventId: UUID = UUID.randomUUID()

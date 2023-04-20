@@ -355,7 +355,7 @@ class EditTemplateViewModel @Inject constructor(
     private inline fun <reified T : EditTemplateDomainEvent> List<EditTemplateDomainEvent>.withLastEventOfType(): List<EditTemplateDomainEvent> {
         val consolidatedEvent = filterIsInstance<T>()
             .groupBy {
-                it.id
+                it.templateId
             }.map { (_, events) ->
                 events.sortedBy { it.timestamp }.takeLast(1)
             }
