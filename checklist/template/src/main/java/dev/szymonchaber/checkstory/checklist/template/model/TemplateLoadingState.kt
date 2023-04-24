@@ -105,19 +105,12 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
-            var addedItem: ViewTemplateCheckboxId? = null
-            val onItemActuallyAdded: (ViewTemplateCheckboxId) -> Unit = {
-                if (addedItem != null) {
-                    error("Attempted two sub-task additions where there should be one!")
-                }
-                addedItem = it
-            }
+        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey, newId: TemplateCheckboxId): Success {
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusChildCheckboxRecursive(parentId, onItemActuallyAdded)
+                    it.plusChildCheckboxRecursive(parentId, newId)
                 },
-                mostRecentlyAddedItem = addedItem
+                mostRecentlyAddedItem = ViewTemplateCheckboxId(newId.id, true)
             )
         }
 

@@ -5,12 +5,14 @@ import com.google.firebase.ktx.Firebase
 import dev.szymonchaber.checkstory.data.api.dto.ChecklistTemplateDto
 import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.Transient
 import javax.inject.Inject
 
 internal class ChecklistTemplateApi @Inject constructor(private val httpClient: HttpClient) {
@@ -21,111 +23,174 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
     suspend fun getAllChecklistTemplates(): List<ChecklistTemplateDto> {
         return httpClient.get("http://10.0.2.2:8080/templates") {
             header("Authorization", "Bearer $token")
-        }
+        }.body()
     }
 
     suspend fun pushChecklistTemplates(checklistTemplates: List<ChecklistTemplateDto>): List<ChecklistTemplateDto> {
         return httpClient.post("http://10.0.2.2:8080/templates/batch") {
             header("Authorization", "Bearer $token")
-            body = checklistTemplates
-        }
+            setBody(checklistTemplates)
+        }.body()
     }
 
     suspend fun helloWorld(token: String): String {
         return httpClient.get("http://10.0.2.2:8080/hello") {
             header("Authorization", "Bearer $token")
-        }
+        }.body()
     }
 
     suspend fun pushEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
         val token = Firebase.auth.currentUser!!.getIdToken(false).result!!.token
-        val eventDtos = editTemplateDomainEvents.map {
+        val eventDtos: List<DomainEvent> = editTemplateDomainEvents.map {
             when (it) {
                 is EditTemplateDomainEvent.CreateNewTemplate -> {
-                    val data = Json.encodeToJsonElement(
-                        CreateTemplateEventData.serializer(),
-                        CreateTemplateEventData(it.templateId.id.toString())
+                    CreateTemplateEvent(
+                        templateId = it.templateId.id.toString(),
+                        eventId = it.eventId.toString(),
+                        timestamp = it.timestamp
                     )
-                    DomainEventDto("createTemplate", it.eventId.toString(), it.timestamp, data)
                 }
 
                 is EditTemplateDomainEvent.RenameTemplate -> {
-                    val data = Json.encodeToJsonElement(
-                        EditTemplateTitleEventData.serializer(),
-                        EditTemplateTitleEventData(it.templateId.id.toString(), it.newTitle)
+                    EditTemplateTitleEvent(
+                        templateId = it.templateId.id.toString(),
+                        newTitle = it.newTitle,
+                        eventId = it.eventId.toString(),
+                        timestamp = it.timestamp
                     )
-                    DomainEventDto("editTemplateTitle", it.eventId.toString(), it.timestamp, data)
                 }
 
                 is EditTemplateDomainEvent.ChangeTemplateDescription -> {
-                    val data = Json.encodeToJsonElement(
-                        EditTemplateDescriptionEventData.serializer(),
-                        EditTemplateDescriptionEventData(it.templateId.id.toString(), it.newDescription)
+                    EditTemplateDescriptionEvent(
+                        templateId = it.templateId.id.toString(),
+                        newDescription = it.newDescription,
+                        eventId = it.eventId.toString(),
+                        timestamp = it.timestamp
                     )
-                    DomainEventDto("editTemplateDescription", it.eventId.toString(), it.timestamp, data)
                 }
 
                 is EditTemplateDomainEvent.AddTemplateTask -> {
-                    val data = Json.encodeToJsonElement(
-                        AddTemplateTaskEventData.serializer(),
-                        AddTemplateTaskEventData(
-                            templateId = it.templateId.id.toString(),
-                            taskId = it.taskId.id.toString(),
-                            parentTaskId = null
-                        )
+                    AddTemplateTaskEvent(
+                        templateId = it.templateId.id.toString(),
+                        taskId = it.taskId.id.toString(),
+                        parentTaskId = it.parentTaskId?.id?.toString(),
+                        eventId = it.eventId.toString(),
+                        timestamp = it.timestamp
                     )
-                    DomainEventDto("addTemplateTask", it.eventId.toString(), it.timestamp, data)
                 }
 
                 is EditTemplateDomainEvent.RenameTemplateTask -> {
-                    val data = Json.encodeToJsonElement(
-                        RenameTemplateTaskEventData.serializer(),
-                        RenameTemplateTaskEventData(
-                            templateId = it.templateId.id.toString(),
-                            taskId = it.taskId.id.toString(),
-                            newTitle = it.newTitle
-                        )
+                    RenameTemplateTaskEvent(
+                        templateId = it.templateId.id.toString(),
+                        taskId = it.taskId.id.toString(),
+                        newTitle = it.newTitle,
+                        eventId = it.eventId.toString(),
+                        timestamp = it.timestamp
                     )
-                    DomainEventDto("renameTemplateTask", it.eventId.toString(), it.timestamp, data)
                 }
 
                 is EditTemplateDomainEvent.DeleteTemplateTask -> {
-                    val data = Json.encodeToJsonElement(
-                        DeleteTemplateTaskData.serializer(),
-                        DeleteTemplateTaskData(
-                            taskId = it.taskId.id.toString(),
-                            templateId = it.templateId.id.toString()
-                        )
+                    DeleteTemplateTaskEvent(
+                        taskId = it.taskId.id.toString(),
+                        templateId = it.templateId.id.toString(),
+                        eventId = it.eventId.toString(),
+                        timestamp = it.timestamp
                     )
-                    DomainEventDto("deleteTemplateTask", it.eventId.toString(), it.timestamp, data)
                 }
             }
         }
             .shuffled() // TODO delete when it's confirmed to be working
         return httpClient.post("http://10.0.2.2:8080/events") {
             header("Authorization", "Bearer $token")
-            body = eventDtos
-        }
+            setBody(eventDtos)
+        }.body()
     }
 }
 
 @Serializable
-data class DomainEventDto(val eventType: String, val eventId: String, val timestamp: Long, val data: JsonElement)
+sealed interface DomainEvent {
+
+    @Transient
+    val eventType: String
+    val eventId: String
+    val timestamp: Long
+}
 
 @Serializable
-data class CreateTemplateEventData(val templateId: String)
+sealed interface TemplateEvent : DomainEvent {
+
+    val templateId: String
+}
 
 @Serializable
-data class EditTemplateTitleEventData(val templateId: String, val newTitle: String)
+@SerialName("createTemplate")
+data class CreateTemplateEvent(
+    override val templateId: String,
+    override val eventId: String,
+    override val timestamp: Long
+) : TemplateEvent {
+
+    override val eventType: String = "createTemplate"
+}
 
 @Serializable
-data class EditTemplateDescriptionEventData(val templateId: String, val newDescription: String)
+@SerialName("editTemplateTitle")
+data class EditTemplateTitleEvent(
+    override val templateId: String,
+    val newTitle: String,
+    override val eventId: String,
+    override val timestamp: Long
+) : TemplateEvent {
+
+    override val eventType: String = "editTemplateTitle"
+}
 
 @Serializable
-data class AddTemplateTaskEventData(val templateId: String, val taskId: String, val parentTaskId: String?)
+@SerialName("editTemplateDescription")
+data class EditTemplateDescriptionEvent(
+    override val templateId: String,
+    val newDescription: String,
+    override val eventId: String,
+    override val timestamp: Long
+) : TemplateEvent {
+
+    override val eventType: String = "editTemplateDescription"
+}
 
 @Serializable
-data class RenameTemplateTaskEventData(val templateId: String, val taskId: String, val newTitle: String)
+@SerialName("addTemplateTask")
+data class AddTemplateTaskEvent(
+    override val templateId: String,
+    val taskId: String,
+    val parentTaskId: String?,
+    override val eventId: String,
+    override val timestamp: Long
+) : TemplateEvent {
+
+    override val eventType: String = "addTemplateTask"
+}
 
 @Serializable
-data class DeleteTemplateTaskData(val templateId: String, val taskId: String)
+@SerialName("renameTemplateTask")
+data class RenameTemplateTaskEvent(
+    override val templateId: String,
+    val taskId: String,
+    val newTitle: String,
+    override val eventId: String,
+    override val timestamp: Long
+) : TemplateEvent {
+
+    override val eventType: String = "renameTemplateTask"
+}
+
+@Serializable
+@SerialName("deleteTemplateTask")
+data class DeleteTemplateTaskEvent(
+    override val templateId: String,
+    val taskId: String,
+    override val eventId: String,
+    override val timestamp: Long
+) : TemplateEvent {
+
+    override val eventType: String = "deleteTemplateTask"
+}

@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -282,7 +284,19 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    EditTemplateState(loadingState.plusChildCheckbox(event.parentViewKey)) to null
+                    val newTaskId = TemplateCheckboxId(UUID.randomUUID())
+                    val newState = loadingState.plusChildCheckbox(
+                        event.parentViewKey,
+                        newTaskId
+                    ).plusEvent(
+                        EditTemplateDomainEvent.AddTemplateTask(
+                            templateId = loadingState.originalChecklistTemplate.id,
+                            taskId = newTaskId,
+                            parentTaskId = TemplateCheckboxId(event.parentViewKey.id),
+                            System.currentTimeMillis()
+                        )
+                    )
+                    EditTemplateState(newState) to null
                 }
             }
     }

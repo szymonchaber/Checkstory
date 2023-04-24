@@ -33,7 +33,7 @@ sealed interface EditTemplateDomainEvent {
     class AddTemplateTask(
         override val templateId: ChecklistTemplateId,
         val taskId: TemplateCheckboxId,
-        val parentTaskId: UUID?,
+        val parentTaskId: TemplateCheckboxId?,
         override val timestamp: Long,
         override val eventId: UUID = UUID.randomUUID()
     ) : EditTemplateDomainEvent
