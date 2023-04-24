@@ -41,7 +41,7 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
 
     suspend fun pushEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
         val token = Firebase.auth.currentUser!!.getIdToken(false).result!!.token
-        val eventDtos: List<DomainEvent> = editTemplateDomainEvents.map {
+        val eventDtos = editTemplateDomainEvents.map {
             when (it) {
                 is EditTemplateDomainEvent.CreateNewTemplate -> {
                     CreateTemplateEvent(
