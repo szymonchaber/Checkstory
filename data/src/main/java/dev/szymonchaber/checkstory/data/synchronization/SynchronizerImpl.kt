@@ -7,6 +7,8 @@ import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateReposit
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
+import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,7 +16,8 @@ import javax.inject.Singleton
 class SynchronizerImpl @Inject internal constructor(
     private val checklistTemplateRepository: LocalChecklistTemplateRepository,
     private val remoteChecklistTemplateRepository: RemoteChecklistTemplateRepository,
-    private val commandsApi: CommandsApi
+    private val commandsApi: CommandsApi,
+    private val commandRepository: CommandRepositoryImpl
 ) : Synchronizer {
 
     private val _events = mutableListOf<Event>()
@@ -38,9 +41,36 @@ class SynchronizerImpl @Inject internal constructor(
     }
 
     override suspend fun synchronize() {
+        val commands = commandRepository.unappliedCommands
+        if (commands.isEmpty()) {
+            return
+        }
+        commandsApi.pushCommands(commands)
+//        commandRepository.deleteCommands(commands.map(EditTemplateDomainCommand::commandId))
     }
 
     override suspend fun synchronizeEvents(editTemplateDomainEvents: List<EditTemplateDomainCommand>) {
-        commandsApi.pushCommands(editTemplateDomainEvents)
+        commandRepository.storeCommands(editTemplateDomainEvents)
+        synchronize()
+    }
+}
+
+@Singleton
+class CommandRepositoryImpl @Inject constructor() {
+
+    private val _unappliedCommands = mutableListOf<EditTemplateDomainCommand>()
+    val unappliedCommands: List<EditTemplateDomainCommand>
+        get() = _unappliedCommands
+
+    val unappliedCommandsFlow = MutableStateFlow(listOf<EditTemplateDomainCommand>())
+
+    suspend fun storeCommands(templateDomainCommands: List<EditTemplateDomainCommand>) {
+        _unappliedCommands.addAll(templateDomainCommands)
+        unappliedCommandsFlow.emit(_unappliedCommands)
+    }
+
+    suspend fun deleteCommands(ids: List<UUID>) {
+        _unappliedCommands.removeIf { ids.contains(it.commandId) }
+        unappliedCommandsFlow.emit(_unappliedCommands)
     }
 }

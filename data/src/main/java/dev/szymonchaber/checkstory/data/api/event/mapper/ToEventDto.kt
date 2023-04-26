@@ -16,7 +16,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
         is EditTemplateDomainCommand.CreateNewTemplate -> {
             CreateTemplateCommandDto(
                 templateId = templateId.id.toString(),
-                eventId = eventId.toString(),
+                eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -26,7 +26,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             EditTemplateTitleCommandDto(
                 templateId = templateId.id.toString(),
                 newTitle = newTitle,
-                eventId = eventId.toString(),
+                eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -36,7 +36,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             EditTemplateDescriptionCommandDto(
                 templateId = templateId.id.toString(),
                 newDescription = newDescription,
-                eventId = eventId.toString(),
+                eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -47,7 +47,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
                 templateId = templateId.id.toString(),
                 taskId = taskId.id.toString(),
                 parentTaskId = parentTaskId?.id?.toString(),
-                eventId = eventId.toString(),
+                eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -58,7 +58,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
                 templateId = templateId.id.toString(),
                 taskId = taskId.id.toString(),
                 newTitle = newTitle,
-                eventId = eventId.toString(),
+                eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -68,7 +68,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             DeleteTemplateTaskCommandDto(
                 taskId = taskId.id.toString(),
                 templateId = templateId.id.toString(),
-                eventId = eventId.toString(),
+                eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid
             )

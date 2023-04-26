@@ -350,7 +350,7 @@ class EditTemplateViewModel @Inject constructor(
                         )
                     }
                     .checklistTemplate
-                updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
+//                updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate) TODO
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
                 synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.commands))
