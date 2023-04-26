@@ -2,10 +2,10 @@ package dev.szymonchaber.checkstory.data.synchronization
 
 import dev.szymonchaber.checkstory.data.Event
 import dev.szymonchaber.checkstory.data.State
-import dev.szymonchaber.checkstory.data.api.event.EventsApi
+import dev.szymonchaber.checkstory.data.api.event.CommandsApi
 import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateRepository
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
-import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
+import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,7 +14,7 @@ import javax.inject.Singleton
 class SynchronizerImpl @Inject internal constructor(
     private val checklistTemplateRepository: LocalChecklistTemplateRepository,
     private val remoteChecklistTemplateRepository: RemoteChecklistTemplateRepository,
-    private val eventsApi: EventsApi
+    private val commandsApi: CommandsApi
 ) : Synchronizer {
 
     private val _events = mutableListOf<Event>()
@@ -40,7 +40,7 @@ class SynchronizerImpl @Inject internal constructor(
     override suspend fun synchronize() {
     }
 
-    override suspend fun synchronizeEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
-        eventsApi.pushEvents(editTemplateDomainEvents)
+    override suspend fun synchronizeEvents(editTemplateDomainEvents: List<EditTemplateDomainCommand>) {
+        commandsApi.pushCommands(editTemplateDomainEvents)
     }
 }

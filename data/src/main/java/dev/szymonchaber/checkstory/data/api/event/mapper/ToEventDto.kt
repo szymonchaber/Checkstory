@@ -1,20 +1,20 @@
 package dev.szymonchaber.checkstory.data.api.event.mapper
 
 import com.google.firebase.auth.FirebaseUser
-import dev.szymonchaber.checkstory.data.api.event.dto.AddTemplateTaskEventDto
-import dev.szymonchaber.checkstory.data.api.event.dto.CreateTemplateEventDto
-import dev.szymonchaber.checkstory.data.api.event.dto.DeleteTemplateTaskEventDto
-import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateDescriptionEventDto
-import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateTitleEventDto
-import dev.szymonchaber.checkstory.data.api.event.dto.EventDto
-import dev.szymonchaber.checkstory.data.api.event.dto.RenameTemplateTaskEventDto
-import dev.szymonchaber.checkstory.domain.model.DomainEvent
-import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
+import dev.szymonchaber.checkstory.data.api.event.dto.AddTemplateTaskCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.CommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.CreateTemplateCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.DeleteTemplateTaskCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateDescriptionCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateTitleCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.RenameTemplateTaskCommandDto
+import dev.szymonchaber.checkstory.domain.model.DomainCommand
+import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
 
-fun DomainEvent.toEventDto(currentUser: FirebaseUser): EventDto {
+fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
     return when (this) {
-        is EditTemplateDomainEvent.CreateNewTemplate -> {
-            CreateTemplateEventDto(
+        is EditTemplateDomainCommand.CreateNewTemplate -> {
+            CreateTemplateCommandDto(
                 templateId = templateId.id.toString(),
                 eventId = eventId.toString(),
                 timestamp = timestamp,
@@ -22,8 +22,8 @@ fun DomainEvent.toEventDto(currentUser: FirebaseUser): EventDto {
             )
         }
 
-        is EditTemplateDomainEvent.RenameTemplate -> {
-            EditTemplateTitleEventDto(
+        is EditTemplateDomainCommand.RenameTemplate -> {
+            EditTemplateTitleCommandDto(
                 templateId = templateId.id.toString(),
                 newTitle = newTitle,
                 eventId = eventId.toString(),
@@ -32,8 +32,8 @@ fun DomainEvent.toEventDto(currentUser: FirebaseUser): EventDto {
             )
         }
 
-        is EditTemplateDomainEvent.ChangeTemplateDescription -> {
-            EditTemplateDescriptionEventDto(
+        is EditTemplateDomainCommand.ChangeTemplateDescription -> {
+            EditTemplateDescriptionCommandDto(
                 templateId = templateId.id.toString(),
                 newDescription = newDescription,
                 eventId = eventId.toString(),
@@ -42,8 +42,8 @@ fun DomainEvent.toEventDto(currentUser: FirebaseUser): EventDto {
             )
         }
 
-        is EditTemplateDomainEvent.AddTemplateTask -> {
-            AddTemplateTaskEventDto(
+        is EditTemplateDomainCommand.AddTemplateTask -> {
+            AddTemplateTaskCommandDto(
                 templateId = templateId.id.toString(),
                 taskId = taskId.id.toString(),
                 parentTaskId = parentTaskId?.id?.toString(),
@@ -53,8 +53,8 @@ fun DomainEvent.toEventDto(currentUser: FirebaseUser): EventDto {
             )
         }
 
-        is EditTemplateDomainEvent.RenameTemplateTask -> {
-            RenameTemplateTaskEventDto(
+        is EditTemplateDomainCommand.RenameTemplateTask -> {
+            RenameTemplateTaskCommandDto(
                 templateId = templateId.id.toString(),
                 taskId = taskId.id.toString(),
                 newTitle = newTitle,
@@ -64,8 +64,8 @@ fun DomainEvent.toEventDto(currentUser: FirebaseUser): EventDto {
             )
         }
 
-        is EditTemplateDomainEvent.DeleteTemplateTask -> {
-            DeleteTemplateTaskEventDto(
+        is EditTemplateDomainCommand.DeleteTemplateTask -> {
+            DeleteTemplateTaskCommandDto(
                 taskId = taskId.id.toString(),
                 templateId = templateId.id.toString(),
                 eventId = eventId.toString(),

@@ -4,86 +4,86 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface TemplateEventDto : EventDto {
+sealed interface TemplateCommandDto : CommandDto {
 
     val templateId: String
 }
 
 @Serializable
 @SerialName("createTemplate")
-data class CreateTemplateEventDto(
+data class CreateTemplateCommandDto(
     override val templateId: String,
     override val eventId: String,
     override val timestamp: Long,
     override val userId: String
-) : TemplateEventDto {
+) : TemplateCommandDto {
 
-    override val eventType: String = "createTemplate"
+    override val commandType: String = "createTemplate"
 }
 
 @Serializable
 @SerialName("editTemplateTitle")
-data class EditTemplateTitleEventDto(
+data class EditTemplateTitleCommandDto(
     override val templateId: String,
     val newTitle: String,
     override val eventId: String,
     override val timestamp: Long,
     override val userId: String
-) : TemplateEventDto {
+) : TemplateCommandDto {
 
-    override val eventType: String = "editTemplateTitle"
+    override val commandType: String = "editTemplateTitle"
 }
 
 @Serializable
 @SerialName("editTemplateDescription")
-data class EditTemplateDescriptionEventDto(
+data class EditTemplateDescriptionCommandDto(
     override val templateId: String,
     val newDescription: String,
     override val eventId: String,
     override val timestamp: Long,
     override val userId: String
-) : TemplateEventDto {
+) : TemplateCommandDto {
 
-    override val eventType: String = "editTemplateDescription"
+    override val commandType: String = "editTemplateDescription"
 }
 
 @Serializable
 @SerialName("addTemplateTask")
-data class AddTemplateTaskEventDto(
+data class AddTemplateTaskCommandDto(
     override val templateId: String,
     val taskId: String,
     val parentTaskId: String?,
     override val eventId: String,
     override val timestamp: Long,
     override val userId: String
-) : TemplateEventDto {
+) : TemplateCommandDto {
 
-    override val eventType: String = "addTemplateTask"
+    override val commandType: String = "addTemplateTask"
 }
 
 @Serializable
 @SerialName("renameTemplateTask")
-data class RenameTemplateTaskEventDto(
+data class RenameTemplateTaskCommandDto(
     override val templateId: String,
     val taskId: String,
     val newTitle: String,
     override val eventId: String,
     override val timestamp: Long,
     override val userId: String
-) : TemplateEventDto {
+) : TemplateCommandDto {
 
-    override val eventType: String = "renameTemplateTask"
+    override val commandType: String = "renameTemplateTask"
 }
 
 @Serializable
 @SerialName("deleteTemplateTask")
-data class DeleteTemplateTaskEventDto(
+data class DeleteTemplateTaskCommandDto(
     override val templateId: String,
     val taskId: String,
     override val eventId: String,
     override val timestamp: Long,
     override val userId: String
-) : TemplateEventDto {
+) : TemplateCommandDto {
 
-    override val eventType: String = "deleteTemplateTask"
+    override val commandType: String = "deleteTemplateTask"
 }

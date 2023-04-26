@@ -4,7 +4,7 @@ import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxId
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.viewId
 import dev.szymonchaber.checkstory.checklist.template.viewKey
-import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainEvent
+import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -22,7 +22,7 @@ sealed interface TemplateLoadingState {
         val mostRecentlyAddedItem: ViewTemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
-        val events: List<EditTemplateDomainEvent> = listOf()
+        val commands: List<EditTemplateDomainCommand> = listOf()
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
@@ -87,21 +87,21 @@ sealed interface TemplateLoadingState {
             }
 
             val updatedEvents = if (shouldDeleteFromDatabase) {
-                events.plus(
-                    EditTemplateDomainEvent.DeleteTemplateTask(
+                commands.plus(
+                    EditTemplateDomainCommand.DeleteTemplateTask(
                         originalChecklistTemplate.id,
                         checkbox.id,
                         System.currentTimeMillis()
                     )
                 )
             } else {
-                events
+                commands
             }
             return copy(
                 checkboxes = filteredCheckboxes,
                 checkboxesToDelete = updatedCheckboxesToDelete,
                 mostRecentlyAddedItem = null,
-                events = updatedEvents
+                commands = updatedEvents
             )
         }
 
@@ -268,8 +268,8 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusEvent(event: EditTemplateDomainEvent): Success {
-            return copy(events = events.plus(event))
+        fun plusEvent(event: EditTemplateDomainCommand): Success {
+            return copy(commands = commands.plus(event))
         }
 
         companion object {
