@@ -40,14 +40,16 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
     }
 
     suspend fun pushEvents(editTemplateDomainEvents: List<EditTemplateDomainEvent>) {
-        val token = Firebase.auth.currentUser!!.getIdToken(false).result!!.token
+        val currentUser = Firebase.auth.currentUser!!
+        val token = currentUser.getIdToken(false).result!!.token
         val eventDtos = editTemplateDomainEvents.map {
             when (it) {
                 is EditTemplateDomainEvent.CreateNewTemplate -> {
                     CreateTemplateEvent(
                         templateId = it.templateId.id.toString(),
                         eventId = it.eventId.toString(),
-                        timestamp = it.timestamp
+                        timestamp = it.timestamp,
+                        userId = currentUser.uid
                     )
                 }
 
@@ -56,7 +58,8 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                         templateId = it.templateId.id.toString(),
                         newTitle = it.newTitle,
                         eventId = it.eventId.toString(),
-                        timestamp = it.timestamp
+                        timestamp = it.timestamp,
+                        userId = currentUser.uid
                     )
                 }
 
@@ -65,7 +68,8 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                         templateId = it.templateId.id.toString(),
                         newDescription = it.newDescription,
                         eventId = it.eventId.toString(),
-                        timestamp = it.timestamp
+                        timestamp = it.timestamp,
+                        userId = currentUser.uid
                     )
                 }
 
@@ -75,7 +79,8 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                         taskId = it.taskId.id.toString(),
                         parentTaskId = it.parentTaskId?.id?.toString(),
                         eventId = it.eventId.toString(),
-                        timestamp = it.timestamp
+                        timestamp = it.timestamp,
+                        userId = currentUser.uid
                     )
                 }
 
@@ -85,7 +90,8 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                         taskId = it.taskId.id.toString(),
                         newTitle = it.newTitle,
                         eventId = it.eventId.toString(),
-                        timestamp = it.timestamp
+                        timestamp = it.timestamp,
+                        userId = currentUser.uid
                     )
                 }
 
@@ -94,7 +100,8 @@ internal class ChecklistTemplateApi @Inject constructor(private val httpClient: 
                         taskId = it.taskId.id.toString(),
                         templateId = it.templateId.id.toString(),
                         eventId = it.eventId.toString(),
-                        timestamp = it.timestamp
+                        timestamp = it.timestamp,
+                        userId = currentUser.uid
                     )
                 }
             }
@@ -114,6 +121,7 @@ sealed interface DomainEvent {
     val eventType: String
     val eventId: String
     val timestamp: Long
+    val userId: String
 }
 
 @Serializable
@@ -127,7 +135,8 @@ sealed interface TemplateEvent : DomainEvent {
 data class CreateTemplateEvent(
     override val templateId: String,
     override val eventId: String,
-    override val timestamp: Long
+    override val timestamp: Long,
+    override val userId: String
 ) : TemplateEvent {
 
     override val eventType: String = "createTemplate"
@@ -139,7 +148,8 @@ data class EditTemplateTitleEvent(
     override val templateId: String,
     val newTitle: String,
     override val eventId: String,
-    override val timestamp: Long
+    override val timestamp: Long,
+    override val userId: String
 ) : TemplateEvent {
 
     override val eventType: String = "editTemplateTitle"
@@ -151,7 +161,8 @@ data class EditTemplateDescriptionEvent(
     override val templateId: String,
     val newDescription: String,
     override val eventId: String,
-    override val timestamp: Long
+    override val timestamp: Long,
+    override val userId: String
 ) : TemplateEvent {
 
     override val eventType: String = "editTemplateDescription"
@@ -164,7 +175,8 @@ data class AddTemplateTaskEvent(
     val taskId: String,
     val parentTaskId: String?,
     override val eventId: String,
-    override val timestamp: Long
+    override val timestamp: Long,
+    override val userId: String
 ) : TemplateEvent {
 
     override val eventType: String = "addTemplateTask"
@@ -177,7 +189,8 @@ data class RenameTemplateTaskEvent(
     val taskId: String,
     val newTitle: String,
     override val eventId: String,
-    override val timestamp: Long
+    override val timestamp: Long,
+    override val userId: String
 ) : TemplateEvent {
 
     override val eventType: String = "renameTemplateTask"
@@ -189,7 +202,8 @@ data class DeleteTemplateTaskEvent(
     override val templateId: String,
     val taskId: String,
     override val eventId: String,
-    override val timestamp: Long
+    override val timestamp: Long,
+    override val userId: String
 ) : TemplateEvent {
 
     override val eventType: String = "deleteTemplateTask"
