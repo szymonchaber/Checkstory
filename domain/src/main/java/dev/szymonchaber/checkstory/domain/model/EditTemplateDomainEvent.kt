@@ -4,10 +4,14 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import java.util.*
 
-sealed interface EditTemplateDomainEvent {
+sealed interface DomainEvent {
 
     val timestamp: Long
     val eventId: UUID
+}
+
+sealed interface EditTemplateDomainEvent : DomainEvent {
+
     val templateId: ChecklistTemplateId
 
     data class CreateNewTemplate(
