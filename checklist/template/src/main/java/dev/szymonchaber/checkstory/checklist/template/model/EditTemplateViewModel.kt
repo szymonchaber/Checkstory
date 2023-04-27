@@ -155,10 +155,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 val newLoadingState = loadingState
-                    .updateTemplate {
-                        copy(title = event.newTitle)
-                    }
-                    .plusEvent(
+                    .plusCommand(
                         TemplateDomainCommand.RenameTemplate(
                             loadingState.checklistTemplate.id,
                             event.newTitle,
@@ -174,10 +171,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 val newLoadingState = loadingState
-                    .updateTemplate {
-                        copy(description = event.newDescription)
-                    }
-                    .plusEvent(
+                    .plusCommand(
                         TemplateDomainCommand.ChangeTemplateDescription(
                             loadingState.checklistTemplate.id,
                             event.newDescription,
@@ -288,7 +282,7 @@ class EditTemplateViewModel @Inject constructor(
                     val newState = loadingState.plusChildCheckbox(
                         event.parentViewKey,
                         newTaskId
-                    ).plusEvent(
+                    ).plusCommand(
                         TemplateDomainCommand.AddTemplateTask(
                             templateId = loadingState.originalChecklistTemplate.id,
                             taskId = newTaskId,
@@ -306,7 +300,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 val newState = loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)
-                    .plusEvent(
+                    .plusCommand(
                         TemplateDomainCommand.RenameTemplateTask(
                             templateId = loadingState.originalChecklistTemplate.id,
                             taskId = event.checkbox.id,
@@ -324,7 +318,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, _) ->
                 val (newLoadingState, newCheckboxId) = loadingState.plusNewCheckbox("")
                 val withEvent = newLoadingState
-                    .plusEvent(
+                    .plusCommand(
                         TemplateDomainCommand.AddTemplateTask(
                             loadingState.checklistTemplate.id, newCheckboxId, null, System.currentTimeMillis()
                         )
@@ -338,18 +332,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.SaveTemplateClicked>()
             .withSuccessState()
             .mapLatest { (loadingState, _) ->
-                val checklistTemplate = loadingState
-                    .updateTemplate {
-                        copy(
-                            title = title.trimEnd(),
-                            description = description.trim(),
-                            items = loadingState.checkboxes
-                                .mapIndexed { index, checkbox ->
-                                    checkbox.toDomainModel(position = index)
-                                }
-                        )
-                    }
-                    .checklistTemplate
+                val checklistTemplate = loadingState.checklistTemplate
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
                 synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.commands))
@@ -369,6 +352,7 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private fun consolidateCommands(commands: List<TemplateDomainCommand>): List<TemplateDomainCommand> {
+        // TODO this is a good place to trim titles and descriptions
         return commands
             .withLastCommandOfType<TemplateDomainCommand.RenameTemplate> {
                 it.templateId

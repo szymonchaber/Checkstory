@@ -18,7 +18,7 @@ sealed interface TemplateLoadingState {
         val checkboxes: List<ViewTemplateCheckbox>,
         val checkboxesToDelete: List<TemplateCheckbox> = listOf(),
         val remindersToDelete: List<Reminder> = listOf(),
-        val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
+        val updatedChecklistTemplate: ChecklistTemplate = originalChecklistTemplate,
         val mostRecentlyAddedItem: ViewTemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
@@ -26,6 +26,11 @@ sealed interface TemplateLoadingState {
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
+
+        val checklistTemplate = commands
+            .fold(originalChecklistTemplate) { template, templateDomainCommand ->
+                templateDomainCommand.applyTo(template)
+            }
 
         private fun flattenWithNestedLevel(): List<Pair<ViewTemplateCheckbox, Int>> {
             val result = mutableListOf<Pair<ViewTemplateCheckbox, Int>>()
@@ -41,6 +46,7 @@ sealed interface TemplateLoadingState {
 
 
         fun isChanged(): Boolean {
+            // TODO instead do "are commands empty?"
             return originalChecklistTemplate != checklistTemplate
                     || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
                 checkbox.toDomainModel(position = index)
@@ -50,7 +56,8 @@ sealed interface TemplateLoadingState {
         }
 
         fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
-            return copy(checklistTemplate = checklistTemplate.block())
+            // TODO replace all usages with commands
+            return this
         }
 
         fun plusNewCheckbox(title: String): Pair<Success, TemplateCheckboxId> {
@@ -268,7 +275,7 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusEvent(event: TemplateDomainCommand): Success {
+        fun plusCommand(event: TemplateDomainCommand): Success {
             return copy(commands = commands.plus(event))
         }
 
