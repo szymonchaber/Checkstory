@@ -12,39 +12,32 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.DropTargetInfo
-import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
+import dev.szymonchaber.checkstory.checklist.template.LocalIsReorderValidLookup
 import dev.szymonchaber.checkstory.common.extensions.let
-import timber.log.Timber
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
 @Composable
 fun DropTarget(
     modifier: Modifier,
-    onDataDropped: (ViewTemplateCheckboxKey) -> Unit,
+    onDataDropped: (TemplateCheckboxId) -> Unit,
     content: @Composable (BoxScope.() -> Unit) = {},
     placeTargetLineOnTop: Boolean = false,
-    key: ViewTemplateCheckboxKey? = null,
+    id: TemplateCheckboxId? = null,
     dropTargetOffset: Dp = 0.dp
 ) {
     val dragInfo = LocalDragDropState.current
     val dragPosition = dragInfo.initialDragPosition
     val dragOffset = dragInfo.dragOffset
     val density = LocalDensity.current
+    val isReorderValid = LocalIsReorderValidLookup.current
 
-    fun canReceive(viewTemplateCheckboxKey: ViewTemplateCheckboxKey?): Boolean {
-        if (key == null) {
+    fun canReceive(subject: TemplateCheckboxId?): Boolean {
+        if (id == null) {
             return true
         }
 
-        return let(key, viewTemplateCheckboxKey) { current, other ->
-            Timber.d(
-                """
-                Can receive based on comparison: ${current != other}
-                Can receive based on parent: ${!other.hasKeyInAncestors(current)}
-                This key: $key
-                checkedKey: $viewTemplateCheckboxKey
-            """.trimIndent()
-            )
-            current != other && !current.hasKeyInAncestors(other)
+        return let(id, subject) { target, dragSubject ->
+            target != dragSubject && isReorderValid(dragSubject, target)
         } ?: false
     }
 

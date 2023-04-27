@@ -2,7 +2,6 @@
 
 package dev.szymonchaber.checkstory.checklist.template
 
-import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
@@ -78,7 +77,6 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
 import dev.szymonchaber.checkstory.checklist.template.model.OnboardingPlaceholders
 import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
-import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
@@ -97,9 +95,9 @@ import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
-import kotlinx.parcelize.Parcelize
 import java.time.Duration.*
 import java.util.*
 
@@ -221,9 +219,15 @@ val LocalRecentlyAddedUnconsumedItem = compositionLocalOf {
     RecentlyAddedUnconsumedItem()
 }
 
+val LocalIsReorderValidLookup = compositionLocalOf<(TemplateCheckboxId, TemplateCheckboxId) -> Boolean> {
+    { _, _ ->
+        true
+    }
+}
+
 class RecentlyAddedUnconsumedItem {
 
-    var item by mutableStateOf<ViewTemplateCheckboxId?>(null)
+    var item by mutableStateOf<TemplateCheckboxId?>(null)
 }
 
 @Composable
@@ -293,7 +297,10 @@ private fun EditTemplateScaffold(
                         }
                         CompositionLocalProvider(
                             LocalRecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
-                            LocalDragDropState provides rememberDragDropState()
+                            LocalDragDropState provides rememberDragDropState(),
+                            LocalIsReorderValidLookup provides { subject, target ->
+                                viewModel.isReorderValid(subject, target)
+                            }
                         ) {
                             EditTemplateView(loadingState, viewModel::onEvent)
                         }
@@ -324,9 +331,9 @@ fun EditTemplateView(
     LaunchedEffect(recentlyAddedItem.item) {
         recentlyAddedItem.item?.let { newItem ->
             val isNewItemNotVisible =
-                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { (it.key as? ViewTemplateCheckboxKey)?.viewId == newItem }
+                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key as? TemplateCheckboxId == newItem }
             if (isNewItemNotVisible) {
-                dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.viewId == newItem } + 1)
+                dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.id == newItem } + 1)
             }
         }
     }
@@ -350,7 +357,7 @@ fun EditTemplateView(
                     items(
                         items = success.unwrappedCheckboxes,
                         key = { (item, _) ->
-                            item.viewId
+                            item.id
                         }
                     ) { (checkbox, nestingLevel) ->
                         Row(
@@ -618,45 +625,6 @@ private fun TextFieldWithFixedPlaceholder(
             },
     )
 }
-
-@Parcelize
-data class ViewTemplateCheckboxKey(
-    val id: UUID,
-    val parentKey: ViewTemplateCheckboxKey?,
-    val isNew: Boolean
-) : Parcelable {
-    fun hasKeyInAncestors(key: ViewTemplateCheckboxKey): Boolean {
-        return parentKey == key || parentKey?.hasKeyInAncestors(key) ?: false
-    }
-}
-
-val ViewTemplateCheckbox.viewKey: ViewTemplateCheckboxKey
-    get() {
-        return ViewTemplateCheckboxKey(
-            id.id,
-            parentViewKey,
-            this is ViewTemplateCheckbox.New
-        )
-    }
-
-@Parcelize
-data class ViewTemplateCheckboxId(
-    val viewId: UUID,
-    val isNew: Boolean
-) : Parcelable
-
-val ViewTemplateCheckbox.viewId: ViewTemplateCheckboxId
-    get() {
-        return ViewTemplateCheckboxId(id.id, this is ViewTemplateCheckbox.New)
-    }
-
-val ViewTemplateCheckboxKey.viewId: ViewTemplateCheckboxId
-    get() {
-        return ViewTemplateCheckboxId(
-            id,
-            isNew
-        )
-    }
 
 val LazyListItemInfo.offsetEnd: Int
     get() = this.offset + this.size

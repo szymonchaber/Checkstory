@@ -465,6 +465,12 @@ class EditTemplateViewModel @Inject constructor(
                 .take(1)
         }
     }
+
+    fun isReorderValid(subject: TemplateCheckboxId, target: TemplateCheckboxId): Boolean {
+        return (_state.value.templateLoadingState as? TemplateLoadingState.Success)?.let {
+            !it.getAllAncestorsOf(target).contains(subject)
+        } ?: false
+    }
 }
 
 // TODO use this
