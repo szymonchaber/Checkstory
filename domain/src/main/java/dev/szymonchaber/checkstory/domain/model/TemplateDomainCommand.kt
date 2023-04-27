@@ -67,16 +67,43 @@ sealed interface TemplateDomainCommand : DomainCommand {
     ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
-            return template.copy(
-                items = template.items.plusElement(
-                    TemplateCheckbox(
-                        taskId,
-                        parentTaskId,
-                        "",
-                        listOf(),
-                        template.items.size.toLong()
+            return if (parentTaskId != null) {
+                template.copy(items = template.items.map { it.plusChildCheckboxRecursive(parentTaskId, taskId) })
+            } else {
+                template.copy(
+                    items = template.items.plus(
+                        TemplateCheckbox(
+                            taskId,
+                            null,
+                            "",
+                            listOf(),
+                            template.items.size.toLong()
+                        )
                     )
                 )
+            }
+        }
+
+        private fun TemplateCheckbox.plusChildCheckboxRecursive(
+            parentId: TemplateCheckboxId,
+            newCheckboxId: TemplateCheckboxId
+        ): TemplateCheckbox {
+            return copy(
+                children = if (id == parentId) {
+                    children.plus(
+                        TemplateCheckbox(
+                            id = newCheckboxId,
+                            parentId = parentId,
+                            title = "",
+                            children = listOf(),
+                            sortPosition = children.size.toLong()
+                        )
+                    )
+                } else {
+                    children.map {
+                        it.plusChildCheckboxRecursive(parentId, newCheckboxId)
+                    }
+                }
             )
         }
     }
