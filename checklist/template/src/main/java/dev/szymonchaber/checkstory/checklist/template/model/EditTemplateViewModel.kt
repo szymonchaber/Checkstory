@@ -8,7 +8,6 @@ import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
@@ -29,7 +28,6 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -154,15 +152,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.TitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = loadingState
-                    .plusCommand(
-                        TemplateDomainCommand.RenameTemplate(
-                            loadingState.checklistTemplate.id,
-                            event.newTitle,
-                            System.currentTimeMillis()
-                        )
-                    )
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.withNewTitle(event.newTitle)) to null
             }
     }
 
@@ -170,15 +160,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.DescriptionChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = loadingState
-                    .plusCommand(
-                        TemplateDomainCommand.ChangeTemplateDescription(
-                            loadingState.checklistTemplate.id,
-                            event.newDescription,
-                            System.currentTimeMillis()
-                        )
-                    )
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.withNewDescription(event.newDescription)) to null
             }
     }
 
@@ -278,19 +260,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    val newTaskId = TemplateCheckboxId(UUID.randomUUID())
-                    val newState = loadingState.plusChildCheckbox(
-                        event.parentViewKey,
-                        newTaskId
-                    ).plusCommand(
-                        TemplateDomainCommand.AddTemplateTask(
-                            templateId = loadingState.originalChecklistTemplate.id,
-                            taskId = newTaskId,
-                            parentTaskId = TemplateCheckboxId(event.parentViewKey.id),
-                            System.currentTimeMillis()
-                        )
-                    )
-                    EditTemplateState(newState) to null
+                    EditTemplateState(loadingState.plusChildCheckbox(event.parentViewKey)) to null
                 }
             }
     }
@@ -299,16 +269,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.ItemTitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newState = loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)
-                    .plusCommand(
-                        TemplateDomainCommand.RenameTemplateTask(
-                            templateId = loadingState.originalChecklistTemplate.id,
-                            taskId = event.checkbox.id,
-                            newTitle = event.newTitle,
-                            timestamp = System.currentTimeMillis()
-                        )
-                    )
-                EditTemplateState(newState) to null
+                EditTemplateState(loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)) to null
             }
     }
 
@@ -316,15 +277,8 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
-                val (newLoadingState, newCheckboxId) = loadingState.plusNewCheckbox("")
-                val withEvent = newLoadingState
-                    .plusCommand(
-                        TemplateDomainCommand.AddTemplateTask(
-                            loadingState.checklistTemplate.id, newCheckboxId, null, System.currentTimeMillis()
-                        )
-                    )
                 tracker.logEvent("add_checkbox_clicked")
-                EditTemplateState(withEvent) to null
+                EditTemplateState(loadingState.plusNewCheckbox("")) to null
             }
     }
 

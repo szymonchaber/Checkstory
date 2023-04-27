@@ -55,17 +55,41 @@ sealed interface TemplateLoadingState {
                     || remindersToDelete.isNotEmpty()
         }
 
+        fun withNewTitle(newTitle: String): Success {
+            return plusCommand(
+                TemplateDomainCommand.RenameTemplate(checklistTemplate.id, newTitle, System.currentTimeMillis())
+            )
+        }
+
+        fun withNewDescription(newDescription: String): Success {
+            return plusCommand(
+                TemplateDomainCommand.ChangeTemplateDescription(
+                    checklistTemplate.id,
+                    newDescription,
+                    System.currentTimeMillis()
+                )
+            )
+        }
+
         fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
             // TODO replace all usages with commands
             return this
         }
 
-        fun plusNewCheckbox(title: String): Pair<Success, TemplateCheckboxId> {
+        fun plusNewCheckbox(title: String): Success {
             val newCheckbox = newCheckbox(title)
             return copy(
                 checkboxes = checkboxes.plus(newCheckbox),
                 mostRecentlyAddedItem = newCheckbox.viewId
-            ) to newCheckbox.id
+            )
+                .plusCommand(
+                    TemplateDomainCommand.AddTemplateTask(
+                        checklistTemplate.id,
+                        newCheckbox.id,
+                        null,
+                        System.currentTimeMillis()
+                    )
+                )
         }
 
         fun plusNestedCheckbox(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
@@ -112,13 +136,22 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey, newId: TemplateCheckboxId): Success {
+        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
+            val newId = TemplateCheckboxId(UUID.randomUUID())
             return copy(
                 checkboxes = checkboxes.map {
                     it.plusChildCheckboxRecursive(parentId, newId)
                 },
                 mostRecentlyAddedItem = ViewTemplateCheckboxId(newId.id, true)
             )
+                .plusCommand(
+                    TemplateDomainCommand.AddTemplateTask(
+                        templateId = originalChecklistTemplate.id,
+                        taskId = newId,
+                        parentTaskId = TemplateCheckboxId(parentId.id),
+                        System.currentTimeMillis()
+                    )
+                )
         }
 
         private fun plusChildCheckboxNested(
@@ -139,6 +172,14 @@ sealed interface TemplateLoadingState {
                     it.withUpdatedTitleRecursive(checkbox, title)
                 }
             )
+                .plusCommand(
+                    TemplateDomainCommand.RenameTemplateTask(
+                        templateId = checklistTemplate.id,
+                        taskId = checkbox.id,
+                        newTitle = title,
+                        timestamp = System.currentTimeMillis()
+                    )
+                )
         }
 
         fun plusReminder(reminder: Reminder): Success {
@@ -275,7 +316,7 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusCommand(event: TemplateDomainCommand): Success {
+        private fun plusCommand(event: TemplateDomainCommand): Success {
             return copy(commands = commands.plus(event))
         }
 
