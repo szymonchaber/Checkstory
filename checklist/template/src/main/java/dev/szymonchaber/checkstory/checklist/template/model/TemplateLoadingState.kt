@@ -112,13 +112,13 @@ sealed interface TemplateLoadingState {
                 )
         }
 
-        fun plusNestedCheckbox(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
+        fun plusPlaceholderCheckboxes(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
             val parent = newCheckbox(placeholderTitle = placeholderTitle)
             return copy(
                 checkboxes = checkboxes.plus(parent)
             ).let {
-                childrenTitles.fold(it) { acc, (childTitle, nestedChildren) ->
-                    acc.plusChildCheckboxNested(parent.viewKey, childTitle, nestedChildren)
+                childrenTitles.fold(it) { state, (childTitle, nestedChildren) ->
+                    state.plusChildCheckboxNested(parent.viewKey, childTitle, nestedChildren)
                 }
             }
         }
@@ -180,6 +180,7 @@ sealed interface TemplateLoadingState {
             children: List<CheckboxToChildren> = listOf()
         ): Success {
             return copy(
+                // TODO use some kind of DSL instead of this CheckboxToChildren list
                 checkboxes = checkboxes.map {
                     it.plusNestedChildCheckboxRecursive(parentId, placeholderTitle, children)
                 }
@@ -224,6 +225,13 @@ sealed interface TemplateLoadingState {
             return copy(
                 checkboxes = checkboxes.withSiblingBelow(below, newCheckbox),
                 mostRecentlyAddedItem = newCheckbox.viewId
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newCheckbox.id,
+                    below.parentKey?.id?.let(::TemplateCheckboxId),
+                    System.currentTimeMillis()
+                )
             )
         }
 
@@ -254,6 +262,13 @@ sealed interface TemplateLoadingState {
             return copy(
                 checkboxes = checkboxes.withChildBelow(below, newItem),
                 mostRecentlyAddedItem = newItem.viewId
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newItem.id,
+                    TemplateCheckboxId(below.id),
+                    System.currentTimeMillis()
+                )
             )
         }
 
@@ -286,6 +301,13 @@ sealed interface TemplateLoadingState {
             return copy(
                 checkboxes = checkboxes.withCheckboxAtIndex(newItem, 0),
                 mostRecentlyAddedItem = newItem.viewId
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newItem.id,
+                    null,
+                    System.currentTimeMillis()
+                )
             )
         }
 
@@ -301,6 +323,13 @@ sealed interface TemplateLoadingState {
             return copy(
                 checkboxes = checkboxes.withCheckboxAtIndex(newItem, checkboxes.size),
                 mostRecentlyAddedItem = newItem.viewId
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newItem.id,
+                    null,
+                    System.currentTimeMillis()
+                )
             )
         }
 
