@@ -5,7 +5,7 @@ import dev.szymonchaber.checkstory.data.State
 import dev.szymonchaber.checkstory.data.api.event.CommandsApi
 import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateRepository
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
-import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
@@ -49,7 +49,7 @@ class SynchronizerImpl @Inject internal constructor(
 //        commandRepository.deleteCommands(commands.map(EditTemplateDomainCommand::commandId))
     }
 
-    override suspend fun synchronizeEvents(editTemplateDomainEvents: List<EditTemplateDomainCommand>) {
+    override suspend fun synchronizeCommands(editTemplateDomainEvents: List<TemplateDomainCommand>) {
         commandRepository.storeCommands(editTemplateDomainEvents)
         synchronize()
     }
@@ -58,13 +58,13 @@ class SynchronizerImpl @Inject internal constructor(
 @Singleton
 class CommandRepositoryImpl @Inject constructor() {
 
-    private val _unappliedCommands = mutableListOf<EditTemplateDomainCommand>()
-    val unappliedCommands: List<EditTemplateDomainCommand>
+    private val _unappliedCommands = mutableListOf<TemplateDomainCommand>()
+    val unappliedCommands: List<TemplateDomainCommand>
         get() = _unappliedCommands
 
-    val unappliedCommandsFlow = MutableStateFlow(listOf<EditTemplateDomainCommand>())
+    val unappliedCommandsFlow = MutableStateFlow(listOf<TemplateDomainCommand>())
 
-    suspend fun storeCommands(templateDomainCommands: List<EditTemplateDomainCommand>) {
+    suspend fun storeCommands(templateDomainCommands: List<TemplateDomainCommand>) {
         _unappliedCommands.addAll(templateDomainCommands)
         unappliedCommandsFlow.emit(_unappliedCommands)
     }

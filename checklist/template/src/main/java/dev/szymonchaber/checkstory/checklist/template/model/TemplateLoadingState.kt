@@ -4,7 +4,7 @@ import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxId
 import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
 import dev.szymonchaber.checkstory.checklist.template.viewId
 import dev.szymonchaber.checkstory.checklist.template.viewKey
-import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -22,7 +22,7 @@ sealed interface TemplateLoadingState {
         val mostRecentlyAddedItem: ViewTemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
-        val commands: List<EditTemplateDomainCommand> = listOf()
+        val commands: List<TemplateDomainCommand> = listOf()
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
@@ -88,7 +88,7 @@ sealed interface TemplateLoadingState {
 
             val updatedEvents = if (shouldDeleteFromDatabase) {
                 commands.plus(
-                    EditTemplateDomainCommand.DeleteTemplateTask(
+                    TemplateDomainCommand.DeleteTemplateTask(
                         originalChecklistTemplate.id,
                         checkbox.id,
                         System.currentTimeMillis()
@@ -268,7 +268,7 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusEvent(event: EditTemplateDomainCommand): Success {
+        fun plusEvent(event: TemplateDomainCommand): Success {
             return copy(commands = commands.plus(event))
         }
 

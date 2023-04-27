@@ -12,7 +12,7 @@ sealed interface DomainCommand {
     val commandId: UUID
 }
 
-sealed interface EditTemplateDomainCommand : DomainCommand {
+sealed interface TemplateDomainCommand : DomainCommand {
 
     fun applyTo(template: ChecklistTemplate): ChecklistTemplate
 
@@ -22,7 +22,7 @@ sealed interface EditTemplateDomainCommand : DomainCommand {
         override val templateId: ChecklistTemplateId,
         override val timestamp: Long,
         override val commandId: UUID = UUID.randomUUID()
-    ) : EditTemplateDomainCommand {
+    ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template
@@ -34,7 +34,7 @@ sealed interface EditTemplateDomainCommand : DomainCommand {
         val newTitle: String,
         override val timestamp: Long,
         override val commandId: UUID = UUID.randomUUID()
-    ) : EditTemplateDomainCommand {
+    ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(title = newTitle)
@@ -46,7 +46,7 @@ sealed interface EditTemplateDomainCommand : DomainCommand {
         val newDescription: String,
         override val timestamp: Long,
         override val commandId: UUID = UUID.randomUUID()
-    ) : EditTemplateDomainCommand {
+    ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(description = newDescription)
@@ -59,7 +59,7 @@ sealed interface EditTemplateDomainCommand : DomainCommand {
         val parentTaskId: TemplateCheckboxId?,
         override val timestamp: Long,
         override val commandId: UUID = UUID.randomUUID()
-    ) : EditTemplateDomainCommand {
+    ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(
@@ -82,7 +82,7 @@ sealed interface EditTemplateDomainCommand : DomainCommand {
         val newTitle: String,
         override val timestamp: Long,
         override val commandId: UUID = UUID.randomUUID()
-    ) : EditTemplateDomainCommand {
+    ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template // TODO logic
@@ -94,7 +94,7 @@ sealed interface EditTemplateDomainCommand : DomainCommand {
         val taskId: TemplateCheckboxId,
         override val timestamp: Long,
         override val commandId: UUID = UUID.randomUUID()
-    ) : EditTemplateDomainCommand {
+    ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template // TODO logic

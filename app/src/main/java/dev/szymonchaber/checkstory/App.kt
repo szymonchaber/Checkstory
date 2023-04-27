@@ -11,7 +11,6 @@ import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.common.LogStorage
 import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
 import dev.szymonchaber.checkstory.notifications.ScheduleTodayRemindersReceiver
 import kotlinx.coroutines.Dispatchers
@@ -30,9 +29,6 @@ class App : Application() {
 
     @Inject
     lateinit var reminderScheduler: ReminderScheduler
-
-    @Inject
-    lateinit var updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase
 
     @Inject
     lateinit var isProUserUseCase: IsProUserUseCase

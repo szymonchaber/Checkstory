@@ -9,11 +9,11 @@ import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateDescriptionCom
 import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateTitleCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.RenameTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
-import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 
 fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
     return when (this) {
-        is EditTemplateDomainCommand.CreateNewTemplate -> {
+        is TemplateDomainCommand.CreateNewTemplate -> {
             CreateTemplateCommandDto(
                 templateId = templateId.id.toString(),
                 eventId = commandId.toString(),
@@ -22,7 +22,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             )
         }
 
-        is EditTemplateDomainCommand.RenameTemplate -> {
+        is TemplateDomainCommand.RenameTemplate -> {
             EditTemplateTitleCommandDto(
                 templateId = templateId.id.toString(),
                 newTitle = newTitle,
@@ -32,7 +32,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             )
         }
 
-        is EditTemplateDomainCommand.ChangeTemplateDescription -> {
+        is TemplateDomainCommand.ChangeTemplateDescription -> {
             EditTemplateDescriptionCommandDto(
                 templateId = templateId.id.toString(),
                 newDescription = newDescription,
@@ -42,7 +42,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             )
         }
 
-        is EditTemplateDomainCommand.AddTemplateTask -> {
+        is TemplateDomainCommand.AddTemplateTask -> {
             AddTemplateTaskCommandDto(
                 templateId = templateId.id.toString(),
                 taskId = taskId.id.toString(),
@@ -53,7 +53,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             )
         }
 
-        is EditTemplateDomainCommand.RenameTemplateTask -> {
+        is TemplateDomainCommand.RenameTemplateTask -> {
             RenameTemplateTaskCommandDto(
                 templateId = templateId.id.toString(),
                 taskId = taskId.id.toString(),
@@ -64,7 +64,7 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
             )
         }
 
-        is EditTemplateDomainCommand.DeleteTemplateTask -> {
+        is TemplateDomainCommand.DeleteTemplateTask -> {
             DeleteTemplateTaskCommandDto(
                 taskId = taskId.id.toString(),
                 templateId = templateId.id.toString(),

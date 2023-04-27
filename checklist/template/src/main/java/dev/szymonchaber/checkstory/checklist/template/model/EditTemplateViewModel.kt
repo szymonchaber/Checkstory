@@ -5,7 +5,9 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.EditTemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
@@ -15,7 +17,6 @@ import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -35,7 +36,6 @@ import javax.inject.Inject
 class EditTemplateViewModel @Inject constructor(
     private val application: Application,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
-    private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
     private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
     private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
     private val deleteRemindersUseCase: DeleteRemindersUseCase,
@@ -97,7 +97,7 @@ class EditTemplateViewModel @Inject constructor(
                     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
                         .copy(
                             commands = listOf(
-                                EditTemplateDomainCommand.CreateNewTemplate(
+                                TemplateDomainCommand.CreateNewTemplate(
                                     checklistTemplate.id,
                                     System.currentTimeMillis()
                                 )
@@ -159,7 +159,7 @@ class EditTemplateViewModel @Inject constructor(
                         copy(title = event.newTitle)
                     }
                     .plusEvent(
-                        EditTemplateDomainCommand.RenameTemplate(
+                        TemplateDomainCommand.RenameTemplate(
                             loadingState.checklistTemplate.id,
                             event.newTitle,
                             System.currentTimeMillis()
@@ -178,7 +178,7 @@ class EditTemplateViewModel @Inject constructor(
                         copy(description = event.newDescription)
                     }
                     .plusEvent(
-                        EditTemplateDomainCommand.ChangeTemplateDescription(
+                        TemplateDomainCommand.ChangeTemplateDescription(
                             loadingState.checklistTemplate.id,
                             event.newDescription,
                             System.currentTimeMillis()
@@ -289,7 +289,7 @@ class EditTemplateViewModel @Inject constructor(
                         event.parentViewKey,
                         newTaskId
                     ).plusEvent(
-                        EditTemplateDomainCommand.AddTemplateTask(
+                        TemplateDomainCommand.AddTemplateTask(
                             templateId = loadingState.originalChecklistTemplate.id,
                             taskId = newTaskId,
                             parentTaskId = TemplateCheckboxId(event.parentViewKey.id),
@@ -307,7 +307,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 val newState = loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)
                     .plusEvent(
-                        EditTemplateDomainCommand.RenameTemplateTask(
+                        TemplateDomainCommand.RenameTemplateTask(
                             templateId = loadingState.originalChecklistTemplate.id,
                             taskId = event.checkbox.id,
                             newTitle = event.newTitle,
@@ -325,7 +325,7 @@ class EditTemplateViewModel @Inject constructor(
                 val (newLoadingState, newCheckboxId) = loadingState.plusNewCheckbox("")
                 val withEvent = newLoadingState
                     .plusEvent(
-                        EditTemplateDomainCommand.AddTemplateTask(
+                        TemplateDomainCommand.AddTemplateTask(
                             loadingState.checklistTemplate.id, newCheckboxId, null, System.currentTimeMillis()
                         )
                     )
@@ -350,7 +350,6 @@ class EditTemplateViewModel @Inject constructor(
                         )
                     }
                     .checklistTemplate
-//                updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate) TODO
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
                 synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.commands))
@@ -369,22 +368,22 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun consolidateCommands(commands: List<EditTemplateDomainCommand>): List<EditTemplateDomainCommand> {
+    private fun consolidateCommands(commands: List<TemplateDomainCommand>): List<TemplateDomainCommand> {
         return commands
-            .withLastCommandOfType<EditTemplateDomainCommand.RenameTemplate> {
+            .withLastCommandOfType<TemplateDomainCommand.RenameTemplate> {
                 it.templateId
             }
-            .withLastCommandOfType<EditTemplateDomainCommand.ChangeTemplateDescription> {
+            .withLastCommandOfType<TemplateDomainCommand.ChangeTemplateDescription> {
                 it.templateId
             }
-            .withLastCommandOfType<EditTemplateDomainCommand.RenameTemplateTask> {
+            .withLastCommandOfType<TemplateDomainCommand.RenameTemplateTask> {
                 it.taskId
             }
     }
 
-    private inline fun <reified T : EditTemplateDomainCommand> List<EditTemplateDomainCommand>.withLastCommandOfType(
+    private inline fun <reified T : TemplateDomainCommand> List<TemplateDomainCommand>.withLastCommandOfType(
         groupBy: (T) -> Any
-    ): List<EditTemplateDomainCommand> {
+    ): List<TemplateDomainCommand> {
         val consolidatedCommand = filterIsInstance<T>()
             .groupBy(groupBy)
             .map { (_, events) ->
@@ -526,4 +525,21 @@ class EditTemplateViewModel @Inject constructor(
                 .take(1)
         }
     }
+}
+
+// TODO use this
+private fun ChecklistTemplate.trimEndingWhitespaces(): ChecklistTemplate {
+    return with(this) {
+        copy(
+            title = title.trimEnd(),
+            description = description.trimEnd(),
+            items = items.map {
+                it.trimEndTitlesRecursive()
+            }
+        )
+    }
+}
+
+private fun TemplateCheckbox.trimEndTitlesRecursive(): TemplateCheckbox {
+    return copy(title = title.trimEnd(), children = children.map { it.trimEndTitlesRecursive() })
 }
