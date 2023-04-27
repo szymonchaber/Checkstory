@@ -232,10 +232,20 @@ sealed interface TemplateLoadingState {
 
         fun withSiblingMovedBelow(
             below: TemplateCheckboxId,
-            movedCheckboxKey: TemplateCheckboxId
+            movedCheckboxId: TemplateCheckboxId
         ): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(movedCheckboxKey)
-            return copy(checkboxes = filteredTasks.withSiblingBelow(below, movedItem))
+            val (filteredTasks, movedItem) = withExtractedTask(movedCheckboxId)
+            val newTasks = filteredTasks.withSiblingBelow(below, movedItem)
+            return copy(checkboxes = newTasks)
+                .plusCommand(
+                    TemplateDomainCommand.MoveTemplateTask(
+                        taskId = movedCheckboxId,
+                        newParentTaskId = findParentId(newTasks, movedCheckboxId),
+                        timestamp = System.currentTimeMillis(),
+                        commandId = UUID.randomUUID(),
+                        templateId = originalChecklistTemplate.id
+                    )
+                )
         }
 
         private fun List<ViewTemplateCheckbox>.withSiblingBelow(
@@ -269,10 +279,20 @@ sealed interface TemplateLoadingState {
 
         fun withChildMovedBelow(
             below: TemplateCheckboxId,
-            newChildKey: TemplateCheckboxId
+            childTaskId: TemplateCheckboxId
         ): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(newChildKey)
-            return copy(checkboxes = filteredTasks.withChildBelow(below, movedItem))
+            val (filteredTasks, movedItem) = withExtractedTask(childTaskId)
+            val newTasks = filteredTasks.withChildBelow(below, movedItem)
+            return copy(checkboxes = newTasks)
+                .plusCommand(
+                    TemplateDomainCommand.MoveTemplateTask(
+                        taskId = childTaskId,
+                        newParentTaskId = findParentId(newTasks, childTaskId),
+                        timestamp = System.currentTimeMillis(),
+                        commandId = UUID.randomUUID(),
+                        templateId = originalChecklistTemplate.id
+                    )
+                )
         }
 
         private fun List<ViewTemplateCheckbox>.withChildBelow(
@@ -284,10 +304,18 @@ sealed interface TemplateLoadingState {
             }
         }
 
-        fun withCheckboxMovedToTop(checkboxKey: TemplateCheckboxId): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(checkboxKey)
+        fun withCheckboxMovedToTop(checkboxId: TemplateCheckboxId): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(checkboxId)
             return copy(
                 checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentId(null), 0)
+            ).plusCommand(
+                TemplateDomainCommand.MoveTemplateTask(
+                    taskId = checkboxId,
+                    newParentTaskId = null,
+                    timestamp = System.currentTimeMillis(),
+                    commandId = UUID.randomUUID(),
+                    templateId = originalChecklistTemplate.id
+                )
             )
         }
 
@@ -306,10 +334,18 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun withCheckboxMovedToBottom(checkboxKey: TemplateCheckboxId): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(checkboxKey)
+        fun withCheckboxMovedToBottom(checkboxId: TemplateCheckboxId): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(checkboxId)
             return copy(
                 checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentId(null), filteredTasks.size)
+            ).plusCommand(
+                TemplateDomainCommand.MoveTemplateTask(
+                    taskId = checkboxId,
+                    newParentTaskId = null,
+                    timestamp = System.currentTimeMillis(),
+                    commandId = UUID.randomUUID(),
+                    templateId = originalChecklistTemplate.id
+                )
             )
         }
 
@@ -328,14 +364,14 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        private fun withExtractedTask(viewKey: TemplateCheckboxId): Pair<List<ViewTemplateCheckbox>, ViewTemplateCheckbox> {
+        private fun withExtractedTask(id: TemplateCheckboxId): Pair<List<ViewTemplateCheckbox>, ViewTemplateCheckbox> {
             var movedItem: ViewTemplateCheckbox? = null
             val onItemFoundAndRemoved: (ViewTemplateCheckbox) -> Unit = {
                 movedItem = it
             }
             val withExtractedElement = checkboxes
                 .filter {
-                    if (it.id == TemplateCheckboxId(viewKey.id)) {
+                    if (it.id == TemplateCheckboxId(id.id)) {
                         movedItem = it
                         false
                     } else {
@@ -343,7 +379,7 @@ sealed interface TemplateLoadingState {
                     }
                 }
                 .map {
-                    it.withoutChild(viewKey, onItemFoundAndRemoved)
+                    it.withoutChild(id, onItemFoundAndRemoved)
                 }
             return withExtractedElement to movedItem!!
         }

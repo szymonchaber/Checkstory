@@ -6,6 +6,7 @@ import dev.szymonchaber.checkstory.data.api.event.dto.CreateTemplateCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.DeleteTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateDescriptionCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateTitleCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.MoveTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.RenameTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.TemplateCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.UpdateTasksPositionsCommandDto
@@ -82,6 +83,17 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateCommandDto {
                 timestamp = timestamp,
                 userId = currentUser.uid,
                 taskIdToLocalPosition = localPositions.mapKeys { it.key.id.toString() }
+            )
+        }
+
+        is TemplateDomainCommand.MoveTemplateTask -> {
+            MoveTemplateTaskCommandDto(
+                templateId = templateId.id.toString(),
+                taskId = taskId.id.toString(),
+                newParentTaskId = newParentTaskId?.id?.toString(),
+                eventId = commandId.toString(),
+                timestamp = timestamp,
+                userId = currentUser.uid
             )
         }
     }

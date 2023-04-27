@@ -100,3 +100,17 @@ data class UpdateTasksPositionsCommandDto(
 
     override val commandType: String = "updateTemplateTasksPositions"
 }
+
+@Serializable
+@SerialName("moveTemplateTask")
+data class MoveTemplateTaskCommandDto(
+    override val templateId: String,
+    val taskId: String,
+    val newParentTaskId: String?,
+    override val eventId: String,
+    override val timestamp: Long,
+    override val userId: String
+) : TemplateCommandDto {
+
+    override val commandType: String = "moveTemplateTask"
+}
