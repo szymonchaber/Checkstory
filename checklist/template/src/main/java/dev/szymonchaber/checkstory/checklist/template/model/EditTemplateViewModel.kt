@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
@@ -261,7 +262,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    EditTemplateState(loadingState.plusChildCheckbox(event.parentViewKey)) to null
+                    EditTemplateState(loadingState.plusChildCheckbox(TemplateCheckboxId(event.parentViewKey.id))) to null
                 }
             }
     }

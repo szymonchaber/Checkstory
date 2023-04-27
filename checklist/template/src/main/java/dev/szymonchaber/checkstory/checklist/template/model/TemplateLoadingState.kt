@@ -96,8 +96,12 @@ sealed interface TemplateLoadingState {
             return this
         }
 
-        fun plusNewCheckbox(title: String): Success {
-            val newCheckbox = newCheckbox(title)
+        fun plusNewCheckbox(
+            title: String,
+            placeholderTitle: String? = null,
+            id: TemplateCheckboxId = TemplateCheckboxId(UUID.randomUUID())
+        ): Success {
+            val newCheckbox = newCheckbox(title, placeholderTitle, id)
             return copy(
                 checkboxes = checkboxes.plus(newCheckbox),
                 mostRecentlyAddedItem = newCheckbox.viewId
@@ -112,16 +116,6 @@ sealed interface TemplateLoadingState {
                 )
         }
 
-        fun plusPlaceholderCheckboxes(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
-            val parent = newCheckbox(placeholderTitle = placeholderTitle)
-            return copy(
-                checkboxes = checkboxes.plus(parent)
-            ).let {
-                childrenTitles.fold(it) { state, (childTitle, nestedChildren) ->
-                    state.plusChildCheckboxNested(parent.viewKey, childTitle, nestedChildren)
-                }
-            }
-        }
 
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
             val filteredCheckboxes =
@@ -156,11 +150,14 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
-            val newId = TemplateCheckboxId(UUID.randomUUID())
+        fun plusChildCheckbox(
+            parentId: TemplateCheckboxId,
+            newId: TemplateCheckboxId = TemplateCheckboxId(UUID.randomUUID()),
+            placeholderTitle: String? = null
+        ): Success {
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusChildCheckboxRecursive(parentId, newId)
+                    it.plusChildCheckboxRecursive(parentId, newId, placeholderTitle)
                 },
                 mostRecentlyAddedItem = ViewTemplateCheckboxId(newId.id, true)
             )
@@ -168,24 +165,12 @@ sealed interface TemplateLoadingState {
                     TemplateDomainCommand.AddTemplateTask(
                         templateId = originalChecklistTemplate.id,
                         taskId = newId,
-                        parentTaskId = TemplateCheckboxId(parentId.id),
+                        parentTaskId = parentId,
                         System.currentTimeMillis()
                     )
                 )
         }
 
-        private fun plusChildCheckboxNested(
-            parentId: ViewTemplateCheckboxKey,
-            placeholderTitle: String = "",
-            children: List<CheckboxToChildren> = listOf()
-        ): Success {
-            return copy(
-                // TODO use some kind of DSL instead of this CheckboxToChildren list
-                checkboxes = checkboxes.map {
-                    it.plusNestedChildCheckboxRecursive(parentId, placeholderTitle, children)
-                }
-            )
-        }
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
             return copy(
@@ -353,9 +338,13 @@ sealed interface TemplateLoadingState {
             return withExtractedElement to movedItem!!
         }
 
-        private fun newCheckbox(title: String = "", placeholderTitle: String? = null): ViewTemplateCheckbox.New {
+        private fun newCheckbox(
+            title: String = "",
+            placeholderTitle: String? = null,
+            id: TemplateCheckboxId = TemplateCheckboxId(UUID.randomUUID())
+        ): ViewTemplateCheckbox.New {
             return ViewTemplateCheckbox.New(
-                id = TemplateCheckboxId(UUID.randomUUID()),
+                id = id,
                 parentViewKey = null,
                 isParent = true,
                 title = title,

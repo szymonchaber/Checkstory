@@ -2,17 +2,27 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import android.content.res.Resources
 import dev.szymonchaber.checkstory.checklist.template.R
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import java.time.LocalDateTime
 import java.util.*
 
 fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Success {
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
+    val checklistTemplate = emptyChecklistTemplate()
+    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
+        .copy(
+            commands = listOf(
+                TemplateDomainCommand.CreateNewTemplate(
+                    checklistTemplate.id,
+                    System.currentTimeMillis()
+                )
+            )
+        )
+
     return generateOnboardingCheckboxes()
-        .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusPlaceholderCheckboxes(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
-        }
+        .foldInto(templateLoadingState)
         .copy(
             onboardingPlaceholders = OnboardingPlaceholders(
                 title = resources.getString(R.string.onboarding_template_title),
@@ -22,32 +32,54 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
         )
 }
 
-fun generateOnboardingCheckboxes(): List<CheckboxToChildren> {
-    return listOf(
-        CheckboxToChildren("Add as many tasks as you want"),
-        CheckboxToChildren(
-            "Nest them as needed", listOf(
-                CheckboxToChildren(
-                    "We think that it’s neat", listOf(
-                        CheckboxToChildren(
-                            "Nest them as needed", listOf(
-                                CheckboxToChildren(
-                                    "Up to four levels deep"
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        ),
-        CheckboxToChildren("You can add links like this:\ncheckstory.tech"),
-        CheckboxToChildren(
-            "When you’re done,\nsave this template", listOf(
-                CheckboxToChildren("Then “use” it\non the next screen")
-            )
-        ),
-        CheckboxToChildren("Happy checklisting!")
-    )
+class OnboardingCheckboxes {
+
+    val placeholderToParentId = mutableListOf<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>>()
+
+    fun topLevelPlaceholder(placeholderTitle: String, block: ParentScope.() -> Unit = {}) {
+        val parentId = TemplateCheckboxId(UUID.randomUUID())
+        placeholderToParentId.add(Triple(parentId, null, placeholderTitle))
+        ParentScope(parentId).block()
+    }
+
+    inner class ParentScope(private val outerParentId: TemplateCheckboxId) {
+
+        fun nestedPlaceholder(placeholderTitle: String, block: ParentScope.() -> Unit = {}) {
+            val innerParentId = TemplateCheckboxId(UUID.randomUUID())
+            placeholderToParentId.add(Triple(innerParentId, outerParentId, placeholderTitle))
+            ParentScope(innerParentId).block()
+        }
+    }
+}
+
+fun placeholderCheckboxes(block: OnboardingCheckboxes.() -> Unit): MutableList<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>> {
+    return OnboardingCheckboxes().apply(block).placeholderToParentId
+}
+
+
+fun generateOnboardingCheckboxes(): MutableList<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>> {
+    return placeholderCheckboxes {
+        topLevelPlaceholder("Add as many tasks as you want")
+
+        topLevelPlaceholder("Nest them as needed") {
+
+            nestedPlaceholder("We think that it’s neat") {
+
+                nestedPlaceholder("Nest them as needed") {
+
+                    nestedPlaceholder("Up to four levels deep")
+
+                }
+            }
+        }
+        topLevelPlaceholder("You can add links like this:\ncheckstory.tech")
+
+        topLevelPlaceholder("When you’re done,\nsave this template") {
+            nestedPlaceholder("Then “use” it\non the next screen")
+        }
+
+        topLevelPlaceholder("Happy checklisting!")
+    }
 }
 
 fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
@@ -58,33 +90,22 @@ fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
                 description = "Find prospects here: drive.link/prospects"
             )
         }
-    val withChildren = generateWriteOfferCheckboxes()
-        .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusPlaceholderCheckboxes(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
-        }
-    return withChildren
+    return generateWriteOfferCheckboxes().foldInto(templateLoadingState)
 }
 
-fun generateWriteOfferCheckboxes(): List<CheckboxToChildren> {
-    return listOf(
-        CheckboxToChildren("Fetch the prospect and start writing"),
-        CheckboxToChildren(
-            "Write your own steps - Checkstory is a vessel for your knowledge", listOf(
-                CheckboxToChildren(
-                    "You can nest your tasks", listOf(
-                        CheckboxToChildren(
-                            "Up to four levels deep", listOf(
-                                CheckboxToChildren(
-                                    "as needed"
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        ),
-        CheckboxToChildren("Drop the offer for review here:\ndrive.link/offers"),
-    )
+fun generateWriteOfferCheckboxes(): List<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>> {
+    return placeholderCheckboxes {
+        topLevelPlaceholder("Fetch the prospect and start writing") {
+            nestedPlaceholder("Write your own steps - Checkstory is a vessel for your knowledge") {
+                nestedPlaceholder("You can nest your tasks") {
+                    nestedPlaceholder("Up to four levels deep") {
+                        nestedPlaceholder("as needed")
+                    }
+                }
+            }
+        }
+        topLevelPlaceholder("Drop the offer for review here:\ndrive.link/offers")
+    }
 }
 
 fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
@@ -95,12 +116,12 @@ fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
                 description = ""
             )
         }
-    return List(18) {
-        CheckboxToChildren("$it")
-    }
-        .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusPlaceholderCheckboxes(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
+    return placeholderCheckboxes {
+        repeat(18) {
+            topLevelPlaceholder("Fluff to make the checklist look full of tasks")
         }
+    }
+        .foldInto(templateLoadingState)
 }
 
 fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
@@ -111,14 +132,24 @@ fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
                 description = ""
             )
         }
-    return List(5) {
-        CheckboxToChildren("$it")
-    }
-        .fold(templateLoadingState) { state, checkboxToChildren ->
-            state.plusPlaceholderCheckboxes(checkboxToChildren.placeholderTitle, checkboxToChildren.children)
+
+    return placeholderCheckboxes {
+        repeat(5) {
+            topLevelPlaceholder("Fluff to make the checklist look full of tasks")
         }
+    }
+        .foldInto(templateLoadingState)
 }
 
+fun List<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>>.foldInto(success: TemplateLoadingState.Success): TemplateLoadingState.Success {
+    return fold(success) { state, (id, parentId, placeholder) ->
+        if (parentId != null) {
+            state.plusChildCheckbox(parentId, id, placeholder)
+        } else {
+            state.plusNewCheckbox("", placeholderTitle = placeholder, id)
+        }
+    }.copy(mostRecentlyAddedItem = null)
+}
 
 fun emptyChecklistTemplate(): ChecklistTemplate {
     return ChecklistTemplate(
@@ -131,8 +162,3 @@ fun emptyChecklistTemplate(): ChecklistTemplate {
         listOf()
     )
 }
-
-data class CheckboxToChildren(
-    val placeholderTitle: String,
-    val children: List<CheckboxToChildren> = listOf()
-)
