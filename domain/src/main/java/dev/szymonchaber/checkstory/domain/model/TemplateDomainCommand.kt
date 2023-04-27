@@ -90,7 +90,24 @@ sealed interface TemplateDomainCommand : DomainCommand {
     ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
-            return template // TODO logic
+            return template.copy(items = template.items
+                .map {
+                    it.withUpdatedTitleRecursive(taskId, newTitle)
+                })
+        }
+
+        companion object {
+
+            fun TemplateCheckbox.withUpdatedTitleRecursive(
+                idToUpdate: TemplateCheckboxId,
+                newTitle: String,
+            ): TemplateCheckbox {
+                return if (id == idToUpdate) {
+                    copy(title = newTitle)
+                } else {
+                    copy(children = children.map { it.withUpdatedTitleRecursive(idToUpdate, newTitle) })
+                }
+            }
         }
     }
 
