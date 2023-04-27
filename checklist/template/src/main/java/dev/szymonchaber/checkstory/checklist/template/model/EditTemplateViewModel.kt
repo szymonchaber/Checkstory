@@ -124,13 +124,14 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyLoaded(event)) {
                     flowOf(state.first() to null)
                 } else {
-                    getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
-                        .map {
+                    flowOf(
+                        getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)?.let {
                             withContext(Dispatchers.Default) {
                                 TemplateLoadingState.Success.fromTemplate(it)
                             }
-                        }
-                        .onStart<TemplateLoadingState> {
+                        } ?: TemplateLoadingState.Loading // TODO this should be error, template not found
+                    )
+                        .onStart {
                             emit(TemplateLoadingState.Loading)
                         }
                         .map {
@@ -289,7 +290,7 @@ class EditTemplateViewModel @Inject constructor(
                 val checklistTemplate = loadingState.checklistTemplate
                 deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
                 deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
-                synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.commands))
+                synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.finalizedCommands()))
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
                         "title_length" to checklistTemplate.title.length,

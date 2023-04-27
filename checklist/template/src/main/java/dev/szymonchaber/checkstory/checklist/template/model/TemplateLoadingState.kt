@@ -15,14 +15,16 @@ sealed interface TemplateLoadingState {
 
     data class Success(
         val originalChecklistTemplate: ChecklistTemplate,
-        val checkboxes: List<ViewTemplateCheckbox>,
+        val checkboxes: List<ViewTemplateCheckbox> = originalChecklistTemplate.items.map {
+            ViewTemplateCheckbox.Existing.fromDomainModel(it)
+        },
         val checkboxesToDelete: List<TemplateCheckbox> = listOf(),
         val remindersToDelete: List<Reminder> = listOf(),
         val updatedChecklistTemplate: ChecklistTemplate = originalChecklistTemplate,
         val mostRecentlyAddedItem: ViewTemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
-        val commands: List<TemplateDomainCommand> = listOf()
+        private val commands: List<TemplateDomainCommand> = listOf()
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
@@ -31,6 +33,24 @@ sealed interface TemplateLoadingState {
             .fold(originalChecklistTemplate) { template, templateDomainCommand ->
                 templateDomainCommand.applyTo(template)
             }
+
+        fun finalizedCommands(): List<TemplateDomainCommand> {
+            val indexedCheckboxes = checkboxes
+                .mapIndexed { index, checkbox ->
+                    checkbox.toDomainModel(position = index)
+                }
+            val localPositions = indexedCheckboxes.associate {
+                it.id to it.sortPosition
+            }
+            return commands.plus(
+                TemplateDomainCommand.UpdateCheckboxPositions(
+                    localPositions,
+                    System.currentTimeMillis(),
+                    UUID.randomUUID(),
+                    checklistTemplate.id
+                )
+            )
+        }
 
         private fun flattenWithNestedLevel(): List<Pair<ViewTemplateCheckbox, Int>> {
             val result = mutableListOf<Pair<ViewTemplateCheckbox, Int>>()
@@ -323,12 +343,7 @@ sealed interface TemplateLoadingState {
         companion object {
 
             fun fromTemplate(checklistTemplate: ChecklistTemplate): Success {
-                return Success(
-                    checklistTemplate,
-                    checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) },
-                    listOf(),
-                    listOf()
-                )
+                return Success(originalChecklistTemplate = checklistTemplate)
             }
         }
     }

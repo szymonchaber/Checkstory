@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.data.synchronization.CommandRepositoryImpl
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
@@ -19,11 +20,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -38,17 +38,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 ) {
 
     fun getById(id: UUID): Flow<ChecklistTemplate> {
-        return checklistTemplateDao.getById(id)
-            .filterNotNull()
-            .flatMapLatest(::combineIntoDomainChecklistTemplate)
-            .map {
-                commandRepository.unappliedCommands
-                    .filter { command -> command.templateId == it.id }
-                    .fold(it) { template, command ->
-                        command.applyTo(template)
-                    }
-            }
-            .take(1)
+        return flow { emit(getByIdOrNull(id)!!) }
     }
 
     suspend fun getByIdOrNull(id: UUID): ChecklistTemplate? {
@@ -59,6 +49,17 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                     .fold(it) { template, command ->
                         command.applyTo(template)
                     }
+            } ?: getByIdOrNullInCommands(id)
+    }
+
+    private fun getByIdOrNullInCommands(id: UUID): ChecklistTemplate? {
+        if (commandRepository.unappliedCommands.none { it.templateId.id == id && it is TemplateDomainCommand.CreateNewTemplate }) {
+            return null
+        }
+        return commandRepository.unappliedCommands
+            .filter { it.templateId.id == id }
+            .fold(ChecklistTemplate.empty(ChecklistTemplateId(id))) { template, command ->
+                command.applyTo(template)
             }
     }
 
@@ -80,12 +81,24 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 }
             }.combine(commandRepository.unappliedCommandsFlow) { templates, commands ->
                 val templateIdToCommands = commands.groupBy { it.templateId }
+                val commandsWithCreationCommand = templateIdToCommands.filterValues {
+                    it.any { command ->
+                        command is TemplateDomainCommand.CreateNewTemplate
+                    }
+                }
+                val commandOnlyTemplates = commandsWithCreationCommand.map { (id, commands) ->
+                    commands.fold(
+                        ChecklistTemplate.empty(id)
+                    ) { template, templateCommand ->
+                        templateCommand.applyTo(template)
+                    }
+                }
                 templates.map {
                     templateIdToCommands[it.id]
                         ?.fold(it) { template, command ->
                             command.applyTo(template)
                         } ?: it
-                }
+                }.plus(commandOnlyTemplates).sortedBy { it.createdAt }
             }
     }
 

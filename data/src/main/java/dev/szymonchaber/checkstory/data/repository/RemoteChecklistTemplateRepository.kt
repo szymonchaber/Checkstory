@@ -52,7 +52,7 @@ internal class RemoteChecklistTemplateRepository @Inject constructor(
         )
     }
 
-    override fun get(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
+    override suspend fun get(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
         TODO()
     }
 

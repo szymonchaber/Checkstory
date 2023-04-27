@@ -87,3 +87,16 @@ data class DeleteTemplateTaskCommandDto(
 
     override val commandType: String = "deleteTemplateTask"
 }
+
+@Serializable
+@SerialName("updateTemplateTasksPositions")
+data class UpdateTasksPositionsCommandDto(
+    override val templateId: String,
+    val taskIdToLocalPosition: Map<String, Long>,
+    override val eventId: String,
+    override val timestamp: Long,
+    override val userId: String
+) : TemplateCommandDto {
+
+    override val commandType: String = "updateTemplateTasksPositions"
+}

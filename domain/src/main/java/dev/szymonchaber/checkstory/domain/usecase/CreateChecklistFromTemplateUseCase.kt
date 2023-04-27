@@ -9,6 +9,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
 import java.util.*
@@ -19,7 +20,9 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
 ) {
 
     fun createChecklistFromTemplate(checklistTemplateId: ChecklistTemplateId): Flow<Checklist> {
-        return checklistTemplateRepository.get(checklistTemplateId)
+        return flow {
+            emit(checklistTemplateRepository.get(checklistTemplateId)!!) // TODO handle when this fails
+        }
             .map { basedOn ->
                 createChecklist(basedOn)
             }

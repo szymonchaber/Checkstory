@@ -16,6 +16,21 @@ data class ChecklistTemplate(
 
     val isStored: Boolean
         get() = false
+
+    companion object {
+
+        fun empty(id: ChecklistTemplateId, createdAt: LocalDateTime = LocalDateTime.now()): ChecklistTemplate {
+            return ChecklistTemplate(
+                id = id,
+                title = "",
+                description = "",
+                items = listOf(),
+                createdAt = createdAt,
+                checklists = listOf(),
+                reminders = listOf()
+            )
+        }
+    }
 }
 
 data class TemplateCheckbox(

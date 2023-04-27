@@ -17,8 +17,8 @@ class LocalChecklistTemplateRepository @Inject constructor(
         return dataSource.getAll()
     }
 
-    override fun get(checklistTemplateId: ChecklistTemplateId): Flow<ChecklistTemplate> {
-        return dataSource.getById(checklistTemplateId.id)
+    override suspend fun get(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
+        return dataSource.getByIdOrNull(checklistTemplateId.id)
     }
 
     override suspend fun helloWorld(token: String): String {

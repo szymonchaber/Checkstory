@@ -2,16 +2,17 @@ package dev.szymonchaber.checkstory.data.api.event.mapper
 
 import com.google.firebase.auth.FirebaseUser
 import dev.szymonchaber.checkstory.data.api.event.dto.AddTemplateTaskCommandDto
-import dev.szymonchaber.checkstory.data.api.event.dto.CommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.CreateTemplateCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.DeleteTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateDescriptionCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateTitleCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.RenameTemplateTaskCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.TemplateCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.UpdateTasksPositionsCommandDto
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 
-fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
+fun DomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateCommandDto {
     return when (this) {
         is TemplateDomainCommand.CreateNewTemplate -> {
             CreateTemplateCommandDto(
@@ -71,6 +72,16 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): CommandDto {
                 eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid
+            )
+        }
+
+        is TemplateDomainCommand.UpdateCheckboxPositions -> {
+            UpdateTasksPositionsCommandDto(
+                templateId = templateId.id.toString(),
+                eventId = commandId.toString(),
+                timestamp = timestamp,
+                userId = currentUser.uid,
+                taskIdToLocalPosition = localPositions.mapKeys { it.key.id.toString() }
             )
         }
     }

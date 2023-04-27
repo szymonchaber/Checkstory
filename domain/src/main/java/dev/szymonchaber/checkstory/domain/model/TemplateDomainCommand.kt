@@ -4,6 +4,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 sealed interface DomainCommand {
@@ -25,7 +28,9 @@ sealed interface TemplateDomainCommand : DomainCommand {
     ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
-            return template
+            val instant = Instant.ofEpochMilli(timestamp)
+            val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+            return template.copy(createdAt = localDateTime)
         }
     }
 
@@ -69,7 +74,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
                         parentTaskId,
                         "",
                         listOf(),
-                        0
+                        template.items.size.toLong()
                     )
                 )
             )
@@ -98,6 +103,28 @@ sealed interface TemplateDomainCommand : DomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template // TODO logic
+        }
+    }
+
+    data class UpdateCheckboxPositions(
+        val localPositions: Map<TemplateCheckboxId, Long>,
+        override val timestamp: Long,
+        override val commandId: UUID,
+        override val templateId: ChecklistTemplateId
+    ) : TemplateDomainCommand {
+
+        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+            return template.copy(
+                items = template.items.map(::updatePosition).sortedBy(TemplateCheckbox::sortPosition)
+            )
+        }
+
+        private fun updatePosition(templateCheckbox: TemplateCheckbox): TemplateCheckbox {
+            val newPosition = localPositions[templateCheckbox.id] ?: templateCheckbox.sortPosition
+            return templateCheckbox.copy(
+                sortPosition = newPosition,
+                children = templateCheckbox.children.map(::updatePosition).sortedBy(TemplateCheckbox::sortPosition)
+            )
         }
     }
 }
