@@ -14,9 +14,6 @@ sealed interface Reminder {
     val forTemplate: ChecklistTemplateId
     val startDateTime: LocalDateTime
 
-    val isStored: Boolean
-        get() = false //id.id != 0L TODO how else to check it?
-
     data class Exact(
         override val id: ReminderId,
         override val forTemplate: ChecklistTemplateId,

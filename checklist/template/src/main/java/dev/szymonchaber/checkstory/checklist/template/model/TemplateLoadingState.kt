@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand.DeleteTemplateReminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -15,13 +16,15 @@ sealed interface TemplateLoadingState {
             ViewTemplateCheckbox.Existing.fromDomainModel(it)
         },
         val checkboxesToDelete: List<TemplateCheckbox> = listOf(),
-        val remindersToDelete: List<Reminder> = listOf(),
         val updatedChecklistTemplate: ChecklistTemplate = originalChecklistTemplate,
         val mostRecentlyAddedItem: TemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
         private val commands: List<TemplateDomainCommand> = listOf()
     ) : TemplateLoadingState {
+
+        val remindersToDelete = commands.filterIsInstance<DeleteTemplateReminder>()
+            .map { it.reminderId }
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
 
@@ -68,7 +71,6 @@ sealed interface TemplateLoadingState {
                 checkbox.toDomainModel(position = index)
             }
                     || checkboxesToDelete.isNotEmpty()
-                    || remindersToDelete.isNotEmpty()
         }
 
         fun withNewTitle(newTitle: String): Success {
@@ -184,21 +186,24 @@ sealed interface TemplateLoadingState {
                 )
         }
 
-        fun plusReminder(reminder: Reminder): Success {
-            return updateTemplate {
-                copy(reminders = reminders.plus(reminder))
-            }
+        fun withUpdatedReminder(reminder: Reminder): Success {
+            return plusCommand(
+                TemplateDomainCommand.AddOrReplaceTemplateReminder(
+                    checklistTemplate.id,
+                    reminder,
+                    System.currentTimeMillis()
+                )
+            )
         }
 
         fun minusReminder(reminder: Reminder): TemplateLoadingState {
-            val updatedRemindersToDelete = if (reminder.isStored) {
-                remindersToDelete.plus(reminder)
-            } else {
-                remindersToDelete
-            }
-            return updateTemplate {
-                copy(reminders = reminders.minus(reminder))
-            }.copy(remindersToDelete = updatedRemindersToDelete)
+            return plusCommand(
+                DeleteTemplateReminder(
+                    checklistTemplate.id,
+                    reminder.id,
+                    System.currentTimeMillis()
+                )
+            )
         }
 
         fun withNewSiblingMovedBelow(below: TemplateCheckboxId): TemplateLoadingState {

@@ -25,4 +25,7 @@ interface ReminderDao {
 
     @Delete
     suspend fun delete(vararg reminders: ReminderEntity)
+
+    @Query("DELETE FROM reminderEntity WHERE reminderEntity.reminderId = :reminderId")
+    suspend fun deleteById(reminderId: UUID)
 }

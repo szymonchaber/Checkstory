@@ -112,7 +112,7 @@ private fun ColumnScope.EditReminderView(reminder: Reminder, onEvent: (EditRemin
             .align(CenterHorizontally)
             .padding(top = 16.dp),
         onClick = { onEvent(EditReminderEvent.SaveReminderClicked) }) {
-        Text(stringResource(R.string.save_template))
+        Text(stringResource(R.string.save_reminder))
     }
 }
 

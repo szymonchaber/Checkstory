@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.data.repository
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -24,13 +25,12 @@ class TemplateReminderRepositoryImpl @Inject constructor(
             }
     }
 
-    override suspend fun deleteReminders(reminders: List<Reminder>) {
+    override suspend fun deleteReminders(ids: List<ReminderId>) {
         withContext(Dispatchers.Default) {
-            reminders.map {
-                ReminderEntity.fromDomainReminder(it, it.forTemplate.id)
-            }.let {
-                reminderDao.delete(*it.toTypedArray())
-            }
+            ids.map { it.id }
+                .forEach {
+                    reminderDao.deleteById(it)
+                }
         }
     }
 }

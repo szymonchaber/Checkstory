@@ -409,7 +409,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 trackReminderSaved(event)
-                EditTemplateState(success.plusReminder(event.reminder)) to null
+                EditTemplateState(success.withUpdatedReminder(event.reminder)) to null
             }
     }
 

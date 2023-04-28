@@ -16,8 +16,9 @@ class Dependencies : Plugin<Project> {
         const val hiltKapt = "com.google.dagger:hilt-compiler:$hiltVersion"
         private const val timber = "com.jakewharton.timber:timber:5.0.1"
         private const val kotlinImmutableCollections = "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5"
+        private const val kotlinxDatetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 
-        val common = listOf(coroutines, hiltLibrary, timber, kotlinImmutableCollections)
+        val common = listOf(coroutines, hiltLibrary, timber, kotlinImmutableCollections, kotlinxDatetime)
 
         const val androidXCore = "androidx.core:core-ktx:1.9.0"
         const val appCompat = "androidx.appcompat:appcompat:1.7.0-alpha02"

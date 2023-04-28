@@ -4,6 +4,8 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -83,6 +85,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
                 )
             }
         }
+
 
         private fun TemplateCheckbox.plusChildCheckboxRecursive(
             parentId: TemplateCheckboxId,
@@ -202,7 +205,41 @@ sealed interface TemplateDomainCommand : DomainCommand {
             }
             return copy(children = updatedChildren)
         }
+    }
 
+    class AddOrReplaceTemplateReminder(
+        override val templateId: ChecklistTemplateId,
+        val reminder: Reminder,
+        override val timestamp: Long,
+        override val commandId: UUID = UUID.randomUUID()
+    ) : TemplateDomainCommand {
+
+        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+            val newReminders = if (template.reminders.any { it.id == reminder.id }) {
+                template.reminders.map {
+                    if (it.id == reminder.id) {
+                        reminder
+                    } else {
+                        it
+                    }
+                }
+            } else {
+                template.reminders.plus(reminder)
+            }
+            return template.copy(reminders = newReminders)
+        }
+    }
+
+    class DeleteTemplateReminder(
+        override val templateId: ChecklistTemplateId,
+        val reminderId: ReminderId,
+        override val timestamp: Long,
+        override val commandId: UUID = UUID.randomUUID()
+    ) : TemplateDomainCommand {
+
+        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+            return template.copy(reminders = template.reminders.filterNot { it.id == reminderId })
+        }
     }
 }
 
