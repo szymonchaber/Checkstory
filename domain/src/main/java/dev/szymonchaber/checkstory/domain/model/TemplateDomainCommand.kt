@@ -146,7 +146,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
     ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
-            return template // TODO logic
+            return template.copy(items = template.items.withExtractedTask(taskId).first)
         }
     }
 
@@ -191,44 +191,6 @@ sealed interface TemplateDomainCommand : DomainCommand {
             return template.copy(items = items)
         }
 
-        private fun List<TemplateCheckbox>.withExtractedTask(id: TemplateCheckboxId): Pair<List<TemplateCheckbox>, TemplateCheckbox> {
-            var movedItem: TemplateCheckbox? = null
-            val onItemFoundAndRemoved: (TemplateCheckbox) -> Unit = {
-                movedItem = it
-            }
-            val withExtractedElement = this
-                .filter {
-                    if (it.id == id) {
-                        movedItem = it
-                        false
-                    } else {
-                        true
-                    }
-                }
-                .map {
-                    it.withoutChild(id, onItemFoundAndRemoved)
-                }
-            return withExtractedElement to movedItem!!
-        }
-
-        private fun TemplateCheckbox.withoutChild(
-            childTaskId: TemplateCheckboxId,
-            onItemFoundAndRemoved: (TemplateCheckbox) -> Unit
-        ): TemplateCheckbox {
-            val updatedChildren = children
-                .firstOrNull {
-                    it.id == childTaskId
-                }
-                ?.let {
-                    onItemFoundAndRemoved(it)
-                    children.minus(it)
-                }
-                ?: children.map {
-                    it.withoutChild(childTaskId, onItemFoundAndRemoved)
-                }
-            return copy(children = updatedChildren)
-        }
-
         private fun TemplateCheckbox.withMovedChildRecursive(
             parentTask: TemplateCheckboxId,
             childTask: TemplateCheckbox
@@ -242,4 +204,42 @@ sealed interface TemplateDomainCommand : DomainCommand {
         }
 
     }
+}
+
+private fun List<TemplateCheckbox>.withExtractedTask(id: TemplateCheckboxId): Pair<List<TemplateCheckbox>, TemplateCheckbox> {
+    var movedItem: TemplateCheckbox? = null
+    val onItemFoundAndRemoved: (TemplateCheckbox) -> Unit = {
+        movedItem = it
+    }
+    val withExtractedElement = this
+        .filter {
+            if (it.id == id) {
+                movedItem = it
+                false
+            } else {
+                true
+            }
+        }
+        .map {
+            it.withoutChild(id, onItemFoundAndRemoved)
+        }
+    return withExtractedElement to movedItem!!
+}
+
+private fun TemplateCheckbox.withoutChild(
+    childTaskId: TemplateCheckboxId,
+    onItemFoundAndRemoved: (TemplateCheckbox) -> Unit
+): TemplateCheckbox {
+    val updatedChildren = children
+        .firstOrNull {
+            it.id == childTaskId
+        }
+        ?.let {
+            onItemFoundAndRemoved(it)
+            children.minus(it)
+        }
+        ?: children.map {
+            it.withoutChild(childTaskId, onItemFoundAndRemoved)
+        }
+    return copy(children = updatedChildren)
 }
