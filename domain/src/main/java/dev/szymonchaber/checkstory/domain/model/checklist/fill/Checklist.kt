@@ -14,7 +14,7 @@ data class Checklist(
 ) {
 
     val isStored: Boolean
-        get() = false // TODO discern somehow
+        get() = true // TODO discern somehow
 //        get() = id.id != 0L
 
     val flattenedItems: List<Checkbox>

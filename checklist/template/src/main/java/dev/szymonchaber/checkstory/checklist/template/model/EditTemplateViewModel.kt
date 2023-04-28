@@ -348,9 +348,10 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("delete_template_confirmation_clicked")
-                if (loadingState.checklistTemplate.isStored) {
-                    deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
-                }
+                deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
+                synchronizeCommandsUseCase.synchronizeCommands(
+                    consolidateCommands(loadingState.markDeleted().finalizedCommands())
+                )
                 if (loadingState.isOnboardingTemplate) {
                     tracker.logEvent("template_creation_cancelled_during_onboarding")
                 }
@@ -362,7 +363,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.BackClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                val event = if (success.isChanged() || !success.checklistTemplate.isStored) {
+                val event = if (success.isChanged()) {
                     EditTemplateEffect.ShowConfirmExitDialog()
                 } else {
                     EditTemplateEffect.CloseScreen
@@ -448,12 +449,8 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.TemplateHistoryClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                if (success.checklistTemplate.isStored) {
-                    tracker.logEvent("edit_template_history_clicked")
-                    state.first() to EditTemplateEffect.OpenTemplateHistory(success.checklistTemplate.id)
-                } else {
-                    state.first() to null
-                }
+                tracker.logEvent("edit_template_history_clicked")
+                state.first() to EditTemplateEffect.OpenTemplateHistory(success.checklistTemplate.id)
             }
     }
 

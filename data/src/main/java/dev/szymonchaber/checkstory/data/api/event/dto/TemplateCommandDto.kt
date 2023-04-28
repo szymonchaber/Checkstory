@@ -146,6 +146,18 @@ data class DeleteTemplateReminderCommandDto(
     override val commandType: String = "deleteTemplateReminder"
 }
 
+@Serializable
+@SerialName("deleteTemplate")
+data class DeleteTemplateCommandDto(
+    override val templateId: String,
+    override val eventId: String,
+    override val timestamp: Long,
+    override val userId: String
+) : TemplateCommandDto {
+
+    override val commandType: String = "deleteTemplate"
+}
+
 fun Reminder.toReminderDto(): ReminderDto {
     return when (this) {
         is Reminder.Exact -> {

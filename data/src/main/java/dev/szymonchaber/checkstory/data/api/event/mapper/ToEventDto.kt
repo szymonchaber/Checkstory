@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseUser
 import dev.szymonchaber.checkstory.data.api.event.dto.AddOrUpdateTemplateReminderCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.AddTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.CreateTemplateCommandDto
+import dev.szymonchaber.checkstory.data.api.event.dto.DeleteTemplateCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.DeleteTemplateReminderCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.DeleteTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.EditTemplateDescriptionCommandDto
@@ -114,6 +115,15 @@ fun DomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateCommandDto {
             DeleteTemplateReminderCommandDto(
                 templateId = templateId.id.toString(),
                 reminderId = reminderId.id.toString(),
+                eventId = commandId.toString(),
+                timestamp = timestamp,
+                userId = currentUser.uid
+            )
+        }
+
+        is TemplateDomainCommand.DeleteTemplate -> {
+            DeleteTemplateCommandDto(
+                templateId = templateId.id.toString(),
                 eventId = commandId.toString(),
                 timestamp = timestamp,
                 userId = currentUser.uid

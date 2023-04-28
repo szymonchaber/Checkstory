@@ -65,8 +65,9 @@ sealed interface TemplateLoadingState {
 
 
         fun isChanged(): Boolean {
-            // TODO instead do "are commands empty?"
-            return originalChecklistTemplate != checklistTemplate
+            // TODO instead do just "are commands empty?"
+            return commands.isNotEmpty()
+                    || originalChecklistTemplate != checklistTemplate
                     || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
                 checkbox.toDomainModel(position = index)
             }
@@ -417,6 +418,12 @@ sealed interface TemplateLoadingState {
                 } ?: break
             }
             return ancestors
+        }
+
+        fun markDeleted(): Success {
+            return plusCommand(
+                TemplateDomainCommand.DeleteTemplate(checklistTemplate.id, System.currentTimeMillis())
+            )
         }
 
         companion object {

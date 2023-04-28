@@ -11,11 +11,9 @@ data class ChecklistTemplate(
     val items: List<TemplateCheckbox>,
     val createdAt: LocalDateTime,
     val checklists: List<Checklist>,
-    val reminders: List<Reminder>
+    val reminders: List<Reminder>,
+    val isRemoved: Boolean = false
 ) {
-
-    val isStored: Boolean
-        get() = false
 
     companion object {
 

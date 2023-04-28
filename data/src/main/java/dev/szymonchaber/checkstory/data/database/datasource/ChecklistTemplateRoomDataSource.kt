@@ -98,7 +98,9 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                         ?.fold(it) { template, command ->
                             command.applyTo(template)
                         } ?: it
-                }.plus(commandOnlyTemplates).sortedBy { it.createdAt }
+                }.plus(commandOnlyTemplates)
+                    .sortedBy { it.createdAt }
+                    .filterNot { it.isRemoved }
             }
     }
 

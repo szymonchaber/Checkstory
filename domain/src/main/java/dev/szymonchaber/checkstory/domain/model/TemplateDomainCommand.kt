@@ -241,6 +241,17 @@ sealed interface TemplateDomainCommand : DomainCommand {
             return template.copy(reminders = template.reminders.filterNot { it.id == reminderId })
         }
     }
+
+    class DeleteTemplate(
+        override val templateId: ChecklistTemplateId,
+        override val timestamp: Long,
+        override val commandId: UUID = UUID.randomUUID()
+    ) : TemplateDomainCommand {
+
+        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+            return template.copy(isRemoved = true)
+        }
+    }
 }
 
 private fun List<TemplateCheckbox>.withExtractedTask(id: TemplateCheckboxId): Pair<List<TemplateCheckbox>, TemplateCheckbox> {
