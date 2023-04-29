@@ -45,6 +45,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         return checklistTemplateDao.getByIdOrNull(id)?.let { combineIntoDomainChecklistTemplate(it) }?.firstOrNull()
             ?.let {
                 commandRepository.unappliedCommands
+                    .filterIsInstance<TemplateDomainCommand>()
                     .filter { command -> command.templateId == it.id }
                     .fold(it) { template, command ->
                         command.applyTo(template)
@@ -53,10 +54,14 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     private fun getByIdOrNullInCommands(id: UUID): ChecklistTemplate? {
-        if (commandRepository.unappliedCommands.none { it.templateId.id == id && it is TemplateDomainCommand.CreateNewTemplate }) {
+        if (commandRepository
+                .unappliedCommands
+                .filterIsInstance<TemplateDomainCommand>()
+                .none { it.templateId.id == id && it is TemplateDomainCommand.CreateNewTemplate }
+        ) {
             return null
         }
-        return commandRepository.unappliedCommands
+        return commandRepository.unappliedCommands.filterIsInstance<TemplateDomainCommand>()
             .filter { it.templateId.id == id }
             .fold(ChecklistTemplate.empty(ChecklistTemplateId(id))) { template, command ->
                 command.applyTo(template)
@@ -72,6 +77,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                         .map {
                             it.map {
                                 commandRepository.unappliedCommands
+                                    .filterIsInstance<TemplateDomainCommand>()
                                     .filter { command -> command.templateId == it.id }
                                     .fold(it) { template, command ->
                                         command.applyTo(template)
@@ -80,7 +86,9 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                         }
                 }
             }.combine(commandRepository.unappliedCommandsFlow) { templates, commands ->
-                val templateIdToCommands = commands.groupBy { it.templateId }
+                val templateIdToCommands = commands
+                    .filterIsInstance<TemplateDomainCommand>()
+                    .groupBy { it.templateId }
                 val commandsWithCreationCommand = templateIdToCommands.filterValues {
                     it.any { command ->
                         command is TemplateDomainCommand.CreateNewTemplate

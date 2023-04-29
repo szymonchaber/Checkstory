@@ -9,6 +9,14 @@ data class Checkbox(
     val children: List<Checkbox>
 ) {
 
+    fun withUpdatedIsCheckedRecursive(id: CheckboxId, isChecked: Boolean): Checkbox {
+        return if (this.id == id) {
+            copy(isChecked = isChecked)
+        } else {
+            copy(children = children.map { it.withUpdatedIsCheckedRecursive(id, isChecked) })
+        }
+    }
+
     companion object {
 
         fun List<Checkbox>.checkedCount(): Int {

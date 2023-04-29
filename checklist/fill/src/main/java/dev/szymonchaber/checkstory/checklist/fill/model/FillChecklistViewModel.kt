@@ -4,9 +4,11 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox.Companion.checkedCount
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
+import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
@@ -28,7 +30,8 @@ class FillChecklistViewModel @Inject constructor(
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
     private val saveChecklistUseCase: SaveChecklistUseCase,
     private val deleteChecklistUseCase: DeleteChecklistUseCase,
-    private val tracker: Tracker
+    private val tracker: Tracker,
+    private val synchronizer: Synchronizer
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
         FillChecklistState.initial
@@ -56,26 +59,9 @@ class FillChecklistViewModel @Inject constructor(
             .withSuccessState()
             .mapLatest { (success, event) ->
                 tracker.logEvent("check_changed", bundleOf("checked" to event.newCheck))
-                val updated = success.updateChecklist {
-                    copy(
-                        items = items.map {
-                            it.withUpdatedCheckRecursive(event.item, event.newCheck)
-                        }
-                    )
-                }
+                val updated = success.withUpdatedItemChecked(event.item.id, event.newCheck)
                 state.first().copy(checklistLoadingState = updated) to null
             }
-    }
-
-    private fun Checkbox.withUpdatedCheckRecursive(checkbox: Checkbox, newIsChecked: Boolean): Checkbox {
-        return copy(
-            isChecked = if (id == checkbox.id) {
-                newIsChecked
-            } else {
-                isChecked
-            },
-            children = children.map { it.withUpdatedCheckRecursive(checkbox, newIsChecked) }
-        )
     }
 
     private fun Flow<FillChecklistEvent>.handleChildCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
@@ -83,24 +69,8 @@ class FillChecklistViewModel @Inject constructor(
             .withSuccessState()
             .mapLatest { (success, event) ->
                 tracker.logEvent("child_check_changed", bundleOf("checked" to event.newCheck))
-                val (checkbox, child, newCheck) = event
-                val updated = success.updateChecklist {
-                    copy(items = items.map {
-                        if (it.id == checkbox.id) {
-                            it.copy(children = it.children.map {
-                                if (it.id == child.id) {
-                                    it.copy(isChecked = newCheck)
-                                } else {
-                                    it
-                                }
-                            }
-                            )
-                        } else {
-                            it
-                        }
-                    }
-                    )
-                }
+                val (_, child, newCheck) = event
+                val updated = success.withUpdatedItemChecked(child.id, newCheck)
                 state.first().copy(checklistLoadingState = updated) to null
             }
     }
@@ -119,7 +89,21 @@ class FillChecklistViewModel @Inject constructor(
             .flatMapLatest { loadEvent ->
                 createChecklistFromTemplateUseCase.createChecklistFromTemplate(loadEvent.checklistTemplateId)
                     .map {
-                        FillChecklistState(ChecklistLoadingState.Success(it)) to null
+                        val checklistLoadingState = ChecklistLoadingState.Success(it)
+                            .copy(
+                                commands = listOf(
+                                    ChecklistDomainCommand.CreateChecklistCommand(
+                                        it.id,
+                                        it.checklistTemplateId,
+                                        it.title,
+                                        it.description,
+                                        it.items,
+                                        UUID.randomUUID(),
+                                        System.currentTimeMillis()
+                                    )
+                                )
+                            )
+                        FillChecklistState(checklistLoadingState) to null
                     }
             }
     }
@@ -136,9 +120,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.NotesChanged>()
             .withSuccessState()
             .map { (success, event) ->
-                val updatedLoadingState = success.updateChecklist {
-                    copy(notes = event.notes)
-                }
+                val updatedLoadingState = success.withUpdatedNotes(event.notes)
                 state.first().copy(checklistLoadingState = updatedLoadingState) to null
             }
     }
@@ -171,6 +153,7 @@ class FillChecklistViewModel @Inject constructor(
                 val trackingParams =
                     bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
                 tracker.logEvent("save_checklist_clicked", trackingParams)
+                synchronizer.synchronizeCommands(success.consolidatedCommands())
                 saveChecklistUseCase.saveChecklist(checklistToStore.copy(notes = checklistToStore.notes.trimEnd()))
                 null to FillChecklistEffect.CloseScreen
             }
@@ -193,6 +176,15 @@ class FillChecklistViewModel @Inject constructor(
                 if (success.checklist.isStored) {
                     deleteChecklistUseCase.deleteChecklist(success.checklist)
                 }
+                synchronizer.synchronizeCommands(
+                    success.consolidatedCommands().plus(
+                        ChecklistDomainCommand.DeleteChecklistCommand(
+                            checklistId = success.originalChecklist.id,
+                            commandId = UUID.randomUUID(),
+                            System.currentTimeMillis()
+                        )
+                    )
+                )
                 null to FillChecklistEffect.CloseScreen
             }
     }

@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
-sealed interface DomainCommand {
+interface DomainCommand {
 
     val timestamp: Long
     val commandId: UUID
