@@ -5,7 +5,13 @@ import dev.szymonchaber.checkstory.data.State
 import dev.szymonchaber.checkstory.data.api.event.CommandsApi
 import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateRepository
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
+import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.util.*
@@ -67,6 +73,32 @@ class CommandRepositoryImpl @Inject constructor() {
     suspend fun storeCommands(domainCommands: List<DomainCommand>) {
         _unappliedCommands.addAll(domainCommands)
         unappliedCommandsFlow.emit(_unappliedCommands)
+    }
+
+    private fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateDomainCommand> {
+        return unappliedCommands
+            .filterIsInstance<TemplateDomainCommand>()
+            .filter { command -> command.templateId == templateId }
+    }
+
+    fun commandsForChecklist(checklistId: ChecklistId): List<ChecklistDomainCommand> {
+        return unappliedCommands
+            .filterIsInstance<ChecklistDomainCommand>()
+            .filter { command -> command.checklistId == checklistId }
+    }
+
+    fun rehydrate(template: ChecklistTemplate): ChecklistTemplate {
+        return commandsForTemplate(template.id)
+            .fold(template) { acc, command ->
+                command.applyTo(acc)
+            }
+    }
+
+    fun rehydrate(checklist: Checklist): Checklist {
+        return commandsForChecklist(checklist.id)
+            .fold(checklist) { acc, command ->
+                command.applyTo(acc)
+            }
     }
 
     suspend fun deleteCommands(ids: List<UUID>) {

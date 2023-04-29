@@ -42,15 +42,11 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     }
 
     suspend fun getByIdOrNull(id: UUID): ChecklistTemplate? {
-        return checklistTemplateDao.getByIdOrNull(id)?.let { combineIntoDomainChecklistTemplate(it) }?.firstOrNull()
-            ?.let {
-                commandRepository.unappliedCommands
-                    .filterIsInstance<TemplateDomainCommand>()
-                    .filter { command -> command.templateId == it.id }
-                    .fold(it) { template, command ->
-                        command.applyTo(template)
-                    }
-            } ?: getByIdOrNullInCommands(id)
+        return checklistTemplateDao.getByIdOrNull(id)
+            ?.let { combineIntoDomainChecklistTemplate(it) }
+            ?.firstOrNull()
+            ?.let(commandRepository::rehydrate)
+            ?: getByIdOrNullInCommands(id)
     }
 
     private fun getByIdOrNullInCommands(id: UUID): ChecklistTemplate? {
@@ -61,11 +57,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         ) {
             return null
         }
-        return commandRepository.unappliedCommands.filterIsInstance<TemplateDomainCommand>()
-            .filter { it.templateId.id == id }
-            .fold(ChecklistTemplate.empty(ChecklistTemplateId(id))) { template, command ->
-                command.applyTo(template)
-            }
+        return commandRepository.rehydrate(ChecklistTemplate.empty(ChecklistTemplateId(id)))
     }
 
     fun getAll(): Flow<List<ChecklistTemplate>> {
@@ -74,15 +66,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 withContext(Dispatchers.Default) {
                     it.map { combineIntoDomainChecklistTemplate(it) }
                         .toFlowOfLists()
-                        .map {
-                            it.map {
-                                commandRepository.unappliedCommands
-                                    .filterIsInstance<TemplateDomainCommand>()
-                                    .filter { command -> command.templateId == it.id }
-                                    .fold(it) { template, command ->
-                                        command.applyTo(template)
-                                    }
-                            }
+                        .map { templates ->
+                            templates.map(commandRepository::rehydrate)
                         }
                 }
             }.combine(commandRepository.unappliedCommandsFlow) { templates, commands ->
