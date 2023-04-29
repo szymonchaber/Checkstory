@@ -7,44 +7,109 @@ import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
+import dev.szymonchaber.checkstory.data.synchronization.CommandRepositoryImpl
+import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
 class ChecklistRoomDataSource @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
     private val checklistDao: ChecklistDao,
-    private val checkboxDao: CheckboxDao
+    private val checkboxDao: CheckboxDao,
+    private val commandRepository: CommandRepositoryImpl
 ) {
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun getById(id: UUID): Flow<Checklist> {
-        return checklistDao.getById(id)
-            .filterNotNull()
-            .flatMapLatest(::combineIntoDomainChecklist)
+        return flow {
+            emit(getByIdOrNull(id))
+        }
             .filterNotNull()
             .take(1)
     }
 
+    private suspend fun getByIdOrNull(id: UUID): Checklist? {
+        return checklistDao.getByIdOrNull(id)?.let {
+            combineIntoDomainChecklist(it)
+        }?.firstOrNull()
+            ?: getByIdOrNullInCommands(id)
+    }
+
+    private fun getByIdOrNullInCommands(id: UUID): Checklist? {
+        if (commandRepository
+                .unappliedCommands
+                .filterIsInstance<ChecklistDomainCommand>()
+                .none { it.checklistId.id == id && it is ChecklistDomainCommand.CreateChecklistCommand }
+        ) {
+            return null
+        }
+        return commandRepository.unappliedCommands.filterIsInstance<ChecklistDomainCommand>()
+            .filter { it.checklistId.id == id }
+            .fold(
+                initial = emptyChecklist(ChecklistId(id))
+            ) { checklist, command ->
+                command.applyTo(checklist)
+            }
+    }
+
+    private fun emptyChecklist(id: ChecklistId) = Checklist(
+        id = id,
+        checklistTemplateId = ChecklistTemplateId(UUID.randomUUID()),
+        title = "",
+        description = "",
+        items = listOf(),
+        notes = "",
+        createdAt = LocalDateTime.now()
+    )
+
+
     fun getAll(): Flow<List<Checklist>> {
         return checklistDao.getAll()
             .toDomainChecklistFlow()
+            .combine(commandRepository.unappliedCommandsFlow) { templates, commands ->
+                val checklistIdToCommands = commands
+                    .filterIsInstance<ChecklistDomainCommand>()
+                    .groupBy { it.checklistId }
+                val commandsWithCreationCommand = checklistIdToCommands.filterValues {
+                    it.any { command ->
+                        command is ChecklistDomainCommand.CreateChecklistCommand
+                    }
+                }
+                val commandOnlyChecklists = commandsWithCreationCommand.map { (id, commands) ->
+                    commands.fold(
+                        emptyChecklist(id)
+                    ) { template, templateCommand ->
+                        templateCommand.applyTo(template)
+                    }
+                }
+                templates.map {
+                    checklistIdToCommands[it.id]
+                        ?.fold(it) { template, command ->
+                            command.applyTo(template)
+                        } ?: it
+                }
+                    .plus(commandOnlyChecklists)
+                    .sortedBy { it.createdAt }
+                    .filterNot { it.isRemoved }
+            }
     }
 
     private fun getCheckboxes(checklistId: UUID) = checklistDao.getCheckboxesForChecklist(checklistId)

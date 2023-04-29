@@ -67,7 +67,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
     ) : ChecklistDomainCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
-            return checklist.copy(isDeleted = true)
+            return checklist.copy(isRemoved = true)
         }
     }
 

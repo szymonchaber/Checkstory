@@ -11,7 +11,7 @@ data class Checklist(
     val items: List<Checkbox>,
     val notes: String,
     val createdAt: LocalDateTime,
-    val isDeleted: Boolean = false
+    val isRemoved: Boolean = false
 ) {
 
     val isStored: Boolean
