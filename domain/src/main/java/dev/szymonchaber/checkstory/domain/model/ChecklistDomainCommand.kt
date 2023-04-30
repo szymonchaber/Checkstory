@@ -5,6 +5,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 sealed interface ChecklistDomainCommand : DomainCommand {
@@ -22,12 +25,15 @@ sealed interface ChecklistDomainCommand : DomainCommand {
     ) : ChecklistDomainCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
+            val instant = Instant.ofEpochMilli(timestamp)
+            val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
             return checklist.copy(
                 id = checklistId,
                 checklistTemplateId = templateId,
                 title = title,
                 description = description,
-                items = tasks
+                items = tasks,
+                createdAt = localDateTime
             )
         }
     }

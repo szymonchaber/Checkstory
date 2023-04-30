@@ -8,7 +8,6 @@ import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.data.synchronization.CommandRepositoryImpl
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 
@@ -50,61 +48,22 @@ class ChecklistRoomDataSource @Inject constructor(
         return checklistDao.getByIdOrNull(id)?.let {
             combineIntoDomainChecklist(it)
         }?.firstOrNull()
-            ?: getByIdOrNullInCommands(id)
+            ?: commandRepository.commandOnlyChecklists()
+                .find { it.id.id == id }
     }
-
-    private fun getByIdOrNullInCommands(id: UUID): Checklist? {
-        if (commandRepository
-                .unappliedCommands
-                .filterIsInstance<ChecklistDomainCommand>()
-                .none { it.checklistId.id == id && it is ChecklistDomainCommand.CreateChecklistCommand }
-        ) {
-            return null
-        }
-        return commandRepository.rehydrate(emptyChecklist(ChecklistId(id)))
-    }
-
-    private fun emptyChecklist(id: ChecklistId) = Checklist(
-        id = id,
-        checklistTemplateId = ChecklistTemplateId(UUID.randomUUID()),
-        title = "",
-        description = "",
-        items = listOf(),
-        notes = "",
-        createdAt = LocalDateTime.now()
-    )
-
 
     fun getAll(): Flow<List<Checklist>> {
         return checklistDao.getAll()
             .toDomainChecklistFlow()
-            .rehydrated()
+            .hydrated()
     }
 
-    private fun Flow<List<Checklist>>.rehydrated(): Flow<List<Checklist>> =
-        combine(commandRepository.unappliedCommandsFlow) { templates, commands ->
-            val checklistIdToCommands = commands
-                .filterIsInstance<ChecklistDomainCommand>()
-                .groupBy { it.checklistId }
-            val commandsWithCreationCommand = checklistIdToCommands.filterValues {
-                it.any { command ->
-                    command is ChecklistDomainCommand.CreateChecklistCommand
-                }
-            }
-            val commandOnlyChecklists = commandsWithCreationCommand.map { (id, commands) ->
-                commands.fold(emptyChecklist(id)) { template, templateCommand ->
-                    templateCommand.applyTo(template)
-                }
-            }
-            templates.map {
-                checklistIdToCommands[it.id]
-                    ?.fold(it) { template, command ->
-                        command.applyTo(template)
-                    } ?: it
-            }
-                .plus(commandOnlyChecklists)
-                .sortedBy { it.createdAt }
-                .filterNot { it.isRemoved }
+    private fun Flow<List<Checklist>>.hydrated(): Flow<List<Checklist>> =
+        combine(commandRepository.unappliedCommandsFlow) { templates, _ ->
+            templates.map(commandRepository::hydrate)
+                .plus(commandRepository.commandOnlyChecklists())
+                .sortedByDescending(Checklist::createdAt)
+                .filterNot(Checklist::isRemoved)
         }
 
     private fun getCheckboxes(checklistId: UUID) = checklistDao.getCheckboxesForChecklist(checklistId)
@@ -142,7 +101,7 @@ class ChecklistRoomDataSource @Inject constructor(
     fun getBasedOn(basedOn: ChecklistTemplateId): Flow<List<Checklist>> {
         val all = checklistDao.getAll(basedOn.id)
         return all.toDomainChecklistFlow()
-            .rehydrated()
+            .hydrated()
             .map { checklists ->
                 checklists.filter { it.checklistTemplateId == basedOn }
             }
@@ -175,7 +134,7 @@ class ChecklistRoomDataSource @Inject constructor(
                 }
             }
             .map {
-                it?.let(commandRepository::rehydrate)
+                it?.let(commandRepository::hydrate)
             }
     }
 

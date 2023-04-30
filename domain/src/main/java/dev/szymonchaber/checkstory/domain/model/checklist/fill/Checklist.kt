@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.domain.model.checklist.fill
 
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import java.time.LocalDateTime
+import java.util.*
 
 data class Checklist(
     val id: ChecklistId,
@@ -27,5 +28,20 @@ data class Checklist(
 
     private fun flatten(checkbox: Checkbox): List<Checkbox> {
         return listOf(checkbox) + checkbox.children.flatMap { flatten(it) }
+    }
+
+    companion object {
+
+        fun empty(id: ChecklistId): Checklist {
+            return Checklist(
+                id = id,
+                checklistTemplateId = ChecklistTemplateId(UUID.randomUUID()),
+                title = "",
+                description = "",
+                items = listOf(),
+                notes = "",
+                createdAt = LocalDateTime.now()
+            )
+        }
     }
 }

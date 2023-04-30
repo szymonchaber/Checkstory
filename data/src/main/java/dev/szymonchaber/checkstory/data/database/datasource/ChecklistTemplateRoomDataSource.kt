@@ -43,7 +43,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         return checklistTemplateDao.getByIdOrNull(id)
             ?.let { combineIntoDomainChecklistTemplate(it) }
             ?.firstOrNull()
-            ?.let(commandRepository::rehydrate)
+            ?.let(commandRepository::hydrate)
             ?: commandRepository.commandOnlyTemplates().find { it.id.id == id }
     }
 
@@ -56,7 +56,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             }
             .combine(commandRepository.unappliedCommandsFlow) { templates, _ ->
                 templates.map {
-                    commandRepository.rehydrate(it)
+                    commandRepository.hydrate(it)
                 }
                     .plus(commandRepository.commandOnlyTemplates())
                     .sortedBy { it.createdAt }

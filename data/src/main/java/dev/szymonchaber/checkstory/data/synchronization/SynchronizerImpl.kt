@@ -75,18 +75,6 @@ class CommandRepositoryImpl @Inject constructor() {
         unappliedCommandsFlow.value = unappliedCommands.toList()
     }
 
-    private fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateDomainCommand> {
-        return unappliedCommands
-            .filterIsInstance<TemplateDomainCommand>()
-            .filter { command -> command.templateId == templateId }
-    }
-
-    fun commandsForChecklist(checklistId: ChecklistId): List<ChecklistDomainCommand> {
-        return unappliedCommands
-            .filterIsInstance<ChecklistDomainCommand>()
-            .filter { command -> command.checklistId == checklistId }
-    }
-
     fun commandOnlyTemplates(): List<ChecklistTemplate> {
         return unappliedCommands
             .filterIsInstance<TemplateDomainCommand>()
@@ -103,18 +91,46 @@ class CommandRepositoryImpl @Inject constructor() {
             }
     }
 
-    fun rehydrate(template: ChecklistTemplate): ChecklistTemplate {
+    fun commandOnlyChecklists(): List<Checklist> {
+        return unappliedCommands
+            .filterIsInstance<ChecklistDomainCommand>()
+            .groupBy { it.checklistId }
+            .filterValues {
+                it.any { command ->
+                    command is ChecklistDomainCommand.CreateChecklistCommand
+                }
+            }
+            .map { (id, commands) ->
+                commands.fold(Checklist.empty(id)) { acc, command ->
+                    command.applyTo(acc)
+                }
+            }
+    }
+
+    fun hydrate(template: ChecklistTemplate): ChecklistTemplate {
         return commandsForTemplate(template.id)
             .fold(template) { acc, command ->
                 command.applyTo(acc)
             }
     }
 
-    fun rehydrate(checklist: Checklist): Checklist {
+    fun hydrate(checklist: Checklist): Checklist {
         return commandsForChecklist(checklist.id)
             .fold(checklist) { acc, command ->
                 command.applyTo(acc)
             }
+    }
+
+    private fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateDomainCommand> {
+        return unappliedCommands
+            .filterIsInstance<TemplateDomainCommand>()
+            .filter { command -> command.templateId == templateId }
+    }
+
+    private fun commandsForChecklist(checklistId: ChecklistId): List<ChecklistDomainCommand> {
+        return unappliedCommands
+            .filterIsInstance<ChecklistDomainCommand>()
+            .filter { command -> command.checklistId == checklistId }
     }
 
     suspend fun deleteCommands(ids: List<UUID>) {
