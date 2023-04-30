@@ -28,8 +28,8 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
     return when (this) {
         is TemplateDomainCommand.CreateNewTemplate -> {
             CreateTemplateCommandDto(
-                templateId = templateId.id.toString(),
-                eventId = commandId.toString(),
+                templateId = templateId.id,
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -37,9 +37,9 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.RenameTemplate -> {
             EditTemplateTitleCommandDto(
-                templateId = templateId.id.toString(),
+                templateId = templateId.id,
                 newTitle = newTitle,
-                eventId = commandId.toString(),
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -47,9 +47,9 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.ChangeTemplateDescription -> {
             EditTemplateDescriptionCommandDto(
-                templateId = templateId.id.toString(),
+                templateId = templateId.id,
                 newDescription = newDescription,
-                eventId = commandId.toString(),
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -57,10 +57,10 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.AddTemplateTask -> {
             AddTemplateTaskCommandDto(
-                templateId = templateId.id.toString(),
-                taskId = taskId.id.toString(),
+                templateId = templateId.id,
+                taskId = taskId.id,
                 parentTaskId = parentTaskId?.id?.toString(),
-                eventId = commandId.toString(),
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -68,10 +68,10 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.RenameTemplateTask -> {
             RenameTemplateTaskCommandDto(
-                templateId = templateId.id.toString(),
-                taskId = taskId.id.toString(),
+                templateId = templateId.id,
+                taskId = taskId.id,
                 newTitle = newTitle,
-                eventId = commandId.toString(),
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -79,9 +79,9 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.DeleteTemplateTask -> {
             DeleteTemplateTaskCommandDto(
-                taskId = taskId.id.toString(),
-                templateId = templateId.id.toString(),
-                eventId = commandId.toString(),
+                taskId = taskId.id,
+                templateId = templateId.id,
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -89,20 +89,20 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.UpdateCheckboxPositions -> {
             UpdateTasksPositionsCommandDto(
-                templateId = templateId.id.toString(),
-                eventId = commandId.toString(),
+                templateId = templateId.id,
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid,
-                taskIdToLocalPosition = localPositions.mapKeys { it.key.id.toString() }
+                taskIdToLocalPosition = localPositions.mapKeys { it.key.id }
             )
         }
 
         is TemplateDomainCommand.MoveTemplateTask -> {
             MoveTemplateTaskCommandDto(
-                templateId = templateId.id.toString(),
-                taskId = taskId.id.toString(),
-                newParentTaskId = newParentTaskId?.id?.toString(),
-                eventId = commandId.toString(),
+                templateId = templateId.id,
+                taskId = taskId.id,
+                newParentTaskId = newParentTaskId?.id,
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -110,9 +110,9 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.AddOrReplaceTemplateReminder -> {
             AddOrUpdateTemplateReminderCommandDto(
-                templateId = templateId.id.toString(),
+                templateId = templateId.id,
                 reminder = reminder.toReminderDto(),
-                eventId = commandId.toString(),
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -120,9 +120,9 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.DeleteTemplateReminder -> {
             DeleteTemplateReminderCommandDto(
-                templateId = templateId.id.toString(),
-                reminderId = reminderId.id.toString(),
-                eventId = commandId.toString(),
+                templateId = templateId.id,
+                reminderId = reminderId.id,
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -130,8 +130,8 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 
         is TemplateDomainCommand.DeleteTemplate -> {
             DeleteTemplateCommandDto(
-                templateId = templateId.id.toString(),
-                eventId = commandId.toString(),
+                templateId = templateId.id,
+                eventId = commandId,
                 timestamp = timestamp,
                 userId = currentUser.uid
             )
@@ -142,38 +142,38 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
 fun ChecklistDomainCommand.toCommandDto(currentUser: FirebaseUser): ChecklistCommandDto {
     return when (this) {
         is ChecklistDomainCommand.CreateChecklistCommand -> CreateChecklistCommand(
-            checklistId.id.toString(),
-            templateId.id.toString(),
+            checklistId.id,
+            templateId.id,
             title,
             description,
             tasks.map {
                 it.toTaskDto()
             },
-            commandId.toString(),
+            commandId,
             timestamp,
             currentUser.uid
         )
 
         is ChecklistDomainCommand.ChangeTaskCheckedCommand -> ChangeTaskCheckedCommand(
-            checklistId = checklistId.id.toString(),
-            taskId = taskId.id.toString(),
+            checklistId = checklistId.id,
+            taskId = taskId.id,
             isChecked = isChecked,
-            eventId = commandId.toString(),
+            eventId = commandId,
             timestamp = timestamp,
             userId = currentUser.uid
         )
 
         is ChecklistDomainCommand.DeleteChecklistCommand -> DeleteChecklistCommand(
-            checklistId = checklistId.id.toString(),
-            eventId = commandId.toString(),
+            checklistId = checklistId.id,
+            eventId = commandId,
             timestamp = timestamp,
             userId = currentUser.uid
         )
 
         is ChecklistDomainCommand.EditChecklistNotesCommand -> EditChecklistNotesCommand(
-            checklistId = checklistId.id.toString(),
+            checklistId = checklistId.id,
             newNotes = newNotes,
-            eventId = commandId.toString(),
+            eventId = commandId,
             timestamp = timestamp,
             userId = currentUser.uid
         )
@@ -182,8 +182,8 @@ fun ChecklistDomainCommand.toCommandDto(currentUser: FirebaseUser): ChecklistCom
 
 private fun Checkbox.toTaskDto(): TaskDto {
     return TaskDto(
-        id = id.id.toString(),
-        checklistId = checklistId.id.toString(),
+        id = id.id,
+        checklistId = checklistId.id,
         title = title,
         sortPosition = 0,
         isChecked = isChecked,
