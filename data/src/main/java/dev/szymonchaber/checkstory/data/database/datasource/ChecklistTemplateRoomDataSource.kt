@@ -8,7 +8,6 @@ import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.data.synchronization.CommandRepositoryImpl
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
@@ -23,7 +22,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
@@ -46,52 +44,21 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
             ?.let { combineIntoDomainChecklistTemplate(it) }
             ?.firstOrNull()
             ?.let(commandRepository::rehydrate)
-            ?: getByIdOrNullInCommands(id)
-    }
-
-    private fun getByIdOrNullInCommands(id: UUID): ChecklistTemplate? {
-        if (commandRepository
-                .unappliedCommands
-                .filterIsInstance<TemplateDomainCommand>()
-                .none { it.templateId.id == id && it is TemplateDomainCommand.CreateNewTemplate }
-        ) {
-            return null
-        }
-        return commandRepository.rehydrate(ChecklistTemplate.empty(ChecklistTemplateId(id)))
+            ?: commandRepository.commandOnlyTemplates().find { it.id.id == id }
     }
 
     fun getAll(): Flow<List<ChecklistTemplate>> {
         return checklistTemplateDao.getAll()
             .flatMapLatest {
                 withContext(Dispatchers.Default) {
-                    it.map { combineIntoDomainChecklistTemplate(it) }
-                        .toFlowOfLists()
-                        .map { templates ->
-                            templates.map(commandRepository::rehydrate)
-                        }
+                    it.map { combineIntoDomainChecklistTemplate(it) }.toFlowOfLists()
                 }
-            }.combine(commandRepository.unappliedCommandsFlow) { templates, commands ->
-                val templateIdToCommands = commands
-                    .filterIsInstance<TemplateDomainCommand>()
-                    .groupBy { it.templateId }
-                val commandsWithCreationCommand = templateIdToCommands.filterValues {
-                    it.any { command ->
-                        command is TemplateDomainCommand.CreateNewTemplate
-                    }
-                }
-                val commandOnlyTemplates = commandsWithCreationCommand.map { (id, commands) ->
-                    commands.fold(
-                        ChecklistTemplate.empty(id)
-                    ) { template, templateCommand ->
-                        templateCommand.applyTo(template)
-                    }
-                }
+            }
+            .combine(commandRepository.unappliedCommandsFlow) { templates, _ ->
                 templates.map {
-                    templateIdToCommands[it.id]
-                        ?.fold(it) { template, command ->
-                            command.applyTo(template)
-                        } ?: it
-                }.plus(commandOnlyTemplates)
+                    commandRepository.rehydrate(it)
+                }
+                    .plus(commandRepository.commandOnlyTemplates())
                     .sortedBy { it.createdAt }
                     .filterNot { it.isRemoved }
             }

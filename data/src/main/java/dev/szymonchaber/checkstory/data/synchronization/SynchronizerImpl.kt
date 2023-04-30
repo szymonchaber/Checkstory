@@ -72,7 +72,7 @@ class CommandRepositoryImpl @Inject constructor() {
 
     suspend fun storeCommands(domainCommands: List<DomainCommand>) {
         _unappliedCommands.addAll(domainCommands)
-        unappliedCommandsFlow.emit(_unappliedCommands)
+        unappliedCommandsFlow.value = unappliedCommands.toList()
     }
 
     private fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateDomainCommand> {
@@ -85,6 +85,22 @@ class CommandRepositoryImpl @Inject constructor() {
         return unappliedCommands
             .filterIsInstance<ChecklistDomainCommand>()
             .filter { command -> command.checklistId == checklistId }
+    }
+
+    fun commandOnlyTemplates(): List<ChecklistTemplate> {
+        return unappliedCommands
+            .filterIsInstance<TemplateDomainCommand>()
+            .groupBy { it.templateId }
+            .filterValues {
+                it.any { command ->
+                    command is TemplateDomainCommand.CreateNewTemplate
+                }
+            }
+            .map { (id, commands) ->
+                commands.fold(ChecklistTemplate.empty(id)) { acc, command ->
+                    command.applyTo(acc)
+                }
+            }
     }
 
     fun rehydrate(template: ChecklistTemplate): ChecklistTemplate {
