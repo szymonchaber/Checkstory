@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.data.synchronization
 import dev.szymonchaber.checkstory.data.Event
 import dev.szymonchaber.checkstory.data.State
 import dev.szymonchaber.checkstory.data.api.event.CommandsApi
+import dev.szymonchaber.checkstory.data.api.event.TemplatesApi
 import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateRepository
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
@@ -17,7 +18,8 @@ class SynchronizerImpl @Inject internal constructor(
     private val checklistTemplateRepository: LocalChecklistTemplateRepository,
     private val remoteChecklistTemplateRepository: RemoteChecklistTemplateRepository,
     private val commandsApi: CommandsApi,
-    private val commandRepository: CommandRepositoryImpl
+    private val commandRepository: CommandRepositoryImpl,
+    private val templatesApi: TemplatesApi
 ) : Synchronizer {
 
     private val _events = mutableListOf<Event>()
@@ -42,11 +44,14 @@ class SynchronizerImpl @Inject internal constructor(
 
     override suspend fun synchronize() {
         val commands = commandRepository.unappliedCommandsFlow.first()
-        if (commands.isEmpty()) {
-            return
+        if (commands.isNotEmpty()) {
+            commandsApi.pushCommands(commands)
+            commandRepository.deleteCommands(commands.map(DomainCommand::commandId))
         }
-        commandsApi.pushCommands(commands)
-//        commandRepository.deleteCommands(commands.map(EditTemplateDomainCommand::commandId))
+        val templates = templatesApi.getTemplates()
+        checklistTemplateRepository.removeAll()
+        checklistTemplateRepository.updateAll(templates)
+
     }
 
     override suspend fun synchronizeCommands(commands: List<DomainCommand>) {

@@ -19,6 +19,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -230,6 +231,14 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         templateCheckboxes.forEach {
             withContext(Dispatchers.IO) {
                 templateCheckboxDao.deleteCascading(it.id.id)
+            }
+        }
+    }
+
+    suspend fun deleteAll() {
+        getAll().first().let {
+            it.forEach {
+                delete(it)
             }
         }
     }
