@@ -20,7 +20,7 @@ sealed interface TemplateCommandDto : CommandDto {
 @SerialName("createTemplate")
 data class CreateTemplateCommandDto(
     override val templateId: DtoUUID,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -30,7 +30,7 @@ data class CreateTemplateCommandDto(
 data class EditTemplateTitleCommandDto(
     override val templateId: DtoUUID,
     val newTitle: String,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -40,7 +40,7 @@ data class EditTemplateTitleCommandDto(
 data class EditTemplateDescriptionCommandDto(
     override val templateId: DtoUUID,
     val newDescription: String,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -51,7 +51,7 @@ data class AddTemplateTaskCommandDto(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
     val parentTaskId: String?,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -62,7 +62,7 @@ data class RenameTemplateTaskCommandDto(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
     val newTitle: String,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -72,7 +72,7 @@ data class RenameTemplateTaskCommandDto(
 data class DeleteTemplateTaskCommandDto(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -82,7 +82,7 @@ data class DeleteTemplateTaskCommandDto(
 data class UpdateTasksPositionsCommandDto(
     override val templateId: DtoUUID,
     val taskIdToLocalPosition: Map<DtoUUID, Long>,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -93,7 +93,7 @@ data class MoveTemplateTaskCommandDto(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
     val newParentTaskId: DtoUUID?,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -103,7 +103,7 @@ data class MoveTemplateTaskCommandDto(
 data class AddOrUpdateTemplateReminderCommandDto(
     override val templateId: DtoUUID,
     val reminder: ReminderDto,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -113,7 +113,7 @@ data class AddOrUpdateTemplateReminderCommandDto(
 data class DeleteTemplateReminderCommandDto(
     override val templateId: DtoUUID,
     val reminderId: DtoUUID,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto
@@ -122,7 +122,7 @@ data class DeleteTemplateReminderCommandDto(
 @SerialName("deleteTemplate")
 data class DeleteTemplateCommandDto(
     override val templateId: DtoUUID,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : TemplateCommandDto

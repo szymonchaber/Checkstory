@@ -18,7 +18,7 @@ data class CreateChecklistCommand(
     val title: String,
     val description: String,
     val tasks: List<TaskDto>,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : ChecklistCommandDto
@@ -28,7 +28,7 @@ data class CreateChecklistCommand(
 data class EditChecklistNotesCommand(
     override val checklistId: DtoUUID,
     val newNotes: String,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : ChecklistCommandDto
@@ -39,7 +39,7 @@ data class ChangeTaskCheckedCommand(
     override val checklistId: DtoUUID,
     val taskId: DtoUUID,
     val isChecked: Boolean,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : ChecklistCommandDto
@@ -48,7 +48,7 @@ data class ChangeTaskCheckedCommand(
 @SerialName("deleteChecklist")
 data class DeleteChecklistCommand(
     override val checklistId: DtoUUID,
-    override val eventId: DtoUUID,
+    override val commandId: DtoUUID,
     override val timestamp: Long,
     override val userId: String
 ) : ChecklistCommandDto

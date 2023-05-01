@@ -6,7 +6,7 @@ import java.util.*
 @Serializable
 sealed interface CommandDto {
 
-    val eventId: UUID
+    val commandId: UUID
     val timestamp: Long
     val userId: String
 }
