@@ -7,7 +7,7 @@ import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
-import dev.szymonchaber.checkstory.data.synchronization.CommandRepositoryImpl
+import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -60,7 +60,9 @@ class ChecklistRoomDataSource @Inject constructor(
 
     private fun Flow<List<Checklist>>.hydrated(): Flow<List<Checklist>> =
         combine(commandRepository.unappliedCommandsFlow) { templates, _ ->
-            templates.map(commandRepository::hydrate)
+            templates.map {
+                commandRepository.hydrate(it)
+            }
                 .plus(commandRepository.commandOnlyChecklists())
                 .sortedByDescending(Checklist::createdAt)
                 .filterNot(Checklist::isRemoved)
@@ -134,7 +136,9 @@ class ChecklistRoomDataSource @Inject constructor(
                 }
             }
             .map {
-                it?.let(commandRepository::hydrate)
+                it?.let {
+                    commandRepository.hydrate(it)
+                }
             }
     }
 

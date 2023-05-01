@@ -7,7 +7,7 @@ import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
-import dev.szymonchaber.checkstory.data.synchronization.CommandRepositoryImpl
+import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
@@ -43,7 +43,9 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         return checklistTemplateDao.getByIdOrNull(id)
             ?.let { combineIntoDomainChecklistTemplate(it) }
             ?.firstOrNull()
-            ?.let(commandRepository::hydrate)
+            ?.let {
+                commandRepository.hydrate(it)
+            }
             ?: commandRepository.commandOnlyTemplates().find { it.id.id == id }
     }
 

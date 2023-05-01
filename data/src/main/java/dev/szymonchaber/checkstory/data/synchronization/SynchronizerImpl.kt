@@ -3,18 +3,12 @@ package dev.szymonchaber.checkstory.data.synchronization
 import dev.szymonchaber.checkstory.data.Event
 import dev.szymonchaber.checkstory.data.State
 import dev.szymonchaber.checkstory.data.api.event.CommandsApi
+import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateRepository
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
-import kotlinx.coroutines.flow.MutableStateFlow
-import java.util.*
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,7 +41,7 @@ class SynchronizerImpl @Inject internal constructor(
     }
 
     override suspend fun synchronize() {
-        val commands = commandRepository.unappliedCommands
+        val commands = commandRepository.unappliedCommandsFlow.first()
         if (commands.isEmpty()) {
             return
         }
@@ -58,83 +52,5 @@ class SynchronizerImpl @Inject internal constructor(
     override suspend fun synchronizeCommands(commands: List<DomainCommand>) {
         commandRepository.storeCommands(commands)
         synchronize()
-    }
-}
-
-@Singleton
-class CommandRepositoryImpl @Inject constructor() {
-
-    private val _unappliedCommands = mutableListOf<DomainCommand>()
-    val unappliedCommands: List<DomainCommand>
-        get() = _unappliedCommands
-
-    val unappliedCommandsFlow = MutableStateFlow(listOf<DomainCommand>())
-
-    suspend fun storeCommands(domainCommands: List<DomainCommand>) {
-        _unappliedCommands.addAll(domainCommands)
-        unappliedCommandsFlow.value = unappliedCommands.toList()
-    }
-
-    fun commandOnlyTemplates(): List<ChecklistTemplate> {
-        return unappliedCommands
-            .filterIsInstance<TemplateDomainCommand>()
-            .groupBy { it.templateId }
-            .filterValues {
-                it.any { command ->
-                    command is TemplateDomainCommand.CreateNewTemplate
-                }
-            }
-            .map { (id, commands) ->
-                commands.fold(ChecklistTemplate.empty(id)) { acc, command ->
-                    command.applyTo(acc)
-                }
-            }
-    }
-
-    fun commandOnlyChecklists(): List<Checklist> {
-        return unappliedCommands
-            .filterIsInstance<ChecklistDomainCommand>()
-            .groupBy { it.checklistId }
-            .filterValues {
-                it.any { command ->
-                    command is ChecklistDomainCommand.CreateChecklistCommand
-                }
-            }
-            .map { (id, commands) ->
-                commands.fold(Checklist.empty(id)) { acc, command ->
-                    command.applyTo(acc)
-                }
-            }
-    }
-
-    fun hydrate(template: ChecklistTemplate): ChecklistTemplate {
-        return commandsForTemplate(template.id)
-            .fold(template) { acc, command ->
-                command.applyTo(acc)
-            }
-    }
-
-    fun hydrate(checklist: Checklist): Checklist {
-        return commandsForChecklist(checklist.id)
-            .fold(checklist) { acc, command ->
-                command.applyTo(acc)
-            }
-    }
-
-    private fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateDomainCommand> {
-        return unappliedCommands
-            .filterIsInstance<TemplateDomainCommand>()
-            .filter { command -> command.templateId == templateId }
-    }
-
-    private fun commandsForChecklist(checklistId: ChecklistId): List<ChecklistDomainCommand> {
-        return unappliedCommands
-            .filterIsInstance<ChecklistDomainCommand>()
-            .filter { command -> command.checklistId == checklistId }
-    }
-
-    suspend fun deleteCommands(ids: List<UUID>) {
-        _unappliedCommands.removeIf { ids.contains(it.commandId) }
-        unappliedCommandsFlow.emit(_unappliedCommands)
     }
 }
