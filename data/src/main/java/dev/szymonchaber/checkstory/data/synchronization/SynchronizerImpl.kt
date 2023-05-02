@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.data.synchronization
 
-import dev.szymonchaber.checkstory.data.Event
-import dev.szymonchaber.checkstory.data.State
+import dev.szymonchaber.checkstory.data.api.event.ChecklistsApi
 import dev.szymonchaber.checkstory.data.api.event.CommandsApi
 import dev.szymonchaber.checkstory.data.api.event.TemplatesApi
+import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.LocalChecklistTemplateRepository
 import dev.szymonchaber.checkstory.data.repository.RemoteChecklistTemplateRepository
@@ -19,27 +19,14 @@ class SynchronizerImpl @Inject internal constructor(
     private val remoteChecklistTemplateRepository: RemoteChecklistTemplateRepository,
     private val commandsApi: CommandsApi,
     private val commandRepository: CommandRepositoryImpl,
-    private val templatesApi: TemplatesApi
+    private val templatesApi: TemplatesApi,
+    private val checklistsApi: ChecklistsApi,
+    private val checklistRepositoryImpl: ChecklistRepositoryImpl
 ) : Synchronizer {
 
-    private val _events = mutableListOf<Event>()
-    val events: List<Event>
-        get() = _events
-
-    fun checklistTitleChanged(id: String, newTitle: String) {
-        _events.add(Event.TemplateTitleChanged(id, newTitle))
-    }
-
-    fun checklistTemplateCreated(id: String, title: String, description: String, tasks: List<String>) {
-        _events.add(Event.TemplateCreated(id, title, description, tasks))
-    }
-
-    fun getState(): State {
-        return events.fold(State()) { state, event ->
-            with(event) {
-                state.apply()
-            }
-        }
+    override suspend fun synchronizeCommands(commands: List<DomainCommand>) {
+        commandRepository.storeCommands(commands)
+        synchronize()
     }
 
     override suspend fun synchronize() {
@@ -49,13 +36,11 @@ class SynchronizerImpl @Inject internal constructor(
             commandRepository.deleteCommands(commands.map(DomainCommand::commandId))
         }
         val templates = templatesApi.getTemplates()
+        val checklists = checklistsApi.getChecklists()
         checklistTemplateRepository.removeAll()
         checklistTemplateRepository.updateAll(templates)
 
-    }
-
-    override suspend fun synchronizeCommands(commands: List<DomainCommand>) {
-        commandRepository.storeCommands(commands)
-        synchronize()
+        checklistRepositoryImpl.removeAll()
+        checklistRepositoryImpl.updateAll(checklists)
     }
 }

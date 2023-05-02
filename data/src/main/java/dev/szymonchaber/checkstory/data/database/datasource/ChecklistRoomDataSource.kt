@@ -14,9 +14,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -181,4 +184,25 @@ class ChecklistRoomDataSource @Inject constructor(
         checkboxDao.delete(*checkboxEntities.toTypedArray())
         checklistDao.delete(ChecklistEntity.fromDomainChecklist(checklist))
     }
+
+    suspend fun insertAll(checklists: List<Checklist>) {
+        withContext(Dispatchers.Default) {
+            awaitAll(
+                *checklists.map {
+                    async {
+                        insert(it)
+                    }
+                }.toTypedArray()
+            )
+        }
+    }
+
+    suspend fun deleteAll() {
+        getAll().first().let {
+            it.forEach {
+                delete(it)
+            }
+        }
+    }
+
 }

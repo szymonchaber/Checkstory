@@ -13,7 +13,7 @@ class GetChecklistTemplatesUseCase @Inject constructor(
 
     fun getChecklistTemplates(): Flow<List<ChecklistTemplate>> {
         return checklistRepository.getAll().onStart {
-            synchronizeDataUseCase.synchronizeData()
+//            synchronizeDataUseCase.synchronizeData()
         }
     }
 }
