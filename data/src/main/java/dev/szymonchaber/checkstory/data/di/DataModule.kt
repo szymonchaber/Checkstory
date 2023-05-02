@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -38,7 +40,7 @@ internal interface DataModule {
     fun bindChecklistRepository(repository: ChecklistRepositoryImpl): ChecklistRepository
 
     @Binds
-    fun bindChecklistTemplateRepository(repository: LocalChecklistTemplateRepository): ChecklistTemplateRepository
+    fun bindChecklistTemplateRepository(repository: ChecklistTemplateRepositoryImpl): ChecklistTemplateRepository
 
 //    @Binds
 //    fun bindChecklistTemplateRepository(repository: RemoteChecklistTemplateRepository): ChecklistTemplateRepository
@@ -98,6 +100,10 @@ internal interface DataModule {
 
                 install(DefaultRequest) {
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
+                    val currentUser = Firebase.auth.currentUser
+                    currentUser?.getIdToken(false)?.result?.token?.let {
+                        header("Authorization", "Bearer $it")
+                    }
                 }
             }
         }

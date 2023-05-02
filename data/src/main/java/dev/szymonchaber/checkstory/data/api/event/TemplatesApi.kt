@@ -1,7 +1,5 @@
 package dev.szymonchaber.checkstory.data.api.event
 
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
@@ -13,7 +11,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
@@ -24,14 +21,9 @@ import javax.inject.Inject
 internal class TemplatesApi @Inject constructor(private val httpClient: HttpClient) {
 
     suspend fun getTemplates(): List<ChecklistTemplate> {
-        val currentUser = Firebase.auth.currentUser!!
-        val token = currentUser.getIdToken(false).result!!.token
-
-        return httpClient.get("http://10.0.2.2:8080/templates") {
-            header("Authorization", "Bearer $token")
-        }.body<List<ApiTemplate>>().map {
-            it.toTemplate()
-        }
+        return httpClient.get("http://10.0.2.2:8080/templates")
+            .body<List<ApiTemplate>>()
+            .map(ApiTemplate::toTemplate)
     }
 }
 

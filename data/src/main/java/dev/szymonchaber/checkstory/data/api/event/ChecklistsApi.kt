@@ -1,7 +1,5 @@
 package dev.szymonchaber.checkstory.data.api.event
 
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
@@ -11,7 +9,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.header
 import kotlinx.serialization.Serializable
 import java.util.*
 import javax.inject.Inject
@@ -19,14 +16,9 @@ import javax.inject.Inject
 internal class ChecklistsApi @Inject constructor(private val httpClient: HttpClient) {
 
     suspend fun getChecklists(): List<Checklist> {
-        val currentUser = Firebase.auth.currentUser!!
-        val token = currentUser.getIdToken(false).result!!.token
-
-        return httpClient.get("http://10.0.2.2:8080/checklists") {
-            header("Authorization", "Bearer $token")
-        }.body<List<ApiChecklist>>().map {
-            it.toChecklist()
-        }
+        return httpClient.get("http://10.0.2.2:8080/checklists")
+            .body<List<ApiChecklist>>()
+            .map(ApiChecklist::toChecklist)
     }
 }
 

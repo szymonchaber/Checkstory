@@ -9,7 +9,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LocalChecklistTemplateRepository @Inject constructor(
+class ChecklistTemplateRepositoryImpl @Inject constructor(
     private val dataSource: ChecklistTemplateRoomDataSource
 ) : ChecklistTemplateRepository {
 
@@ -19,10 +19,6 @@ class LocalChecklistTemplateRepository @Inject constructor(
 
     override suspend fun get(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
         return dataSource.getByIdOrNull(checklistTemplateId.id)
-    }
-
-    override suspend fun helloWorld(token: String): String {
-        return "local repo"
     }
 
     override suspend fun getOrNull(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
