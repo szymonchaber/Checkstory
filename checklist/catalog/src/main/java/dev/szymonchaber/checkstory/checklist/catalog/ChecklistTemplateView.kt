@@ -217,7 +217,7 @@ private fun TemplateActionButtons(
 fun ChecklistTemplateViewPreview() {
     ChecklistTemplateView(
         checklistTemplate = ChecklistTemplate(
-            ChecklistTemplateId(UUID.randomUUID()),
+            ChecklistTemplateId.new(),
             "Template",
             "Description",
             listOf(

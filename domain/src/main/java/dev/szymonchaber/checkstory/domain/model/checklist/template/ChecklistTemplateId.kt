@@ -4,4 +4,10 @@ import java.io.Serializable
 import java.util.*
 
 @JvmInline
-value class ChecklistTemplateId(val id: UUID) : Serializable
+value class ChecklistTemplateId(val id: UUID) : Serializable {
+
+    companion object {
+
+        fun new() = ChecklistTemplateId(UUID.randomUUID())
+    }
+}

@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.domain.model.checklist.fill
 
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import java.time.LocalDateTime
-import java.util.*
 
 data class Checklist(
     val id: ChecklistId,
@@ -35,7 +34,7 @@ data class Checklist(
         fun empty(id: ChecklistId): Checklist {
             return Checklist(
                 id = id,
-                checklistTemplateId = ChecklistTemplateId(UUID.randomUUID()),
+                checklistTemplateId = ChecklistTemplateId.new(),
                 title = "",
                 description = "",
                 items = listOf(),

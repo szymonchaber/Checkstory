@@ -154,7 +154,7 @@ fun List<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>>.foldInto(succe
 
 fun emptyChecklistTemplate(): ChecklistTemplate {
     return ChecklistTemplate(
-        ChecklistTemplateId(UUID.randomUUID()),
+        ChecklistTemplateId.new(),
         "",
         "",
         listOf(),

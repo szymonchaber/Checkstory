@@ -129,7 +129,7 @@ class InsertDsl {
 
     private val items = mutableMapOf<Checklist, List<Checkbox>>()
 
-    class CheckboxDsl {
+    class CheckboxDsl(val checklistId: UUID) {
 
         val checkboxes = mutableListOf<Checkbox>()
 
@@ -138,7 +138,7 @@ class InsertDsl {
                 Checkbox(
                     CheckboxId(UUID.randomUUID()),
                     null,
-                    ChecklistId(UUID.randomUUID()),
+                    ChecklistId(checklistId),
                     title,
                     isChecked,
                     listOf()
@@ -148,7 +148,7 @@ class InsertDsl {
     }
 
     fun checklist(checklistId: UUID, templateId: UUID, notes: String = "", checkboxesBlock: CheckboxDsl.() -> Unit) {
-        items[Checklist(checklistId, templateId, notes)] = CheckboxDsl().apply(checkboxesBlock).checkboxes
+        items[Checklist(checklistId, templateId, notes)] = CheckboxDsl(checklistId).apply(checkboxesBlock).checkboxes
     }
 
     fun insertInto(appDatabase: AppDatabase) {
