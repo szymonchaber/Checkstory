@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.SynchronizeDataUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -34,7 +36,8 @@ class ChecklistCatalogViewModel @Inject constructor(
     private val getRecentChecklistsUseCase: GetRecentChecklistsUseCase,
     private val getUserUseCase: GetUserUseCase,
     private val tracker: Tracker,
-    private val onboardingPreferences: OnboardingPreferences
+    private val onboardingPreferences: OnboardingPreferences,
+    private val synchronizeDataUseCase: SynchronizeDataUseCase
 ) : BaseViewModel<
         ChecklistCatalogEvent,
         ChecklistCatalogState,
@@ -69,7 +72,8 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleEditTemplateClicked(),
             eventFlow.handleHistoryClicked(),
             eventFlow.handleGetProClicked(),
-            eventFlow.handleAboutClicked()
+            eventFlow.handleAboutClicked(),
+            eventFlow.handleRefreshCatalog()
         ).catch {
             FirebaseCrashlytics.getInstance().recordException(it)
         }
@@ -94,6 +98,17 @@ class ChecklistCatalogViewModel @Inject constructor(
                 templatesLoading.combine(recentChecklistsLoading) { templates, checklists ->
                     state.first()
                         .copy(templatesLoadingState = templates, recentChecklistsLoadingState = checklists) to null
+                }
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleRefreshCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.PulledToRefresh>()
+            .flatMapLatest {
+                flow {
+                    emit(state.first().copy(isRefreshing = true) to null)
+                    synchronizeDataUseCase.synchronizeData()
+                    emit(state.first().copy(isRefreshing = false) to null)
                 }
             }
     }

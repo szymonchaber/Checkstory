@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -21,6 +22,9 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -114,6 +118,7 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ChecklistCatalogView(
     viewModel: ChecklistCatalogViewModel,
@@ -152,16 +157,24 @@ private fun ChecklistCatalogView(
             null -> Unit
         }
     }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        item {
-            RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
+
+    val pullRefreshState = rememberPullRefreshState(state.isRefreshing, {
+        viewModel.onEvent(ChecklistCatalogEvent.PulledToRefresh)
+    })
+
+    Box(Modifier.pullRefresh(pullRefreshState)) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
+            }
+            checklistTemplates(state, viewModel)
         }
-        checklistTemplates(state, viewModel)
+        PullRefreshIndicator(state.isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
     }
 }
 
