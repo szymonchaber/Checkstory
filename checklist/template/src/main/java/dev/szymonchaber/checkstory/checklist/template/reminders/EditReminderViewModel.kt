@@ -9,7 +9,6 @@ import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderSta
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalType
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -56,7 +55,7 @@ class EditReminderViewModel @Inject constructor(
             .map {
                 val newReminder = Reminder.Exact(
                     ReminderId(UUID.randomUUID()),
-                    ChecklistTemplateId(UUID.randomUUID()),
+                    it.templateId,
                     LocalDateTime.now()
                 )
                 EditReminderState(EditReminderLoadingState.Success.fromReminder(newReminder)) to null

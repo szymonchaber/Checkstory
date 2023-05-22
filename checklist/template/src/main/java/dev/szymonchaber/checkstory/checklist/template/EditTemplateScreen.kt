@@ -166,7 +166,7 @@ fun EditTemplateScreen(
                 navigator.navigateUp()
             }
             is EditTemplateEffect.ShowAddReminderSheet -> {
-                editReminderViewModel.onEvent(EditReminderEvent.CreateReminder)
+                editReminderViewModel.onEvent(EditReminderEvent.CreateReminder(value.templateId))
                 scope.launch {
                     modalBottomSheetState.show()
                 }

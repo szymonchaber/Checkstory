@@ -389,7 +389,7 @@ class EditTemplateViewModel @Inject constructor(
                 tracker.logEvent("add_reminder_clicked")
                 val user = getUserUseCase.getUser().first()
                 val effect = if (user.isPaidUser) {
-                    EditTemplateEffect.ShowAddReminderSheet()
+                    EditTemplateEffect.ShowAddReminderSheet(state.checklistTemplate.id)
                 } else {
                     EditTemplateEffect.ShowFreeRemindersUsed()
                 }
