@@ -70,7 +70,7 @@ data class TaskDto(
             title = title,
             children = children.map { it.toTask(id) },
 //            sortPosition = sortPosition
-            checklistId = ChecklistId(UUID.randomUUID()),
+            checklistId = ChecklistId(checklistId),
             isChecked = isChecked
         )
     }
