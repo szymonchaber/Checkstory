@@ -66,6 +66,7 @@ internal interface DataModule {
         }
 
         private const val TIME_OUT = 60_000
+        private const val API_ENDPOINT = "http://10.0.2.2:8080"
 
         @Provides
         fun provideHttpClient(): HttpClient {
@@ -99,6 +100,7 @@ internal interface DataModule {
                 }
 
                 install(DefaultRequest) {
+                    url(API_ENDPOINT)
                     header(HttpHeaders.ContentType, ContentType.Application.Json)
                     val currentUser = Firebase.auth.currentUser
                     currentUser?.getIdToken(false)?.result?.token?.let {

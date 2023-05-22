@@ -21,7 +21,7 @@ import javax.inject.Inject
 internal class TemplatesApi @Inject constructor(private val httpClient: HttpClient) {
 
     suspend fun getTemplates(): List<ChecklistTemplate> {
-        return httpClient.get("http://10.0.2.2:8080/templates")
+        return httpClient.get("templates")
             .body<List<ApiTemplate>>()
             .map(ApiTemplate::toTemplate)
     }

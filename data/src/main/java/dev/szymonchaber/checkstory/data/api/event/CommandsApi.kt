@@ -25,10 +25,10 @@ internal class CommandsApi @Inject constructor(private val httpClient: HttpClien
             it.toCommandDto()
         }
 
-        httpClient.post("http://10.0.2.2:8080/commands") {
+        httpClient.post("commands") {
             setBody(templateCommandDtos)
         }
-        httpClient.post("http://10.0.2.2:8080/checklist-commands") {
+        httpClient.post("checklist-commands") {
             setBody(checklistCommandDtos)
         }
     }
