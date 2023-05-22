@@ -15,6 +15,17 @@ data class ChecklistTemplate(
     val isRemoved: Boolean = false
 ) {
 
+    val flattenedItems: List<TemplateCheckbox>
+        get() {
+            return items.flatMap {
+                flatten(it)
+            }
+        }
+
+    private fun flatten(checkbox: TemplateCheckbox): List<TemplateCheckbox> {
+        return listOf(checkbox) + checkbox.children.flatMap { flatten(it) }
+    }
+
     companion object {
 
         fun empty(id: ChecklistTemplateId, createdAt: LocalDateTime = LocalDateTime.now()): ChecklistTemplate {

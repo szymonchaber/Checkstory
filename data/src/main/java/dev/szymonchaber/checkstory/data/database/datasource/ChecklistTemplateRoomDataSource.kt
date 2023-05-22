@@ -19,7 +19,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -69,18 +68,6 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
 
     suspend fun update(checklistTemplate: ChecklistTemplate): UUID {
         return insert(checklistTemplate)
-    }
-
-    suspend fun updateAll(templates: List<ChecklistTemplate>) {
-        withContext(Dispatchers.Default) {
-            awaitAll(
-                *templates.map {
-                    async {
-                        insert(it)
-                    }
-                }.toTypedArray()
-            )
-        }
     }
 
     suspend fun insert(checklistTemplate: ChecklistTemplate): UUID {
@@ -235,11 +222,28 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
         }
     }
 
-    suspend fun deleteAll() {
-        getAll().first().let {
-            it.forEach {
-                delete(it)
-            }
+    suspend fun replaceData(with: List<ChecklistTemplate>) {
+        with.map { template ->
+            Triple(
+                ChecklistTemplateEntity.fromDomainChecklistTemplate(template),
+                template.flattenedItems.map {
+                    TemplateCheckboxEntity.fromDomainTemplateCheckbox(it, template.id.id)
+                },
+                template.reminders.map {
+                    ReminderEntity.fromDomainReminder(it, template.id.id)
+                }
+            )
+        }.fold(
+            Triple(
+                listOf<ChecklistTemplateEntity>(),
+                listOf<TemplateCheckboxEntity>(),
+                listOf<ReminderEntity>()
+            )
+        ) { (templates, checkboxes, reminders), (template, templateItems, templateReminders) ->
+            Triple(templates.plus(template), checkboxes.plus(templateItems), reminders.plus(templateReminders))
         }
+            .let { (templates, checkboxes, reminders) ->
+                checklistTemplateDao.replaceData(templates, checkboxes, reminders)
+            }
     }
 }

@@ -21,7 +21,7 @@ class SynchronizerImpl @Inject internal constructor(
     private val commandRepository: CommandRepositoryImpl,
     private val templatesApi: TemplatesApi,
     private val checklistsApi: ChecklistsApi,
-    private val checklistRepositoryImpl: ChecklistRepositoryImpl
+    private val checklistRepository: ChecklistRepositoryImpl
 ) : Synchronizer {
 
     override suspend fun synchronizeCommands(commands: List<DomainCommand>) {
@@ -40,10 +40,8 @@ class SynchronizerImpl @Inject internal constructor(
         }
         val templates = templatesApi.getTemplates()
         val checklists = checklistsApi.getChecklists()
-        checklistTemplateRepository.removeAll()
-        checklistTemplateRepository.updateAll(templates)
+        checklistTemplateRepository.replaceData(templates)
 
-        checklistRepositoryImpl.removeAll()
-        checklistRepositoryImpl.updateAll(checklists)
+        checklistRepository.replaceData(checklists)
     }
 }

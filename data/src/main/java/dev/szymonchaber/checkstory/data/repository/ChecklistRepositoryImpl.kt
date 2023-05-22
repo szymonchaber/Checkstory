@@ -32,13 +32,8 @@ class ChecklistRepositoryImpl @Inject constructor(
         _checklistSavedEvents.tryEmit(ChecklistSaved)
     }
 
-    suspend fun updateAll(checklists: List<Checklist>) {
-        dataSource.insertAll(checklists)
-        _checklistSavedEvents.tryEmit(ChecklistSaved)
-    }
-
-    suspend fun removeAll() {
-        dataSource.deleteAll()
+    suspend fun replaceData(with: List<Checklist>) {
+        dataSource.replaceData(with)
     }
 
     override fun getChecklist(checklistId: ChecklistId): Flow<Checklist> {

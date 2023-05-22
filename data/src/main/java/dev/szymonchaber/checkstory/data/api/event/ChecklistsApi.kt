@@ -44,7 +44,7 @@ data class ApiChecklist(
             checklistTemplateId = ChecklistTemplateId(templateId),
             title = title,
             description = description,
-            items = tasks.map { it.toTask() },
+            items = tasks.sortedBy(TaskDto::sortPosition).map(TaskDto::toTask),
             createdAt = createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
             isRemoved = isDeleted,
             notes = notes
@@ -68,8 +68,7 @@ data class TaskDto(
             id = id,
             parentId = parentId,
             title = title,
-            children = children.map { it.toTask(id) },
-//            sortPosition = sortPosition
+            children = children.sortedBy(TaskDto::sortPosition).map { it.toTask(id) },
             checklistId = ChecklistId(checklistId),
             isChecked = isChecked
         )

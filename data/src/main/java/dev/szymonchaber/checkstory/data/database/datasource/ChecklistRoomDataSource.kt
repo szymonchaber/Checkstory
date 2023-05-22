@@ -14,12 +14,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -185,24 +182,21 @@ class ChecklistRoomDataSource @Inject constructor(
         checklistDao.delete(ChecklistEntity.fromDomainChecklist(checklist))
     }
 
-    suspend fun insertAll(checklists: List<Checklist>) {
-        withContext(Dispatchers.Default) {
-            awaitAll(
-                *checklists.map {
-                    async {
-                        insert(it)
-                    }
-                }.toTypedArray()
-            )
-        }
-    }
-
-    suspend fun deleteAll() {
-        getAll().first().let {
-            it.forEach {
-                delete(it)
+    suspend fun replaceData(with: List<Checklist>) {
+        with
+            .map { checklist ->
+                ChecklistEntity.fromDomainChecklist(checklist) to
+                        checklist.flattenedItems.map {
+                            CheckboxEntity.fromDomainCheckbox(it)
+                        }
             }
-        }
+            .fold(
+                listOf<ChecklistEntity>() to listOf<CheckboxEntity>()
+            ) { (checklists, checkboxes), (checklist, checklistItems) ->
+                checklists.plus(checklist) to checkboxes.plus(checklistItems)
+            }
+            .let { (checklists, checkboxes) ->
+                checklistDao.replaceData(checklists, checkboxes)
+            }
     }
-
 }

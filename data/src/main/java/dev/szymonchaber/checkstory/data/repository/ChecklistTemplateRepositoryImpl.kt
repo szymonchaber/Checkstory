@@ -33,11 +33,7 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
         dataSource.delete(checklistTemplate)
     }
 
-    suspend fun updateAll(checklistTemplatesWithRemoteId: List<ChecklistTemplate>) {
-        dataSource.updateAll(checklistTemplatesWithRemoteId)
-    }
-
-    suspend fun removeAll() {
-        dataSource.deleteAll()
+    suspend fun replaceData(with: List<ChecklistTemplate>) {
+        dataSource.replaceData(with)
     }
 }
