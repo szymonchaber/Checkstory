@@ -9,8 +9,11 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
-import java.util.*
 import javax.inject.Inject
 
 internal class ChecklistsApi @Inject constructor(private val httpClient: HttpClient) {
@@ -31,6 +34,7 @@ data class ApiChecklist(
     val description: String,
     val notes: String,
     val tasks: List<TaskDto> = listOf(),
+    val createdAt: Instant,
     val isDeleted: Boolean = false
 ) {
 
@@ -41,7 +45,7 @@ data class ApiChecklist(
             title = title,
             description = description,
             items = tasks.map { it.toTask() },
-            createdAt = java.time.LocalDateTime.now(), // TODO get from backend
+            createdAt = createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
             isRemoved = isDeleted,
             notes = notes
         )
