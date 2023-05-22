@@ -6,14 +6,15 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import java.time.Instant
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toJavaInstant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
 sealed interface DomainCommand {
 
-    val timestamp: Long
+    val timestamp: Instant
     val commandId: UUID
 }
 
@@ -25,13 +26,13 @@ sealed interface TemplateDomainCommand : DomainCommand {
 
     data class CreateNewTemplate(
         override val templateId: ChecklistTemplateId,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
-            val instant = Instant.ofEpochMilli(timestamp)
-            val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+            val instant = timestamp
+            val localDateTime = LocalDateTime.ofInstant(instant.toJavaInstant(), ZoneId.systemDefault())
             return template.copy(createdAt = localDateTime)
         }
     }
@@ -39,7 +40,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
     data class RenameTemplate(
         override val templateId: ChecklistTemplateId,
         val newTitle: String,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
@@ -51,7 +52,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
     data class ChangeTemplateDescription(
         override val templateId: ChecklistTemplateId,
         val newDescription: String,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
@@ -64,7 +65,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         override val templateId: ChecklistTemplateId,
         val taskId: TemplateCheckboxId,
         val parentTaskId: TemplateCheckboxId?,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
@@ -115,7 +116,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         override val templateId: ChecklistTemplateId,
         val taskId: TemplateCheckboxId,
         val newTitle: String,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
@@ -144,7 +145,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
     class DeleteTemplateTask(
         override val templateId: ChecklistTemplateId,
         val taskId: TemplateCheckboxId,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
@@ -155,7 +156,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
 
     data class UpdateCheckboxPositions(
         val localPositions: Map<TemplateCheckboxId, Long>,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID,
         override val templateId: ChecklistTemplateId
     ) : TemplateDomainCommand {
@@ -178,7 +179,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
     data class MoveTemplateTask(
         val taskId: TemplateCheckboxId,
         val newParentTaskId: TemplateCheckboxId?,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID,
         override val templateId: ChecklistTemplateId
     ) : TemplateDomainCommand {
@@ -210,7 +211,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
     class AddOrReplaceTemplateReminder(
         override val templateId: ChecklistTemplateId,
         val reminder: Reminder,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
@@ -233,7 +234,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
     class DeleteTemplateReminder(
         override val templateId: ChecklistTemplateId,
         val reminderId: ReminderId,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 
@@ -244,7 +245,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
 
     class DeleteTemplate(
         override val templateId: ChecklistTemplateId,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateDomainCommand {
 

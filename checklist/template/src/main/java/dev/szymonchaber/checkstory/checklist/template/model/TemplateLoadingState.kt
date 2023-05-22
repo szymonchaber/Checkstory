@@ -6,6 +6,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
+import kotlinx.datetime.Clock
 import java.util.*
 
 sealed interface TemplateLoadingState {
@@ -44,7 +45,7 @@ sealed interface TemplateLoadingState {
             return commands.plus(
                 TemplateDomainCommand.UpdateCheckboxPositions(
                     localPositions,
-                    System.currentTimeMillis(),
+                    Clock.System.now(),
                     UUID.randomUUID(),
                     checklistTemplate.id
                 )
@@ -76,7 +77,9 @@ sealed interface TemplateLoadingState {
 
         fun withNewTitle(newTitle: String): Success {
             return plusCommand(
-                TemplateDomainCommand.RenameTemplate(checklistTemplate.id, newTitle, System.currentTimeMillis())
+                TemplateDomainCommand.RenameTemplate(
+                    checklistTemplate.id, newTitle, Clock.System.now()
+                )
             )
         }
 
@@ -85,7 +88,7 @@ sealed interface TemplateLoadingState {
                 TemplateDomainCommand.ChangeTemplateDescription(
                     checklistTemplate.id,
                     newDescription,
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -110,7 +113,7 @@ sealed interface TemplateLoadingState {
                         checklistTemplate.id,
                         newCheckbox.id,
                         null,
-                        System.currentTimeMillis()
+                        Clock.System.now()
                     )
                 )
         }
@@ -135,7 +138,7 @@ sealed interface TemplateLoadingState {
                     TemplateDomainCommand.DeleteTemplateTask(
                         originalChecklistTemplate.id,
                         checkbox.id,
-                        System.currentTimeMillis()
+                        Clock.System.now()
                     )
                 )
             } else {
@@ -165,7 +168,7 @@ sealed interface TemplateLoadingState {
                         templateId = originalChecklistTemplate.id,
                         taskId = newId,
                         parentTaskId = parentId,
-                        System.currentTimeMillis()
+                        Clock.System.now()
                     )
                 )
         }
@@ -182,7 +185,7 @@ sealed interface TemplateLoadingState {
                         templateId = checklistTemplate.id,
                         taskId = checkbox.id,
                         newTitle = title,
-                        timestamp = System.currentTimeMillis()
+                        timestamp = Clock.System.now()
                     )
                 )
         }
@@ -192,7 +195,7 @@ sealed interface TemplateLoadingState {
                 TemplateDomainCommand.AddOrReplaceTemplateReminder(
                     checklistTemplate.id,
                     reminder,
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -202,7 +205,7 @@ sealed interface TemplateLoadingState {
                 DeleteTemplateReminder(
                     checklistTemplate.id,
                     reminder.id,
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -218,7 +221,7 @@ sealed interface TemplateLoadingState {
                     checklistTemplate.id,
                     newCheckbox.id,
                     parentId,
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -247,7 +250,7 @@ sealed interface TemplateLoadingState {
                     TemplateDomainCommand.MoveTemplateTask(
                         taskId = movedCheckboxId,
                         newParentTaskId = findParentId(newTasks, movedCheckboxId),
-                        timestamp = System.currentTimeMillis(),
+                        timestamp = Clock.System.now(),
                         commandId = UUID.randomUUID(),
                         templateId = originalChecklistTemplate.id
                     )
@@ -278,7 +281,7 @@ sealed interface TemplateLoadingState {
                     checklistTemplate.id,
                     newItem.id,
                     TemplateCheckboxId(below.id),
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -294,7 +297,7 @@ sealed interface TemplateLoadingState {
                     TemplateDomainCommand.MoveTemplateTask(
                         taskId = childTaskId,
                         newParentTaskId = findParentId(newTasks, childTaskId),
-                        timestamp = System.currentTimeMillis(),
+                        timestamp = Clock.System.now(),
                         commandId = UUID.randomUUID(),
                         templateId = originalChecklistTemplate.id
                     )
@@ -318,7 +321,7 @@ sealed interface TemplateLoadingState {
                 TemplateDomainCommand.MoveTemplateTask(
                     taskId = checkboxId,
                     newParentTaskId = null,
-                    timestamp = System.currentTimeMillis(),
+                    timestamp = Clock.System.now(),
                     commandId = UUID.randomUUID(),
                     templateId = originalChecklistTemplate.id
                 )
@@ -335,7 +338,7 @@ sealed interface TemplateLoadingState {
                     checklistTemplate.id,
                     newItem.id,
                     null,
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -348,7 +351,7 @@ sealed interface TemplateLoadingState {
                 TemplateDomainCommand.MoveTemplateTask(
                     taskId = checkboxId,
                     newParentTaskId = null,
-                    timestamp = System.currentTimeMillis(),
+                    timestamp = Clock.System.now(),
                     commandId = UUID.randomUUID(),
                     templateId = originalChecklistTemplate.id
                 )
@@ -365,7 +368,7 @@ sealed interface TemplateLoadingState {
                     checklistTemplate.id,
                     newItem.id,
                     null,
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -422,7 +425,7 @@ sealed interface TemplateLoadingState {
 
         fun markDeleted(): Success {
             return plusCommand(
-                TemplateDomainCommand.DeleteTemplate(checklistTemplate.id, System.currentTimeMillis())
+                TemplateDomainCommand.DeleteTemplate(checklistTemplate.id, Clock.System.now())
             )
         }
 

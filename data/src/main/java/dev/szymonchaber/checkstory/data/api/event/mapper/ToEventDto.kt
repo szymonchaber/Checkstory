@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.data.api.event.mapper
 
-import com.google.firebase.auth.FirebaseUser
 import dev.szymonchaber.checkstory.data.api.event.dto.AddOrUpdateTemplateReminderCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.AddTemplateTaskCommandDto
 import dev.szymonchaber.checkstory.data.api.event.dto.ChangeTaskCheckedCommand
@@ -24,14 +23,13 @@ import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 
-fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateCommandDto {
+fun TemplateDomainCommand.toCommandDto(): TemplateCommandDto {
     return when (this) {
         is TemplateDomainCommand.CreateNewTemplate -> {
             CreateTemplateCommandDto(
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -41,7 +39,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 newTitle = newTitle,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -51,7 +48,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 newDescription = newDescription,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -62,7 +58,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 parentTaskId = parentTaskId?.id?.toString(),
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -73,7 +68,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 newTitle = newTitle,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -83,7 +77,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -92,7 +85,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid,
                 taskIdToLocalPosition = localPositions.mapKeys { it.key.id }
             )
         }
@@ -104,7 +96,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 newParentTaskId = newParentTaskId?.id,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -114,7 +105,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 reminder = reminder.toReminderDto(),
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -124,7 +114,6 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 reminderId = reminderId.id,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
 
@@ -133,13 +122,12 @@ fun TemplateDomainCommand.toCommandDto(currentUser: FirebaseUser): TemplateComma
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
-                userId = currentUser.uid
             )
         }
     }
 }
 
-fun ChecklistDomainCommand.toCommandDto(currentUser: FirebaseUser): ChecklistCommandDto {
+fun ChecklistDomainCommand.toCommandDto(): ChecklistCommandDto {
     return when (this) {
         is ChecklistDomainCommand.CreateChecklistCommand -> CreateChecklistCommand(
             checklistId.id,
@@ -151,7 +139,6 @@ fun ChecklistDomainCommand.toCommandDto(currentUser: FirebaseUser): ChecklistCom
             },
             commandId,
             timestamp,
-            currentUser.uid
         )
 
         is ChecklistDomainCommand.ChangeTaskCheckedCommand -> ChangeTaskCheckedCommand(
@@ -160,14 +147,12 @@ fun ChecklistDomainCommand.toCommandDto(currentUser: FirebaseUser): ChecklistCom
             isChecked = isChecked,
             commandId = commandId,
             timestamp = timestamp,
-            userId = currentUser.uid
         )
 
         is ChecklistDomainCommand.DeleteChecklistCommand -> DeleteChecklistCommand(
             checklistId = checklistId.id,
             commandId = commandId,
             timestamp = timestamp,
-            userId = currentUser.uid
         )
 
         is ChecklistDomainCommand.EditChecklistNotesCommand -> EditChecklistNotesCommand(
@@ -175,7 +160,6 @@ fun ChecklistDomainCommand.toCommandDto(currentUser: FirebaseUser): ChecklistCom
             newNotes = newNotes,
             commandId = commandId,
             timestamp = timestamp,
-            userId = currentUser.uid
         )
     }
 }

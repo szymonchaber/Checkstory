@@ -19,10 +19,10 @@ internal class CommandsApi @Inject constructor(private val httpClient: HttpClien
         val templateCommands = commands.filterIsInstance<TemplateDomainCommand>()
         val checklistCommands = commands.filterIsInstance<ChecklistDomainCommand>()
         val templateCommandDtos = templateCommands.map {
-            it.toCommandDto(currentUser)
+            it.toCommandDto()
         }
         val checklistCommandDtos = checklistCommands.map {
-            it.toCommandDto(currentUser)
+            it.toCommandDto()
         }
 
         httpClient.post("http://10.0.2.2:8080/commands") {

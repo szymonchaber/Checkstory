@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -162,7 +163,7 @@ class CommandDataSource @Inject constructor(private val commandDao: CommandDao) 
 @Serializable
 sealed interface CommandDataEntity {
 
-    val timestamp: Long
+    val timestamp: Instant
     val commandId: DtoUUID
 }
 
@@ -175,7 +176,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     @SerialName("createTemplate")
     data class CreateNewTemplateEntity(
         override val templateId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -184,7 +185,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     data class RenameTemplateEntity(
         override val templateId: DtoUUID,
         val newTitle: String,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -193,7 +194,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     data class ChangeTemplateDescriptionEntity(
         override val templateId: DtoUUID,
         val newDescription: String,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -203,7 +204,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
         override val templateId: DtoUUID,
         val taskId: DtoUUID,
         val parentTaskId: DtoUUID?,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -213,7 +214,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
         override val templateId: DtoUUID,
         val taskId: DtoUUID,
         val newTitle: String,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -222,7 +223,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     data class DeleteTemplateTaskEntity(
         override val templateId: DtoUUID,
         val taskId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -230,7 +231,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     @SerialName("updateTemplateTasksPositions")
     data class UpdateCheckboxPositionsEntity(
         val localPositions: Map<DtoUUID, Long>,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID,
         override val templateId: DtoUUID
     ) : TemplateCommandEntity
@@ -240,7 +241,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     data class MoveTemplateTaskEntity(
         val taskId: DtoUUID,
         val newParentTaskId: DtoUUID?,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID,
         override val templateId: DtoUUID
     ) : TemplateCommandEntity
@@ -250,7 +251,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     data class AddOrReplaceTemplateReminderEntity(
         override val templateId: DtoUUID,
         val reminder: dev.szymonchaber.checkstory.data.api.event.dto.ReminderEntity,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -259,7 +260,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     data class DeleteTemplateReminderEntity(
         override val templateId: DtoUUID,
         val reminderId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
@@ -267,7 +268,7 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
     @SerialName("deleteTemplate")
     data class DeleteTemplateEntity(
         override val templateId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 }
@@ -286,7 +287,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
         val description: String,
         val tasks: List<TaskEntity>,
         override val commandId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistCommandEntity
 
     @Serializable
@@ -295,7 +296,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
         override val checklistId: DtoUUID,
         val newNotes: String,
         override val commandId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistCommandEntity
 
     @Serializable
@@ -305,7 +306,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
         val taskId: DtoUUID,
         val isChecked: Boolean,
         override val commandId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistCommandEntity
 
     @Serializable
@@ -313,7 +314,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
     data class DeleteChecklistEntity(
         override val checklistId: DtoUUID,
         override val commandId: DtoUUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistCommandEntity
 }
 

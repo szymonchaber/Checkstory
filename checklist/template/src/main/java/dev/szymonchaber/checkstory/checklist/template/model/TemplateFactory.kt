@@ -6,6 +6,7 @@ import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import kotlinx.datetime.Clock
 import java.time.LocalDateTime
 import java.util.*
 
@@ -16,7 +17,7 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
             commands = listOf(
                 TemplateDomainCommand.CreateNewTemplate(
                     checklistTemplate.id,
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         )

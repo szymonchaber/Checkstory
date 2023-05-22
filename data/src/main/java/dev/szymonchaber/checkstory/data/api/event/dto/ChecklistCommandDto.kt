@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.data.api.event.dto
 
 import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -19,8 +20,7 @@ data class CreateChecklistCommand(
     val description: String,
     val tasks: List<TaskDto>,
     override val commandId: DtoUUID,
-    override val timestamp: Long,
-    override val userId: String
+    override val timestamp: Instant
 ) : ChecklistCommandDto
 
 @Serializable
@@ -29,8 +29,7 @@ data class EditChecklistNotesCommand(
     override val checklistId: DtoUUID,
     val newNotes: String,
     override val commandId: DtoUUID,
-    override val timestamp: Long,
-    override val userId: String
+    override val timestamp: Instant
 ) : ChecklistCommandDto
 
 @Serializable
@@ -40,8 +39,7 @@ data class ChangeTaskCheckedCommand(
     val taskId: DtoUUID,
     val isChecked: Boolean,
     override val commandId: DtoUUID,
-    override val timestamp: Long,
-    override val userId: String
+    override val timestamp: Instant
 ) : ChecklistCommandDto
 
 @Serializable
@@ -49,8 +47,7 @@ data class ChangeTaskCheckedCommand(
 data class DeleteChecklistCommand(
     override val checklistId: DtoUUID,
     override val commandId: DtoUUID,
-    override val timestamp: Long,
-    override val userId: String
+    override val timestamp: Instant
 ) : ChecklistCommandDto
 
 @Serializable

@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.data.api.event.dto
 
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import java.util.*
 
@@ -7,6 +8,5 @@ import java.util.*
 sealed interface CommandDto {
 
     val commandId: UUID
-    val timestamp: Long
-    val userId: String
+    val timestamp: Instant
 }

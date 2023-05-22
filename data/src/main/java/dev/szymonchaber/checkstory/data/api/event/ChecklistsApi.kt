@@ -16,7 +16,7 @@ import javax.inject.Inject
 internal class ChecklistsApi @Inject constructor(private val httpClient: HttpClient) {
 
     suspend fun getChecklists(): List<Checklist> {
-        return httpClient.get("http://10.0.2.2:8080/checklists")
+        return httpClient.get("checklists")
             .body<List<ApiChecklist>>()
             .map(ApiChecklist::toChecklist)
     }

@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
@@ -98,7 +99,7 @@ class EditTemplateViewModel @Inject constructor(
                             commands = listOf(
                                 TemplateDomainCommand.CreateNewTemplate(
                                     checklistTemplate.id,
-                                    System.currentTimeMillis()
+                                    Clock.System.now()
                                 )
                             )
                         )

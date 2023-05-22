@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
+import kotlinx.datetime.Clock
 import java.util.*
 import javax.inject.Inject
 
@@ -99,7 +100,7 @@ class FillChecklistViewModel @Inject constructor(
                                         it.description,
                                         it.items,
                                         UUID.randomUUID(),
-                                        System.currentTimeMillis()
+                                        Clock.System.now()
                                     )
                                 )
                             )
@@ -181,7 +182,7 @@ class FillChecklistViewModel @Inject constructor(
                         ChecklistDomainCommand.DeleteChecklistCommand(
                             checklistId = success.originalChecklist.id,
                             commandId = UUID.randomUUID(),
-                            System.currentTimeMillis()
+                            Clock.System.now()
                         )
                     )
                 )

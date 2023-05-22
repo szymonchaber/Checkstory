@@ -5,7 +5,8 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import java.time.Instant
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toJavaInstant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
@@ -21,12 +22,11 @@ sealed interface ChecklistDomainCommand : DomainCommand {
         val description: String,
         val tasks: List<Checkbox>,
         override val commandId: UUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistDomainCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
-            val instant = Instant.ofEpochMilli(timestamp)
-            val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+            val localDateTime = LocalDateTime.ofInstant(timestamp.toJavaInstant(), ZoneId.systemDefault())
             return checklist.copy(
                 id = checklistId,
                 checklistTemplateId = templateId,
@@ -42,7 +42,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
         override val checklistId: ChecklistId,
         val newNotes: String,
         override val commandId: UUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistDomainCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
@@ -55,7 +55,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
         val taskId: CheckboxId,
         val isChecked: Boolean,
         override val commandId: UUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistDomainCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
@@ -69,7 +69,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
     data class DeleteChecklistCommand(
         override val checklistId: ChecklistId,
         override val commandId: UUID,
-        override val timestamp: Long,
+        override val timestamp: Instant,
     ) : ChecklistDomainCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {

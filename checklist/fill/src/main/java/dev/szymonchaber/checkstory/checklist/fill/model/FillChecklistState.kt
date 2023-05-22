@@ -4,6 +4,7 @@ import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
+import kotlinx.datetime.Clock
 import java.util.*
 
 data class FillChecklistState(val checklistLoadingState: ChecklistLoadingState) {
@@ -32,7 +33,7 @@ sealed interface ChecklistLoadingState {
                     checkboxId,
                     isChecked,
                     UUID.randomUUID(),
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
@@ -47,7 +48,7 @@ sealed interface ChecklistLoadingState {
                     originalChecklist.id,
                     notes,
                     UUID.randomUUID(),
-                    System.currentTimeMillis()
+                    Clock.System.now()
                 )
             )
         }
