@@ -50,6 +50,10 @@ class CommandDataSource @Inject constructor(private val commandDao: CommandDao) 
             }
     }
 
+    suspend fun count(): Int {
+        return commandDao.getAllSuspend().size
+    }
+
     suspend fun insert(commands: List<DomainCommand>) {
         return withContext(Dispatchers.Default) {
             commandDao.insertAll(commands.map {
@@ -157,6 +161,10 @@ class CommandDataSource @Inject constructor(private val commandDao: CommandDao) 
         commandIds.forEach {
             commandDao.deleteById(it)
         }
+    }
+
+    suspend fun deleteAllCommands() {
+        commandDao.deleteAll()
     }
 }
 

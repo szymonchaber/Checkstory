@@ -246,4 +246,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
                 checklistTemplateDao.replaceData(templates, checkboxes, reminders)
             }
     }
+
+    suspend fun deleteAllData() {
+        checklistTemplateDao.deleteAll()
+    }
 }

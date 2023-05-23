@@ -9,8 +9,8 @@ import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SynchronizeDataUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -34,7 +34,7 @@ import javax.inject.Inject
 class ChecklistCatalogViewModel @Inject constructor(
     private val getChecklistTemplatesUseCase: GetChecklistTemplatesUseCase,
     private val getRecentChecklistsUseCase: GetRecentChecklistsUseCase,
-    private val getUserUseCase: GetUserUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val tracker: Tracker,
     private val onboardingPreferences: OnboardingPreferences,
     private val synchronizeDataUseCase: SynchronizeDataUseCase
@@ -127,7 +127,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
             .withSuccessState()
             .mapLatest { (_, event) ->
-                val user = getUserUseCase.getUser().first()
+                val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (canAddChecklistToTemplate(user, event.template)) {
                     ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
                 } else {
@@ -174,7 +174,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
             .withSuccessState()
             .mapLatest { (state, _) ->
-                val user = getUserUseCase.getUser().first()
+                val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (canAddTemplate(user, state.checklistTemplates)) {
                     ChecklistCatalogEffect.NavigateToNewTemplate()
                 } else {

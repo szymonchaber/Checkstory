@@ -5,17 +5,25 @@ import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.fold
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
+import dev.szymonchaber.checkstory.domain.usecase.LogoutResult
+import dev.szymonchaber.checkstory.domain.usecase.LogoutUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
-    private val tracker: Tracker
+    private val tracker: Tracker,
+    private val loginUseCase: LoginUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val logoutUseCase: LogoutUseCase
 ) : BaseViewModel<AccountEvent, AccountState, AccountEffect>(
     AccountState.initial
 ) {
@@ -25,50 +33,59 @@ class AccountViewModel @Inject constructor(
     override fun buildMviFlow(eventFlow: Flow<AccountEvent>): Flow<Pair<AccountState?, AccountEffect?>> {
         return merge(
             eventFlow.handleLoadAccount(),
-            eventFlow.handleLoginSuccess()
+            eventFlow.handleFirebaseLoginSuccess(),
+            eventFlow.handleLogoutClicked(),
+            eventFlow.handleLogoutDespiteUnsynchronizedDataClicked()
         )
     }
 
     private fun Flow<AccountEvent>.handleLoadAccount(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoadAccount>()
-            .flatMapLatest {
-                val email = auth.currentUser?.email
-                flowOf(AccountState(AccountLoadingState.Success(email)) to null)
-            }
-    }
-
-    private fun Flow<AccountEvent>.handleLoginSuccess(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.LoginSuccess>()
             .map {
-                AccountState(AccountLoadingState.Success("Logged in!")) to null
+                AccountState(AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleLogoutClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.LogoutClicked>()
+            .map {
+                when (logoutUseCase.logoutSafely()) {
+                    LogoutResult.Done -> {
+                        auth.signOut()
+                        AccountState(AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+                    }
+
+                    LogoutResult.UnsynchronizedCommandsPresent -> {
+                        _state.value to AccountEffect.ShowDataNotSynchronized
+                    }
+                }
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleLogoutDespiteUnsynchronizedDataClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.LogoutDespiteUnsynchronizedDataClicked>()
+            .map {
+                logoutUseCase.logoutIgnoringUnsynchronizedData()
+                AccountState(AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleFirebaseLoginSuccess(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.LoginSuccess>()
+            .flatMapLatest {
+                flow {
+                    emit(AccountState(AccountLoadingState.Loading) to null)
+                    emit(loginUseCase.login()
+                        .fold(
+                            mapError = {
+                                AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
+                            },
+                            mapSuccess = {
+                                AccountState(AccountLoadingState.Success(it)) to null
+                            }
+                        )
+                    )
+                }
             }
     }
 }
-
-sealed class AccountEvent {
-
-    object LoginSuccess : AccountEvent()
-
-    object LoadAccount : AccountEvent()
-
-    object ConfirmExitClicked : AccountEvent()
-
-    object LoginFailed : AccountEvent()
-}
-
-data class AccountState(val accountLoadingState: AccountLoadingState) {
-
-    companion object {
-
-        val initial: AccountState = AccountState(AccountLoadingState.Loading)
-    }
-}
-
-sealed interface AccountLoadingState {
-
-    data class Success(val email: String?) : AccountLoadingState
-
-    object Loading : AccountLoadingState
-}
-
-sealed interface AccountEffect

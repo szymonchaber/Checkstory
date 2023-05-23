@@ -21,6 +21,8 @@ interface ChecklistRepository {
     suspend fun delete(checklist: Checklist)
 
     suspend fun deleteBasedOnTemplate(checklistTemplate: ChecklistTemplate)
+
+    suspend fun deleteAllData()
 }
 
 object ChecklistSaved

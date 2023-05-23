@@ -55,9 +55,14 @@ interface ChecklistTemplateDao {
         templateCheckboxes: List<TemplateCheckboxEntity>,
         reminders: List<ReminderEntity>
     ) {
+        deleteAll()
+        insertAll(templates, templateCheckboxes, reminders)
+    }
+
+    @Transaction
+    suspend fun deleteAll() {
         deleteAllTemplates()
         deleteAllTemplateCheckboxes()
         deleteAllReminders()
-        insertAll(templates, templateCheckboxes, reminders)
     }
 }

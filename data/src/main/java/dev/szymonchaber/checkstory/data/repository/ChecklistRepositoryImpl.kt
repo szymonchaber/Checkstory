@@ -52,6 +52,10 @@ class ChecklistRepositoryImpl @Inject constructor(
         dataSource.delete(checklist)
     }
 
+    override suspend fun deleteAllData() {
+        dataSource.deleteAllData()
+    }
+
     override suspend fun deleteBasedOnTemplate(checklistTemplate: ChecklistTemplate) {
         dataSource.getBasedOn(checklistTemplate.id)
             .first()

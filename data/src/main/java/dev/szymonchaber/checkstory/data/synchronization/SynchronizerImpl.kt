@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import kotlinx.coroutines.flow.first
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,19 +30,28 @@ class SynchronizerImpl @Inject internal constructor(
         synchronize()
     }
 
+    override suspend fun hasUnsynchronizedCommands(): Boolean {
+        return commandRepository.commandCount() > 0
+    }
+
+    override suspend fun deleteCommands() {
+        commandRepository.deleteAllCommands()
+    }
+
     override suspend fun synchronize() {
         if (Firebase.auth.currentUser == null) {
             return
         }
-        val commands = commandRepository.unappliedCommandsFlow.first()
-        if (commands.isNotEmpty()) {
+        try {
+            val commands = commandRepository.unappliedCommandsFlow.first()
             commandsApi.pushCommands(commands)
+            val templates = templatesApi.getTemplates()
+            val checklists = checklistsApi.getChecklists()
+            checklistTemplateRepository.replaceData(templates)
+            checklistRepository.replaceData(checklists)
             commandRepository.deleteCommands(commands.map(DomainCommand::commandId))
+        } catch (exception: Exception) {
+            Timber.e("API error - skipping synchronization for now", exception)
         }
-        val templates = templatesApi.getTemplates()
-        val checklists = checklistsApi.getChecklists()
-        checklistTemplateRepository.replaceData(templates)
-
-        checklistRepository.replaceData(checklists)
     }
 }

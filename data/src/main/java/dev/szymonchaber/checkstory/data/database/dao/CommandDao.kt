@@ -15,6 +15,9 @@ interface CommandDao {
     @Query("SELECT * FROM commandEntity")
     fun getAll(): Flow<List<CommandEntity>>
 
+    @Query("SELECT * FROM commandEntity")
+    suspend fun getAllSuspend(): List<CommandEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(commandEntity: CommandEntity)
 
@@ -26,4 +29,7 @@ interface CommandDao {
 
     @Query("DELETE FROM commandEntity WHERE commandEntity.id=:id")
     suspend fun deleteById(id: UUID)
+
+    @Query("DELETE FROM commandEntity")
+    suspend fun deleteAll()
 }

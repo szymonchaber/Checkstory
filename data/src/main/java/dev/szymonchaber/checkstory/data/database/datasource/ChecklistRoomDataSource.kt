@@ -199,4 +199,8 @@ class ChecklistRoomDataSource @Inject constructor(
                 checklistDao.replaceData(checklists, checkboxes)
             }
     }
+
+    suspend fun deleteAllData() {
+        checklistDao.deleteAllData()
+    }
 }

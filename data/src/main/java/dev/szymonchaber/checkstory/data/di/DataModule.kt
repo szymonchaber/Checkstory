@@ -12,8 +12,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.szymonchaber.checkstory.data.interactor.AuthInteractorImpl
 import dev.szymonchaber.checkstory.data.repository.*
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizerImpl
+import dev.szymonchaber.checkstory.domain.interactor.AuthInteractor
 import dev.szymonchaber.checkstory.domain.repository.*
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -59,6 +61,12 @@ internal interface DataModule {
 
     @Binds
     fun bindSynchronizer(synchronizer: SynchronizerImpl): Synchronizer
+
+    @Binds
+    fun bindAuthInteractor(authInteractor: AuthInteractorImpl): AuthInteractor
+
+    @Binds
+    fun bindUserRepository(userRepository: UserRepositoryImpl): UserRepository
 
     companion object {
 

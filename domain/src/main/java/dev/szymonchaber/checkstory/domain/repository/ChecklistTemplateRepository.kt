@@ -15,4 +15,6 @@ interface ChecklistTemplateRepository {
     suspend fun update(checklistTemplate: ChecklistTemplate)
 
     suspend fun delete(checklistTemplate: ChecklistTemplate)
+
+    suspend fun deleteAllData()
 }

@@ -28,6 +28,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
+import dev.szymonchaber.checkstory.domain.model.User
 import timber.log.Timber
 
 @Destination(
@@ -47,7 +48,15 @@ fun AccountScreen(
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {
         when (val value = effect) {
-            else -> Unit
+            AccountEffect.ShowLoginNetworkError -> {
+                Timber.e("Login network error")
+            }
+
+            AccountEffect.ShowDataNotSynchronized -> {
+                Timber.d("Data not synchronized")
+            }
+
+            null -> Unit
         }
     }
 
@@ -93,25 +102,52 @@ private fun FillChecklistScaffold(
 @Composable
 fun AccountView(accountState: AccountLoadingState.Success, onEvent: (AccountEvent) -> Unit) {
     Column(Modifier.padding(16.dp)) {
-        Text(accountState.email ?: "Not logged in")
-        val context = LocalContext.current
-        val auth = remember {
-            Firebase.auth
+        Text(
+            when (accountState.user) {
+                User.Guest -> "Not logged in"
+                is User.LoggedIn -> "Logged in"
+            }
+        )
+        when (accountState.user) {
+            User.Guest -> {
+                LoginButton(onEvent)
+            }
+
+            is User.LoggedIn -> {
+                LogoutButton(onEvent)
+            }
         }
-        Button(onClick = {
-            auth.signInWithEmailAndPassword("", "")
-                .addOnCompleteListener(context as Activity) { task ->
-                    if (task.isSuccessful) {
-                        Timber.d("createUserWithEmail:success")
-                        onEvent(AccountEvent.LoginSuccess)
-                    } else {
-                        Timber.e(task.exception, "createUserWithEmail:failure")
-                        Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
-                        onEvent(AccountEvent.LoginFailed)
-                    }
+    }
+}
+
+@Composable
+fun LogoutButton(onEvent: (AccountEvent) -> Unit) {
+    Button(onClick = {
+        onEvent(AccountEvent.LogoutClicked)
+    }) {
+        Text("Logout")
+    }
+}
+
+@Composable
+private fun LoginButton(onEvent: (AccountEvent) -> Unit) {
+    val context = LocalContext.current
+    val auth = remember {
+        Firebase.auth
+    }
+    Button(onClick = {
+        auth.signInWithEmailAndPassword("", "")
+            .addOnCompleteListener(context as Activity) { task ->
+                if (task.isSuccessful) {
+                    Timber.d("createUserWithEmail: success")
+                    onEvent(AccountEvent.LoginSuccess)
+                } else {
+                    Timber.e(task.exception, "createUserWithEmail: failure")
+                    Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                    onEvent(AccountEvent.LoginFailed)
                 }
-        }) {
-            Text("Login with Google")
-        }
+            }
+    }) {
+        Text("Login with Firebase")
     }
 }

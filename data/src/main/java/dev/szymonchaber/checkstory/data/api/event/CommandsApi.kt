@@ -14,8 +14,10 @@ import javax.inject.Inject
 internal class CommandsApi @Inject constructor(private val httpClient: HttpClient) {
 
     suspend fun pushCommands(commands: List<DomainCommand>) {
-        val currentUser = Firebase.auth.currentUser ?: return
-
+        Firebase.auth.currentUser ?: return
+        if (commands.isEmpty()) {
+            return
+        }
         val templateCommands = commands.filterIsInstance<TemplateDomainCommand>()
         val checklistCommands = commands.filterIsInstance<ChecklistDomainCommand>()
         val templateCommandDtos = templateCommands.map {

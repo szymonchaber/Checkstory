@@ -24,6 +24,10 @@ class CommandRepositoryImpl @Inject constructor(
         commandDataSource.insert(domainCommands)
     }
 
+    suspend fun commandCount(): Int {
+        return commandDataSource.count()
+    }
+
     suspend fun commandOnlyTemplates(): List<ChecklistTemplate> {
         val domainCommands = unappliedCommandsFlow.first()
         return domainCommands
@@ -85,5 +89,9 @@ class CommandRepositoryImpl @Inject constructor(
 
     suspend fun deleteCommands(ids: List<UUID>) {
         commandDataSource.deleteByIds(ids)
+    }
+
+    suspend fun deleteAllCommands() {
+        commandDataSource.deleteAllCommands()
     }
 }

@@ -36,4 +36,8 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     suspend fun replaceData(with: List<ChecklistTemplate>) {
         dataSource.replaceData(with)
     }
+
+    override suspend fun deleteAllData() {
+        dataSource.deleteAllData()
+    }
 }

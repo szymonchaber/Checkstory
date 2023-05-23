@@ -15,7 +15,7 @@ import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteRemindersUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -39,7 +39,7 @@ class EditTemplateViewModel @Inject constructor(
     private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
     private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
     private val deleteRemindersUseCase: DeleteRemindersUseCase,
-    private val getUserUseCase: GetUserUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val synchronizeCommandsUseCase: SynchronizeCommandsUseCase,
     private val tracker: Tracker
 ) : BaseViewModel<
@@ -387,7 +387,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (state, _) ->
                 tracker.logEvent("add_reminder_clicked")
-                val user = getUserUseCase.getUser().first()
+                val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (user.isPaidUser) {
                     EditTemplateEffect.ShowAddReminderSheet(state.checklistTemplate.id)
                 } else {

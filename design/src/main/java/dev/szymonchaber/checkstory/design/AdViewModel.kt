@@ -3,7 +3,7 @@ package dev.szymonchaber.checkstory.design
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
@@ -12,15 +12,15 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class AdViewModel @Inject constructor(getUserUseCase: GetUserUseCase) : ViewModel() {
+class AdViewModel @Inject constructor(getCurrentUserUseCase: GetCurrentUserUseCase) : ViewModel() {
 
     var shouldEnableAds: Boolean = false
 
-    val currentUserFlow = getUserUseCase.getUser()
+    val currentUserFlow = getCurrentUserUseCase.getCurrentUserFlow()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            getUserUseCase.getUser()
+            getCurrentUserUseCase.getCurrentUserFlow()
                 .map { !it.isPaidUser }
                 .onEach {
                     shouldEnableAds = it
