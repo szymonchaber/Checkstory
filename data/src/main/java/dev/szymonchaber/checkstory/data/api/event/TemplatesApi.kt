@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.data.api.event
 
 import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
+import dev.szymonchaber.checkstory.data.di.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
@@ -8,7 +9,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.datetime.DayOfWeek
@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-internal class TemplatesApi @Inject constructor(private val httpClient: HttpClient) {
+internal class TemplatesApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
 
     suspend fun getTemplates(): List<ChecklistTemplate> {
         return httpClient.get("templates")

@@ -103,7 +103,8 @@ class Dependencies : Plugin<Project> {
             "io.ktor:ktor-client-serialization:2.3.0",
             "io.ktor:ktor-client-content-negotiation:2.3.0",
             "io.ktor:ktor-serialization-kotlinx-json:2.3.0",
-            "io.ktor:ktor-client-logging-jvm:2.3.0"
+            "io.ktor:ktor-client-logging-jvm:2.3.0",
+            "io.ktor:ktor-client-auth:2.3.0"
         )
 
         const val kotlinx_datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"

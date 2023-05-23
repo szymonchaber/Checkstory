@@ -1,12 +1,12 @@
 package dev.szymonchaber.checkstory.data.api.event
 
 import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
+import dev.szymonchaber.checkstory.data.di.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
-import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.datetime.Instant
@@ -16,7 +16,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-internal class ChecklistsApi @Inject constructor(private val httpClient: HttpClient) {
+internal class ChecklistsApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
 
     suspend fun getChecklists(): List<Checklist> {
         return httpClient.get("checklists")
