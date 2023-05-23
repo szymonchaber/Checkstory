@@ -12,8 +12,11 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
@@ -35,6 +38,7 @@ data class ApiTemplate(
     val description: String,
     val tasks: List<TemplateTaskDto> = listOf(),
     val reminders: List<ReminderDto> = listOf(),
+    val createdAt: Instant,
     val isDeleted: Boolean = false
 ) {
 
@@ -44,7 +48,7 @@ data class ApiTemplate(
             title = name,
             description = description,
             items = tasks.map { it.toTask() },
-            createdAt = java.time.LocalDateTime.now(), // TODO get from backend
+            createdAt = createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
             checklists = listOf(),
             reminders = reminders.map { it.toReminder() },
             isRemoved = isDeleted,
@@ -82,7 +86,6 @@ fun ReminderDto.toReminder(): Reminder {
 
 @Serializable
 sealed interface ReminderDto {
-
 
     val id: DtoUUID
     val forTemplate: DtoUUID
