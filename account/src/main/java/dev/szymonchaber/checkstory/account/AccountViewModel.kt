@@ -5,6 +5,7 @@ import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.fold
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,7 +35,7 @@ class AccountViewModel @Inject constructor(
     override fun buildMviFlow(eventFlow: Flow<AccountEvent>): Flow<Pair<AccountState?, AccountEffect?>> {
         return merge(
             eventFlow.handleLoadAccount(),
-            eventFlow.handleFirebaseLoginSuccess(),
+            eventFlow.handleLoginClicked(),
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked()
         )
@@ -56,7 +58,7 @@ class AccountViewModel @Inject constructor(
                     }
 
                     LogoutResult.UnsynchronizedCommandsPresent -> {
-                        _state.value to AccountEffect.ShowDataNotSynchronized
+                        _state.value to AccountEffect.ShowDataNotSynchronized()
                     }
                 }
             }
@@ -70,20 +72,26 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleFirebaseLoginSuccess(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.LoginSuccess>()
+    private fun Flow<AccountEvent>.handleLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.LoginClicked>()
             .flatMapLatest {
                 flow {
                     emit(AccountState(AccountLoadingState.Loading) to null)
-                    emit(loginUseCase.login()
-                        .fold(
-                            mapError = {
-                                AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
-                            },
-                            mapSuccess = {
-                                AccountState(AccountLoadingState.Success(it)) to null
-                            }
-                        )
+                    emit(
+                        try {
+                            auth.signInWithEmailAndPassword("", "").await()
+                            loginUseCase.login()
+                                .fold(
+                                    mapError = {
+                                        AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                                    },
+                                    mapSuccess = {
+                                        AccountState(AccountLoadingState.Success(it)) to null
+                                    }
+                                )
+                        } catch (exception: Exception) {
+                            AccountState(AccountLoadingState.Success(User.Guest)) to AccountEffect.ShowLoginNetworkError()
+                        }
                     )
                 }
             }

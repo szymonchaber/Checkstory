@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.account
 
-import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -16,20 +15,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.User
-import timber.log.Timber
 
 @Destination(
     route = "account_screen",
@@ -46,14 +41,16 @@ fun AccountScreen(
     val state = viewModel.state.collectAsState(initial = AccountState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
+    val context = LocalContext.current
     LaunchedEffect(effect) {
         when (val value = effect) {
-            AccountEffect.ShowLoginNetworkError -> {
-                Timber.e("Login network error")
+            is AccountEffect.ShowLoginNetworkError -> {
+                Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
             }
 
-            AccountEffect.ShowDataNotSynchronized -> {
-                Timber.d("Data not synchronized")
+            is AccountEffect.ShowDataNotSynchronized -> {
+                Toast.makeText(context, "There are some unsynchronized changes. Logout anyway?", Toast.LENGTH_SHORT)
+                    .show()
             }
 
             null -> Unit
@@ -131,22 +128,8 @@ fun LogoutButton(onEvent: (AccountEvent) -> Unit) {
 
 @Composable
 private fun LoginButton(onEvent: (AccountEvent) -> Unit) {
-    val context = LocalContext.current
-    val auth = remember {
-        Firebase.auth
-    }
     Button(onClick = {
-        auth.signInWithEmailAndPassword("", "")
-            .addOnCompleteListener(context as Activity) { task ->
-                if (task.isSuccessful) {
-                    Timber.d("createUserWithEmail: success")
-                    onEvent(AccountEvent.LoginSuccess)
-                } else {
-                    Timber.e(task.exception, "createUserWithEmail: failure")
-                    Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
-                    onEvent(AccountEvent.LoginFailed)
-                }
-            }
+        onEvent(AccountEvent.LoginClicked)
     }) {
         Text("Login with Firebase")
     }

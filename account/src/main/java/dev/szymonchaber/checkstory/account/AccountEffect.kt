@@ -1,8 +1,9 @@
 package dev.szymonchaber.checkstory.account
 
+@Suppress("CanSealedSubClassBeObject")
 sealed interface AccountEffect {
 
-    object ShowLoginNetworkError : AccountEffect
+    class ShowLoginNetworkError : AccountEffect
 
-    object ShowDataNotSynchronized : AccountEffect
+    class ShowDataNotSynchronized : AccountEffect
 }
