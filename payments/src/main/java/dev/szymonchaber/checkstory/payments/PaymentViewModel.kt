@@ -7,7 +7,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
-    private val isProUserUseCase: IsProUserUseCase,
+    private val getUserUseCase: GetCurrentUserUseCase,
     private val getPaymentPlansUseCase: GetPaymentPlansUseCase,
     private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase
 ) : BaseViewModel<
@@ -65,7 +65,7 @@ class PaymentViewModel @Inject constructor(
                             paymentLoadingState = PaymentState.PaymentLoadingState.Loading
                         ) to null
                     )
-                    if (isProUserUseCase.isProUser()) {
+                    if (getUserUseCase.getCurrentUser().isPaidUser) {
                         emit(PaymentState(paymentLoadingState = PaymentState.PaymentLoadingState.Paid) to null)
                     } else {
                         val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()

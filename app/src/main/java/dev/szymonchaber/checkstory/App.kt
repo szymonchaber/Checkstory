@@ -10,7 +10,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.common.LogStorage
-import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
 import dev.szymonchaber.checkstory.notifications.ScheduleTodayRemindersReceiver
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +23,6 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import javax.inject.Inject
 
-
 @HiltAndroidApp
 class App : Application() {
 
@@ -31,7 +30,7 @@ class App : Application() {
     lateinit var reminderScheduler: ReminderScheduler
 
     @Inject
-    lateinit var isProUserUseCase: IsProUserUseCase
+    lateinit var getCurrentUserUseCase: GetCurrentUserUseCase
 
     @Inject
     lateinit var logStorage: LogStorage
@@ -85,7 +84,11 @@ class App : Application() {
     private fun setPaymentTierProperty() {
         GlobalScope.launch {
             withContext(Dispatchers.IO) {
-                val tier = if (isProUserUseCase.isProUser()) SUBSCRIPTION_TIER_PRO else SUBSCRIPTION_TIER_FREE
+                val tier = if (getCurrentUserUseCase.getCurrentUser().isPaidUser) {
+                    SUBSCRIPTION_TIER_PRO
+                } else {
+                    SUBSCRIPTION_TIER_FREE
+                }
                 FirebaseAnalytics.getInstance(this@App).setUserProperty(SUBSCRIPTION_TIER, tier)
             }
         }
