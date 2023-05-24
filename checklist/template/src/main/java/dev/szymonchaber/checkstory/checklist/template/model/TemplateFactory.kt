@@ -85,12 +85,8 @@ fun generateOnboardingCheckboxes(): MutableList<Triple<TemplateCheckboxId, Templ
 
 fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
-        .updateTemplate {
-            copy(
-                title = "Write an offer to a prospect",
-                description = "Find prospects here: drive.link/prospects"
-            )
-        }
+        .withNewTitle("Write an offer to a prospect")
+        .withNewDescription("Find prospects here: drive.link/prospects")
     return generateWriteOfferCheckboxes().foldInto(templateLoadingState)
 }
 
@@ -111,12 +107,7 @@ fun generateWriteOfferCheckboxes(): List<Triple<TemplateCheckboxId, TemplateChec
 
 fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
-        .updateTemplate {
-            copy(
-                title = "Onboard a new employee",
-                description = ""
-            )
-        }
+        .withNewTitle("Onboard a new employee")
     return placeholderCheckboxes {
         repeat(18) {
             topLevelPlaceholder("Fluff to make the checklist look full of tasks")
@@ -127,12 +118,7 @@ fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
 
 fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
-        .updateTemplate {
-            copy(
-                title = "Daily routine",
-                description = ""
-            )
-        }
+        .withNewDescription("Daily routine")
 
     return placeholderCheckboxes {
         repeat(5) {

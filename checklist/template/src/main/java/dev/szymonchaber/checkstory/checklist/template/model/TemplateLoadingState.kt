@@ -93,11 +93,6 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
-            // TODO replace all usages with commands
-            return this
-        }
-
         fun plusNewCheckbox(
             title: String,
             placeholderTitle: String? = null,
