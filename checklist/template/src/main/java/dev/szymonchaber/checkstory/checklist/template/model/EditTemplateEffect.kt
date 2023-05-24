@@ -10,8 +10,7 @@ sealed interface EditTemplateEffect {
     @Suppress("CanSealedSubClassBeObject")
     class ShowConfirmDeleteDialog : EditTemplateEffect
 
-    @Suppress("CanSealedSubClassBeObject")
-    data class ShowAddReminderSheet(val templateId: ChecklistTemplateId) : EditTemplateEffect
+    class ShowAddReminderSheet(val templateId: ChecklistTemplateId) : EditTemplateEffect
 
     class ShowEditReminderSheet(val reminder: Reminder) : EditTemplateEffect
 
