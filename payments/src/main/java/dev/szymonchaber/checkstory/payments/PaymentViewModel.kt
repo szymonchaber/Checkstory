@@ -28,8 +28,7 @@ class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
     private val isProUserUseCase: IsProUserUseCase,
     private val getPaymentPlansUseCase: GetPaymentPlansUseCase,
-    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase,
-    private val refreshPaymentInformationUseCase: RefreshPaymentInformationUseCase
+    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase
 ) : BaseViewModel<
         PaymentEvent,
         PaymentState<out PaymentState.PaymentLoadingState>,
@@ -138,9 +137,6 @@ class PaymentViewModel @Inject constructor(
             .map { (state, event) ->
                 Timber.d("Got purchase details or error: ${event.paymentResult}")
                 event.paymentResult
-                    .tap {
-                        refreshPaymentInformationUseCase.refreshPaymentInformation()
-                    }
                     .fold({
                         Timber.e(it.toString())
                         FirebaseCrashlytics.getInstance().recordException(Exception("Purchase attempt failed!\n$it"))

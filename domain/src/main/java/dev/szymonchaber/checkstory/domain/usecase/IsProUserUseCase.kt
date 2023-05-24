@@ -1,10 +1,13 @@
 package dev.szymonchaber.checkstory.domain.usecase
 
-import kotlinx.coroutines.flow.Flow
+import dev.szymonchaber.checkstory.domain.repository.UserRepository
+import javax.inject.Inject
 
-interface IsProUserUseCase {
+class IsProUserUseCase @Inject constructor(
+    private val userRepository: UserRepository
+) {
 
-    val isProUserFlow: Flow<Boolean>
-
-    suspend fun isProUser(): Boolean
+    suspend fun isProUser(): Boolean {
+        return userRepository.getCurrentUser().isPaidUser
+    }
 }
