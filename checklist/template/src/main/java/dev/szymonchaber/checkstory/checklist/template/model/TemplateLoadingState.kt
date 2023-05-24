@@ -39,9 +39,10 @@ sealed interface TemplateLoadingState {
                 .mapIndexed { index, checkbox ->
                     checkbox.toDomainModel(position = index)
                 }
-            val localPositions = indexedCheckboxes.associate {
-                it.id to it.sortPosition
-            }
+            val localPositions = indexedCheckboxes.flatten()
+                .associate {
+                    it.id to it.sortPosition
+                }
             return commands.plus(
                 TemplateDomainCommand.UpdateCheckboxPositions(
                     localPositions,
@@ -50,6 +51,12 @@ sealed interface TemplateLoadingState {
                     checklistTemplate.id
                 )
             )
+        }
+
+        private fun List<TemplateCheckbox>.flatten(): List<TemplateCheckbox> {
+            return flatMap {
+                listOf(it) + it.children.flatten()
+            }
         }
 
         private fun flattenWithNestedLevel(): List<Pair<ViewTemplateCheckbox, Int>> {
@@ -63,7 +70,6 @@ sealed interface TemplateLoadingState {
             checkboxes.forEach { checkbox -> visit(checkbox, 0) }
             return result
         }
-
 
         fun isChanged(): Boolean {
             // TODO instead do just "are commands empty?"
@@ -167,7 +173,6 @@ sealed interface TemplateLoadingState {
                     )
                 )
         }
-
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
             return copy(
