@@ -16,16 +16,12 @@ sealed interface TemplateLoadingState {
         val checkboxes: List<ViewTemplateCheckbox> = originalChecklistTemplate.items.map {
             ViewTemplateCheckbox.Existing.fromDomainModel(it)
         },
-        val checkboxesToDelete: List<TemplateCheckbox> = listOf(),
         val updatedChecklistTemplate: ChecklistTemplate = originalChecklistTemplate,
         val mostRecentlyAddedItem: TemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
         private val commands: List<TemplateDomainCommand> = listOf()
     ) : TemplateLoadingState {
-
-        val remindersToDelete = commands.filterIsInstance<DeleteTemplateReminder>()
-            .map { it.reminderId }
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
 
@@ -78,7 +74,6 @@ sealed interface TemplateLoadingState {
                     || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
                 checkbox.toDomainModel(position = index)
             }
-                    || checkboxesToDelete.isNotEmpty()
         }
 
         fun withNewTitle(newTitle: String): Success {
@@ -119,7 +114,6 @@ sealed interface TemplateLoadingState {
                 )
         }
 
-
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
             val filteredCheckboxes =
                 checkboxes
@@ -127,29 +121,15 @@ sealed interface TemplateLoadingState {
                     .map {
                         it.minusChildCheckboxRecursive(checkbox)
                     }
-            val shouldDeleteFromDatabase = checkbox is ViewTemplateCheckbox.Existing
-            val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(checkbox.toDomainModel(position = 0))
-            } else {
-                checkboxesToDelete
-            }
-
-            val updatedEvents = if (shouldDeleteFromDatabase) {
-                commands.plus(
-                    TemplateDomainCommand.DeleteTemplateTask(
-                        originalChecklistTemplate.id,
-                        checkbox.id,
-                        Clock.System.now()
-                    )
-                )
-            } else {
-                commands
-            }
             return copy(
                 checkboxes = filteredCheckboxes,
-                checkboxesToDelete = updatedCheckboxesToDelete,
-                mostRecentlyAddedItem = null,
-                commands = updatedEvents
+                mostRecentlyAddedItem = null
+            ).plusCommand(
+                TemplateDomainCommand.DeleteTemplateTask(
+                    originalChecklistTemplate.id,
+                    checkbox.id,
+                    Clock.System.now()
+                )
             )
         }
 

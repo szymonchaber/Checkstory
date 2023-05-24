@@ -11,9 +11,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheck
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteRemindersUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
@@ -36,9 +33,6 @@ import javax.inject.Inject
 class EditTemplateViewModel @Inject constructor(
     private val application: Application,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
-    private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
-    private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
-    private val deleteRemindersUseCase: DeleteRemindersUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val synchronizeCommandsUseCase: SynchronizeCommandsUseCase,
     private val tracker: Tracker
@@ -290,8 +284,6 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .mapLatest { (loadingState, _) ->
                 val checklistTemplate = loadingState.checklistTemplate
-                deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
-                deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
                 synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.finalizedCommands()))
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
@@ -349,7 +341,6 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("delete_template_confirmation_clicked")
-                deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
                 synchronizeCommandsUseCase.synchronizeCommands(
                     consolidateCommands(loadingState.markDeleted().finalizedCommands())
                 )
