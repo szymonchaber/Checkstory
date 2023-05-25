@@ -9,5 +9,9 @@ value class ChecklistTemplateId(val id: UUID) : Serializable {
     companion object {
 
         fun new() = ChecklistTemplateId(UUID.randomUUID())
+
+        fun fromUuidString(uuidString: String): ChecklistTemplateId {
+            return ChecklistTemplateId(UUID.fromString(uuidString))
+        }
     }
 }

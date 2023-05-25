@@ -44,7 +44,15 @@ sealed interface Reminder {
 }
 
 @JvmInline
-value class ReminderId(val id: UUID) : Serializable
+value class ReminderId(val id: UUID) : Serializable {
+
+    companion object {
+
+        fun fromUuidString(uuidString: String): ReminderId {
+            return ReminderId(UUID.fromString(uuidString))
+        }
+    }
+}
 
 sealed interface Interval {
 

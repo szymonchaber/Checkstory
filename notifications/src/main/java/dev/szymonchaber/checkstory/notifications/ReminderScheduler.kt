@@ -55,6 +55,7 @@ class ReminderScheduler @Inject constructor(
         }
         val toEpochMilli = startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
             .toEpochMilli()
+        logReminderScheduling(toEpochMilli, reminder)
         alarmManager.set(
             AlarmManager.RTC_WAKEUP,
             toEpochMilli,
@@ -92,12 +93,12 @@ class ReminderScheduler @Inject constructor(
         )
     }
 
-    private fun logReminderScheduling(toEpochMilli: Long, reminder: Reminder.Recurring) {
+    private fun logReminderScheduling(toEpochMilli: Long, reminder: Reminder) {
         val minuteDelta = (toEpochMilli - Instant.now().toEpochMilli()) / 1000 / 60
         if (minuteDelta < 0) {
             throw IllegalStateException("Cannot schedule reminders for past date. Attempted minute delta: $minuteDelta")
         }
-        Timber.d("Scheduling recurring reminder: $reminder\nFiring in $minuteDelta minutes")
+        Timber.d("Scheduling reminder: $reminder\nFiring in $minuteDelta minutes")
     }
 
     private fun findCorrectStartDateTime(reminder: Reminder.Recurring): LocalDateTime {
