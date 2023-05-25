@@ -14,6 +14,10 @@ class Dependencies : Plugin<Project> {
         private const val hiltVersion = "2.44.2"
         private const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
         const val hiltKapt = "com.google.dagger:hilt-compiler:$hiltVersion"
+
+        const val hiltWork = "androidx.hilt:hilt-work:1.0.0"
+        const val hiltWorkKapt = "androidx.hilt:hilt-compiler:1.0.0"
+
         private const val timber = "com.jakewharton.timber:timber:5.0.1"
         private const val kotlinImmutableCollections = "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5"
         private const val kotlinxDatetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
@@ -55,12 +59,12 @@ class Dependencies : Plugin<Project> {
             "com.google.accompanist:accompanist-pager-indicators:0.29.1-alpha"
         )
 
-        private const val roomVersion = "2.4.2"
+        private const val roomVersion = "2.5.1"
 
         val room = listOf(
             "androidx.room:room-runtime:$roomVersion",
             "androidx.room:room-ktx:$roomVersion",
-            "androidx.room:room-paging:2.5.0-alpha01"
+            "androidx.room:room-paging:2.5.1"
         )
         val roomKsp = "androidx.room:room-compiler:$roomVersion"
 
@@ -82,7 +86,7 @@ class Dependencies : Plugin<Project> {
 
         val rrule = "com.github.PhilJay:RRule:1.0.3"
 
-        const val workVersion = "2.8.0"
+        const val workVersion = "2.8.1"
 
         val work = "androidx.work:work-runtime-ktx:$workVersion"
 

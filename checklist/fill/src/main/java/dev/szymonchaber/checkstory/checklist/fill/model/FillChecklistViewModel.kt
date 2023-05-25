@@ -10,9 +10,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox.Companio
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
-import dev.szymonchaber.checkstory.domain.usecase.SaveChecklistUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -29,8 +27,6 @@ import javax.inject.Inject
 class FillChecklistViewModel @Inject constructor(
     private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
-    private val saveChecklistUseCase: SaveChecklistUseCase,
-    private val deleteChecklistUseCase: DeleteChecklistUseCase,
     private val tracker: Tracker,
     private val synchronizer: Synchronizer
 ) :
@@ -155,7 +151,6 @@ class FillChecklistViewModel @Inject constructor(
                     bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
                 tracker.logEvent("save_checklist_clicked", trackingParams)
                 synchronizer.synchronizeCommands(success.consolidatedCommands())
-                saveChecklistUseCase.saveChecklist(checklistToStore.copy(notes = checklistToStore.notes.trimEnd()))
                 null to FillChecklistEffect.CloseScreen
             }
     }
@@ -174,9 +169,6 @@ class FillChecklistViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, _) ->
                 tracker.logEvent("delete_checklist_confirmation_clicked")
-                if (success.checklist.isStored) {
-                    deleteChecklistUseCase.deleteChecklist(success.checklist)
-                }
                 synchronizer.synchronizeCommands(
                     success.consolidatedCommands().plus(
                         ChecklistDomainCommand.DeleteChecklistCommand(

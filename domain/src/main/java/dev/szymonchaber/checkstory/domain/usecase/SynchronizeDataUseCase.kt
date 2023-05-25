@@ -8,6 +8,6 @@ class SynchronizeDataUseCase @Inject constructor(
 ) {
 
     suspend fun synchronizeData() {
-        synchronizer.synchronize()
+        synchronizer.scheduleSynchronization()
     }
 }

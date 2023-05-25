@@ -60,6 +60,10 @@ dependencies {
     Dependencies.ktor.forEach(::implementation)
     implementation(Dependencies.kotlinx_datetime)
 
+    implementation(Dependencies.work)
+    implementation(Dependencies.hiltWork)
+    kapt(Dependencies.hiltWorkKapt)
+
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.unitTest.forEach(::androidTestImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

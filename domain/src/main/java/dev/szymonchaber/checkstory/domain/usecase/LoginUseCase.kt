@@ -18,7 +18,7 @@ class LoginUseCase @Inject constructor(
         return authInteractor.login()
             .tapSuccess {
                 userRepository.storeCurrentUser(it)
-                synchronizer.synchronize()
+                synchronizer.scheduleSynchronization()
             }
     }
 }

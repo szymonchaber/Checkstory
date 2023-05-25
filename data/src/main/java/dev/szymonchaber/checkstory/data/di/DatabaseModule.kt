@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.data.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,14 +45,16 @@ object DatabaseModule {
             context,
             AppDatabase::class.java, "checkstory-database"
         )
-            .setQueryCallback({ sqlQuery, bindArgs ->
-                println("SQL Query: $sqlQuery SQL Args: $bindArgs")
+            .setQueryCallback(object : RoomDatabase.QueryCallback {
+
+                override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) {
+                    println("SQL Query: $sqlQuery SQL Args: $bindArgs")
+                }
             }, Executors.newSingleThreadExecutor())
             .addMigrations(Migration5to6())
             .build()
 //            .apply { insertDummyData() }
     }
-
 
     private fun AppDatabase.insertDummyData() {
         GlobalScope.launch {

@@ -98,6 +98,8 @@ dependencies {
     Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)
 
+    implementation(Dependencies.hiltWork)
+    kapt(Dependencies.hiltWorkKapt)
     kapt(Dependencies.hiltKapt)
 
     implementation(Dependencies.ads)

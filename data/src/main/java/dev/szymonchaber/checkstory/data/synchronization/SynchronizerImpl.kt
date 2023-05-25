@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.data.synchronization
 
+import androidx.work.WorkManager
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dev.szymonchaber.checkstory.data.api.event.ChecklistsApi
@@ -9,6 +10,7 @@ import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.ChecklistTemplateRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
+import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
@@ -22,12 +24,13 @@ class SynchronizerImpl @Inject internal constructor(
     private val commandRepository: CommandRepositoryImpl,
     private val templatesApi: TemplatesApi,
     private val checklistsApi: ChecklistsApi,
-    private val checklistRepository: ChecklistRepositoryImpl
+    private val checklistRepository: ChecklistRepositoryImpl,
+    private val workManager: WorkManager
 ) : Synchronizer {
 
     override suspend fun synchronizeCommands(commands: List<DomainCommand>) {
         commandRepository.storeCommands(commands)
-        synchronize()
+        scheduleSynchronization()
     }
 
     override suspend fun hasUnsynchronizedCommands(): Boolean {
@@ -38,11 +41,15 @@ class SynchronizerImpl @Inject internal constructor(
         commandRepository.deleteAllCommands()
     }
 
-    override suspend fun synchronize() {
+    override suspend fun scheduleSynchronization() {
+        SynchronizationWorker.schedule(workManager)
+    }
+
+    suspend fun performSynchronization(): SynchronizationResult {
         if (Firebase.auth.currentUser == null) {
-            return
+            return SynchronizationResult.Success
         }
-        try {
+        return try {
             val commands = commandRepository.unappliedCommandsFlow.first()
             commandsApi.pushCommands(commands)
             val templates = templatesApi.getTemplates()
@@ -50,8 +57,10 @@ class SynchronizerImpl @Inject internal constructor(
             checklistTemplateRepository.replaceData(templates)
             checklistRepository.replaceData(checklists)
             commandRepository.deleteCommands(commands.map(DomainCommand::commandId))
+            SynchronizationResult.Success
         } catch (exception: Exception) {
             Timber.e("API error - skipping synchronization for now", exception)
+            SynchronizationResult.Error
         }
     }
 }

@@ -1,16 +1,19 @@
 package dev.szymonchaber.checkstory.data.di
 
 import android.app.Application
+import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import androidx.work.WorkManager
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.interactor.AuthInteractorImpl
 import dev.szymonchaber.checkstory.data.repository.*
@@ -134,6 +137,12 @@ internal interface DataModule {
                 ?.token?.let {
                     BearerTokens(it, "")
                 }
+        }
+
+        @Provides
+        fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+            return WorkManager
+                .getInstance(context)
         }
     }
 }

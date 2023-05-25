@@ -6,9 +6,16 @@ interface Synchronizer {
 
     suspend fun hasUnsynchronizedCommands(): Boolean
 
-    suspend fun synchronize()
+    suspend fun scheduleSynchronization()
 
     suspend fun synchronizeCommands(commands: List<DomainCommand>)
 
     suspend fun deleteCommands()
+}
+
+sealed interface SynchronizationResult {
+
+    object Success : SynchronizationResult
+
+    object Error : SynchronizationResult
 }

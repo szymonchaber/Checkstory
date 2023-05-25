@@ -5,6 +5,8 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
@@ -24,7 +26,10 @@ import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltAndroidApp
-class App : Application() {
+class App : Application(), Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
     @Inject
     lateinit var reminderScheduler: ReminderScheduler
@@ -36,6 +41,11 @@ class App : Application() {
     lateinit var logStorage: LogStorage
 
     private val alarmManager by lazy { getSystemService(Context.ALARM_SERVICE) as AlarmManager }
+
+    override fun getWorkManagerConfiguration() =
+        Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
