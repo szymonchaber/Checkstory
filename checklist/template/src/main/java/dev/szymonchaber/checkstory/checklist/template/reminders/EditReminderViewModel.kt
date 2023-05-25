@@ -56,7 +56,7 @@ class EditReminderViewModel @Inject constructor(
                 val newReminder = Reminder.Exact(
                     ReminderId(UUID.randomUUID()),
                     it.templateId,
-                    LocalDateTime.now()
+                    LocalDateTime.now().withSecond(0)
                 )
                 EditReminderState(EditReminderLoadingState.Success.fromReminder(newReminder)) to null
             }
@@ -93,7 +93,7 @@ class EditReminderViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 val newState = success.updateReminder {
-                    updateTime(event.time)
+                    updateTime(event.time.withSecond(0))
                 }
                 tracker.logEvent("reminder_time_set", bundleOf("time" to event.time))
                 EditReminderState(newState) to null

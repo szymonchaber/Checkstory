@@ -14,6 +14,9 @@ interface ReminderDao {
     @Query("SELECT * FROM reminderEntity WHERE reminderEntity.templateId=:templateId")
     fun getAllForChecklistTemplate(templateId: UUID): Flow<List<ReminderEntity>>
 
+    @Query("SELECT * FROM reminderEntity WHERE reminderEntity.reminderId=:id")
+    suspend fun getById(id: UUID): ReminderEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(reminder: ReminderEntity): Long
 

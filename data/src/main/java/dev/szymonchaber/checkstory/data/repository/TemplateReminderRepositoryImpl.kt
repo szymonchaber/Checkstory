@@ -25,6 +25,10 @@ class TemplateReminderRepositoryImpl @Inject constructor(
             }
     }
 
+    override suspend fun getById(reminderId: ReminderId): Reminder? {
+        return reminderDao.getById(reminderId.id)?.toDomainReminder()
+    }
+
     override suspend fun deleteReminders(ids: List<ReminderId>) {
         withContext(Dispatchers.Default) {
             ids.map { it.id }
