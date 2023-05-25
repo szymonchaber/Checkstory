@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
-import timber.log.Timber
 
 sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
@@ -202,9 +201,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
                         children = children.map {
                             fromDomainModel(it)
                         }.reindexed(),
-                    ).also {
-                        Timber.d("Building ${templateCheckbox.title} with key ${it.id}")
-                    }
+                    )
                 }
             }
         }
@@ -231,4 +228,11 @@ fun renderCheckbox(checkbox: ViewTemplateCheckbox, prefix: String = "     "): St
         }"
     }
     return "${checkbox.title.ifEmpty { "Empty" }} ${children.let { "\n$it" }}"
+}
+
+fun printTemplateCheckbox(templateCheckbox: TemplateCheckbox, prefix: String = "") {
+    println("$prefix|----${templateCheckbox.title}")
+    templateCheckbox.children.forEach { child ->
+        printTemplateCheckbox(child, "$prefix    ")
+    }
 }
