@@ -40,7 +40,7 @@ class ChecklistRepositoryImpl @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
     private val checklistDao: ChecklistDao,
     private val checkboxDao: CheckboxDao,
-    private val commandRepository: CommandRepositoryImpl
+    private val commandRepository: CommandRepository
 ) : ChecklistRepository {
 
     private val _checklistSavedEvents =
@@ -92,7 +92,7 @@ class ChecklistRepositoryImpl @Inject constructor(
     }
 
     private fun Flow<List<Checklist>>.hydrated(): Flow<List<Checklist>> =
-        combine(commandRepository.unappliedCommandsFlow) { templates, _ ->
+        combine(commandRepository.getUnappliedCommandsFlow()) { templates, _ ->
             templates.map {
                 commandRepository.hydrate(it)
             }

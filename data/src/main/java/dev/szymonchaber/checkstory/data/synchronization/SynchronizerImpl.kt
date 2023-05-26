@@ -7,7 +7,7 @@ import dev.szymonchaber.checkstory.data.api.event.ChecklistsApi
 import dev.szymonchaber.checkstory.data.api.event.CommandsApi
 import dev.szymonchaber.checkstory.data.api.event.TemplatesApi
 import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
-import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
+import dev.szymonchaber.checkstory.data.repository.CommandRepository
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
@@ -21,7 +21,7 @@ import javax.inject.Singleton
 class SynchronizerImpl @Inject internal constructor(
     private val templateRepository: ChecklistTemplateRepository,
     private val commandsApi: CommandsApi,
-    private val commandRepository: CommandRepositoryImpl,
+    private val commandRepository: CommandRepository,
     private val templatesApi: TemplatesApi,
     private val checklistsApi: ChecklistsApi,
     private val checklistRepository: ChecklistRepositoryImpl,
@@ -50,7 +50,7 @@ class SynchronizerImpl @Inject internal constructor(
             return SynchronizationResult.Success
         }
         return try {
-            val commands = commandRepository.unappliedCommandsFlow.first()
+            val commands = commandRepository.getUnappliedCommandsFlow().first()
             commandsApi.pushCommands(commands)
             val templates = templatesApi.getTemplates()
             val checklists = checklistsApi.getChecklists()

@@ -32,7 +32,7 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
     private val templateCheckboxDao: TemplateCheckboxDao,
     private val reminderDao: ReminderDao,
-    private val commandRepository: CommandRepositoryImpl,
+    private val commandRepository: CommandRepository,
     private val checklistRepository: ChecklistRepositoryImpl
 ) : ChecklistTemplateRepository {
 
@@ -53,7 +53,7 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
                     it.map { combineIntoDomainChecklistTemplate(it) }.toFlowOfLists()
                 }
             }
-            .combine(commandRepository.unappliedCommandsFlow) { templates, _ ->
+            .combine(commandRepository.getUnappliedCommandsFlow()) { templates, _ ->
                 templates.map {
                     commandRepository.hydrate(it)
                 }
