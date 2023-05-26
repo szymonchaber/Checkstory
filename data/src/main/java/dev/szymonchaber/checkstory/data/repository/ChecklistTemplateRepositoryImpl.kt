@@ -11,8 +11,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -21,7 +19,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
@@ -75,50 +72,16 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
             )
             awaitAll(
                 async {
-                    insertTemplateCheckboxes(checklistTemplate.items, checklistTemplateId)
+                    templateCheckboxDao.insertAll(
+                        checklistTemplate.flattenedItems
+                            .map(TemplateCheckboxEntity::fromDomainTemplateCheckbox)
+                    )
                 },
                 async {
-                    insertReminders(checklistTemplate.reminders, checklistTemplateId)
+                    reminderDao.insertAll(checklistTemplate.reminders.map(ReminderEntity::fromDomainReminder))
                 }
             )
             checklistTemplateId
-        }
-    }
-
-    private suspend fun insertReminders(reminders: List<Reminder>, checklistTemplateId: UUID) {
-        withContext(Dispatchers.Default) {
-            launch {
-                val reminderEntities = reminders.map {
-                    ReminderEntity.fromDomainReminder(it, checklistTemplateId)
-                }
-                reminderDao.insertAll(*reminderEntities.toTypedArray())
-            }
-        }
-    }
-
-    private suspend fun insertTemplateCheckboxes(checkboxes: List<TemplateCheckbox>, checklistTemplateId: UUID) {
-        checkboxes.forEach {
-            withContext(Dispatchers.Default) {
-                launch {
-                    insertCheckboxRecursive(it, checklistTemplateId, null)
-                }
-            }
-        }
-    }
-
-    private suspend fun insertCheckboxRecursive(
-        templateCheckbox: TemplateCheckbox,
-        checklistTemplateId: UUID,
-        parentId: TemplateCheckboxId?
-    ) {
-        templateCheckboxDao.insert(
-            TemplateCheckboxEntity.fromDomainTemplateCheckbox(
-                templateCheckbox,
-                checklistTemplateId
-            ).copy(parentId = parentId?.id)
-        )
-        templateCheckbox.children.forEach { child ->
-            insertCheckboxRecursive(child, checklistTemplateId, templateCheckbox.id)
         }
     }
 
@@ -154,16 +117,6 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
 
     private fun groupToDomain(checkboxes: List<TemplateCheckboxEntity>): List<TemplateCheckbox> {
         return convertToNestedCheckboxes(checkboxes)
-    }
-
-    private fun TemplateCheckboxEntity.toTemplateCheckbox(children: List<TemplateCheckbox> = emptyList()): TemplateCheckbox {
-        return TemplateCheckbox(
-            id = TemplateCheckboxId(checkboxId),
-            parentId = parentId?.let { TemplateCheckboxId(it) },
-            title = checkboxTitle,
-            children = children,
-            sortPosition = sortPosition
-        )
     }
 
     private fun convertToNestedCheckboxes(entities: List<TemplateCheckboxEntity>): List<TemplateCheckbox> {
@@ -220,28 +173,11 @@ class ChecklistTemplateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun replaceData(with: List<ChecklistTemplate>) {
-        with.map { template ->
-            Triple(
-                ChecklistTemplateEntity.fromDomainChecklistTemplate(template),
-                template.flattenedItems.map {
-                    TemplateCheckboxEntity.fromDomainTemplateCheckbox(it, template.id.id)
-                },
-                template.reminders.map {
-                    ReminderEntity.fromDomainReminder(it, template.id.id)
-                }
-            )
-        }.fold(
-            Triple(
-                listOf<ChecklistTemplateEntity>(),
-                listOf<TemplateCheckboxEntity>(),
-                listOf<ReminderEntity>()
-            )
-        ) { (templates, checkboxes, reminders), (template, templateItems, templateReminders) ->
-            Triple(templates.plus(template), checkboxes.plus(templateItems), reminders.plus(templateReminders))
-        }
-            .let { (templates, checkboxes, reminders) ->
-                checklistTemplateDao.replaceData(templates, checkboxes, reminders)
-            }
+        val templates = with.map(ChecklistTemplateEntity::fromDomainChecklistTemplate)
+        val flatItems =
+            with.flatMap(ChecklistTemplate::flattenedItems).map(TemplateCheckboxEntity::fromDomainTemplateCheckbox)
+        val flatReminders = with.flatMap(ChecklistTemplate::reminders).map(ReminderEntity::fromDomainReminder)
+        checklistTemplateDao.replaceData(templates, flatItems, flatReminders)
     }
 
     override suspend fun deleteAllData() {

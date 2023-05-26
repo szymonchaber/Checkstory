@@ -226,7 +226,8 @@ fun ChecklistTemplateViewPreview() {
                     null,
                     "Checkbox 1",
                     listOf(),
-                    0
+                    0,
+                    ChecklistTemplateId.new()
                 )
             ),
             LocalDateTime.now(),

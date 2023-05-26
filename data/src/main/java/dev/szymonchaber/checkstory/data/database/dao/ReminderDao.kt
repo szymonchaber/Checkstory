@@ -21,7 +21,7 @@ interface ReminderDao {
     suspend fun insert(reminder: ReminderEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(vararg reminders: ReminderEntity)
+    suspend fun insertAll(reminders: List<ReminderEntity>)
 
     @Query("DELETE FROM reminderEntity WHERE reminderEntity.templateId = :templateId")
     suspend fun deleteAllFromTemplate(templateId: UUID)

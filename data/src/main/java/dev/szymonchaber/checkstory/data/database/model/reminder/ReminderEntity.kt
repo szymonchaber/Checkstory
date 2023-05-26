@@ -66,12 +66,12 @@ data class ReminderEntity(
 
     companion object {
 
-        fun fromDomainReminder(reminder: Reminder, templateId: UUID): ReminderEntity {
+        fun fromDomainReminder(reminder: Reminder): ReminderEntity {
             return when (reminder) {
                 is Reminder.Exact -> {
                     ReminderEntity(
                         reminder.id.id,
-                        templateId,
+                        reminder.forTemplate.id,
                         reminder.startDateTime, // TODO check if storage works correctly
                         false,
                         null
@@ -80,7 +80,7 @@ data class ReminderEntity(
                 is Reminder.Recurring -> {
                     ReminderEntity(
                         reminder.id.id,
-                        templateId,
+                        reminder.forTemplate.id,
                         reminder.startDateTime, // TODO check if storage works correctly
                         true,
                         toRecurrencePattern(reminder.interval)

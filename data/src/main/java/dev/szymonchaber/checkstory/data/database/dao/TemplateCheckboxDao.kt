@@ -26,6 +26,9 @@ interface TemplateCheckboxDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg templateCheckboxes: TemplateCheckboxEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(templateCheckboxes: List<TemplateCheckboxEntity>)
+
     @Query(
         "DELETE FROM templateCheckboxEntity " +
                 "WHERE templateCheckboxEntity.checkboxId = :templateCheckboxId " +

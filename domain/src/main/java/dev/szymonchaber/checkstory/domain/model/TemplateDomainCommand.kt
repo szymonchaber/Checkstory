@@ -80,7 +80,8 @@ sealed interface TemplateDomainCommand : DomainCommand {
                             null,
                             "",
                             listOf(),
-                            template.items.size.toLong()
+                            template.items.size.toLong(),
+                            templateId
                         )
                     )
                 )
@@ -100,7 +101,8 @@ sealed interface TemplateDomainCommand : DomainCommand {
                             parentId = parentId,
                             title = "",
                             children = listOf(),
-                            sortPosition = children.size.toLong()
+                            sortPosition = children.size.toLong(),
+                            templateId = templateId
                         )
                     )
                 } else {

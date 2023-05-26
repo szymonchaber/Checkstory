@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
@@ -12,7 +13,11 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
     val placeholderTitle: String?
 
-    fun toDomainModel(parentId: TemplateCheckboxId? = null, position: Int): TemplateCheckbox
+    fun toDomainModel(
+        parentId: TemplateCheckboxId? = null,
+        position: Int,
+        templateId: ChecklistTemplateId
+    ): TemplateCheckbox
 
     fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
         return withoutChild(checkbox.id) {}
@@ -125,15 +130,20 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override val placeholderTitle: String? = null
     ) : ViewTemplateCheckbox {
 
-        override fun toDomainModel(parentId: TemplateCheckboxId?, position: Int): TemplateCheckbox {
+        override fun toDomainModel(
+            parentId: TemplateCheckboxId?,
+            position: Int,
+            templateId: ChecklistTemplateId
+        ): TemplateCheckbox {
             return TemplateCheckbox(
                 id = id,
                 parentId = parentId,
                 title = title,
                 children = children.mapIndexed { index, it ->
-                    it.toDomainModel(id, index)
+                    it.toDomainModel(id, index, templateId)
                 },
-                position.toLong()
+                position.toLong(),
+                templateId
             )
         }
 
@@ -161,15 +171,20 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override val placeholderTitle: String? = null
     ) : ViewTemplateCheckbox {
 
-        override fun toDomainModel(parentId: TemplateCheckboxId?, position: Int): TemplateCheckbox {
+        override fun toDomainModel(
+            parentId: TemplateCheckboxId?,
+            position: Int,
+            templateId: ChecklistTemplateId
+        ): TemplateCheckbox {
             return TemplateCheckbox(
                 id = id,
                 parentId = parentId,
                 title = title,
                 children = children.mapIndexed { index, child ->
-                    child.toDomainModel(id, index)
+                    child.toDomainModel(id, index, templateId)
                 },
-                position.toLong()
+                position.toLong(),
+                templateId
             )
         }
 

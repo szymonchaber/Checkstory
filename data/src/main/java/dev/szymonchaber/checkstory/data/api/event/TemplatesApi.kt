@@ -125,7 +125,8 @@ data class TemplateTaskDto(
             parentId = parentId,
             title = title,
             children = children.map { it.toTask(id) },
-            sortPosition = sortPosition
+            sortPosition = sortPosition,
+            templateId = ChecklistTemplateId(templateId)
         )
     }
 }

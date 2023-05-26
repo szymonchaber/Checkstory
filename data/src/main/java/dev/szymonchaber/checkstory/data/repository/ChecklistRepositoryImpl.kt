@@ -185,21 +185,9 @@ class ChecklistRepositoryImpl @Inject constructor(
     }
 
     suspend fun replaceData(with: List<Checklist>) {
-        with
-            .map { checklist ->
-                ChecklistEntity.fromDomainChecklist(checklist) to
-                        checklist.flattenedItems.map {
-                            CheckboxEntity.fromDomainCheckbox(it)
-                        }
-            }
-            .fold(
-                listOf<ChecklistEntity>() to listOf<CheckboxEntity>()
-            ) { (checklists, checkboxes), (checklist, checklistItems) ->
-                checklists.plus(checklist) to checkboxes.plus(checklistItems)
-            }
-            .let { (checklists, checkboxes) ->
-                checklistDao.replaceData(checklists, checkboxes)
-            }
+        val checklists = with.map(ChecklistEntity.Companion::fromDomainChecklist)
+        val flatTasks = with.flatMap(Checklist::flattenedItems).map(CheckboxEntity.Companion::fromDomainCheckbox)
+        checklistDao.replaceData(checklists, flatTasks)
     }
 
     override suspend fun deleteAllData() {

@@ -47,5 +47,6 @@ data class TemplateCheckbox(
     val parentId: TemplateCheckboxId?,
     val title: String,
     val children: List<TemplateCheckbox>,
-    val sortPosition: Long
+    val sortPosition: Long,
+    val templateId: ChecklistTemplateId
 )

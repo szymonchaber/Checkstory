@@ -33,7 +33,7 @@ sealed interface TemplateLoadingState {
         fun finalizedCommands(): List<TemplateDomainCommand> {
             val indexedCheckboxes = checkboxes
                 .mapIndexed { index, checkbox ->
-                    checkbox.toDomainModel(position = index)
+                    checkbox.toDomainModel(position = index, templateId = checklistTemplate.id)
                 }
             val localPositions = indexedCheckboxes.flatten()
                 .associate {
@@ -72,7 +72,7 @@ sealed interface TemplateLoadingState {
             return commands.isNotEmpty()
                     || originalChecklistTemplate != checklistTemplate
                     || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
-                checkbox.toDomainModel(position = index)
+                checkbox.toDomainModel(position = index, templateId = checklistTemplate.id)
             }
         }
 
