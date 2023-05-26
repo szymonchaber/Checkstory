@@ -12,7 +12,9 @@ import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
@@ -60,29 +62,25 @@ class PaymentViewModel @Inject constructor(
         return filterIsInstance<PaymentEvent.LoadSubscriptionPlans>()
             .flatMapLatest {
                 flow {
-                    emit(
-                        PaymentState(
-                            paymentLoadingState = PaymentState.PaymentLoadingState.Loading
-                        ) to null
-                    )
+                    emit(PaymentState(PaymentState.PaymentLoadingState.Loading) to null)
                     if (getUserUseCase.getCurrentUser().isPaidUser) {
                         emit(PaymentState(paymentLoadingState = PaymentState.PaymentLoadingState.Paid) to null)
                     } else {
-                        val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()
-                            .fold({
-                                FirebaseCrashlytics.getInstance()
-                                    .recordException(Exception("Fetching payment plans failed!\n$it"));
-                                Timber.e(it.toString())
-                                PaymentState.PaymentLoadingState.LoadingError
-                            }
-                            ) {
-                                PaymentState.PaymentLoadingState.Success(
-                                    plans = it,
-                                    selectedPlan = it.yearly,
-                                    paymentInProgress = false
+                        emitAll(getPaymentPlansUseCase.getPaymentPlans()
+                            .filterNotNull()
+                            .map { result ->
+                                result.fold(
+                                    ifLeft = {
+                                        FirebaseCrashlytics.getInstance()
+                                            .recordException(Exception("Fetching payment plans failed!\n$it"));
+                                        Timber.e(it.toString())
+                                        PaymentState.PaymentLoadingState.LoadingError
+                                    },
+                                    ifRight = PaymentState.PaymentLoadingState::success
                                 )
-                            }
-                        emit(PaymentState(paymentLoadingState = paymentLoadingState) to null)
+                            }.map {
+                                PaymentState(paymentLoadingState = it) to null
+                            })
                     }
                 }
             }

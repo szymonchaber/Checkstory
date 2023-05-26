@@ -10,7 +10,7 @@ interface PaymentInteractor {
 
     val purchaseEvents: Flow<Either<PurchaseError, Purchase>>
 
-    suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans>
+    val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
 
     suspend fun getProductDetails(productId: String): Either<BillingError, ProductDetails>
 

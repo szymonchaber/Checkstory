@@ -20,9 +20,12 @@ import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
@@ -36,6 +39,10 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
 
     private lateinit var billingClient: BillingClient
 
+    private val _subscriptionPlans = MutableStateFlow<Either<BillingError, SubscriptionPlans>?>(null)
+    override val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
+        get() = _subscriptionPlans
+
     override fun onCreate(owner: LifecycleOwner) {
         billingClient = BillingClient.newBuilder(context)
             .setListener(::handlePurchaseResult)
@@ -47,6 +54,7 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
                 override fun onBillingSetupFinished(billingResult: BillingResult) {
                     if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                         Timber.d("Billing service connected")
+                        prefetchData()
                     } else {
                         val mapBillingError = mapConnectionBillingError(billingResult)
                         Timber.e("Billing client setup failed: $mapBillingError")
@@ -64,6 +72,12 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
         if (billingClient.isReady) {
             Timber.d("BillingClient can only be used once -- closing connection")
             billingClient.endConnection()
+        }
+    }
+
+    private fun prefetchData() {
+        GlobalScope.launch {
+            _subscriptionPlans.emit(getPaymentPlans())
         }
     }
 
@@ -104,7 +118,7 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
         }
     }
 
-    override suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
+    private suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
         return withContext(Dispatchers.Default) {
             connectBillingClient().flatMap {
                 fetchAllProducts(it).map { productDetails ->

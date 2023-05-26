@@ -25,5 +25,16 @@ data class PaymentState<LoadingState : PaymentState.PaymentLoadingState>(
         object LoadingError : PaymentLoadingState
 
         object Loading : PaymentLoadingState
+
+        companion object {
+
+            fun success(plans: SubscriptionPlans): Success {
+                return Success(
+                    plans,
+                    selectedPlan = plans.yearly,
+                    paymentInProgress = false
+                )
+            }
+        }
     }
 }
