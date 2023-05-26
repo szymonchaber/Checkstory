@@ -2,7 +2,8 @@ package dev.szymonchaber.checkstory.payments
 
 import android.os.Bundle
 import androidx.core.os.bundleOf
-import androidx.lifecycle.viewModelScope
+import arrow.core.Either
+import com.android.billingclient.api.Purchase
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
@@ -17,7 +18,6 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
@@ -40,11 +40,6 @@ class PaymentViewModel @Inject constructor(
 ) {
 
     init {
-        purchaseSubscriptionUseCase.purchaseEvents
-            .onEach {
-                onEvent(PaymentEvent.NewPurchaseResult(it))
-            }
-            .launchIn(viewModelScope)
         onEvent(PaymentEvent.LoadSubscriptionPlans)
     }
 
@@ -53,7 +48,6 @@ class PaymentViewModel @Inject constructor(
             eventFlow.handleLoadSubscriptionPlans(),
             eventFlow.handlePlanSelected(),
             eventFlow.handleBuyClicked(),
-            eventFlow.handlePurchaseEvents(),
             eventFlow.handleContinueClicked()
         )
     }
@@ -114,27 +108,29 @@ class PaymentViewModel @Inject constructor(
             .onEach {
             }
             .withSuccessState()
-            .map { (state, event) ->
-                val loadingState = state.paymentLoadingState
-                tracker.logEvent(
-                    "buy_button_clicked",
-                    getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
-                )
-                purchaseSubscriptionUseCase.startPurchaseFlow(
-                    event.activity,
-                    loadingState.selectedPlan.productDetails,
-                    loadingState.selectedPlan.offerToken
-                )
-                state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null
+            .flatMapLatest { (state, event) ->
+                flow {
+                    val loadingState = state.paymentLoadingState
+                    tracker.logEvent(
+                        "buy_button_clicked",
+                        getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
+                    )
+                    emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null)
+                    emitAll(
+                        purchaseSubscriptionUseCase.startPurchaseFlow(
+                            event.activity,
+                            loadingState.selectedPlan.productDetails,
+                            loadingState.selectedPlan.offerToken
+                        ).handlePurchaseEvents()
+                    )
+                }
             }
     }
 
-    private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
-        return filterIsInstance<PaymentEvent.NewPurchaseResult>()
-            .withSuccessState()
+    private fun Flow<Either<PurchaseError, Purchase>>.handlePurchaseEvents(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
+        return withSuccessState()
             .map { (state, event) ->
-                Timber.d("Got purchase details or error: ${event.paymentResult}")
-                event.paymentResult
+                event
                     .fold({
                         Timber.e(it.toString())
                         FirebaseCrashlytics.getInstance().recordException(Exception("Purchase attempt failed!\n$it"))

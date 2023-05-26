@@ -11,10 +11,11 @@ class PurchaseSubscriptionUseCase @Inject constructor(
     private val paymentInteractor: PaymentInteractorImpl
 ) {
 
-    fun startPurchaseFlow(activity: Activity, productDetails: ProductDetails, offerToken: String) {
-        paymentInteractor.startPurchaseFlow(activity, productDetails, offerToken)
+    fun startPurchaseFlow(
+        activity: Activity,
+        productDetails: ProductDetails,
+        offerToken: String
+    ): Flow<Either<PurchaseError, Purchase>> {
+        return paymentInteractor.startPurchaseFlow(activity, productDetails, offerToken)
     }
-
-    val purchaseEvents: Flow<Either<PurchaseError, Purchase>>
-        get() = paymentInteractor.purchaseEvents
 }

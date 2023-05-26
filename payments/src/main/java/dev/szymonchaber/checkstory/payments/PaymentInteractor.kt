@@ -8,11 +8,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface PaymentInteractor {
 
-    val purchaseEvents: Flow<Either<PurchaseError, Purchase>>
-
     val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
 
     suspend fun getProductDetails(productId: String): Either<BillingError, ProductDetails>
 
-    fun startPurchaseFlow(activity: Activity, productDetails: ProductDetails, offerToken: String)
+    fun startPurchaseFlow(
+        activity: Activity,
+        productDetails: ProductDetails,
+        offerToken: String
+    ): Flow<Either<PurchaseError, Purchase>>
 }

@@ -43,6 +43,11 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
     override val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
         get() = _subscriptionPlans
 
+    private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+
     override fun onCreate(owner: LifecycleOwner) {
         billingClient = BillingClient.newBuilder(context)
             .setListener(::handlePurchaseResult)
@@ -99,14 +104,6 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
     }
 
     // region interactor
-
-    private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
-        extraBufferCapacity = 1,
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-
-    override val purchaseEvents: Flow<Either<PurchaseError, Purchase>>
-        get() = _purchaseEvents
 
     // TODO rewire through the backend
     suspend fun isProUser(): Boolean {
@@ -167,7 +164,11 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
         }
     }
 
-    override fun startPurchaseFlow(activity: Activity, productDetails: ProductDetails, offerToken: String) {
+    override fun startPurchaseFlow(
+        activity: Activity,
+        productDetails: ProductDetails,
+        offerToken: String
+    ): Flow<Either<PurchaseError, Purchase>> {
         val productDetailsParams = BillingFlowParams.ProductDetailsParams.newBuilder()
             .setProductDetails(productDetails)
             .setOfferToken(offerToken)
@@ -179,6 +180,7 @@ class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val 
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
             _purchaseEvents.tryEmit(mapPurchaseError(billingResult).left())
         }
+        return _purchaseEvents
     }
 
     private suspend fun fetchProductDetails(
