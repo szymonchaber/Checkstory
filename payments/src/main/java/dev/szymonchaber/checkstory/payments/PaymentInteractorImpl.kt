@@ -1,12 +1,15 @@
 package dev.szymonchaber.checkstory.payments
 
 import android.app.Activity
+import android.content.Context
 import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingClient.ConnectionState
+import com.android.billingclient.api.BillingClientStateListener
 import com.android.billingclient.api.BillingFlowParams
 import com.android.billingclient.api.BillingResult
 import com.android.billingclient.api.ProductDetails
@@ -14,18 +17,113 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
-class PaymentInteractorImpl @Inject constructor(private val billingManager: BillingManager) : PaymentInteractor {
+class PaymentInteractorImpl @Inject constructor(@ApplicationContext context: Context) : PaymentInteractor {
+
+    var purchasesUpdatedListener: ((result: BillingResult, purchases: List<Purchase>?) -> Unit)? = null
+
+    private val internalConnectionState = MutableStateFlow<InternalConnectionState>(InternalConnectionState.Idle)
+
+    val billingClient = BillingClient.newBuilder(context)
+        .enablePendingPurchases()
+        .setListener { billingResult, purchases ->
+            purchasesUpdatedListener?.invoke(billingResult, purchases)
+        }
+        .build()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    suspend fun connectBillingClient(): Either<BillingError, BillingClient> {
+        return internalConnectionState
+            .onEach {
+                when (it) {
+                    InternalConnectionState.Idle -> {
+                        internalConnectionState.emit(InternalConnectionState.Connecting)
+                        if (billingClient.connectionState != ConnectionState.CONNECTING) {
+                            startConnection()
+                        }
+                    }
+
+                    else -> Unit
+                }
+            }
+            .filterIsInstance<ConnectionResultState>()
+            .flatMapLatest {
+                when (it) {
+                    InternalConnectionState.Connected -> {
+                        flowOf(billingClient.right())
+                    }
+
+                    is InternalConnectionState.Error -> {
+                        flowOf(it.error.left())
+                    }
+                }
+            }
+            .first()
+    }
+
+    private fun startConnection() {
+        billingClient.startConnection(object : BillingClientStateListener {
+
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
+                    Timber.d("Billing service connected")
+                    internalConnectionState.tryEmit(InternalConnectionState.Connected)
+                } else {
+                    val mapBillingError = mapConnectionBillingError(billingResult)
+                    Timber.e("Billing client setup failed: $mapBillingError")
+                    internalConnectionState.tryEmit(InternalConnectionState.Error(mapBillingError))
+                }
+            }
+
+            override fun onBillingServiceDisconnected() {
+                Timber.d("Billing service disconnected")
+                internalConnectionState.tryEmit(InternalConnectionState.Idle)
+            }
+        })
+    }
+
+    private fun mapConnectionBillingError(billingResult: BillingResult): BillingError {
+        return when (billingResult.responseCode) {
+            BillingClient.BillingResponseCode.OK -> throw IllegalArgumentException("OK billing result should be handled by the calling method")
+            BillingClient.BillingResponseCode.FEATURE_NOT_SUPPORTED -> BillingError.BillingNotSupported
+            BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE -> BillingError.ConnectionError(billingResult.debugMessage)
+            else -> BillingError.Unhandled(billingResult.responseCode, billingResult.debugMessage)
+        }
+    }
+
+    sealed interface ConnectionResultState
+
+    sealed interface InternalConnectionState {
+
+        object Idle : InternalConnectionState
+
+        object Connecting : InternalConnectionState
+
+        object Connected : InternalConnectionState, ConnectionResultState
+
+        class Error(val error: BillingError) : InternalConnectionState, ConnectionResultState
+    }
+
+    // region interactor
 
     private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
         extraBufferCapacity = 1,
@@ -36,7 +134,7 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
         get() = _purchaseEvents
 
     init {
-        billingManager.purchasesUpdatedListener = { billingResult, purchases ->
+        purchasesUpdatedListener = { billingResult, purchases ->
             handlePurchaseResult(billingResult, purchases)
         }
     }
@@ -53,7 +151,7 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
 
     override suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
         return withContext(Dispatchers.Default) {
-            billingManager.connectBillingClient().flatMap {
+            connectBillingClient().flatMap {
                 fetchAllProducts(it).map { productDetails ->
                     val monthlyProduct = productDetails
                         .first {
@@ -94,7 +192,7 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
 
     override suspend fun getProductDetails(productId: String): Either<BillingError, ProductDetails> {
         return withContext(Dispatchers.Default) {
-            billingManager.connectBillingClient().flatMap {
+            connectBillingClient().flatMap {
                 fetchProductDetails(it, productId)
             }
         }
@@ -108,7 +206,7 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
         val flowParams = BillingFlowParams.newBuilder()
             .setProductDetailsParamsList(listOf(productDetailsParams))
             .build()
-        val billingResult = billingManager.billingClient.launchBillingFlow(activity, flowParams)
+        val billingResult = billingClient.launchBillingFlow(activity, flowParams)
         if (billingResult.responseCode != BillingClient.BillingResponseCode.OK) {
             _purchaseEvents.tryEmit(mapPurchaseError(billingResult).left())
         }
@@ -182,14 +280,14 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
     }
 
     suspend fun getPurchases() {
-        billingManager.billingClient.queryPurchasesAsync(
+        billingClient.queryPurchasesAsync(
             QueryPurchasesParams.newBuilder()
                 .setProductType(BillingClient.ProductType.SUBS)
                 .build()
         ) { billingResult, purchaseList ->
             // Process the result
             val purchase = purchaseList.first()
-            billingManager.billingClient.acknowledgePurchase(
+            billingClient.acknowledgePurchase(
                 AcknowledgePurchaseParams.newBuilder()
                     .setPurchaseToken(purchase.purchaseToken)
                     .build()
@@ -199,9 +297,9 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
     }
 
     private suspend fun fetchCurrentSubscription(): Either<BillingError, Purchase?> {
-        return billingManager.connectBillingClient().flatMap {
+        return connectBillingClient().flatMap {
             suspendCoroutine { continuation ->
-                billingManager.billingClient.queryPurchasesAsync(
+                billingClient.queryPurchasesAsync(
                     QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build()
                 ) { billingResult, purchases ->
                     if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
@@ -229,7 +327,7 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
     }
 
     private fun handleSuccessfulPurchase(purchase: Purchase) {
-        billingManager.billingClient
+        billingClient
             .acknowledgePurchase(
                 AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
             ) { billingResult ->
@@ -271,4 +369,5 @@ class PaymentInteractorImpl @Inject constructor(private val billingManager: Bill
         private const val PRODUCT_ID_PRO_QUARTERLY = "pro_quarterly"
         private const val PRODUCT_ID_PRO_YEARLY = "pro_yearly"
     }
+    // endregion
 }
