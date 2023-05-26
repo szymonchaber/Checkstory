@@ -7,6 +7,7 @@ import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
+import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
@@ -31,8 +32,8 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
     private val templateCheckboxDao: TemplateCheckboxDao,
     private val reminderDao: ReminderDao,
-    private val checklistRoomDataSource: ChecklistRoomDataSource,
-    private val commandRepository: CommandRepositoryImpl
+    private val commandRepository: CommandRepositoryImpl,
+    private val checklistRepository: ChecklistRepositoryImpl
 ) {
 
     fun getById(id: UUID): Flow<ChecklistTemplate> {
@@ -128,7 +129,7 @@ class ChecklistTemplateRoomDataSource @Inject constructor(
     private suspend fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {
         return withContext(Dispatchers.Default) {
             val checkboxesFlow = templateCheckboxDao.getAllForChecklistTemplate(entity.id)
-            val checklistsFlow = checklistRoomDataSource.getBasedOn(ChecklistTemplateId(entity.id))
+            val checklistsFlow = checklistRepository.getBasedOn(ChecklistTemplateId(entity.id))
             val remindersFlow = reminderDao.getAllForChecklistTemplate(entity.id)
             combine(checkboxesFlow, checklistsFlow, remindersFlow) { checkboxes, checklists, reminders ->
                 mapChecklistTemplate(entity, checkboxes, checklists, reminders)
