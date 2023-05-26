@@ -10,8 +10,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.android.library:com.android.library.gradle.plugin:7.1.3")
-    implementation("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.6.10")
+    implementation("com.android.library:com.android.library.gradle.plugin:8.0.2")
+    implementation("org.jetbrains.kotlin.android:org.jetbrains.kotlin.android.gradle.plugin:1.7.20")
 }
 
 gradlePlugin {
