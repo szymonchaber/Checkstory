@@ -8,7 +8,5 @@ interface TemplateReminderRepository {
 
     suspend fun getAllReminders(): Flow<List<Reminder>>
 
-    suspend fun deleteReminders(ids: List<ReminderId>)
-
     suspend fun getById(reminderId: ReminderId): Reminder?
 }

@@ -7,10 +7,7 @@ import androidx.core.app.AlarmManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.flatMapConcat
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.Instant
@@ -19,7 +16,6 @@ import java.time.ZoneId
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@OptIn(FlowPreview::class)
 @Singleton
 class ReminderScheduler @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -31,11 +27,8 @@ class ReminderScheduler @Inject constructor(
     init {
         GlobalScope.launch {
             repository.getAllReminders()
-                .flatMapConcat {
-                    flowOf(*it.toTypedArray())
-                }
                 .collect {
-                    scheduleReminder(it)
+                    it.forEach(::scheduleReminder)
                 }
         }
     }
