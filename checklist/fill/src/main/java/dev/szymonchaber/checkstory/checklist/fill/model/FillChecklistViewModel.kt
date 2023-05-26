@@ -178,7 +178,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.BackClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                val event = if (success.isChanged() || !success.checklist.isStored) {
+                val event = if (success.isChanged()) {
                     FillChecklistEffect.ShowConfirmExitDialog()
                 } else {
                     FillChecklistEffect.CloseScreen

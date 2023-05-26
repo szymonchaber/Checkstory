@@ -67,14 +67,7 @@ sealed interface TemplateLoadingState {
             return result
         }
 
-        fun isChanged(): Boolean {
-            // TODO instead do just "are commands empty?"
-            return commands.isNotEmpty()
-                    || originalChecklistTemplate != checklistTemplate
-                    || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
-                checkbox.toDomainModel(position = index, templateId = checklistTemplate.id)
-            }
-        }
+        fun isChanged() = commands.isNotEmpty()
 
         fun withNewTitle(newTitle: String): Success {
             return plusCommand(

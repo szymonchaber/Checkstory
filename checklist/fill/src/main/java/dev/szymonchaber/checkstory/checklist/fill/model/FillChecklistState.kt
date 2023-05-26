@@ -38,9 +38,7 @@ sealed interface ChecklistLoadingState {
             )
         }
 
-        fun isChanged(): Boolean {
-            return originalChecklist != checklist
-        }
+        fun isChanged() = commands.isNotEmpty()
 
         fun withUpdatedNotes(notes: String): ChecklistLoadingState {
             return plusCommand(
