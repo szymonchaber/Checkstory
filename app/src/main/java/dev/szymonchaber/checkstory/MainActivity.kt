@@ -27,8 +27,10 @@ import dev.szymonchaber.checkstory.design.AdViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.navigation.Navigation
+import dev.szymonchaber.checkstory.payments.PaymentInteractorImpl
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -37,6 +39,9 @@ class MainActivity : ComponentActivity() {
 
     private val manager by lazy { ReviewManagerFactory.create(this) }
 
+    @Inject
+    lateinit var paymentInteractorImpl: PaymentInteractorImpl
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MobileAds.initialize(this) { initializationStatus ->
@@ -44,6 +49,7 @@ class MainActivity : ComponentActivity() {
                 "$name: ${status.initializationState.name}"
             }.joinToString())
         }
+        lifecycle.addObserver(paymentInteractorImpl)
         setContent {
             CheckstoryTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
