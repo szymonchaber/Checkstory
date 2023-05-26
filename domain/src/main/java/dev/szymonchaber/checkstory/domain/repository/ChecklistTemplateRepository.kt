@@ -10,11 +10,11 @@ interface ChecklistTemplateRepository {
 
     suspend fun get(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate?
 
-    suspend fun getOrNull(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate?
-
     suspend fun update(checklistTemplate: ChecklistTemplate)
 
     suspend fun delete(checklistTemplate: ChecklistTemplate)
 
     suspend fun deleteAllData()
+
+    suspend fun replaceData(with: List<ChecklistTemplate>)
 }

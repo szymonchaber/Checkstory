@@ -121,7 +121,7 @@ class EditTemplateViewModel @Inject constructor(
                     flowOf(state.first() to null)
                 } else {
                     flowOf(
-                        getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)?.let {
+                        getChecklistTemplateUseCase.getTemplate(event.checklistTemplateId)?.let {
                             withContext(Dispatchers.Default) {
                                 TemplateLoadingState.Success.fromTemplate(it)
                             }

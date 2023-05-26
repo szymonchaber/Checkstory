@@ -36,7 +36,7 @@ class ReminderReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.Main)
             .launch {
                 val reminder = getReminderUseCase.getReminder(reminderId) ?: return@launch
-                val template = getChecklistTemplateUseCase.getChecklistTemplateOrNull(templateId) ?: return@launch
+                val template = getChecklistTemplateUseCase.getTemplate(templateId) ?: return@launch
                 val newChecklistIntent = Intent(
                     Intent.ACTION_VIEW,
                     "app://checkstory/checklist/new/${template.id.id}".toUri()

@@ -7,9 +7,9 @@ import dev.szymonchaber.checkstory.data.api.event.ChecklistsApi
 import dev.szymonchaber.checkstory.data.api.event.CommandsApi
 import dev.szymonchaber.checkstory.data.api.event.TemplatesApi
 import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
-import dev.szymonchaber.checkstory.data.repository.ChecklistTemplateRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.CommandRepositoryImpl
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
+import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import kotlinx.coroutines.flow.first
@@ -19,7 +19,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SynchronizerImpl @Inject internal constructor(
-    private val checklistTemplateRepository: ChecklistTemplateRepositoryImpl,
+    private val templateRepository: ChecklistTemplateRepository,
     private val commandsApi: CommandsApi,
     private val commandRepository: CommandRepositoryImpl,
     private val templatesApi: TemplatesApi,
@@ -54,7 +54,7 @@ class SynchronizerImpl @Inject internal constructor(
             commandsApi.pushCommands(commands)
             val templates = templatesApi.getTemplates()
             val checklists = checklistsApi.getChecklists()
-            checklistTemplateRepository.replaceData(templates)
+            templateRepository.replaceData(templates)
             checklistRepository.replaceData(checklists)
             commandRepository.deleteCommands(commands.map(DomainCommand::commandId))
             SynchronizationResult.Success

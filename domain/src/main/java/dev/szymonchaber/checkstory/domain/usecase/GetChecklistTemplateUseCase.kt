@@ -9,11 +9,7 @@ class GetChecklistTemplateUseCase @Inject constructor(
     private val templateRepository: ChecklistTemplateRepository
 ) {
 
-    suspend fun getChecklistTemplate(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
+    suspend fun getTemplate(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
         return templateRepository.get(checklistTemplateId)
-    }
-
-    suspend fun getChecklistTemplateOrNull(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
-        return templateRepository.getOrNull(checklistTemplateId)
     }
 }
