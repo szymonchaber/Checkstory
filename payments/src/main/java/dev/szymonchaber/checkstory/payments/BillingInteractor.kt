@@ -6,7 +6,7 @@ import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
 import kotlinx.coroutines.flow.Flow
 
-interface PaymentInteractor {
+interface BillingInteractor {
 
     val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
 

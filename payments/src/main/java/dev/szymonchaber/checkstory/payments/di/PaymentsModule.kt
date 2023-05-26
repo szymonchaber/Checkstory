@@ -4,8 +4,8 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.szymonchaber.checkstory.payments.PaymentInteractor
-import dev.szymonchaber.checkstory.payments.PaymentInteractorImpl
+import dev.szymonchaber.checkstory.payments.BillingInteractor
+import dev.szymonchaber.checkstory.payments.BillingInteractorImpl
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -13,6 +13,6 @@ interface PaymentsModule {
 
     @Binds
     fun bindPaymentInteractor(
-        paymentInteractor: PaymentInteractorImpl
-    ): PaymentInteractor
+        paymentInteractor: BillingInteractorImpl
+    ): BillingInteractor
 }

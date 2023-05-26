@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class PurchaseSubscriptionUseCase @Inject constructor(
-    private val paymentInteractor: PaymentInteractorImpl
+    private val billingInteractor: BillingInteractor
 ) {
 
     fun startPurchaseFlow(
@@ -16,6 +16,6 @@ class PurchaseSubscriptionUseCase @Inject constructor(
         productDetails: ProductDetails,
         offerToken: String
     ): Flow<Either<PurchaseError, Purchase>> {
-        return paymentInteractor.startPurchaseFlow(activity, productDetails, offerToken)
+        return billingInteractor.startPurchaseFlow(activity, productDetails, offerToken)
     }
 }

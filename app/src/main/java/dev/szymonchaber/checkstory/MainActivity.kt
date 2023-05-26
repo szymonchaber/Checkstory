@@ -27,7 +27,7 @@ import dev.szymonchaber.checkstory.design.AdViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.navigation.Navigation
-import dev.szymonchaber.checkstory.payments.PaymentInteractorImpl
+import dev.szymonchaber.checkstory.payments.BillingInteractorImpl
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
     private val manager by lazy { ReviewManagerFactory.create(this) }
 
     @Inject
-    lateinit var paymentInteractorImpl: PaymentInteractorImpl
+    lateinit var paymentInteractorImpl: BillingInteractorImpl
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -34,7 +34,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
-class PaymentInteractorImpl @Inject constructor(@ApplicationContext private val context: Context) : PaymentInteractor,
+class BillingInteractorImpl @Inject constructor(@ApplicationContext private val context: Context) : BillingInteractor,
     DefaultLifecycleObserver {
 
     private lateinit var billingClient: BillingClient
