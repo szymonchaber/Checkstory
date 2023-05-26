@@ -170,7 +170,7 @@ class InsertDsl {
                     checklist.checklistId to checkboxes
                 }.forEach { (checklistId, checkboxes) ->
                     appDatabase.checkboxDao.insertAll(
-                        *checkboxes.map {
+                        checkboxes.map {
                             CheckboxEntity(
                                 it.id.id,
                                 checklistId,
@@ -178,7 +178,7 @@ class InsertDsl {
                                 it.isChecked,
                                 it.parentId?.id
                             )
-                        }.toTypedArray()
+                        }
                     )
                 }
             }

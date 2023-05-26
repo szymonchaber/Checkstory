@@ -45,15 +45,20 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
         }
     }
 
-    private fun toCheckbox(basedOn: TemplateCheckbox, checklistId: ChecklistId): Checkbox {
+    private fun toCheckbox(
+        basedOn: TemplateCheckbox,
+        checklistId: ChecklistId,
+        parentId: CheckboxId? = null
+    ): Checkbox {
+        val id = CheckboxId(UUID.randomUUID())
         return Checkbox(
-            CheckboxId(id = UUID.randomUUID()),
-            parentId = null,
-            checklistId = checklistId, // TODO we already know it from checklist
+            id,
+            parentId = parentId,
+            checklistId = checklistId,
             title = basedOn.title,
             isChecked = false,
             children = basedOn.children.map { child ->
-                toCheckbox(child, checklistId)
+                toCheckbox(child, checklistId, id)
             }
         )
     }

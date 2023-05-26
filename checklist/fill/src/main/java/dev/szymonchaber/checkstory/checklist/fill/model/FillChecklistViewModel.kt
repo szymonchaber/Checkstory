@@ -138,15 +138,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.SaveChecklistClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                val checklistToStore = if (success.checklist.isStored) {
-                    success.checklist
-                } else {
-                    val itemsWithoutTemporaryIds = success.checklist.items.map { checkbox ->
-                        checkbox.setUuidsRecursive()
-                    }
-                    success.checklist.copy(items = itemsWithoutTemporaryIds)
-                }
-                val flattenedItems = checklistToStore.flattenedItems
+                val flattenedItems = success.checklist.flattenedItems
                 val trackingParams =
                     bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
                 tracker.logEvent("save_checklist_clicked", trackingParams)

@@ -8,7 +8,6 @@ import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
@@ -28,7 +27,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.*
@@ -51,7 +49,7 @@ class ChecklistRepositoryImpl @Inject constructor(
 
     override suspend fun save(checklist: Checklist) {
         checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        insertCheckboxes(checklist.items, checklist.id)
+        checkboxDao.insertAll(checklist.items.map(CheckboxEntity::fromDomainCheckbox))
         _checklistSavedEvents.tryEmit(ChecklistSaved)
     }
 
@@ -105,32 +103,8 @@ class ChecklistRepositoryImpl @Inject constructor(
 
     suspend fun insert(checklist: Checklist): ChecklistId {
         checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        insertCheckboxes(checklist.items, checklist.id)
+        checkboxDao.insertAll(checklist.flattenedItems.map(CheckboxEntity::fromDomainCheckbox))
         return checklist.id
-    }
-
-    private suspend fun insertCheckboxes(checkboxes: List<Checkbox>, checklistId: ChecklistId) {
-        checkboxes.forEach {
-            withContext(Dispatchers.Default) {
-                launch {
-                    insertCheckboxRecursive(it, checklistId.id, null)
-                }
-            }
-        }
-    }
-
-    private suspend fun insertCheckboxRecursive(
-        checkbox: Checkbox,
-        checklistId: UUID,
-        parentId: CheckboxId?
-    ) {
-        val nestedParentId = checkbox.id
-        checkboxDao.insert(
-            CheckboxEntity.fromDomainCheckbox(checkbox).copy(parentId = parentId?.id, checklistId = checklistId)
-        )
-        checkbox.children.forEach { child ->
-            insertCheckboxRecursive(child, checklistId, nestedParentId)
-        }
     }
 
     fun getBasedOn(basedOn: ChecklistTemplateId): Flow<List<Checklist>> {
