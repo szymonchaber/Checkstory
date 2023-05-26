@@ -1,8 +1,13 @@
 package dev.szymonchaber.checkstory.payments
 
 import arrow.core.Either
+import javax.inject.Inject
 
-interface GetPaymentPlansUseCase {
+class GetPaymentPlansUseCase @Inject constructor(
+    private val paymentInteractor: PaymentInteractor
+) {
 
-    suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans>
+    suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
+        return paymentInteractor.getPaymentPlans()
+    }
 }

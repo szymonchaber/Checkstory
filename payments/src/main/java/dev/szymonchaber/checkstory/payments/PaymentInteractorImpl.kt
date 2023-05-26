@@ -25,8 +25,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
-class PurchaseSubscriptionUseCaseImpl @Inject constructor(private val billingManager: BillingManager) :
-    PurchaseSubscriptionUseCase, GetPaymentPlansUseCase {
+class PaymentInteractorImpl @Inject constructor(private val billingManager: BillingManager) : PaymentInteractor {
 
     private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
         extraBufferCapacity = 1,
