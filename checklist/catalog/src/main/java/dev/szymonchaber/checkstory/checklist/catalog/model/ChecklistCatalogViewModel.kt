@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -50,6 +51,14 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            if (
+                checkForUnassignedPaymentUseCase.isUnassignedPaymentPresent() &&
+                onboardingPreferences.didShowOnboarding.first()
+            ) {
+                onEvent(ChecklistCatalogEvent.UnassignedPaymentPresent)
+            }
+        }
+        viewModelScope.launch {
             onboardingPreferences.didShowOnboarding
                 .flatMapLatest { didShowOnboarding ->
                     if (didShowOnboarding) {
@@ -60,11 +69,6 @@ class ChecklistCatalogViewModel @Inject constructor(
                 }
                 .onEach(::onEvent)
                 .collect()
-        }
-        viewModelScope.launch {
-            if (checkForUnassignedPaymentUseCase.isUnassignedPaymentPresent()) {
-                onEvent(ChecklistCatalogEvent.UnassignedPaymentPresent)
-            }
         }
     }
 
@@ -91,7 +95,7 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.LoadChecklistCatalog>()
-            .flatMapLatest {
+            .flatMapMerge {
                 val templatesLoading = getChecklistTemplatesUseCase.getChecklistTemplates()
                     .map {
                         ChecklistCatalogLoadingState.Success(it)
@@ -125,14 +129,14 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     private fun Flow<ChecklistCatalogEvent>.handleGoToOnboarding(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.GoToOnboarding>()
-            .mapLatest {
+            .map {
                 state.first() to ChecklistCatalogEffect.NavigateToOnboarding()
             }
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleUnassignedPaymentPresent(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.UnassignedPaymentPresent>()
-            .mapLatest {
+            .map {
                 state.first() to ChecklistCatalogEffect.ShowUnassignedPaymentDialog()
             }
     }
