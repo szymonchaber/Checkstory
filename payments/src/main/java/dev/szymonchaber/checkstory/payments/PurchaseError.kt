@@ -12,5 +12,7 @@ sealed interface PurchaseError {
 
     data class ConnectionError(val debugMessage: String) : PurchaseError
 
+    data class CheckstoryBackendConnectionError(val exception: Exception) : PurchaseError
+
     object AlreadySubscribed : PurchaseError
 }
