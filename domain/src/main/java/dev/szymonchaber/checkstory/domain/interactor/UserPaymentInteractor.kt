@@ -5,5 +5,12 @@ import dev.szymonchaber.checkstory.domain.model.payment.PurchaseToken
 
 interface UserPaymentInteractor {
 
-    suspend fun assignPaymentToCurrentUser(purchaseToken: PurchaseToken): Result<Exception, Unit>
+    suspend fun assignPaymentToCurrentUser(purchaseToken: PurchaseToken): Result<AssignPaymentError, Unit>
+}
+
+sealed interface AssignPaymentError {
+
+    object NetworkError : AssignPaymentError
+
+    object PurchaseTokenAssignedToAnotherUser : AssignPaymentError
 }

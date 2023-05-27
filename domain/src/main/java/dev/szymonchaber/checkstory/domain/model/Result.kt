@@ -41,6 +41,18 @@ sealed class Result<Error, Data> {
         }
     }
 
+    fun <T> handleError(function: (Error) -> Result<T, Data>): Result<T, Data> {
+        return when (this) {
+            is Success -> {
+                success(data)
+            }
+
+            is Result.Error -> {
+                function(this.error)
+            }
+        }
+    }
+
     companion object {
 
         fun <Error, Data> success(data: Data): Result<Error, Data> {

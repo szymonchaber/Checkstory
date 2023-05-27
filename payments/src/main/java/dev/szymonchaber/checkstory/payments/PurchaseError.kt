@@ -1,5 +1,7 @@
 package dev.szymonchaber.checkstory.payments
 
+import dev.szymonchaber.checkstory.domain.interactor.AssignPaymentError
+
 sealed interface PurchaseError {
 
     object UserCancelled : PurchaseError
@@ -12,7 +14,7 @@ sealed interface PurchaseError {
 
     data class ConnectionError(val debugMessage: String) : PurchaseError
 
-    data class CheckstoryBackendConnectionError(val exception: Exception) : PurchaseError
+    data class CheckstoryBackendConnectionError(val exception: AssignPaymentError) : PurchaseError
 
     object AlreadySubscribed : PurchaseError
 }

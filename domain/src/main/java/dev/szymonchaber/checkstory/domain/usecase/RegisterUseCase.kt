@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.domain.model.tapSuccess
 import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
+import timber.log.Timber
 import javax.inject.Inject
 
 class RegisterUseCase @Inject constructor(
@@ -33,8 +34,9 @@ class RegisterUseCase @Inject constructor(
         return paymentRepository.getActiveSubscription()
             ?.let {
                 userPaymentInteractor.assignPaymentToCurrentUser(it.token)
-                    .mapError<RegisterError> {
-                        RegisterError.NetworkError(it)
+                    .handleError<RegisterError> {
+                        Timber.e(it.toString())
+                        Result.success(Unit)
                     }
                     .flatMapSuccess {
                         authInteractor.login()
