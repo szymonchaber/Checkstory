@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.usecase.CheckForUnassignedPaymentUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
@@ -37,7 +38,8 @@ class ChecklistCatalogViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val tracker: Tracker,
     private val onboardingPreferences: OnboardingPreferences,
-    private val synchronizeDataUseCase: SynchronizeDataUseCase
+    private val synchronizeDataUseCase: SynchronizeDataUseCase,
+    private val checkForUnassignedPaymentUseCase: CheckForUnassignedPaymentUseCase
 ) : BaseViewModel<
         ChecklistCatalogEvent,
         ChecklistCatalogState,
@@ -59,12 +61,20 @@ class ChecklistCatalogViewModel @Inject constructor(
                 .onEach(::onEvent)
                 .collect()
         }
+        viewModelScope.launch {
+            if (checkForUnassignedPaymentUseCase.isUnassignedPaymentPresent()) {
+                onEvent(ChecklistCatalogEvent.UnassignedPaymentPresent)
+            }
+        }
     }
 
     override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return merge(
             eventFlow.handleLoadCatalog(),
             eventFlow.handleGoToOnboarding(),
+            eventFlow.handleUnassignedPaymentPresent(),
+            eventFlow.handleCreateAccountForPaymentClicked(),
+            eventFlow.handleAccountClicked(),
             eventFlow.handleTemplateClicked(),
             eventFlow.handleRecentChecklistClicked(),
             eventFlow.handleRecentChecklistInTemplateClicked(),
@@ -73,7 +83,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleHistoryClicked(),
             eventFlow.handleGetProClicked(),
             eventFlow.handleAboutClicked(),
-            eventFlow.handleRefreshCatalog()
+            eventFlow.handleRefreshCatalog(),
         ).catch {
             FirebaseCrashlytics.getInstance().recordException(it)
         }
@@ -117,6 +127,27 @@ class ChecklistCatalogViewModel @Inject constructor(
         return filterIsInstance<ChecklistCatalogEvent.GoToOnboarding>()
             .mapLatest {
                 state.first() to ChecklistCatalogEffect.NavigateToOnboarding()
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleUnassignedPaymentPresent(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.UnassignedPaymentPresent>()
+            .mapLatest {
+                state.first() to ChecklistCatalogEffect.ShowUnassignedPaymentDialog()
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleCreateAccountForPaymentClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.CreateAccountForPaymentClicked>()
+            .mapLatest {
+                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen()
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleAccountClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.AccountClicked>()
+            .mapLatest {
+                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen()
             }
     }
 

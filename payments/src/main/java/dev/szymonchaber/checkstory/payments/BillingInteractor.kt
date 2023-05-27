@@ -4,9 +4,10 @@ import android.app.Activity
 import arrow.core.Either
 import com.android.billingclient.api.ProductDetails
 import com.android.billingclient.api.Purchase
+import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
 import kotlinx.coroutines.flow.Flow
 
-interface BillingInteractor {
+interface BillingInteractor : PlayPaymentRepository {
 
     val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
 

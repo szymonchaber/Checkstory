@@ -82,7 +82,7 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
 
     private fun prefetchData() {
         GlobalScope.launch {
-            _subscriptionPlans.emit(getPaymentPlans())
+            _subscriptionPlans.emit(getPaymentPlans().tapLeft { Timber.e("Prefetching plans failed: $it") })
         }
     }
 
@@ -105,8 +105,7 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
 
     // region interactor
 
-    // TODO rewire through the backend
-    suspend fun isProUser(): Boolean {
+    override suspend fun deviceHasActiveSubscription(): Boolean {
         return fetchCurrentSubscription().fold({
             false
         }
