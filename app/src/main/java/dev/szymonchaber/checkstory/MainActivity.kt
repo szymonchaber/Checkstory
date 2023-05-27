@@ -26,6 +26,7 @@ import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.AdViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.User
+import dev.szymonchaber.checkstory.domain.usecase.FetchUserDataUseCase
 import dev.szymonchaber.checkstory.navigation.Navigation
 import dev.szymonchaber.checkstory.payments.BillingInteractorImpl
 import kotlinx.coroutines.launch
@@ -42,12 +43,18 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var paymentInteractorImpl: BillingInteractorImpl
 
+    @Inject
+    lateinit var fetchUserDataUseCase: FetchUserDataUseCase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MobileAds.initialize(this) { initializationStatus ->
             Timber.d(initializationStatus.adapterStatusMap.map { (name, status) ->
                 "$name: ${status.initializationState.name}"
             }.joinToString())
+        }
+        lifecycleScope.launch {
+            fetchUserDataUseCase.fetchUserData()
         }
         lifecycle.addObserver(paymentInteractorImpl)
         setContent {
