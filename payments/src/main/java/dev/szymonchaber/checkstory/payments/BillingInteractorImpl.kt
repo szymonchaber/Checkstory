@@ -19,6 +19,8 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.android.billingclient.api.queryProductDetails
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.szymonchaber.checkstory.domain.model.payment.ActiveSubscription
+import dev.szymonchaber.checkstory.domain.model.payment.PurchaseToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -111,6 +113,15 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
         }
         ) {
             it != null
+        }
+    }
+
+    override suspend fun getActiveSubscription(): ActiveSubscription? {
+        return fetchCurrentSubscription().fold({
+            null
+        }
+        ) { purchase ->
+            purchase?.purchaseToken?.let { ActiveSubscription(PurchaseToken(it)) }
         }
     }
 

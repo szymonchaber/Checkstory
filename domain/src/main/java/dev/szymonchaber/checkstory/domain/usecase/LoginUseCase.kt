@@ -25,5 +25,5 @@ class LoginUseCase @Inject constructor(
 
 sealed interface LoginError {
 
-    object NetworkError : LoginError
+    data class NetworkError(val exception: Exception) : LoginError
 }

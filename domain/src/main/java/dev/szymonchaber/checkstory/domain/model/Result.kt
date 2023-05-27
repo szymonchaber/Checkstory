@@ -5,6 +5,42 @@ sealed class Result<Error, Data> {
     data class Success<Error, Data>(val data: Data) : Result<Error, Data>()
     data class Error<Error, Data>(val error: Error) : Result<Error, Data>()
 
+    fun <T> mapSuccess(function: (Data) -> T): Result<Error, T> {
+        return when (this) {
+            is Success -> {
+                success(function(this.data))
+            }
+
+            is Result.Error -> {
+                error(this.error)
+            }
+        }
+    }
+
+    inline fun <T> flatMapSuccess(function: (Data) -> Result<Error, T>): Result<Error, T> {
+        return when (this) {
+            is Success -> {
+                function(this.data)
+            }
+
+            is Result.Error -> {
+                error(this.error)
+            }
+        }
+    }
+
+    fun <T> mapError(function: (Error) -> T): Result<T, Data> {
+        return when (this) {
+            is Success -> {
+                success(data)
+            }
+
+            is Result.Error -> {
+                error(function(this.error))
+            }
+        }
+    }
+
     companion object {
 
         fun <Error, Data> success(data: Data): Result<Error, Data> {
@@ -22,18 +58,6 @@ suspend fun <Error, Data> Result<Error, Data>.tapSuccess(onSuccess: suspend (Dat
         onSuccess(this.data)
     }
     return this
-}
-
-fun <T, Error, Data> Result<Error, Data>.mapSuccess(function: (Data) -> T): Result<Error, T> {
-    return when (this) {
-        is Result.Success -> {
-            Result.success(function(this.data))
-        }
-
-        is Result.Error -> {
-            Result.error(this.error)
-        }
-    }
 }
 
 fun <T, Error, Data> Result<Error, Data>.fold(

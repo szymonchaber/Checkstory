@@ -7,6 +7,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,6 +16,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -107,7 +111,14 @@ fun AccountView(accountState: AccountLoadingState.Success, onEvent: (AccountEven
         )
         when (accountState.user) {
             User.Guest -> {
-                LoginButton(onEvent)
+                var email by remember { mutableStateOf("") }
+                TextField(value = email, onValueChange = { email = it })
+                RegisterButton {
+                    onEvent(AccountEvent.RegisterClicked(email))
+                }
+                LoginButton {
+                    onEvent(AccountEvent.LoginClicked(email))
+                }
             }
 
             is User.LoggedIn -> {
@@ -127,10 +138,15 @@ fun LogoutButton(onEvent: (AccountEvent) -> Unit) {
 }
 
 @Composable
-private fun LoginButton(onEvent: (AccountEvent) -> Unit) {
-    Button(onClick = {
-        onEvent(AccountEvent.LoginClicked)
-    }) {
+private fun LoginButton(onClick: () -> Unit) {
+    Button(onClick = onClick) {
         Text("Login with Firebase")
+    }
+}
+
+@Composable
+private fun RegisterButton(onClick: () -> Unit) {
+    Button(onClick = onClick) {
+        Text("Register with Firebase")
     }
 }

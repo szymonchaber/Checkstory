@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LogoutResult
 import dev.szymonchaber.checkstory.domain.usecase.LogoutUseCase
+import dev.szymonchaber.checkstory.domain.usecase.RegisterUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
@@ -18,12 +19,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.tasks.await
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class AccountViewModel @Inject constructor(
     private val tracker: Tracker,
     private val loginUseCase: LoginUseCase,
+    private val registerUseCase: RegisterUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val logoutUseCase: LogoutUseCase
 ) : BaseViewModel<AccountEvent, AccountState, AccountEffect>(
@@ -36,6 +39,7 @@ class AccountViewModel @Inject constructor(
         return merge(
             eventFlow.handleLoadAccount(),
             eventFlow.handleLoginClicked(),
+            eventFlow.handleRegisterClicked(),
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked()
         )
@@ -83,6 +87,7 @@ class AccountViewModel @Inject constructor(
                             loginUseCase.login()
                                 .fold(
                                     mapError = {
+                                        Timber.e(it.toString())
                                         AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
                                     },
                                     mapSuccess = {
@@ -90,6 +95,34 @@ class AccountViewModel @Inject constructor(
                                     }
                                 )
                         } catch (exception: Exception) {
+                            AccountState(AccountLoadingState.Success(User.Guest)) to AccountEffect.ShowLoginNetworkError()
+                        }
+                    )
+                }
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleRegisterClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.RegisterClicked>()
+            .flatMapLatest {
+                flow {
+                    emit(AccountState(AccountLoadingState.Loading) to null)
+                    emit(
+                        try {
+                            auth.signOut()
+                            auth.createUserWithEmailAndPassword(it.email, "password").await()
+                            registerUseCase.register()
+                                .fold(
+                                    mapError = {
+                                        Timber.e(it.toString())
+                                        AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                                    },
+                                    mapSuccess = {
+                                        AccountState(AccountLoadingState.Success(it)) to null
+                                    }
+                                )
+                        } catch (exception: Exception) {
+                            Timber.e(exception)
                             AccountState(AccountLoadingState.Success(User.Guest)) to AccountEffect.ShowLoginNetworkError()
                         }
                     )
