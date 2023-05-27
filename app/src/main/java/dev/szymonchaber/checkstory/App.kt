@@ -7,11 +7,13 @@ import android.content.Context
 import android.content.Intent
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.common.LogStorage
+import dev.szymonchaber.checkstory.data.synchronization.SynchronizationWorker
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
 import dev.szymonchaber.checkstory.notifications.ScheduleTodayRemindersReceiver
@@ -56,6 +58,7 @@ class App : Application(), Configuration.Provider {
         }
         setPaymentTierProperty()
         runReminderSchedulerDaily()
+        synchronizeDataPeriodically()
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
                 Timber.w("Fetching FCM registration token failed", task.exception)
@@ -63,6 +66,12 @@ class App : Application(), Configuration.Provider {
             }
 //            Timber.d("Token: ${task.result}")
         })
+    }
+
+    private fun synchronizeDataPeriodically() {
+        GlobalScope.launch {
+            SynchronizationWorker.scheduleRepeating(WorkManager.getInstance(this@App))
+        }
     }
 
     private fun plantProductionDebugTree() {
