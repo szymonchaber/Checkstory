@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.domain.usecase
 
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
+import dev.szymonchaber.checkstory.domain.repository.SubscriptionStatus
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -17,9 +18,8 @@ class GetCurrentUserUseCase @Inject constructor(
             .combine(playPaymentRepository.subscriptionStatusFlow) { user, activeSubscription ->
                 when (user) {
                     is User.Guest -> {
-                        user.copy(deviceHasLocalPayment = activeSubscription != null)
+                        user.copy(deviceHasLocalPayment = activeSubscription is SubscriptionStatus.Active)
                     }
-
                     is User.LoggedIn -> user
                 }
             }
