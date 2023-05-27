@@ -1,6 +1,9 @@
 package dev.szymonchaber.checkstory.domain.usecase
 
 import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
+import dev.szymonchaber.checkstory.domain.repository.SubscriptionStatus
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class CheckForUnassignedPaymentUseCase @Inject constructor(
@@ -17,6 +20,6 @@ class CheckForUnassignedPaymentUseCase @Inject constructor(
     }
 
     private suspend fun isActivePurchasePresent(): Boolean {
-        return playPaymentRepository.deviceHasActiveSubscription()
+        return playPaymentRepository.subscriptionStatusFlow.filterNotNull().first() is SubscriptionStatus.Active
     }
 }

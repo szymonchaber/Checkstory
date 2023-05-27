@@ -105,12 +105,12 @@ fun AccountView(accountState: AccountLoadingState.Success, onEvent: (AccountEven
     Column(Modifier.padding(16.dp)) {
         Text(
             when (accountState.user) {
-                User.Guest -> "Not logged in"
+                is User.Guest -> "Not logged in"
                 is User.LoggedIn -> "Logged in"
             }
         )
         when (accountState.user) {
-            User.Guest -> {
+            is User.Guest -> {
                 var email by remember { mutableStateOf("") }
                 TextField(value = email, onValueChange = { email = it })
                 RegisterButton {

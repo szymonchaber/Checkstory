@@ -6,6 +6,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import arrow.core.Either
 import arrow.core.flatMap
+import arrow.core.handleError
 import arrow.core.left
 import arrow.core.right
 import com.android.billingclient.api.AcknowledgePurchaseParams
@@ -21,6 +22,7 @@ import com.android.billingclient.api.queryProductDetails
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.szymonchaber.checkstory.domain.model.payment.ActiveSubscription
 import dev.szymonchaber.checkstory.domain.model.payment.PurchaseToken
+import dev.szymonchaber.checkstory.domain.repository.SubscriptionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.BufferOverflow
@@ -44,6 +46,11 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
     private val _subscriptionPlans = MutableStateFlow<Either<BillingError, SubscriptionPlans>?>(null)
     override val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
         get() = _subscriptionPlans
+
+    private val _subscriptionStatusFlow = MutableStateFlow<SubscriptionStatus?>(null)
+
+    override val subscriptionStatusFlow: Flow<SubscriptionStatus?>
+        get() = _subscriptionStatusFlow
 
     private val _purchaseEvents = MutableSharedFlow<Either<PurchaseError, Purchase>>(
         extraBufferCapacity = 1,
@@ -85,6 +92,17 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
     private fun prefetchData() {
         GlobalScope.launch {
             _subscriptionPlans.emit(getPaymentPlans().tapLeft { Timber.e("Prefetching plans failed: $it") })
+            _subscriptionStatusFlow.emit(fetchCurrentSubscription()
+                .map {
+                    it?.purchaseToken?.let { purchaseToken ->
+                        SubscriptionStatus.Active(ActiveSubscription(PurchaseToken(purchaseToken)))
+                    } ?: SubscriptionStatus.Inactive
+                }
+                .tapLeft {
+                    Timber.e("Prefetching active subscription failed: $it")
+                }
+                .orNull()
+            )
         }
     }
 
@@ -92,7 +110,7 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
         return if (billingClient.isReady) {
             billingClient.right()
         } else {
-            BillingError.ConnectionError().left()
+            BillingError.BillingClientConnectionError.left()
         }
     }
 
@@ -107,22 +125,23 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
 
     // region interactor
 
-    override suspend fun deviceHasActiveSubscription(): Boolean {
-        return fetchCurrentSubscription().fold({
-            false
-        }
-        ) {
-            it != null
-        }
-    }
-
     override suspend fun getActiveSubscription(): ActiveSubscription? {
-        return fetchCurrentSubscription().fold({
-            null
-        }
-        ) { purchase ->
-            purchase?.purchaseToken?.let { ActiveSubscription(PurchaseToken(it)) }
-        }
+        return fetchCurrentSubscription()
+            .map { purchase ->
+                purchase?.purchaseToken?.let { ActiveSubscription(PurchaseToken(it)) }
+            }
+            .tap {
+                val status = it?.let(SubscriptionStatus::Active) ?: SubscriptionStatus.Inactive
+                _subscriptionStatusFlow.tryEmit(status)
+            }
+            .handleError {
+                when (val status = _subscriptionStatusFlow.value) {
+                    is SubscriptionStatus.Active -> status.activeSubscription
+                    SubscriptionStatus.Inactive -> null
+                    null -> null
+                }
+            }
+            .orNull()
     }
 
     private suspend fun getPaymentPlans(): Either<BillingError, SubscriptionPlans> {
@@ -316,6 +335,8 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
                     purchase.right()
                 } else {
                     mapPurchaseError(billingResult).left()
+                }.tap {
+                    _subscriptionStatusFlow.tryEmit(SubscriptionStatus.Active(ActiveSubscription(PurchaseToken(it.purchaseToken))))
                 }
                 _purchaseEvents.tryEmit(purchaseEvent)
             }

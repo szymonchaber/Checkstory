@@ -44,7 +44,7 @@ class UserRepositoryImpl @Inject constructor(
         return context.dataStore.data
             .map { preferences ->
                 when (val isPaidUser = preferences[KEY_IS_PAID_USER]) {
-                    null -> User.Guest
+                    null -> User.Guest()
                     else -> User.LoggedIn(
                         if (isPaidUser) {
                             Tier.PAID

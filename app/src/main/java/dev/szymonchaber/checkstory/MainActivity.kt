@@ -61,7 +61,7 @@ class MainActivity : ComponentActivity() {
             CheckstoryTheme {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
                     val adViewModel = hiltViewModel<AdViewModel>(LocalContext.current as ComponentActivity)
-                    val user by adViewModel.currentUserFlow.collectAsState(initial = User.Guest)
+                    val user by adViewModel.currentUserFlow.collectAsState(initial = User.Guest())
                     CompositionLocalProvider(ActiveUser provides user) {
                         Navigation()
                     }

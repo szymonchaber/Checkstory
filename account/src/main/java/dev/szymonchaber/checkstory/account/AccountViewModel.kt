@@ -95,7 +95,7 @@ class AccountViewModel @Inject constructor(
                                     }
                                 )
                         } catch (exception: Exception) {
-                            AccountState(AccountLoadingState.Success(User.Guest)) to AccountEffect.ShowLoginNetworkError()
+                            AccountState(AccountLoadingState.Success(User.Guest())) to AccountEffect.ShowLoginNetworkError()
                         }
                     )
                 }
@@ -123,7 +123,7 @@ class AccountViewModel @Inject constructor(
                                 )
                         } catch (exception: Exception) {
                             Timber.e(exception)
-                            AccountState(AccountLoadingState.Success(User.Guest)) to AccountEffect.ShowLoginNetworkError()
+                            AccountState(AccountLoadingState.Success(User.Guest())) to AccountEffect.ShowLoginNetworkError()
                         }
                     )
                 }
