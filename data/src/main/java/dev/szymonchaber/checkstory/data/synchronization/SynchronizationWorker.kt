@@ -12,6 +12,7 @@ import androidx.work.OutOfQuotaPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.await
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.time.Duration
@@ -36,10 +37,10 @@ class SynchronizationWorker @AssistedInject constructor(
 
         private const val WORK_NAME_SYNCHRONIZATION = "synchronization"
 
-        fun scheduleExpedited(workManager: WorkManager) {
+        suspend fun scheduleExpedited(workManager: WorkManager) {
             workManager.enqueueUniqueWork(
                 WORK_NAME_SYNCHRONIZATION,
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 OneTimeWorkRequest.Builder(SynchronizationWorker::class.java)
                     .setConstraints(
                         Constraints.Builder()
@@ -48,10 +49,10 @@ class SynchronizationWorker @AssistedInject constructor(
                     )
                     .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                     .build()
-            )
+            ).await()
         }
 
-        fun scheduleRepeating(workManager: WorkManager) {
+        suspend fun scheduleRepeating(workManager: WorkManager) {
             workManager.enqueueUniquePeriodicWork(
                 WORK_NAME_SYNCHRONIZATION,
                 ExistingPeriodicWorkPolicy.KEEP,
@@ -62,7 +63,7 @@ class SynchronizationWorker @AssistedInject constructor(
                             .build()
                     )
                     .build()
-            )
+            ).await()
         }
     }
 }
