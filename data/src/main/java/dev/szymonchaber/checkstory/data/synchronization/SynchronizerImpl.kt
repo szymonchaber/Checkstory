@@ -42,7 +42,7 @@ class SynchronizerImpl @Inject internal constructor(
     }
 
     override suspend fun scheduleSynchronization() {
-        SynchronizationWorker.scheduleExpedited(workManager)
+        SynchronizationWorker.forceScheduleExpedited(workManager)
     }
 
     suspend fun performSynchronization(): SynchronizationResult {

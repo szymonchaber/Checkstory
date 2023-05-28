@@ -8,7 +8,6 @@ import android.content.Intent
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.WorkManager
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
@@ -20,6 +19,7 @@ import dev.szymonchaber.checkstory.notifications.ScheduleTodayRemindersReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.time.Instant
@@ -59,13 +59,17 @@ class App : Application(), Configuration.Provider {
         setPaymentTierProperty()
         runReminderSchedulerDaily()
         synchronizeDataPeriodically()
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Timber.w("Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
+        fetchFirebaseToken()
+    }
+
+    private fun fetchFirebaseToken() {
+        GlobalScope.launch {
+            try {
+                Timber.d("Firebase messaging token: ${FirebaseMessaging.getInstance().token.await()}")
+            } catch (exception: Exception) {
+                Timber.e("Fetching FCM registration token failed", exception)
             }
-//            Timber.d("Token: ${task.result}")
-        })
+        }
     }
 
     private fun synchronizeDataPeriodically() {

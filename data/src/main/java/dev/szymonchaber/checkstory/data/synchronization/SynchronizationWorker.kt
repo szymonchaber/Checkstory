@@ -37,10 +37,18 @@ class SynchronizationWorker @AssistedInject constructor(
 
         private const val WORK_NAME_SYNCHRONIZATION = "synchronization"
 
-        suspend fun scheduleExpedited(workManager: WorkManager) {
+        suspend fun forceScheduleExpedited(workManager: WorkManager) {
+            scheduleExpeditedActual(workManager, ExistingWorkPolicy.REPLACE)
+        }
+
+        suspend fun scheduleExpeditedUnlessOngoing(workManager: WorkManager) {
+            scheduleExpeditedActual(workManager, ExistingWorkPolicy.KEEP)
+        }
+
+        private suspend fun scheduleExpeditedActual(workManager: WorkManager, existingWorkPolicy: ExistingWorkPolicy) {
             workManager.enqueueUniqueWork(
                 WORK_NAME_SYNCHRONIZATION,
-                ExistingWorkPolicy.REPLACE,
+                existingWorkPolicy,
                 OneTimeWorkRequest.Builder(SynchronizationWorker::class.java)
                     .setConstraints(
                         Constraints.Builder()
