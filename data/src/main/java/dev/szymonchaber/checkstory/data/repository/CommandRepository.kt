@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
-import dev.szymonchaber.checkstory.domain.model.DomainCommand
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
+import dev.szymonchaber.checkstory.domain.model.Command
+import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
@@ -22,20 +22,18 @@ class CommandRepository @Inject constructor(
     private val dao: CommandDao
 ) {
 
-    fun getUnappliedCommandsFlow(): Flow<List<DomainCommand>> {
+    fun getUnappliedCommandsFlow(): Flow<List<Command>> {
         return dao.getAll()
             .map { commands ->
                 withContext(Dispatchers.Default) {
-                    commands.map {
-                        CommandMapper.toDomainCommand(it)
-                    }
+                    commands.map(CommandMapper::toDomainCommand)
                 }
             }
     }
 
-    suspend fun storeCommands(domainCommands: List<DomainCommand>) {
+    suspend fun storeCommands(commands: List<Command>) {
         withContext(Dispatchers.Default) {
-            dao.insertAll(domainCommands.map {
+            dao.insertAll(commands.map {
                 CommandMapper.toCommandEntity(it)
             })
         }
@@ -46,13 +44,12 @@ class CommandRepository @Inject constructor(
     }
 
     suspend fun commandOnlyTemplates(): List<ChecklistTemplate> {
-        val domainCommands = getUnappliedCommandsFlow().first()
-        return domainCommands
-            .filterIsInstance<TemplateDomainCommand>()
+        return getUnappliedCommandsFlow().first()
+            .filterIsInstance<TemplateCommand>()
             .groupBy { it.templateId }
             .filterValues {
                 it.any { command ->
-                    command is TemplateDomainCommand.CreateNewTemplate
+                    command is TemplateCommand.CreateNewTemplate
                 }
             }
             .map { (id, commands) ->
@@ -64,11 +61,11 @@ class CommandRepository @Inject constructor(
 
     suspend fun commandOnlyChecklists(): List<Checklist> {
         return getUnappliedCommandsFlow().first()
-            .filterIsInstance<ChecklistDomainCommand>()
+            .filterIsInstance<ChecklistCommand>()
             .groupBy { it.checklistId }
             .filterValues {
                 it.any { command ->
-                    command is ChecklistDomainCommand.CreateChecklistCommand
+                    command is ChecklistCommand.CreateChecklistCommand
                 }
             }
             .map { (id, commands) ->
@@ -92,15 +89,15 @@ class CommandRepository @Inject constructor(
             }
     }
 
-    private suspend fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateDomainCommand> {
+    private suspend fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateCommand> {
         return getUnappliedCommandsFlow().first()
-            .filterIsInstance<TemplateDomainCommand>()
+            .filterIsInstance<TemplateCommand>()
             .filter { command -> command.templateId == templateId }
     }
 
-    private suspend fun commandsForChecklist(checklistId: ChecklistId): List<ChecklistDomainCommand> {
+    private suspend fun commandsForChecklist(checklistId: ChecklistId): List<ChecklistCommand> {
         return getUnappliedCommandsFlow().first()
-            .filterIsInstance<ChecklistDomainCommand>()
+            .filterIsInstance<ChecklistCommand>()
             .filter { command -> command.checklistId == checklistId }
     }
 

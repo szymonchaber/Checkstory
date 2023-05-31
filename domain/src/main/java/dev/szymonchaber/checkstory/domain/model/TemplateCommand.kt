@@ -12,13 +12,13 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
-sealed interface DomainCommand {
+sealed interface Command {
 
     val timestamp: Instant
     val commandId: UUID
 }
 
-sealed interface TemplateDomainCommand : DomainCommand {
+sealed interface TemplateCommand : Command {
 
     fun applyTo(template: ChecklistTemplate): ChecklistTemplate
 
@@ -28,7 +28,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         override val templateId: ChecklistTemplateId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             val instant = timestamp
@@ -42,7 +42,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         val newTitle: String,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(title = newTitle)
@@ -54,7 +54,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         val newDescription: String,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(description = newDescription)
@@ -67,7 +67,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         val parentTaskId: TemplateCheckboxId?,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return if (parentTaskId != null) {
@@ -120,7 +120,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         val newTitle: String,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(items = template.items
@@ -149,7 +149,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         val taskId: TemplateCheckboxId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(items = template.items.withExtractedTask(taskId).first)
@@ -161,7 +161,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         override val timestamp: Instant,
         override val commandId: UUID,
         override val templateId: ChecklistTemplateId
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(
@@ -184,7 +184,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         override val timestamp: Instant,
         override val commandId: UUID,
         override val templateId: ChecklistTemplateId
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             val (filteredTasks, movedItem) = template.items.withExtractedTask(taskId)
@@ -215,7 +215,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         val reminder: Reminder,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             val newReminders = if (template.reminders.any { it.id == reminder.id }) {
@@ -238,7 +238,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         val reminderId: ReminderId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(reminders = template.reminders.filterNot { it.id == reminderId })
@@ -249,7 +249,7 @@ sealed interface TemplateDomainCommand : DomainCommand {
         override val templateId: ChecklistTemplateId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
-    ) : TemplateDomainCommand {
+    ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
             return template.copy(isRemoved = true)

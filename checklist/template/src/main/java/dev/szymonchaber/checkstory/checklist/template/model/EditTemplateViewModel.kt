@@ -5,7 +5,7 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -91,7 +91,7 @@ class EditTemplateViewModel @Inject constructor(
                     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
                         .copy(
                             commands = listOf(
-                                TemplateDomainCommand.CreateNewTemplate(
+                                TemplateCommand.CreateNewTemplate(
                                     checklistTemplate.id,
                                     Clock.System.now()
                                 )
@@ -300,23 +300,23 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun consolidateCommands(commands: List<TemplateDomainCommand>): List<TemplateDomainCommand> {
+    private fun consolidateCommands(commands: List<TemplateCommand>): List<TemplateCommand> {
         // TODO this is a good place to trim titles and descriptions
         return commands
-            .withLastCommandOfType<TemplateDomainCommand.RenameTemplate> {
+            .withLastCommandOfType<TemplateCommand.RenameTemplate> {
                 it.templateId
             }
-            .withLastCommandOfType<TemplateDomainCommand.ChangeTemplateDescription> {
+            .withLastCommandOfType<TemplateCommand.ChangeTemplateDescription> {
                 it.templateId
             }
-            .withLastCommandOfType<TemplateDomainCommand.RenameTemplateTask> {
+            .withLastCommandOfType<TemplateCommand.RenameTemplateTask> {
                 it.taskId
             }
     }
 
-    private inline fun <reified T : TemplateDomainCommand> List<TemplateDomainCommand>.withLastCommandOfType(
+    private inline fun <reified T : TemplateCommand> List<TemplateCommand>.withLastCommandOfType(
         groupBy: (T) -> Any
-    ): List<TemplateDomainCommand> {
+    ): List<TemplateCommand> {
         val consolidatedCommand = filterIsInstance<T>()
             .groupBy(groupBy)
             .map { (_, events) ->

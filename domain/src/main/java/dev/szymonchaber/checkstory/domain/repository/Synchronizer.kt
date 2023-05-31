@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.domain.repository
 
-import dev.szymonchaber.checkstory.domain.model.DomainCommand
+import dev.szymonchaber.checkstory.domain.model.Command
 
 interface Synchronizer {
 
@@ -8,7 +8,7 @@ interface Synchronizer {
 
     suspend fun scheduleSynchronization()
 
-    suspend fun synchronizeCommands(commands: List<DomainCommand>)
+    suspend fun synchronizeCommands(commands: List<Command>)
 
     suspend fun deleteCommands()
 }

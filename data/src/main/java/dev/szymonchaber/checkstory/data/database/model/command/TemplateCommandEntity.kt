@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.data.database.model.command
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
@@ -121,29 +121,29 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
         override val commandId: DtoUUID = UUID.randomUUID()
     ) : TemplateCommandEntity
 
-    fun toDomainCommand(): TemplateDomainCommand {
+    fun toDomainCommand(): TemplateCommand {
         return when (this) {
-            is CreateNewTemplateEntity -> TemplateDomainCommand.CreateNewTemplate(
+            is CreateNewTemplateEntity -> TemplateCommand.CreateNewTemplate(
                 templateId = ChecklistTemplateId(templateId),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
-            is RenameTemplateEntity -> TemplateDomainCommand.RenameTemplate(
+            is RenameTemplateEntity -> TemplateCommand.RenameTemplate(
                 templateId = ChecklistTemplateId(templateId),
                 newTitle = newTitle,
                 timestamp = timestamp,
                 commandId = commandId
             )
 
-            is ChangeTemplateDescriptionEntity -> TemplateDomainCommand.ChangeTemplateDescription(
+            is ChangeTemplateDescriptionEntity -> TemplateCommand.ChangeTemplateDescription(
                 templateId = ChecklistTemplateId(templateId),
                 newDescription = newDescription,
                 timestamp = timestamp,
                 commandId = commandId
             )
 
-            is AddTemplateTaskEntity -> TemplateDomainCommand.AddTemplateTask(
+            is AddTemplateTaskEntity -> TemplateCommand.AddTemplateTask(
                 templateId = ChecklistTemplateId(templateId),
                 taskId = TemplateCheckboxId(taskId),
                 parentTaskId = parentTaskId?.let { TemplateCheckboxId(it) },
@@ -151,7 +151,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 commandId = commandId
             )
 
-            is RenameTemplateTaskEntity -> TemplateDomainCommand.RenameTemplateTask(
+            is RenameTemplateTaskEntity -> TemplateCommand.RenameTemplateTask(
                 templateId = ChecklistTemplateId(templateId),
                 taskId = TemplateCheckboxId(taskId),
                 newTitle = newTitle,
@@ -159,21 +159,21 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 commandId = commandId
             )
 
-            is DeleteTemplateTaskEntity -> TemplateDomainCommand.DeleteTemplateTask(
+            is DeleteTemplateTaskEntity -> TemplateCommand.DeleteTemplateTask(
                 templateId = ChecklistTemplateId(templateId),
                 taskId = TemplateCheckboxId(taskId),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
-            is UpdateCheckboxPositionsEntity -> TemplateDomainCommand.UpdateCheckboxPositions(
+            is UpdateCheckboxPositionsEntity -> TemplateCommand.UpdateCheckboxPositions(
                 localPositions = localPositions.mapKeys { TemplateCheckboxId(it.key) },
                 timestamp = timestamp,
                 commandId = commandId,
                 templateId = ChecklistTemplateId(templateId)
             )
 
-            is MoveTemplateTaskEntity -> TemplateDomainCommand.MoveTemplateTask(
+            is MoveTemplateTaskEntity -> TemplateCommand.MoveTemplateTask(
                 taskId = TemplateCheckboxId(taskId),
                 newParentTaskId = newParentTaskId?.let { TemplateCheckboxId(it) },
                 timestamp = timestamp,
@@ -181,21 +181,21 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 templateId = ChecklistTemplateId(templateId)
             )
 
-            is AddOrReplaceTemplateReminderEntity -> TemplateDomainCommand.AddOrReplaceTemplateReminder(
+            is AddOrReplaceTemplateReminderEntity -> TemplateCommand.AddOrReplaceTemplateReminder(
                 templateId = ChecklistTemplateId(templateId),
                 reminder = reminder.toReminder(),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
-            is DeleteTemplateReminderEntity -> TemplateDomainCommand.DeleteTemplateReminder(
+            is DeleteTemplateReminderEntity -> TemplateCommand.DeleteTemplateReminder(
                 templateId = ChecklistTemplateId(templateId),
                 reminderId = ReminderId(reminderId),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
-            is DeleteTemplateEntity -> TemplateDomainCommand.DeleteTemplate(
+            is DeleteTemplateEntity -> TemplateCommand.DeleteTemplate(
                 templateId = ChecklistTemplateId(templateId),
                 timestamp = timestamp,
                 commandId = commandId
@@ -205,84 +205,84 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
 
     companion object {
 
-        fun fromDomainCommand(templateDomainCommand: TemplateDomainCommand): TemplateCommandEntity {
-            return when (templateDomainCommand) {
-                is TemplateDomainCommand.CreateNewTemplate -> CreateNewTemplateEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+        fun fromDomainCommand(templateCommand: TemplateCommand): TemplateCommandEntity {
+            return when (templateCommand) {
+                is TemplateCommand.CreateNewTemplate -> CreateNewTemplateEntity(
+                    templateId = templateCommand.templateId.id,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.RenameTemplate -> RenameTemplateEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    newTitle = templateDomainCommand.newTitle,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.RenameTemplate -> RenameTemplateEntity(
+                    templateId = templateCommand.templateId.id,
+                    newTitle = templateCommand.newTitle,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.ChangeTemplateDescription -> ChangeTemplateDescriptionEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    newDescription = templateDomainCommand.newDescription,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.ChangeTemplateDescription -> ChangeTemplateDescriptionEntity(
+                    templateId = templateCommand.templateId.id,
+                    newDescription = templateCommand.newDescription,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.AddTemplateTask -> AddTemplateTaskEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    taskId = templateDomainCommand.taskId.id,
-                    parentTaskId = templateDomainCommand.parentTaskId?.id,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.AddTemplateTask -> AddTemplateTaskEntity(
+                    templateId = templateCommand.templateId.id,
+                    taskId = templateCommand.taskId.id,
+                    parentTaskId = templateCommand.parentTaskId?.id,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.RenameTemplateTask -> RenameTemplateTaskEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    taskId = templateDomainCommand.taskId.id,
-                    newTitle = templateDomainCommand.newTitle,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.RenameTemplateTask -> RenameTemplateTaskEntity(
+                    templateId = templateCommand.templateId.id,
+                    taskId = templateCommand.taskId.id,
+                    newTitle = templateCommand.newTitle,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.DeleteTemplateTask -> DeleteTemplateTaskEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    taskId = templateDomainCommand.taskId.id,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.DeleteTemplateTask -> DeleteTemplateTaskEntity(
+                    templateId = templateCommand.templateId.id,
+                    taskId = templateCommand.taskId.id,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.UpdateCheckboxPositions -> UpdateCheckboxPositionsEntity(
-                    localPositions = templateDomainCommand.localPositions.mapKeys { it.key.id },
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId,
-                    templateId = templateDomainCommand.templateId.id
+                is TemplateCommand.UpdateCheckboxPositions -> UpdateCheckboxPositionsEntity(
+                    localPositions = templateCommand.localPositions.mapKeys { it.key.id },
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId,
+                    templateId = templateCommand.templateId.id
                 )
 
-                is TemplateDomainCommand.MoveTemplateTask -> MoveTemplateTaskEntity(
-                    taskId = templateDomainCommand.taskId.id,
-                    newParentTaskId = templateDomainCommand.newParentTaskId?.id,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId,
-                    templateId = templateDomainCommand.templateId.id
+                is TemplateCommand.MoveTemplateTask -> MoveTemplateTaskEntity(
+                    taskId = templateCommand.taskId.id,
+                    newParentTaskId = templateCommand.newParentTaskId?.id,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId,
+                    templateId = templateCommand.templateId.id
                 )
 
-                is TemplateDomainCommand.AddOrReplaceTemplateReminder -> AddOrReplaceTemplateReminderEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    reminder = templateDomainCommand.reminder.toReminderEntity(),
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.AddOrReplaceTemplateReminder -> AddOrReplaceTemplateReminderEntity(
+                    templateId = templateCommand.templateId.id,
+                    reminder = templateCommand.reminder.toReminderEntity(),
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.DeleteTemplateReminder -> DeleteTemplateReminderEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    reminderId = templateDomainCommand.reminderId.id,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.DeleteTemplateReminder -> DeleteTemplateReminderEntity(
+                    templateId = templateCommand.templateId.id,
+                    reminderId = templateCommand.reminderId.id,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
 
-                is TemplateDomainCommand.DeleteTemplate -> DeleteTemplateEntity(
-                    templateId = templateDomainCommand.templateId.id,
-                    timestamp = templateDomainCommand.timestamp,
-                    commandId = templateDomainCommand.commandId
+                is TemplateCommand.DeleteTemplate -> DeleteTemplateEntity(
+                    templateId = templateCommand.templateId.id,
+                    timestamp = templateCommand.timestamp,
+                    commandId = templateCommand.commandId
                 )
             }
         }

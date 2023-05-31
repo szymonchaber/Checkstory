@@ -4,9 +4,9 @@ import dev.szymonchaber.checkstory.data.database.model.command.ChecklistCommandE
 import dev.szymonchaber.checkstory.data.database.model.command.CommandDataEntity
 import dev.szymonchaber.checkstory.data.database.model.command.CommandEntity
 import dev.szymonchaber.checkstory.data.database.model.command.TemplateCommandEntity
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
-import dev.szymonchaber.checkstory.domain.model.DomainCommand
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
+import dev.szymonchaber.checkstory.domain.model.Command
+import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
@@ -16,16 +16,16 @@ internal object CommandMapper {
 
     private const val COMMAND_TYPE_TEMPLATE = "templateCommand"
 
-    fun toCommandEntity(command: DomainCommand): CommandEntity {
+    fun toCommandEntity(command: Command): CommandEntity {
         val (entity, type) = when (command) {
-            is ChecklistDomainCommand -> ChecklistCommandEntity.fromDomainCommand(command) to COMMAND_TYPE_CHECKLIST
-            is TemplateDomainCommand -> TemplateCommandEntity.fromDomainCommand(command) to COMMAND_TYPE_TEMPLATE
+            is ChecklistCommand -> ChecklistCommandEntity.fromDomainCommand(command) to COMMAND_TYPE_CHECKLIST
+            is TemplateCommand -> TemplateCommandEntity.fromDomainCommand(command) to COMMAND_TYPE_TEMPLATE
         }
         val data = Json.encodeToString(CommandDataEntity.serializer(), entity)
         return CommandEntity(command.commandId, type, data)
     }
 
-    fun toDomainCommand(commandEntity: CommandEntity): DomainCommand {
+    fun toDomainCommand(commandEntity: CommandEntity): Command {
         return when (commandEntity.type) {
             COMMAND_TYPE_CHECKLIST -> {
                 Json.decodeFromString<ChecklistCommandEntity>(commandEntity.jsonData).toDomainCommand()

@@ -4,7 +4,7 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
+import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox.Companion.checkedCount
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
@@ -89,7 +89,7 @@ class FillChecklistViewModel @Inject constructor(
                         val checklistLoadingState = ChecklistLoadingState.Success(it)
                             .copy(
                                 commands = listOf(
-                                    ChecklistDomainCommand.CreateChecklistCommand(
+                                    ChecklistCommand.CreateChecklistCommand(
                                         it.id,
                                         it.checklistTemplateId,
                                         it.title,
@@ -163,7 +163,7 @@ class FillChecklistViewModel @Inject constructor(
                 tracker.logEvent("delete_checklist_confirmation_clicked")
                 synchronizer.synchronizeCommands(
                     success.consolidatedCommands().plus(
-                        ChecklistDomainCommand.DeleteChecklistCommand(
+                        ChecklistCommand.DeleteChecklistCommand(
                             checklistId = success.originalChecklist.id,
                             commandId = UUID.randomUUID(),
                             Clock.System.now()

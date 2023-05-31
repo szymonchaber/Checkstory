@@ -8,7 +8,7 @@ import dev.szymonchaber.checkstory.api.command.CommandsApi
 import dev.szymonchaber.checkstory.api.template.TemplatesApi
 import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.CommandRepository
-import dev.szymonchaber.checkstory.domain.model.DomainCommand
+import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
@@ -28,7 +28,7 @@ class SynchronizerImpl @Inject internal constructor(
     private val workManager: WorkManager
 ) : Synchronizer {
 
-    override suspend fun synchronizeCommands(commands: List<DomainCommand>) {
+    override suspend fun synchronizeCommands(commands: List<Command>) {
         commandRepository.storeCommands(commands)
         scheduleSynchronization()
     }
@@ -56,7 +56,7 @@ class SynchronizerImpl @Inject internal constructor(
             val checklists = checklistsApi.getChecklists()
             templateRepository.replaceData(templates)
             checklistRepository.replaceData(checklists)
-            commandRepository.deleteCommands(commands.map(DomainCommand::commandId))
+            commandRepository.deleteCommands(commands.map(Command::commandId))
             SynchronizationResult.Success
         } catch (exception: Exception) {
             Timber.e("API error - skipping synchronization for now", exception)

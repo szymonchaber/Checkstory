@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
-sealed interface ChecklistDomainCommand : DomainCommand {
+sealed interface ChecklistCommand : Command {
 
     val checklistId: ChecklistId
 
@@ -23,7 +23,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
         val tasks: List<Checkbox>,
         override val commandId: UUID,
         override val timestamp: Instant,
-    ) : ChecklistDomainCommand {
+    ) : ChecklistCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
             val localDateTime = LocalDateTime.ofInstant(timestamp.toJavaInstant(), ZoneId.systemDefault())
@@ -43,7 +43,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
         val newNotes: String,
         override val commandId: UUID,
         override val timestamp: Instant,
-    ) : ChecklistDomainCommand {
+    ) : ChecklistCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
             return checklist.copy(notes = newNotes)
@@ -56,7 +56,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
         val isChecked: Boolean,
         override val commandId: UUID,
         override val timestamp: Instant,
-    ) : ChecklistDomainCommand {
+    ) : ChecklistCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
             val newItems = checklist.items.map {
@@ -70,7 +70,7 @@ sealed interface ChecklistDomainCommand : DomainCommand {
         override val checklistId: ChecklistId,
         override val commandId: UUID,
         override val timestamp: Instant,
-    ) : ChecklistDomainCommand {
+    ) : ChecklistCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {
             return checklist.copy(isRemoved = true)

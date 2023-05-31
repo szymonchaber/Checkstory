@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.data.database.model.command
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
+import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
@@ -54,10 +54,10 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
         override val timestamp: Instant,
     ) : ChecklistCommandEntity
 
-    fun toDomainCommand(): ChecklistDomainCommand {
+    fun toDomainCommand(): ChecklistCommand {
         return when (this) {
             is CreateChecklistEntity -> {
-                ChecklistDomainCommand.CreateChecklistCommand(
+                ChecklistCommand.CreateChecklistCommand(
                     ChecklistId(checklistId),
                     ChecklistTemplateId(templateId),
                     title,
@@ -69,7 +69,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
             }
 
             is EditChecklistNotesEntity -> {
-                ChecklistDomainCommand.EditChecklistNotesCommand(
+                ChecklistCommand.EditChecklistNotesCommand(
                     ChecklistId(checklistId),
                     newNotes,
                     commandId,
@@ -78,7 +78,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
             }
 
             is ChangeTaskCheckedEntity -> {
-                ChecklistDomainCommand.ChangeTaskCheckedCommand(
+                ChecklistCommand.ChangeTaskCheckedCommand(
                     ChecklistId(checklistId),
                     CheckboxId(taskId),
                     isChecked,
@@ -88,7 +88,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
             }
 
             is DeleteChecklistEntity -> {
-                ChecklistDomainCommand.DeleteChecklistCommand(
+                ChecklistCommand.DeleteChecklistCommand(
                     ChecklistId(checklistId),
                     commandId,
                     timestamp
@@ -99,10 +99,10 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
 
     companion object {
 
-        fun fromDomainCommand(checklistDomainCommand: ChecklistDomainCommand): ChecklistCommandEntity {
-            with(checklistDomainCommand) {
+        fun fromDomainCommand(checklistCommand: ChecklistCommand): ChecklistCommandEntity {
+            with(checklistCommand) {
                 return when (this) {
-                    is ChecklistDomainCommand.CreateChecklistCommand -> CreateChecklistEntity(
+                    is ChecklistCommand.CreateChecklistCommand -> CreateChecklistEntity(
                         checklistId = checklistId.id,
                         templateId = templateId.id,
                         title = title,
@@ -112,14 +112,14 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
                         timestamp = timestamp
                     )
 
-                    is ChecklistDomainCommand.EditChecklistNotesCommand -> EditChecklistNotesEntity(
+                    is ChecklistCommand.EditChecklistNotesCommand -> EditChecklistNotesEntity(
                         checklistId = checklistId.id,
                         newNotes = newNotes,
                         commandId = commandId,
                         timestamp = timestamp
                     )
 
-                    is ChecklistDomainCommand.ChangeTaskCheckedCommand -> ChangeTaskCheckedEntity(
+                    is ChecklistCommand.ChangeTaskCheckedCommand -> ChangeTaskCheckedEntity(
                         checklistId = checklistId.id,
                         taskId = taskId.id,
                         isChecked = isChecked,
@@ -127,7 +127,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
                         timestamp = timestamp
                     )
 
-                    is ChecklistDomainCommand.DeleteChecklistCommand -> DeleteChecklistEntity(
+                    is ChecklistCommand.DeleteChecklistCommand -> DeleteChecklistEntity(
                         checklistId = checklistId.id,
                         commandId = commandId,
                         timestamp = timestamp

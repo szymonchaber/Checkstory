@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand.DeleteTemplateReminder
+import dev.szymonchaber.checkstory.domain.model.TemplateCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateCommand.DeleteTemplateReminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -20,17 +20,17 @@ sealed interface TemplateLoadingState {
         val mostRecentlyAddedItem: TemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
-        private val commands: List<TemplateDomainCommand> = listOf()
+        private val commands: List<TemplateCommand> = listOf()
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
 
         val checklistTemplate = commands
-            .fold(originalChecklistTemplate) { template, templateDomainCommand ->
-                templateDomainCommand.applyTo(template)
+            .fold(originalChecklistTemplate) { template, templateCommand ->
+                templateCommand.applyTo(template)
             }
 
-        fun finalizedCommands(): List<TemplateDomainCommand> {
+        fun finalizedCommands(): List<TemplateCommand> {
             val indexedCheckboxes = checkboxes
                 .mapIndexed { index, checkbox ->
                     checkbox.toDomainModel(position = index, templateId = checklistTemplate.id)
@@ -40,7 +40,7 @@ sealed interface TemplateLoadingState {
                     it.id to it.sortPosition
                 }
             return commands.plus(
-                TemplateDomainCommand.UpdateCheckboxPositions(
+                TemplateCommand.UpdateCheckboxPositions(
                     localPositions,
                     Clock.System.now(),
                     UUID.randomUUID(),
@@ -71,7 +71,7 @@ sealed interface TemplateLoadingState {
 
         fun withNewTitle(newTitle: String): Success {
             return plusCommand(
-                TemplateDomainCommand.RenameTemplate(
+                TemplateCommand.RenameTemplate(
                     checklistTemplate.id, newTitle, Clock.System.now()
                 )
             )
@@ -79,7 +79,7 @@ sealed interface TemplateLoadingState {
 
         fun withNewDescription(newDescription: String): Success {
             return plusCommand(
-                TemplateDomainCommand.ChangeTemplateDescription(
+                TemplateCommand.ChangeTemplateDescription(
                     checklistTemplate.id,
                     newDescription,
                     Clock.System.now()
@@ -98,7 +98,7 @@ sealed interface TemplateLoadingState {
                 mostRecentlyAddedItem = newCheckbox.id
             )
                 .plusCommand(
-                    TemplateDomainCommand.AddTemplateTask(
+                    TemplateCommand.AddTemplateTask(
                         checklistTemplate.id,
                         newCheckbox.id,
                         null,
@@ -118,7 +118,7 @@ sealed interface TemplateLoadingState {
                 checkboxes = filteredCheckboxes,
                 mostRecentlyAddedItem = null
             ).plusCommand(
-                TemplateDomainCommand.DeleteTemplateTask(
+                TemplateCommand.DeleteTemplateTask(
                     originalChecklistTemplate.id,
                     checkbox.id,
                     Clock.System.now()
@@ -138,7 +138,7 @@ sealed interface TemplateLoadingState {
                 mostRecentlyAddedItem = newId
             )
                 .plusCommand(
-                    TemplateDomainCommand.AddTemplateTask(
+                    TemplateCommand.AddTemplateTask(
                         templateId = originalChecklistTemplate.id,
                         taskId = newId,
                         parentTaskId = parentId,
@@ -154,7 +154,7 @@ sealed interface TemplateLoadingState {
                 }
             )
                 .plusCommand(
-                    TemplateDomainCommand.RenameTemplateTask(
+                    TemplateCommand.RenameTemplateTask(
                         templateId = checklistTemplate.id,
                         taskId = checkbox.id,
                         newTitle = title,
@@ -165,7 +165,7 @@ sealed interface TemplateLoadingState {
 
         fun withUpdatedReminder(reminder: Reminder): Success {
             return plusCommand(
-                TemplateDomainCommand.AddOrReplaceTemplateReminder(
+                TemplateCommand.AddOrReplaceTemplateReminder(
                     checklistTemplate.id,
                     reminder,
                     Clock.System.now()
@@ -190,7 +190,7 @@ sealed interface TemplateLoadingState {
                 checkboxes = checkboxes.withSiblingBelow(below, newCheckbox),
                 mostRecentlyAddedItem = newCheckbox.id
             ).plusCommand(
-                TemplateDomainCommand.AddTemplateTask(
+                TemplateCommand.AddTemplateTask(
                     checklistTemplate.id,
                     newCheckbox.id,
                     parentId,
@@ -220,7 +220,7 @@ sealed interface TemplateLoadingState {
             val newTasks = filteredTasks.withSiblingBelow(below, movedItem)
             return copy(checkboxes = newTasks)
                 .plusCommand(
-                    TemplateDomainCommand.MoveTemplateTask(
+                    TemplateCommand.MoveTemplateTask(
                         taskId = movedCheckboxId,
                         newParentTaskId = findParentId(newTasks, movedCheckboxId),
                         timestamp = Clock.System.now(),
@@ -250,7 +250,7 @@ sealed interface TemplateLoadingState {
                 checkboxes = checkboxes.withChildBelow(below, newItem),
                 mostRecentlyAddedItem = newItem.id
             ).plusCommand(
-                TemplateDomainCommand.AddTemplateTask(
+                TemplateCommand.AddTemplateTask(
                     checklistTemplate.id,
                     newItem.id,
                     TemplateCheckboxId(below.id),
@@ -267,7 +267,7 @@ sealed interface TemplateLoadingState {
             val newTasks = filteredTasks.withChildBelow(below, movedItem)
             return copy(checkboxes = newTasks)
                 .plusCommand(
-                    TemplateDomainCommand.MoveTemplateTask(
+                    TemplateCommand.MoveTemplateTask(
                         taskId = childTaskId,
                         newParentTaskId = findParentId(newTasks, childTaskId),
                         timestamp = Clock.System.now(),
@@ -291,7 +291,7 @@ sealed interface TemplateLoadingState {
             return copy(
                 checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentId(null), 0)
             ).plusCommand(
-                TemplateDomainCommand.MoveTemplateTask(
+                TemplateCommand.MoveTemplateTask(
                     taskId = checkboxId,
                     newParentTaskId = null,
                     timestamp = Clock.System.now(),
@@ -307,7 +307,7 @@ sealed interface TemplateLoadingState {
                 checkboxes = checkboxes.withCheckboxAtIndex(newItem, 0),
                 mostRecentlyAddedItem = newItem.id
             ).plusCommand(
-                TemplateDomainCommand.AddTemplateTask(
+                TemplateCommand.AddTemplateTask(
                     checklistTemplate.id,
                     newItem.id,
                     null,
@@ -321,7 +321,7 @@ sealed interface TemplateLoadingState {
             return copy(
                 checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentId(null), filteredTasks.size)
             ).plusCommand(
-                TemplateDomainCommand.MoveTemplateTask(
+                TemplateCommand.MoveTemplateTask(
                     taskId = checkboxId,
                     newParentTaskId = null,
                     timestamp = Clock.System.now(),
@@ -337,7 +337,7 @@ sealed interface TemplateLoadingState {
                 checkboxes = checkboxes.withCheckboxAtIndex(newItem, checkboxes.size),
                 mostRecentlyAddedItem = newItem.id
             ).plusCommand(
-                TemplateDomainCommand.AddTemplateTask(
+                TemplateCommand.AddTemplateTask(
                     checklistTemplate.id,
                     newItem.id,
                     null,
@@ -380,7 +380,7 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        private fun plusCommand(event: TemplateDomainCommand): Success {
+        private fun plusCommand(event: TemplateCommand): Success {
             return copy(commands = commands.plus(event))
         }
 
@@ -398,7 +398,7 @@ sealed interface TemplateLoadingState {
 
         fun markDeleted(): Success {
             return plusCommand(
-                TemplateDomainCommand.DeleteTemplate(checklistTemplate.id, Clock.System.now())
+                TemplateCommand.DeleteTemplate(checklistTemplate.id, Clock.System.now())
             )
         }
 

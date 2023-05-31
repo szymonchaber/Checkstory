@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.fill.model
 
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
-import dev.szymonchaber.checkstory.domain.model.DomainCommand
+import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
+import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import kotlinx.datetime.Clock
@@ -19,7 +19,7 @@ sealed interface ChecklistLoadingState {
 
     data class Success(
         val originalChecklist: Checklist,
-        private val commands: List<ChecklistDomainCommand> = listOf()
+        private val commands: List<ChecklistCommand> = listOf()
     ) : ChecklistLoadingState {
 
         val checklist = commands.fold(originalChecklist) { checklist, command ->
@@ -28,7 +28,7 @@ sealed interface ChecklistLoadingState {
 
         fun withUpdatedItemChecked(checkboxId: CheckboxId, isChecked: Boolean): Success {
             return plusCommand(
-                ChecklistDomainCommand.ChangeTaskCheckedCommand(
+                ChecklistCommand.ChangeTaskCheckedCommand(
                     originalChecklist.id,
                     checkboxId,
                     isChecked,
@@ -42,7 +42,7 @@ sealed interface ChecklistLoadingState {
 
         fun withUpdatedNotes(notes: String): ChecklistLoadingState {
             return plusCommand(
-                ChecklistDomainCommand.EditChecklistNotesCommand(
+                ChecklistCommand.EditChecklistNotesCommand(
                     originalChecklist.id,
                     notes,
                     UUID.randomUUID(),
@@ -51,28 +51,28 @@ sealed interface ChecklistLoadingState {
             )
         }
 
-        private fun plusCommand(command: ChecklistDomainCommand): Success {
+        private fun plusCommand(command: ChecklistCommand): Success {
             return copy(commands = commands.plus(command))
         }
 
-        fun consolidatedCommands(): List<DomainCommand> {
+        fun consolidatedCommands(): List<Command> {
             return consolidateCommands(commands)
         }
 
-        private fun consolidateCommands(commands: List<ChecklistDomainCommand>): List<ChecklistDomainCommand> {
+        private fun consolidateCommands(commands: List<ChecklistCommand>): List<ChecklistCommand> {
             // TODO this is a good place to trim titles and descriptions
             return commands
-                .withLastCommandOfType<ChecklistDomainCommand.EditChecklistNotesCommand> {
+                .withLastCommandOfType<ChecklistCommand.EditChecklistNotesCommand> {
                     it.checklistId
                 }
-                .withLastCommandOfType<ChecklistDomainCommand.ChangeTaskCheckedCommand> {
+                .withLastCommandOfType<ChecklistCommand.ChangeTaskCheckedCommand> {
                     it.taskId
                 }
         }
 
-        private inline fun <reified T : ChecklistDomainCommand> List<ChecklistDomainCommand>.withLastCommandOfType(
+        private inline fun <reified T : ChecklistCommand> List<ChecklistCommand>.withLastCommandOfType(
             groupBy: (T) -> Any
-        ): List<ChecklistDomainCommand> {
+        ): List<ChecklistCommand> {
             val consolidatedCommand = filterIsInstance<T>()
                 .groupBy(groupBy)
                 .map { (_, events) ->

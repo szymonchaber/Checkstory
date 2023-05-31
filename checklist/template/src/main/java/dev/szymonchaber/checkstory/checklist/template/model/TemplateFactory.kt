@@ -2,7 +2,7 @@ package dev.szymonchaber.checkstory.checklist.template.model
 
 import android.content.res.Resources
 import dev.szymonchaber.checkstory.checklist.template.R
-import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
@@ -15,7 +15,7 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
         .copy(
             commands = listOf(
-                TemplateDomainCommand.CreateNewTemplate(
+                TemplateCommand.CreateNewTemplate(
                     checklistTemplate.id,
                     Clock.System.now()
                 )

@@ -2,7 +2,7 @@ package dev.szymonchaber.checkstory.api.command.dto
 
 import dev.szymonchaber.checkstory.api.command.mapper.toTaskDto
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
+import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -53,39 +53,39 @@ internal sealed interface ChecklistApiCommand : ApiCommand {
 
     companion object {
 
-        internal fun fromCommand(checklistDomainCommand: ChecklistDomainCommand): ChecklistApiCommand {
-            return when (checklistDomainCommand) {
-                is ChecklistDomainCommand.CreateChecklistCommand -> CreateChecklistApiCommand(
-                    checklistDomainCommand.checklistId.id,
-                    checklistDomainCommand.templateId.id,
-                    checklistDomainCommand.title,
-                    checklistDomainCommand.description,
-                    checklistDomainCommand.tasks.map {
+        internal fun fromCommand(checklistCommand: ChecklistCommand): ChecklistApiCommand {
+            return when (checklistCommand) {
+                is ChecklistCommand.CreateChecklistCommand -> CreateChecklistApiCommand(
+                    checklistCommand.checklistId.id,
+                    checklistCommand.templateId.id,
+                    checklistCommand.title,
+                    checklistCommand.description,
+                    checklistCommand.tasks.map {
                         it.toTaskDto()
                     },
-                    checklistDomainCommand.commandId,
-                    checklistDomainCommand.timestamp,
+                    checklistCommand.commandId,
+                    checklistCommand.timestamp,
                 )
 
-                is ChecklistDomainCommand.ChangeTaskCheckedCommand -> ChangeTaskCheckedApiCommand(
-                    checklistId = checklistDomainCommand.checklistId.id,
-                    taskId = checklistDomainCommand.taskId.id,
-                    isChecked = checklistDomainCommand.isChecked,
-                    commandId = checklistDomainCommand.commandId,
-                    timestamp = checklistDomainCommand.timestamp,
+                is ChecklistCommand.ChangeTaskCheckedCommand -> ChangeTaskCheckedApiCommand(
+                    checklistId = checklistCommand.checklistId.id,
+                    taskId = checklistCommand.taskId.id,
+                    isChecked = checklistCommand.isChecked,
+                    commandId = checklistCommand.commandId,
+                    timestamp = checklistCommand.timestamp,
                 )
 
-                is ChecklistDomainCommand.DeleteChecklistCommand -> DeleteChecklistApiCommand(
-                    checklistId = checklistDomainCommand.checklistId.id,
-                    commandId = checklistDomainCommand.commandId,
-                    timestamp = checklistDomainCommand.timestamp,
+                is ChecklistCommand.DeleteChecklistCommand -> DeleteChecklistApiCommand(
+                    checklistId = checklistCommand.checklistId.id,
+                    commandId = checklistCommand.commandId,
+                    timestamp = checklistCommand.timestamp,
                 )
 
-                is ChecklistDomainCommand.EditChecklistNotesCommand -> EditChecklistNotesApiCommand(
-                    checklistId = checklistDomainCommand.checklistId.id,
-                    newNotes = checklistDomainCommand.newNotes,
-                    commandId = checklistDomainCommand.commandId,
-                    timestamp = checklistDomainCommand.timestamp,
+                is ChecklistCommand.EditChecklistNotesCommand -> EditChecklistNotesApiCommand(
+                    checklistId = checklistCommand.checklistId.id,
+                    newNotes = checklistCommand.newNotes,
+                    commandId = checklistCommand.commandId,
+                    timestamp = checklistCommand.timestamp,
                 )
             }
         }
