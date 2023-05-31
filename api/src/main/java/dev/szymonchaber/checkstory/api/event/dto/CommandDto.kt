@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-sealed interface CommandDto {
+internal sealed interface CommandDto {
 
     val commandId: UUID
     val timestamp: Instant

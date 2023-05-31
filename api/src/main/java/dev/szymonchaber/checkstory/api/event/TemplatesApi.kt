@@ -31,7 +31,7 @@ class TemplatesApi @Inject constructor(private val httpClient: ConfiguredHttpCli
 }
 
 @Serializable
-data class ApiTemplate(
+internal data class ApiTemplate(
     val id: DtoUUID,
     val userId: String,
     val name: String,
@@ -56,7 +56,7 @@ data class ApiTemplate(
     }
 }
 
-fun ReminderDto.toReminder(): Reminder {
+internal fun ReminderDto.toReminder(): Reminder {
     return when (this) {
         is ReminderDto.Exact -> {
             Reminder.Exact(
@@ -83,9 +83,8 @@ fun ReminderDto.toReminder(): Reminder {
     }
 }
 
-
 @Serializable
-sealed interface ReminderDto {
+internal sealed interface ReminderDto {
 
     val id: DtoUUID
     val forTemplate: DtoUUID
@@ -110,7 +109,7 @@ sealed interface ReminderDto {
 }
 
 @Serializable
-data class TemplateTaskDto(
+internal data class TemplateTaskDto(
     val id: DtoUUID,
     val templateId: DtoUUID,
     val title: String,
@@ -131,9 +130,8 @@ data class TemplateTaskDto(
     }
 }
 
-
 @Serializable
-sealed interface IntervalDto {
+internal sealed interface IntervalDto {
 
     @Serializable
     @SerialName("daily")

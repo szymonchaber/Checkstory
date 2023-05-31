@@ -23,7 +23,7 @@ import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 
-fun TemplateDomainCommand.toCommandDto(): TemplateCommandDto {
+internal fun TemplateDomainCommand.toCommandDto(): TemplateCommandDto {
     return when (this) {
         is TemplateDomainCommand.CreateNewTemplate -> {
             CreateTemplateCommandDto(
@@ -127,7 +127,7 @@ fun TemplateDomainCommand.toCommandDto(): TemplateCommandDto {
     }
 }
 
-fun ChecklistDomainCommand.toCommandDto(): ChecklistCommandDto {
+internal fun ChecklistDomainCommand.toCommandDto(): ChecklistCommandDto {
     return when (this) {
         is ChecklistDomainCommand.CreateChecklistCommand -> CreateChecklistCommand(
             checklistId.id,

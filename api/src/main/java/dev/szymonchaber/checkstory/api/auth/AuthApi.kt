@@ -13,7 +13,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import javax.inject.Inject
 
-class AuthApi @Inject constructor(private val client: ConfiguredHttpClient) {
+internal class AuthApi @Inject constructor(private val client: ConfiguredHttpClient) {
 
     suspend fun login(): Result<LoginError, User> {
         return try {

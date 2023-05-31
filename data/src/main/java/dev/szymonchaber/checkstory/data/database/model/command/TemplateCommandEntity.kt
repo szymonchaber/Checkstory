@@ -1,20 +1,23 @@
 package dev.szymonchaber.checkstory.data.database.model.command
 
-import dev.szymonchaber.checkstory.api.event.dto.ReminderEntity
-import dev.szymonchaber.checkstory.api.event.dto.toReminder
-import dev.szymonchaber.checkstory.api.event.dto.toReminderEntity
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
+import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-sealed interface TemplateCommandEntity : CommandDataEntity {
+internal sealed interface TemplateCommandEntity : CommandDataEntity {
 
     val templateId: DtoUUID
 
@@ -282,6 +285,102 @@ sealed interface TemplateCommandEntity : CommandDataEntity {
                     commandId = templateDomainCommand.commandId
                 )
             }
+        }
+    }
+}
+
+@Serializable
+internal sealed interface ReminderEntity {
+
+    val id: DtoUUID
+    val forTemplate: DtoUUID
+    val startDateTime: LocalDateTime
+
+    @Serializable
+    @SerialName("exact")
+    data class ExactEntity(
+        override val id: DtoUUID,
+        override val forTemplate: DtoUUID,
+        override val startDateTime: LocalDateTime
+    ) : ReminderEntity
+
+    @Serializable
+    @SerialName("recurring")
+    data class RecurringEntity(
+        override val id: DtoUUID,
+        override val forTemplate: DtoUUID,
+        override val startDateTime: LocalDateTime,
+        val interval: IntervalEntity
+    ) : ReminderEntity
+}
+
+@Serializable
+internal sealed interface IntervalEntity {
+
+    @Serializable
+    @SerialName("daily")
+    object DailyEntity : IntervalEntity
+
+    @Serializable
+    @SerialName("weekly")
+    data class WeeklyEntity(val dayOfWeek: DayOfWeek) : IntervalEntity
+
+    @Serializable
+    @SerialName("monthly")
+    data class MonthlyEntity(val dayOfMonth: Int) : IntervalEntity
+
+    @Serializable
+    @SerialName("yearly")
+    data class YearlyEntity(val dayOfYear: Int) : IntervalEntity
+}
+
+internal fun Reminder.toReminderEntity(): ReminderEntity {
+    return when (this) {
+        is Reminder.Exact -> {
+            ReminderEntity.ExactEntity(
+                this.id.id,
+                this.forTemplate.id,
+                this.startDateTime.toKotlinLocalDateTime()
+            )
+        }
+
+        is Reminder.Recurring -> {
+            ReminderEntity.RecurringEntity(
+                this.id.id, this.forTemplate.id, this.startDateTime.toKotlinLocalDateTime(),
+                when (val actualInterval = interval) {
+                    Interval.Daily -> IntervalEntity.DailyEntity
+                    is Interval.Monthly -> IntervalEntity.MonthlyEntity(actualInterval.dayOfMonth)
+                    is Interval.Weekly -> IntervalEntity.WeeklyEntity(actualInterval.dayOfWeek)
+                    is Interval.Yearly -> IntervalEntity.YearlyEntity(actualInterval.dayOfYear)
+                }
+            )
+        }
+    }
+}
+
+internal fun ReminderEntity.toReminder(): Reminder {
+    return when (this) {
+        is ReminderEntity.ExactEntity -> {
+            Reminder.Exact(
+                id = ReminderId(id),
+                forTemplate = ChecklistTemplateId(this.forTemplate),
+                startDateTime = this.startDateTime.toJavaLocalDateTime()
+            )
+        }
+
+        is ReminderEntity.RecurringEntity -> {
+            val interval = when (this.interval) {
+                IntervalEntity.DailyEntity -> Interval.Daily
+                is IntervalEntity.MonthlyEntity -> Interval.Monthly(dayOfMonth = this.interval.dayOfMonth)
+                is IntervalEntity.WeeklyEntity -> Interval.Weekly(dayOfWeek = this.interval.dayOfWeek)
+                is IntervalEntity.YearlyEntity -> Interval.Yearly(dayOfYear = this.interval.dayOfYear)
+            }
+            Reminder.Recurring(
+                id = ReminderId(this.id),
+                forTemplate = ChecklistTemplateId(this.forTemplate),
+                startDateTime = this.startDateTime.toJavaLocalDateTime(),
+                interval = interval
+            )
         }
     }
 }

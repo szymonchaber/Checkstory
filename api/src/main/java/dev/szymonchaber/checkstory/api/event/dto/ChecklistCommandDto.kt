@@ -6,14 +6,14 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface ChecklistCommandDto : CommandDto {
+internal sealed interface ChecklistCommandDto : CommandDto {
 
     val checklistId: DtoUUID
 }
 
 @Serializable
 @SerialName("createChecklist")
-data class CreateChecklistCommand(
+internal data class CreateChecklistCommand(
     override val checklistId: DtoUUID,
     val templateId: DtoUUID,
     val title: String,
@@ -25,7 +25,7 @@ data class CreateChecklistCommand(
 
 @Serializable
 @SerialName("editChecklistNotes")
-data class EditChecklistNotesCommand(
+internal data class EditChecklistNotesCommand(
     override val checklistId: DtoUUID,
     val newNotes: String,
     override val commandId: DtoUUID,
@@ -34,7 +34,7 @@ data class EditChecklistNotesCommand(
 
 @Serializable
 @SerialName("changeTaskChecked")
-data class ChangeTaskCheckedCommand(
+internal data class ChangeTaskCheckedCommand(
     override val checklistId: DtoUUID,
     val taskId: DtoUUID,
     val isChecked: Boolean,
@@ -44,14 +44,14 @@ data class ChangeTaskCheckedCommand(
 
 @Serializable
 @SerialName("deleteChecklist")
-data class DeleteChecklistCommand(
+internal data class DeleteChecklistCommand(
     override val checklistId: DtoUUID,
     override val commandId: DtoUUID,
     override val timestamp: Instant
 ) : ChecklistCommandDto
 
 @Serializable
-data class TaskDto(
+internal data class TaskDto(
     val id: DtoUUID,
     val checklistId: DtoUUID,
     val title: String,

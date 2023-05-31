@@ -26,7 +26,7 @@ class ChecklistsApi @Inject constructor(private val httpClient: ConfiguredHttpCl
 }
 
 @Serializable
-data class ApiChecklist(
+internal data class ApiChecklist(
     val id: DtoUUID,
     val userId: String,
     val templateId: DtoUUID,
@@ -53,7 +53,7 @@ data class ApiChecklist(
 }
 
 @Serializable
-data class TaskDto(
+internal data class TaskDto(
     val id: DtoUUID,
     val checklistId: DtoUUID,
     val title: String,
