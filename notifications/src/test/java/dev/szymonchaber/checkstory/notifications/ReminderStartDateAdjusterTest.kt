@@ -20,7 +20,11 @@ class ReminderStartDateAdjusterTest {
         val dailyReminder = reminder(date5DaysBefore, interval)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(dailyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            dailyReminder.startDateTime,
+            dailyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.plusDays(1).withMinute(10), correctDateTime)
@@ -33,7 +37,11 @@ class ReminderStartDateAdjusterTest {
         val dailyReminder = reminder(date5DaysBefore, Interval.Daily)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(dailyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            dailyReminder.startDateTime,
+            dailyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.withMinute(30), correctDateTime)
@@ -47,7 +55,11 @@ class ReminderStartDateAdjusterTest {
         val weeklyReminder = reminder(date14DaysBefore, interval)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(weeklyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            weeklyReminder.startDateTime,
+            weeklyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.plusDays(7).withMinute(10), correctDateTime)
@@ -61,7 +73,11 @@ class ReminderStartDateAdjusterTest {
         val weeklyReminder = reminder(date14DaysBefore, interval)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(weeklyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            weeklyReminder.startDateTime,
+            weeklyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.withMinute(30), correctDateTime)
@@ -76,7 +92,11 @@ class ReminderStartDateAdjusterTest {
         val reminder = reminder(startDate, interval)
 
         // when
-        val date = ReminderStartDateAdjuster.findCorrectStartDateTime(reminder, CURRENT)
+        val date = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            reminder.startDateTime,
+            reminder.interval
+        )
 
         // then
         assertEquals(CURRENT.plusMinutes(10), date)
@@ -91,7 +111,11 @@ class ReminderStartDateAdjusterTest {
         val reminder = reminder(startDate, interval)
 
         // when
-        val date = ReminderStartDateAdjuster.findCorrectStartDateTime(reminder, CURRENT)
+        val date = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            reminder.startDateTime,
+            reminder.interval
+        )
 
         // then
         assertEquals(CURRENT.plusMonths(1).withDayOfMonth(dayOfMonth).minusMinutes(10), date)
@@ -105,7 +129,11 @@ class ReminderStartDateAdjusterTest {
         val monthlyReminder = reminder(date14DaysBefore, interval)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(monthlyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            monthlyReminder.startDateTime,
+            monthlyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.plusMonths(1).withDayOfMonth(18).withMinute(10), correctDateTime)
@@ -119,7 +147,11 @@ class ReminderStartDateAdjusterTest {
         val monthlyReminder = reminder(date14DaysBefore, interval)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(monthlyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            monthlyReminder.startDateTime,
+            monthlyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.withMinute(30), correctDateTime)
@@ -133,7 +165,11 @@ class ReminderStartDateAdjusterTest {
         val yearlyReminder = reminder(date14DaysBefore, interval)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(yearlyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            yearlyReminder.startDateTime,
+            yearlyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.plusYears(1).withDayOfYear(169).withMinute(10), correctDateTime)
@@ -147,7 +183,11 @@ class ReminderStartDateAdjusterTest {
         val yearlyReminder = reminder(date14DaysBefore, interval)
 
         // when
-        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(yearlyReminder, CURRENT)
+        val correctDateTime = ReminderStartDateAdjuster.findCorrectStartDateTime(
+            CURRENT,
+            yearlyReminder.startDateTime,
+            yearlyReminder.interval
+        )
 
         // then
         assertEquals(CURRENT.withMinute(30), correctDateTime)

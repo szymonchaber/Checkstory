@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import org.junit.Test
 import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.util.*
 
 class ReminderEntityTest {
 
@@ -17,7 +18,7 @@ class ReminderEntityTest {
         val reminder = reminder(Interval.Daily)
 
         // when
-        val entity = ReminderEntity.fromDomainReminder(reminder, 1)
+        val entity = ReminderEntity.fromDomainReminder(reminder)
 
         // then
         Truth.assertThat(entity.isRecurring).isTrue()
@@ -34,7 +35,7 @@ class ReminderEntityTest {
         )
 
         // when
-        val entity = ReminderEntity.fromDomainReminder(reminder, 1)
+        val entity = ReminderEntity.fromDomainReminder(reminder)
 
         // then
         Truth.assertThat(entity.isRecurring).isTrue()
@@ -48,7 +49,7 @@ class ReminderEntityTest {
         val reminder = reminder(Interval.Monthly(15))
 
         // when
-        val entity = ReminderEntity.fromDomainReminder(reminder, 1)
+        val entity = ReminderEntity.fromDomainReminder(reminder)
 
         // then
         Truth.assertThat(entity.isRecurring).isTrue()
@@ -61,7 +62,7 @@ class ReminderEntityTest {
         val reminder = reminder(Interval.Yearly(150))
 
         // when
-        val entity = ReminderEntity.fromDomainReminder(reminder, 1)
+        val entity = ReminderEntity.fromDomainReminder(reminder)
 
         // then
         Truth.assertThat(entity.isRecurring).isTrue()
@@ -131,12 +132,14 @@ class ReminderEntityTest {
         Truth.assertThat((reminder as Reminder.Recurring).interval).isEqualTo(Interval.Yearly(150))
     }
 
-    private fun reminderEntity(rrule: String) = ReminderEntity(0, 0, LocalDateTime.now(), true, rrule)
+    private fun reminderEntity(rrule: String): ReminderEntity {
+        return ReminderEntity(UUID.randomUUID(), UUID.randomUUID(), LocalDateTime.now(), true, rrule)
+    }
 
     private fun reminder(interval: Interval): Reminder.Recurring {
         return Reminder.Recurring(
-            ReminderId(0),
-            ChecklistTemplateId(0),
+            ReminderId(UUID.randomUUID()),
+            ChecklistTemplateId.new(),
             LocalDateTime.of(2022, 4, 18, 14, 0),
             interval = interval
         )

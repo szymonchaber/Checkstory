@@ -5,10 +5,11 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetReminderUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,20 +24,19 @@ class ReminderReceiver : BroadcastReceiver() {
     @Inject
     lateinit var getChecklistTemplateUseCase: GetChecklistTemplateUseCase
 
+    @Inject
+    lateinit var getReminderUseCase: GetReminderUseCase
+
+    @Inject
+    lateinit var reminderScheduler: ReminderScheduler
+
     override fun onReceive(context: Context, intent: Intent) {
-        val templateIdLong = intent.getLongExtra(KEY_TEMPLATE_ID, -1)
-        val reminderIdLong = intent.getLongExtra(KEY_REMINDER_ID, -1)
-        if (templateIdLong < 0 || reminderIdLong < 0) {
-            return
-        }
-        val templateId = ChecklistTemplateId(templateIdLong)
-        val reminderId = ReminderId(reminderIdLong)
+        val templateId = intent.getStringExtra(KEY_TEMPLATE_ID)?.let(ChecklistTemplateId::fromUuidString) ?: return
+        val reminderId = intent.getStringExtra(KEY_REMINDER_ID)?.let(ReminderId::fromUuidString) ?: return
         CoroutineScope(Dispatchers.Main)
             .launch {
-                val template = getChecklistTemplateUseCase.getChecklistTemplateOrNull(templateId) ?: return@launch
-                if (!reminderExists(reminderId, template)) {
-                    return@launch
-                }
+                val reminder = getReminderUseCase.getReminder(reminderId) ?: return@launch
+                val template = getChecklistTemplateUseCase.getTemplate(templateId) ?: return@launch
                 val newChecklistIntent = Intent(
                     Intent.ACTION_VIEW,
                     "app://checkstory/checklist/new/${template.id.id}".toUri()
@@ -53,13 +53,10 @@ class ReminderReceiver : BroadcastReceiver() {
                     newChecklistIntent,
                     recentChecklistIntent
                 )
+                if (reminder is Reminder.Recurring) {
+                    reminderScheduler.scheduleNextOccurrence(reminder)
+                }
             }
-    }
-
-    private fun reminderExists(reminderId: ReminderId, template: ChecklistTemplate): Boolean {
-        return template.reminders.any {
-            it.id == reminderId
-        }
     }
 
     companion object {
@@ -69,8 +66,8 @@ class ReminderReceiver : BroadcastReceiver() {
 
         fun newIntent(context: Context, templateId: ChecklistTemplateId, reminderId: ReminderId): Intent {
             return Intent(context, ReminderReceiver::class.java)
-                .putExtra(KEY_TEMPLATE_ID, templateId.id)
-                .putExtra(KEY_REMINDER_ID, reminderId.id)
+                .putExtra(KEY_TEMPLATE_ID, templateId.id.toString())
+                .putExtra(KEY_REMINDER_ID, reminderId.id.toString())
         }
     }
 }

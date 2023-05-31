@@ -5,14 +5,15 @@ import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteRemindersUseCase
-import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateCheckboxUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -25,17 +26,15 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import javax.inject.Inject
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
     private val application: Application,
     private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
-    private val updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase,
-    private val deleteTemplateCheckboxUseCase: DeleteTemplateCheckboxUseCase,
-    private val deleteChecklistTemplateUseCase: DeleteChecklistTemplateUseCase,
-    private val deleteRemindersUseCase: DeleteRemindersUseCase,
-    private val getUserUseCase: GetUserUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
+    private val synchronizeCommandsUseCase: SynchronizeCommandsUseCase,
     private val tracker: Tracker
 ) : BaseViewModel<
         EditTemplateEvent,
@@ -88,7 +87,17 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
-                    EditTemplateState(TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())) to null
+                    val checklistTemplate = emptyChecklistTemplate()
+                    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
+                        .copy(
+                            commands = listOf(
+                                TemplateDomainCommand.CreateNewTemplate(
+                                    checklistTemplate.id,
+                                    Clock.System.now()
+                                )
+                            )
+                        )
+                    EditTemplateState(templateLoadingState) to null
                 }
             }
     }
@@ -111,13 +120,14 @@ class EditTemplateViewModel @Inject constructor(
                 if (isTemplateAlreadyLoaded(event)) {
                     flowOf(state.first() to null)
                 } else {
-                    getChecklistTemplateUseCase.getChecklistTemplate(event.checklistTemplateId)
-                        .map {
+                    flowOf(
+                        getChecklistTemplateUseCase.getTemplate(event.checklistTemplateId)?.let {
                             withContext(Dispatchers.Default) {
                                 TemplateLoadingState.Success.fromTemplate(it)
                             }
-                        }
-                        .onStart<TemplateLoadingState> {
+                        } ?: TemplateLoadingState.Loading // TODO this should be error, template not found
+                    )
+                        .onStart {
                             emit(TemplateLoadingState.Loading)
                         }
                         .map {
@@ -139,10 +149,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.TitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = loadingState.updateTemplate {
-                    copy(title = event.newTitle)
-                }
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.withNewTitle(event.newTitle)) to null
             }
     }
 
@@ -150,10 +157,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.DescriptionChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                val newLoadingState = loadingState.updateTemplate {
-                    copy(description = event.newDescription)
-                }
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.withNewDescription(event.newDescription)) to null
             }
     }
 
@@ -253,7 +257,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    EditTemplateState(loadingState.plusChildCheckbox(event.parentViewKey)) to null
+                    EditTemplateState(loadingState.plusChildCheckbox(TemplateCheckboxId(event.parentViewKey.id))) to null
                 }
             }
     }
@@ -270,9 +274,8 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
-                val newLoadingState = loadingState.plusNewCheckbox("")
                 tracker.logEvent("add_checkbox_clicked")
-                EditTemplateState(newLoadingState) to null
+                EditTemplateState(loadingState.plusNewCheckbox("")) to null
             }
     }
 
@@ -280,21 +283,8 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.SaveTemplateClicked>()
             .withSuccessState()
             .mapLatest { (loadingState, _) ->
-                val checklistTemplate = loadingState
-                    .updateTemplate {
-                        copy(
-                            title = title.trimEnd(),
-                            description = description.trim(),
-                            items = loadingState.checkboxes
-                                .mapIndexed { index, checkbox ->
-                                    checkbox.toDomainModel(position = index)
-                                }
-                        )
-                    }
-                    .checklistTemplate
-                updateChecklistTemplateUseCase.updateChecklistTemplate(checklistTemplate)
-                deleteTemplateCheckboxUseCase.deleteTemplateCheckboxes(loadingState.checkboxesToDelete)
-                deleteRemindersUseCase.deleteReminders(loadingState.remindersToDelete)
+                val checklistTemplate = loadingState.checklistTemplate
+                synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.finalizedCommands()))
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
                         "title_length" to checklistTemplate.title.length,
@@ -308,6 +298,33 @@ class EditTemplateViewModel @Inject constructor(
                 }
                 null to EditTemplateEffect.CloseScreen
             }
+    }
+
+    private fun consolidateCommands(commands: List<TemplateDomainCommand>): List<TemplateDomainCommand> {
+        // TODO this is a good place to trim titles and descriptions
+        return commands
+            .withLastCommandOfType<TemplateDomainCommand.RenameTemplate> {
+                it.templateId
+            }
+            .withLastCommandOfType<TemplateDomainCommand.ChangeTemplateDescription> {
+                it.templateId
+            }
+            .withLastCommandOfType<TemplateDomainCommand.RenameTemplateTask> {
+                it.taskId
+            }
+    }
+
+    private inline fun <reified T : TemplateDomainCommand> List<TemplateDomainCommand>.withLastCommandOfType(
+        groupBy: (T) -> Any
+    ): List<TemplateDomainCommand> {
+        val consolidatedCommand = filterIsInstance<T>()
+            .groupBy(groupBy)
+            .map { (_, events) ->
+                events.sortedBy { it.timestamp }.takeLast(1)
+            }
+            .flatten()
+        val commandsWithoutConsolidatedCommand = filterNot { it is T }
+        return commandsWithoutConsolidatedCommand.plus(consolidatedCommand)
     }
 
     private fun Flow<EditTemplateEvent>.handleDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
@@ -324,9 +341,9 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("delete_template_confirmation_clicked")
-                if (loadingState.checklistTemplate.isStored) {
-                    deleteChecklistTemplateUseCase.deleteChecklistTemplate(loadingState.checklistTemplate)
-                }
+                synchronizeCommandsUseCase.synchronizeCommands(
+                    consolidateCommands(loadingState.markDeleted().finalizedCommands())
+                )
                 if (loadingState.isOnboardingTemplate) {
                     tracker.logEvent("template_creation_cancelled_during_onboarding")
                 }
@@ -338,7 +355,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.BackClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                val event = if (success.isChanged() || !success.checklistTemplate.isStored) {
+                val event = if (success.isChanged()) {
                     EditTemplateEffect.ShowConfirmExitDialog()
                 } else {
                     EditTemplateEffect.CloseScreen
@@ -361,9 +378,9 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (state, _) ->
                 tracker.logEvent("add_reminder_clicked")
-                val user = getUserUseCase.getUser().first()
+                val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (user.isPaidUser) {
-                    EditTemplateEffect.ShowAddReminderSheet()
+                    EditTemplateEffect.ShowAddReminderSheet(state.checklistTemplate.id)
                 } else {
                     EditTemplateEffect.ShowFreeRemindersUsed()
                 }
@@ -385,7 +402,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 trackReminderSaved(event)
-                EditTemplateState(success.plusReminder(event.reminder)) to null
+                EditTemplateState(success.withUpdatedReminder(event.reminder)) to null
             }
     }
 
@@ -394,6 +411,7 @@ class EditTemplateViewModel @Inject constructor(
             is Reminder.Exact -> {
                 bundleOf("type" to "exact")
             }
+
             is Reminder.Recurring -> {
                 when (val interval = event.reminder.interval) {
                     Interval.Daily -> bundleOf("interval" to "daily")
@@ -423,12 +441,8 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.TemplateHistoryClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                if (success.checklistTemplate.isStored) {
-                    tracker.logEvent("edit_template_history_clicked")
-                    state.first() to EditTemplateEffect.OpenTemplateHistory(success.checklistTemplate.id)
-                } else {
-                    state.first() to null
-                }
+                tracker.logEvent("edit_template_history_clicked")
+                state.first() to EditTemplateEffect.OpenTemplateHistory(success.checklistTemplate.id)
             }
     }
 
@@ -440,4 +454,27 @@ class EditTemplateViewModel @Inject constructor(
                 .take(1)
         }
     }
+
+    fun isReorderValid(subject: TemplateCheckboxId, target: TemplateCheckboxId): Boolean {
+        return (_state.value.templateLoadingState as? TemplateLoadingState.Success)?.let {
+            !it.getAllAncestorsOf(target).contains(subject)
+        } ?: false
+    }
+}
+
+// TODO use this
+private fun ChecklistTemplate.trimEndingWhitespaces(): ChecklistTemplate {
+    return with(this) {
+        copy(
+            title = title.trimEnd(),
+            description = description.trimEnd(),
+            items = items.map {
+                it.trimEndTitlesRecursive()
+            }
+        )
+    }
+}
+
+private fun TemplateCheckbox.trimEndTitlesRecursive(): TemplateCheckbox {
+    return copy(title = title.trimEnd(), children = children.map { it.trimEndTitlesRecursive() })
 }

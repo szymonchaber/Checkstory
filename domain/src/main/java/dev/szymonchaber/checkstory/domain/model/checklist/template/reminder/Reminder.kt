@@ -6,15 +6,13 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.util.*
 
 sealed interface Reminder {
 
     val id: ReminderId
     val forTemplate: ChecklistTemplateId
     val startDateTime: LocalDateTime
-
-    val isStored: Boolean
-        get() = id.id != 0L
 
     data class Exact(
         override val id: ReminderId,
@@ -46,7 +44,15 @@ sealed interface Reminder {
 }
 
 @JvmInline
-value class ReminderId(val id: Long) : Serializable
+value class ReminderId(val id: UUID) : Serializable {
+
+    companion object {
+
+        fun fromUuidString(uuidString: String): ReminderId {
+            return ReminderId(UUID.fromString(uuidString))
+        }
+    }
+}
 
 sealed interface Interval {
 

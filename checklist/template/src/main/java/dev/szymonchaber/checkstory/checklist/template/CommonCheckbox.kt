@@ -20,6 +20,7 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
 import dev.szymonchaber.checkstory.checklist.template.reoder.DropTarget
 import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 
 @Composable
 fun CommonCheckbox(
@@ -43,7 +44,7 @@ fun CommonCheckbox(
                 eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
             },
             onAddSubtask = {
-                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.viewKey))
+                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.id))
             },
             onDeleteClick = {
                 eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
@@ -51,7 +52,7 @@ fun CommonCheckbox(
             acceptChildren = acceptChildren
         )
         Receptacles(
-            forCheckbox = checkbox.viewKey,
+            forCheckbox = checkbox.id,
             modifier = Modifier,
             acceptChildren = acceptChildren,
             dropTargetOffset = paddingStart + 16.dp,
@@ -60,7 +61,7 @@ fun CommonCheckbox(
     }
     val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
     LaunchedEffect(recentlyAddedItem.item) {
-        if (checkbox.viewId == recentlyAddedItem.item) {
+        if (checkbox.id == recentlyAddedItem.item) {
             focusRequester.requestFocus()
             recentlyAddedItem.item = null
         }
@@ -69,7 +70,7 @@ fun CommonCheckbox(
 
 @Composable
 private fun Receptacles(
-    forCheckbox: ViewTemplateCheckboxKey,
+    forCheckbox: TemplateCheckboxId,
     modifier: Modifier = Modifier,
     acceptChildren: Boolean,
     dropTargetOffset: Dp,
@@ -88,7 +89,7 @@ private fun Receptacles(
                     }
                 },
 //                .background(Color.Red.copy(alpha = 0.2f)),
-            key = forCheckbox,
+            id = forCheckbox,
             dropTargetOffset = dropTargetOffset,
             onDataDropped = { siblingTask ->
                 if (siblingTask.id == NEW_TASK_ID) {
@@ -104,7 +105,7 @@ private fun Receptacles(
                     .fillMaxHeight()
                     .weight(1f),
 //                    .background(Color.Yellow.copy(alpha = 0.2f)),
-                key = forCheckbox,
+                id = forCheckbox,
                 onDataDropped = { childTask ->
                     if (childTask.id == NEW_TASK_ID) {
                         eventCollector(EditTemplateEvent.NewChildDraggedBelow(forCheckbox))

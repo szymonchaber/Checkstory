@@ -1,30 +1,59 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxId
-import dev.szymonchaber.checkstory.checklist.template.ViewTemplateCheckboxKey
-import dev.szymonchaber.checkstory.checklist.template.viewId
-import dev.szymonchaber.checkstory.checklist.template.viewKey
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
+import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand.DeleteTemplateReminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import java.util.concurrent.atomic.AtomicLong
+import kotlinx.datetime.Clock
+import java.util.*
 
 sealed interface TemplateLoadingState {
 
     data class Success(
         val originalChecklistTemplate: ChecklistTemplate,
-        val checkboxes: List<ViewTemplateCheckbox>,
-        val checkboxesToDelete: List<TemplateCheckbox>,
-        val remindersToDelete: List<Reminder>,
-        val checklistTemplate: ChecklistTemplate = originalChecklistTemplate,
-        val mostRecentlyAddedItem: ViewTemplateCheckboxId? = null,
+        val checkboxes: List<ViewTemplateCheckbox> = originalChecklistTemplate.items.map {
+            ViewTemplateCheckbox.Existing.fromDomainModel(it)
+        },
+        val updatedChecklistTemplate: ChecklistTemplate = originalChecklistTemplate,
+        val mostRecentlyAddedItem: TemplateCheckboxId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
         val isOnboardingTemplate: Boolean = false,
-        val newItemIndexGenerator: AtomicLong = AtomicLong()
+        private val commands: List<TemplateDomainCommand> = listOf()
     ) : TemplateLoadingState {
 
         val unwrappedCheckboxes = flattenWithNestedLevel()
+
+        val checklistTemplate = commands
+            .fold(originalChecklistTemplate) { template, templateDomainCommand ->
+                templateDomainCommand.applyTo(template)
+            }
+
+        fun finalizedCommands(): List<TemplateDomainCommand> {
+            val indexedCheckboxes = checkboxes
+                .mapIndexed { index, checkbox ->
+                    checkbox.toDomainModel(position = index, templateId = checklistTemplate.id)
+                }
+            val localPositions = indexedCheckboxes.flatten()
+                .associate {
+                    it.id to it.sortPosition
+                }
+            return commands.plus(
+                TemplateDomainCommand.UpdateCheckboxPositions(
+                    localPositions,
+                    Clock.System.now(),
+                    UUID.randomUUID(),
+                    checklistTemplate.id
+                )
+            )
+        }
+
+        private fun List<TemplateCheckbox>.flatten(): List<TemplateCheckbox> {
+            return flatMap {
+                listOf(it) + it.children.flatten()
+            }
+        }
 
         private fun flattenWithNestedLevel(): List<Pair<ViewTemplateCheckbox, Int>> {
             val result = mutableListOf<Pair<ViewTemplateCheckbox, Int>>()
@@ -38,85 +67,84 @@ sealed interface TemplateLoadingState {
             return result
         }
 
+        fun isChanged() = commands.isNotEmpty()
 
-        fun isChanged(): Boolean {
-            return originalChecklistTemplate != checklistTemplate
-                    || originalChecklistTemplate.items != checkboxes.mapIndexed { index, checkbox ->
-                checkbox.toDomainModel(position = index)
-            }
-                    || checkboxesToDelete.isNotEmpty()
-                    || remindersToDelete.isNotEmpty()
-        }
-
-        fun updateTemplate(block: ChecklistTemplate.() -> ChecklistTemplate): Success {
-            return copy(checklistTemplate = checklistTemplate.block())
-        }
-
-        fun plusNewCheckbox(title: String): Success {
-            val newCheckbox = newCheckbox(title)
-            return copy(
-                checkboxes = checkboxes.plus(newCheckbox),
-                mostRecentlyAddedItem = newCheckbox.viewId
+        fun withNewTitle(newTitle: String): Success {
+            return plusCommand(
+                TemplateDomainCommand.RenameTemplate(
+                    checklistTemplate.id, newTitle, Clock.System.now()
+                )
             )
         }
 
-        fun plusNestedCheckbox(placeholderTitle: String, childrenTitles: List<CheckboxToChildren>): Success {
-            val parent = newCheckbox(placeholderTitle = placeholderTitle)
+        fun withNewDescription(newDescription: String): Success {
+            return plusCommand(
+                TemplateDomainCommand.ChangeTemplateDescription(
+                    checklistTemplate.id,
+                    newDescription,
+                    Clock.System.now()
+                )
+            )
+        }
+
+        fun plusNewCheckbox(
+            title: String,
+            placeholderTitle: String? = null,
+            id: TemplateCheckboxId = TemplateCheckboxId(UUID.randomUUID())
+        ): Success {
+            val newCheckbox = newCheckbox(title, placeholderTitle, id)
             return copy(
-                checkboxes = checkboxes.plus(parent)
-            ).let {
-                childrenTitles.fold(it) { acc, (childTitle, nestedChildren) ->
-                    acc.plusChildCheckboxNested(parent.viewKey, childTitle, nestedChildren)
-                }
-            }
+                checkboxes = checkboxes.plus(newCheckbox),
+                mostRecentlyAddedItem = newCheckbox.id
+            )
+                .plusCommand(
+                    TemplateDomainCommand.AddTemplateTask(
+                        checklistTemplate.id,
+                        newCheckbox.id,
+                        null,
+                        Clock.System.now()
+                    )
+                )
         }
 
         fun minusCheckbox(checkbox: ViewTemplateCheckbox): Success {
             val filteredCheckboxes =
                 checkboxes
-                    .filterNot { it.viewKey == checkbox.viewKey }
+                    .filterNot { it.id == checkbox.id }
                     .map {
                         it.minusChildCheckboxRecursive(checkbox)
                     }
-            val shouldDeleteFromDatabase = checkbox is ViewTemplateCheckbox.Existing
-            val updatedCheckboxesToDelete = if (shouldDeleteFromDatabase) {
-                checkboxesToDelete.plus(checkbox.toDomainModel(position = 0))
-            } else {
-                checkboxesToDelete
-            }
             return copy(
                 checkboxes = filteredCheckboxes,
-                checkboxesToDelete = updatedCheckboxesToDelete,
                 mostRecentlyAddedItem = null
+            ).plusCommand(
+                TemplateDomainCommand.DeleteTemplateTask(
+                    originalChecklistTemplate.id,
+                    checkbox.id,
+                    Clock.System.now()
+                )
             )
         }
 
-        fun plusChildCheckbox(parentId: ViewTemplateCheckboxKey): Success {
-            var addedItem: ViewTemplateCheckboxId? = null
-            val onItemActuallyAdded: (ViewTemplateCheckboxId) -> Unit = {
-                if (addedItem != null) {
-                    error("Attempted two sub-task additions where there should be one!")
-                }
-                addedItem = it
-            }
-            return copy(
-                checkboxes = checkboxes.map {
-                    it.plusChildCheckboxRecursive(newItemIndexGenerator, parentId, onItemActuallyAdded)
-                },
-                mostRecentlyAddedItem = addedItem
-            )
-        }
-
-        private fun plusChildCheckboxNested(
-            parentId: ViewTemplateCheckboxKey,
-            placeholderTitle: String = "",
-            children: List<CheckboxToChildren> = listOf()
+        fun plusChildCheckbox(
+            parentId: TemplateCheckboxId,
+            newId: TemplateCheckboxId = TemplateCheckboxId(UUID.randomUUID()),
+            placeholderTitle: String? = null
         ): Success {
             return copy(
                 checkboxes = checkboxes.map {
-                    it.plusNestedChildCheckboxRecursive(newItemIndexGenerator, parentId, placeholderTitle, children)
-                }
+                    it.plusChildCheckboxRecursive(parentId, newId, placeholderTitle)
+                },
+                mostRecentlyAddedItem = newId
             )
+                .plusCommand(
+                    TemplateDomainCommand.AddTemplateTask(
+                        templateId = originalChecklistTemplate.id,
+                        taskId = newId,
+                        parentTaskId = parentId,
+                        Clock.System.now()
+                    )
+                )
         }
 
         fun changeCheckboxTitle(checkbox: ViewTemplateCheckbox, title: String): Success {
@@ -125,48 +153,90 @@ sealed interface TemplateLoadingState {
                     it.withUpdatedTitleRecursive(checkbox, title)
                 }
             )
+                .plusCommand(
+                    TemplateDomainCommand.RenameTemplateTask(
+                        templateId = checklistTemplate.id,
+                        taskId = checkbox.id,
+                        newTitle = title,
+                        timestamp = Clock.System.now()
+                    )
+                )
         }
 
-        fun plusReminder(reminder: Reminder): Success {
-            return updateTemplate {
-                copy(reminders = reminders.plus(reminder))
-            }
-        }
-
-        fun minusReminder(reminder: Reminder): TemplateLoadingState {
-            val updatedRemindersToDelete = if (reminder.isStored) {
-                remindersToDelete.plus(reminder)
-            } else {
-                remindersToDelete
-            }
-            return updateTemplate {
-                copy(reminders = reminders.minus(reminder))
-            }.copy(remindersToDelete = updatedRemindersToDelete)
-        }
-
-        fun withNewSiblingMovedBelow(below: ViewTemplateCheckboxKey): TemplateLoadingState {
-            val newCheckbox = newCheckbox()
-            return copy(
-                checkboxes = checkboxes.withSiblingBelow(below, newCheckbox),
-                mostRecentlyAddedItem = newCheckbox.viewId
+        fun withUpdatedReminder(reminder: Reminder): Success {
+            return plusCommand(
+                TemplateDomainCommand.AddOrReplaceTemplateReminder(
+                    checklistTemplate.id,
+                    reminder,
+                    Clock.System.now()
+                )
             )
         }
 
+        fun minusReminder(reminder: Reminder): TemplateLoadingState {
+            return plusCommand(
+                DeleteTemplateReminder(
+                    checklistTemplate.id,
+                    reminder.id,
+                    Clock.System.now()
+                )
+            )
+        }
+
+        fun withNewSiblingMovedBelow(below: TemplateCheckboxId): TemplateLoadingState {
+            val newCheckbox = newCheckbox()
+            val parentId = findParentId(checkboxes, below)
+            return copy(
+                checkboxes = checkboxes.withSiblingBelow(below, newCheckbox),
+                mostRecentlyAddedItem = newCheckbox.id
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newCheckbox.id,
+                    parentId,
+                    Clock.System.now()
+                )
+            )
+        }
+
+        private fun findParentId(tasks: List<ViewTemplateCheckbox>, id: TemplateCheckboxId): TemplateCheckboxId? {
+            tasks.forEach { task ->
+                if (task.id == id) {
+                    return task.parentId
+                }
+                val parentId = findParentId(task.children, id)
+                if (parentId != null) {
+                    return parentId
+                }
+            }
+            return null
+        }
+
         fun withSiblingMovedBelow(
-            below: ViewTemplateCheckboxKey,
-            movedCheckboxKey: ViewTemplateCheckboxKey
+            below: TemplateCheckboxId,
+            movedCheckboxId: TemplateCheckboxId
         ): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(movedCheckboxKey)
-            return copy(checkboxes = filteredTasks.withSiblingBelow(below, movedItem))
+            val (filteredTasks, movedItem) = withExtractedTask(movedCheckboxId)
+            val newTasks = filteredTasks.withSiblingBelow(below, movedItem)
+            return copy(checkboxes = newTasks)
+                .plusCommand(
+                    TemplateDomainCommand.MoveTemplateTask(
+                        taskId = movedCheckboxId,
+                        newParentTaskId = findParentId(newTasks, movedCheckboxId),
+                        timestamp = Clock.System.now(),
+                        commandId = UUID.randomUUID(),
+                        templateId = originalChecklistTemplate.id
+                    )
+                )
         }
 
         private fun List<ViewTemplateCheckbox>.withSiblingBelow(
-            below: ViewTemplateCheckboxKey,
+            below: TemplateCheckboxId,
             movedItem: ViewTemplateCheckbox
         ): List<ViewTemplateCheckbox> {
-            return if (any { it.viewKey == below }) {
-                val newTaskIndex = indexOfFirst { it.viewKey == below } + 1
-                withCheckboxAtIndex(movedItem.updateParentKey(null), newTaskIndex)
+            return if (any { it.id == below }) {
+                val newTaskIndex = indexOfFirst { it.id == below } + 1
+                withCheckboxAtIndex(movedItem.updateParentId(null), newTaskIndex)
             } else {
                 map {
                     it.withMovedSiblingRecursive(below, movedItem)
@@ -174,24 +244,41 @@ sealed interface TemplateLoadingState {
             }
         }
 
-        fun withNewChildMovedBelow(below: ViewTemplateCheckboxKey): TemplateLoadingState {
+        fun withNewChildMovedBelow(below: TemplateCheckboxId): TemplateLoadingState {
             val newItem = newCheckbox()
             return copy(
                 checkboxes = checkboxes.withChildBelow(below, newItem),
-                mostRecentlyAddedItem = newItem.viewId
+                mostRecentlyAddedItem = newItem.id
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newItem.id,
+                    TemplateCheckboxId(below.id),
+                    Clock.System.now()
+                )
             )
         }
 
         fun withChildMovedBelow(
-            below: ViewTemplateCheckboxKey,
-            newChildKey: ViewTemplateCheckboxKey
+            below: TemplateCheckboxId,
+            childTaskId: TemplateCheckboxId
         ): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(newChildKey)
-            return copy(checkboxes = filteredTasks.withChildBelow(below, movedItem))
+            val (filteredTasks, movedItem) = withExtractedTask(childTaskId)
+            val newTasks = filteredTasks.withChildBelow(below, movedItem)
+            return copy(checkboxes = newTasks)
+                .plusCommand(
+                    TemplateDomainCommand.MoveTemplateTask(
+                        taskId = childTaskId,
+                        newParentTaskId = findParentId(newTasks, childTaskId),
+                        timestamp = Clock.System.now(),
+                        commandId = UUID.randomUUID(),
+                        templateId = originalChecklistTemplate.id
+                    )
+                )
         }
 
         private fun List<ViewTemplateCheckbox>.withChildBelow(
-            below: ViewTemplateCheckboxKey,
+            below: TemplateCheckboxId,
             movedItem: ViewTemplateCheckbox
         ): List<ViewTemplateCheckbox> {
             return map {
@@ -199,10 +286,18 @@ sealed interface TemplateLoadingState {
             }
         }
 
-        fun withCheckboxMovedToTop(checkboxKey: ViewTemplateCheckboxKey): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(checkboxKey)
+        fun withCheckboxMovedToTop(checkboxId: TemplateCheckboxId): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(checkboxId)
             return copy(
-                checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentKey(null), 0)
+                checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentId(null), 0)
+            ).plusCommand(
+                TemplateDomainCommand.MoveTemplateTask(
+                    taskId = checkboxId,
+                    newParentTaskId = null,
+                    timestamp = Clock.System.now(),
+                    commandId = UUID.randomUUID(),
+                    templateId = originalChecklistTemplate.id
+                )
             )
         }
 
@@ -210,14 +305,29 @@ sealed interface TemplateLoadingState {
             val newItem = newCheckbox()
             return copy(
                 checkboxes = checkboxes.withCheckboxAtIndex(newItem, 0),
-                mostRecentlyAddedItem = newItem.viewId
+                mostRecentlyAddedItem = newItem.id
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newItem.id,
+                    null,
+                    Clock.System.now()
+                )
             )
         }
 
-        fun withCheckboxMovedToBottom(checkboxKey: ViewTemplateCheckboxKey): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(checkboxKey)
+        fun withCheckboxMovedToBottom(checkboxId: TemplateCheckboxId): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(checkboxId)
             return copy(
-                checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentKey(null), filteredTasks.size)
+                checkboxes = filteredTasks.withCheckboxAtIndex(movedItem.updateParentId(null), filteredTasks.size)
+            ).plusCommand(
+                TemplateDomainCommand.MoveTemplateTask(
+                    taskId = checkboxId,
+                    newParentTaskId = null,
+                    timestamp = Clock.System.now(),
+                    commandId = UUID.randomUUID(),
+                    templateId = originalChecklistTemplate.id
+                )
             )
         }
 
@@ -225,18 +335,25 @@ sealed interface TemplateLoadingState {
             val newItem = newCheckbox()
             return copy(
                 checkboxes = checkboxes.withCheckboxAtIndex(newItem, checkboxes.size),
-                mostRecentlyAddedItem = newItem.viewId
+                mostRecentlyAddedItem = newItem.id
+            ).plusCommand(
+                TemplateDomainCommand.AddTemplateTask(
+                    checklistTemplate.id,
+                    newItem.id,
+                    null,
+                    Clock.System.now()
+                )
             )
         }
 
-        private fun withExtractedTask(viewKey: ViewTemplateCheckboxKey): Pair<List<ViewTemplateCheckbox>, ViewTemplateCheckbox> {
+        private fun withExtractedTask(id: TemplateCheckboxId): Pair<List<ViewTemplateCheckbox>, ViewTemplateCheckbox> {
             var movedItem: ViewTemplateCheckbox? = null
             val onItemFoundAndRemoved: (ViewTemplateCheckbox) -> Unit = {
                 movedItem = it
             }
             val withExtractedElement = checkboxes
                 .filter {
-                    if (it.viewId == viewKey.viewId) {
+                    if (it.id == TemplateCheckboxId(id.id)) {
                         movedItem = it
                         false
                     } else {
@@ -244,31 +361,51 @@ sealed interface TemplateLoadingState {
                     }
                 }
                 .map {
-                    it.withoutChild(viewKey, onItemFoundAndRemoved)
+                    it.withoutChild(id, onItemFoundAndRemoved)
                 }
             return withExtractedElement to movedItem!!
         }
 
-        private fun newCheckbox(title: String = "", placeholderTitle: String? = null) = ViewTemplateCheckbox.New(
-            id = TemplateCheckboxId(newItemIndexGenerator.getAndIncrement()),
-            parentViewKey = null,
-            isParent = true,
-            title = title,
-            children = listOf(),
-            isLastChild = true,
-            placeholderTitle = placeholderTitle
-        )
+        private fun newCheckbox(
+            title: String = "",
+            placeholderTitle: String? = null,
+            id: TemplateCheckboxId = TemplateCheckboxId(UUID.randomUUID())
+        ): ViewTemplateCheckbox.New {
+            return ViewTemplateCheckbox.New(
+                id = id,
+                parentId = null,
+                title = title,
+                children = listOf(),
+                placeholderTitle = placeholderTitle
+            )
+        }
 
+        private fun plusCommand(event: TemplateDomainCommand): Success {
+            return copy(commands = commands.plus(event))
+        }
+
+        fun getAllAncestorsOf(target: TemplateCheckboxId): List<TemplateCheckboxId> {
+            val ancestors = mutableListOf<TemplateCheckboxId>()
+            var currentTarget = target
+            while (true) {
+                findParentId(checkboxes, currentTarget)?.let {
+                    ancestors.add(it)
+                    currentTarget = it
+                } ?: break
+            }
+            return ancestors
+        }
+
+        fun markDeleted(): Success {
+            return plusCommand(
+                TemplateDomainCommand.DeleteTemplate(checklistTemplate.id, Clock.System.now())
+            )
+        }
 
         companion object {
 
             fun fromTemplate(checklistTemplate: ChecklistTemplate): Success {
-                return Success(
-                    checklistTemplate,
-                    checklistTemplate.items.map { ViewTemplateCheckbox.Existing.fromDomainModel(it) },
-                    listOf(),
-                    listOf()
-                )
+                return Success(originalChecklistTemplate = checklistTemplate)
             }
         }
     }
@@ -285,9 +422,9 @@ fun List<ViewTemplateCheckbox>.withCheckboxAtIndex(
     return take(index) + checkbox + drop(index)
 }
 
-fun List<ViewTemplateCheckbox>.updateParentKeys(parentKey: ViewTemplateCheckboxKey? = null): List<ViewTemplateCheckbox> {
+// TODO not sure if this is still required
+fun List<ViewTemplateCheckbox>.updateParentIds(parentId: TemplateCheckboxId? = null): List<ViewTemplateCheckbox> {
     return map {
-        val updatedCheckbox = it.abstractCopy(parentViewKey = parentKey)
-        updatedCheckbox.abstractCopy(children = updatedCheckbox.children.updateParentKeys(updatedCheckbox.viewKey))
+        it.abstractCopy(parentId = parentId, children = it.children.updateParentIds(it.id))
     }
 }

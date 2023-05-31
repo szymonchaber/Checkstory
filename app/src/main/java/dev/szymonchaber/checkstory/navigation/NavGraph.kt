@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.navigation
 import com.ramcosta.composedestinations.spec.DestinationSpec
 import com.ramcosta.composedestinations.spec.NavGraphSpec
 import dev.szymonchaber.checkstory.about.destinations.AboutScreenDestination
+import dev.szymonchaber.checkstory.account.destinations.AccountScreenDestination
 import dev.szymonchaber.checkstory.checklist.catalog.destinations.ChecklistCatalogScreenDestination
 import dev.szymonchaber.checkstory.checklist.catalog.destinations.DebugScreenDestination
 import dev.szymonchaber.checkstory.checklist.fill.destinations.FillChecklistScreenDestination
@@ -25,6 +26,7 @@ object NavGraph : NavGraphSpec {
         ChecklistHistoryScreenDestination,
         PaymentScreenDestination,
         AboutScreenDestination,
-        DebugScreenDestination
+        DebugScreenDestination,
+        AccountScreenDestination
     ).associateBy { it.route }
 }

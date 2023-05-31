@@ -40,4 +40,6 @@ object Routes {
     fun homeScreen(): String = "home_screen"
 
     fun onboardingScreen() = "onboarding_screen"
+
+    fun accountScreen() = "account_screen"
 }

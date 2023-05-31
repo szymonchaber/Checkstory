@@ -4,33 +4,21 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
-import dev.szymonchaber.checkstory.payments.GetPaymentPlansUseCase
-import dev.szymonchaber.checkstory.payments.PurchaseSubscriptionUseCase
-import dev.szymonchaber.checkstory.payments.PurchaseSubscriptionUseCaseImpl
-import dev.szymonchaber.checkstory.payments.RefreshPaymentInformationUseCase
+import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
+import dev.szymonchaber.checkstory.payments.BillingInteractor
+import dev.szymonchaber.checkstory.payments.BillingInteractorImpl
 
 @Module
 @InstallIn(SingletonComponent::class)
 interface PaymentsModule {
 
     @Binds
-    fun bindPurchaseSubscriptionUseCase(
-        purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
-    ): PurchaseSubscriptionUseCase
+    fun bindPaymentInteractor(
+        paymentInteractor: BillingInteractorImpl
+    ): BillingInteractor
 
     @Binds
-    fun bindIsProUserUseCase(
-        purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
-    ): IsProUserUseCase
-
-    @Binds
-    fun bindGetPaymentPlansUseCase(
-        purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
-    ): GetPaymentPlansUseCase
-
-    @Binds
-    fun bindRefreshPaymentInformationUseCase(
-        purchaseSubscriptionUseCaseImpl: PurchaseSubscriptionUseCaseImpl
-    ): RefreshPaymentInformationUseCase
+    fun bindPlayPaymentRepository(
+        paymentInteractor: BillingInteractorImpl
+    ): PlayPaymentRepository
 }

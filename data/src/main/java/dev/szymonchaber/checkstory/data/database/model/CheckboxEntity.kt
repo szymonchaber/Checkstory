@@ -5,15 +5,16 @@ import androidx.room.PrimaryKey
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import java.util.*
 
 @Entity
 data class CheckboxEntity(
-    @PrimaryKey(autoGenerate = true)
-    val checkboxId: Long,
-    val checklistId: Long,
+    @PrimaryKey
+    val checkboxId: UUID,
+    val checklistId: UUID,
     val checkboxTitle: String,
     val isChecked: Boolean,
-    val parentId: Long?
+    val parentId: UUID?
 ) {
 
     fun toDomainCheckbox(children: List<Checkbox>): Checkbox {

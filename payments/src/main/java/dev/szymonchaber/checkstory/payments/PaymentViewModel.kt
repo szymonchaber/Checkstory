@@ -2,20 +2,22 @@ package dev.szymonchaber.checkstory.payments
 
 import android.os.Bundle
 import androidx.core.os.bundleOf
-import androidx.lifecycle.viewModelScope
+import arrow.core.Either
+import com.android.billingclient.api.Purchase
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
@@ -26,10 +28,9 @@ import javax.inject.Inject
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
-    private val isProUserUseCase: IsProUserUseCase,
+    private val getUserUseCase: GetCurrentUserUseCase,
     private val getPaymentPlansUseCase: GetPaymentPlansUseCase,
-    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase,
-    private val refreshPaymentInformationUseCase: RefreshPaymentInformationUseCase
+    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase
 ) : BaseViewModel<
         PaymentEvent,
         PaymentState<out PaymentState.PaymentLoadingState>,
@@ -39,11 +40,6 @@ class PaymentViewModel @Inject constructor(
 ) {
 
     init {
-        purchaseSubscriptionUseCase.purchaseEvents
-            .onEach {
-                onEvent(PaymentEvent.NewPurchaseResult(it))
-            }
-            .launchIn(viewModelScope)
         onEvent(PaymentEvent.LoadSubscriptionPlans)
     }
 
@@ -52,7 +48,6 @@ class PaymentViewModel @Inject constructor(
             eventFlow.handleLoadSubscriptionPlans(),
             eventFlow.handlePlanSelected(),
             eventFlow.handleBuyClicked(),
-            eventFlow.handlePurchaseEvents(),
             eventFlow.handleContinueClicked()
         )
     }
@@ -61,29 +56,25 @@ class PaymentViewModel @Inject constructor(
         return filterIsInstance<PaymentEvent.LoadSubscriptionPlans>()
             .flatMapLatest {
                 flow {
-                    emit(
-                        PaymentState(
-                            paymentLoadingState = PaymentState.PaymentLoadingState.Loading
-                        ) to null
-                    )
-                    if (isProUserUseCase.isProUser()) {
+                    emit(PaymentState(PaymentState.PaymentLoadingState.Loading) to null)
+                    if (getUserUseCase.getCurrentUser().isPaidUser) {
                         emit(PaymentState(paymentLoadingState = PaymentState.PaymentLoadingState.Paid) to null)
                     } else {
-                        val paymentLoadingState = getPaymentPlansUseCase.getPaymentPlans()
-                            .fold({
-                                FirebaseCrashlytics.getInstance()
-                                    .recordException(Exception("Fetching payment plans failed!\n$it"));
-                                Timber.e(it.toString())
-                                PaymentState.PaymentLoadingState.LoadingError
-                            }
-                            ) {
-                                PaymentState.PaymentLoadingState.Success(
-                                    plans = it,
-                                    selectedPlan = it.yearly,
-                                    paymentInProgress = false
+                        emitAll(getPaymentPlansUseCase.getPaymentPlans()
+                            .filterNotNull()
+                            .map { result ->
+                                result.fold(
+                                    ifLeft = {
+                                        FirebaseCrashlytics.getInstance()
+                                            .recordException(Exception("Fetching payment plans failed!\n$it"));
+                                        Timber.e(it.toString())
+                                        PaymentState.PaymentLoadingState.LoadingError
+                                    },
+                                    ifRight = PaymentState.PaymentLoadingState::success
                                 )
-                            }
-                        emit(PaymentState(paymentLoadingState = paymentLoadingState) to null)
+                            }.map {
+                                PaymentState(paymentLoadingState = it) to null
+                            })
                     }
                 }
             }
@@ -117,30 +108,29 @@ class PaymentViewModel @Inject constructor(
             .onEach {
             }
             .withSuccessState()
-            .map { (state, event) ->
-                val loadingState = state.paymentLoadingState
-                tracker.logEvent(
-                    "buy_button_clicked",
-                    getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
-                )
-                purchaseSubscriptionUseCase.startPurchaseFlow(
-                    event.activity,
-                    loadingState.selectedPlan.productDetails,
-                    loadingState.selectedPlan.offerToken
-                )
-                state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null
+            .flatMapLatest { (state, event) ->
+                flow {
+                    val loadingState = state.paymentLoadingState
+                    tracker.logEvent(
+                        "buy_button_clicked",
+                        getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
+                    )
+                    emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null)
+                    emitAll(
+                        purchaseSubscriptionUseCase.startPurchaseFlow(
+                            event.activity,
+                            loadingState.selectedPlan.productDetails,
+                            loadingState.selectedPlan.offerToken
+                        ).handlePurchaseEvents()
+                    )
+                }
             }
     }
 
-    private fun Flow<PaymentEvent>.handlePurchaseEvents(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
-        return filterIsInstance<PaymentEvent.NewPurchaseResult>()
-            .withSuccessState()
+    private fun Flow<Either<PurchaseError, Purchase>>.handlePurchaseEvents(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
+        return withSuccessState()
             .map { (state, event) ->
-                Timber.d("Got purchase details or error: ${event.paymentResult}")
-                event.paymentResult
-                    .tap {
-                        refreshPaymentInformationUseCase.refreshPaymentInformation()
-                    }
+                event
                     .fold({
                         Timber.e(it.toString())
                         FirebaseCrashlytics.getInstance().recordException(Exception("Purchase attempt failed!\n$it"))

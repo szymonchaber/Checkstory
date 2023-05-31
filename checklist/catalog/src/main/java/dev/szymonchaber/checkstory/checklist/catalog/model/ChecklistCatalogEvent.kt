@@ -24,5 +24,13 @@ sealed interface ChecklistCatalogEvent {
 
     object AboutClicked : ChecklistCatalogEvent
 
+    object PulledToRefresh : ChecklistCatalogEvent
+
     data class TemplateHistoryClicked(val templateId: ChecklistTemplateId) : ChecklistCatalogEvent
+
+    object UnassignedPaymentPresent : ChecklistCatalogEvent
+
+    object CreateAccountForPaymentClicked : ChecklistCatalogEvent
+
+    object AccountClicked : ChecklistCatalogEvent
 }

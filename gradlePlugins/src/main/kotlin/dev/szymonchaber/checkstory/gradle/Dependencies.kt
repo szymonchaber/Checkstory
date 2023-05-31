@@ -14,10 +14,15 @@ class Dependencies : Plugin<Project> {
         private const val hiltVersion = "2.44.2"
         private const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
         const val hiltKapt = "com.google.dagger:hilt-compiler:$hiltVersion"
+
+        const val hiltWork = "androidx.hilt:hilt-work:1.0.0"
+        const val hiltWorkKapt = "androidx.hilt:hilt-compiler:1.0.0"
+
         private const val timber = "com.jakewharton.timber:timber:5.0.1"
         private const val kotlinImmutableCollections = "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5"
+        private const val kotlinxDatetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 
-        val common = listOf(coroutines, hiltLibrary, timber, kotlinImmutableCollections)
+        val common = listOf(coroutines, hiltLibrary, timber, kotlinImmutableCollections, kotlinxDatetime)
 
         const val androidXCore = "androidx.core:core-ktx:1.9.0"
         const val appCompat = "androidx.appcompat:appcompat:1.7.0-alpha02"
@@ -54,12 +59,12 @@ class Dependencies : Plugin<Project> {
             "com.google.accompanist:accompanist-pager-indicators:0.29.1-alpha"
         )
 
-        private const val roomVersion = "2.4.2"
+        private const val roomVersion = "2.5.1"
 
         val room = listOf(
             "androidx.room:room-runtime:$roomVersion",
             "androidx.room:room-ktx:$roomVersion",
-            "androidx.room:room-paging:2.5.0-alpha01"
+            "androidx.room:room-paging:2.5.1"
         )
         val roomKsp = "androidx.room:room-compiler:$roomVersion"
 
@@ -76,11 +81,12 @@ class Dependencies : Plugin<Project> {
         val crashlytics = "com.google.firebase:firebase-crashlytics"
         val performance = "com.google.firebase:firebase-perf"
         val messaging = "com.google.firebase:firebase-messaging-ktx"
+        val auth = "com.google.firebase:firebase-auth-ktx"
         //endregion
 
         val rrule = "com.github.PhilJay:RRule:1.0.3"
 
-        const val workVersion = "2.8.0"
+        const val workVersion = "2.8.1"
 
         val work = "androidx.work:work-runtime-ktx:$workVersion"
 
@@ -96,9 +102,21 @@ class Dependencies : Plugin<Project> {
 
         val composeReorderable = "org.burnoutcrew.composereorderable:reorderable:0.9.6"
 
+        val ktor = listOf(
+            "io.ktor:ktor-client-android:2.3.0",
+            "io.ktor:ktor-client-serialization:2.3.0",
+            "io.ktor:ktor-client-content-negotiation:2.3.0",
+            "io.ktor:ktor-serialization-kotlinx-json:2.3.0",
+            "io.ktor:ktor-client-logging-jvm:2.3.0",
+            "io.ktor:ktor-client-auth:2.3.0"
+        )
+
+        const val kotlinx_datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
+
         val unitTest = listOf(
             "junit:junit:4.13.2",
-            "com.google.truth:truth:1.1.3"
+            "com.google.truth:truth:1.1.3",
+            "androidx.room:room-testing:$roomVersion"
         )
 
         val uiTest = listOf(

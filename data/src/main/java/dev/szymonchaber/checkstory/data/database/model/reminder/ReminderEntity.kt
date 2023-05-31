@@ -12,12 +12,13 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.DayOfWeek
 import java.time.LocalDateTime
+import java.util.*
 
 @Entity
 data class ReminderEntity(
-    @PrimaryKey(autoGenerate = true)
-    val reminderId: Long,
-    val templateId: Long,
+    @PrimaryKey
+    val reminderId: UUID,
+    val templateId: UUID,
     val startDateUtc: LocalDateTime,
     val isRecurring: Boolean,
     val recurrencePattern: String?
@@ -65,12 +66,12 @@ data class ReminderEntity(
 
     companion object {
 
-        fun fromDomainReminder(reminder: Reminder, templateId: Long): ReminderEntity {
+        fun fromDomainReminder(reminder: Reminder): ReminderEntity {
             return when (reminder) {
                 is Reminder.Exact -> {
                     ReminderEntity(
                         reminder.id.id,
-                        templateId,
+                        reminder.forTemplate.id,
                         reminder.startDateTime, // TODO check if storage works correctly
                         false,
                         null
@@ -79,7 +80,7 @@ data class ReminderEntity(
                 is Reminder.Recurring -> {
                     ReminderEntity(
                         reminder.id.id,
-                        templateId,
+                        reminder.forTemplate.id,
                         reminder.startDateTime, // TODO check if storage works correctly
                         true,
                         toRecurrencePattern(reminder.interval)

@@ -15,7 +15,7 @@ class LibraryConfig : Plugin<Project> {
         target.apply(plugin = "com.android.library")
         target.apply(plugin = "org.jetbrains.kotlin.android")
         target.extensions.configure(LibraryExtension::class.java) {
-            compileSdk = 31
+            compileSdk = 33
 
             defaultConfig {
                 minSdk = 24
@@ -33,17 +33,17 @@ class LibraryConfig : Plugin<Project> {
             }
             compileOptions {
                 isCoreLibraryDesugaringEnabled = true
-                sourceCompatibility = JavaVersion.VERSION_11
-                targetCompatibility = JavaVersion.VERSION_11
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
             }
             buildFeatures {
                 compose = true
             }
             composeOptions {
-                kotlinCompilerExtensionVersion = "1.4.3"
+                kotlinCompilerExtensionVersion = "1.4.6"
             }
             kotlinOptions {
-                jvmTarget = "11"
+                jvmTarget = "17"
             }
             libraryVariants.forEach { variant ->
                 target.kotlinExtension.sourceSets.create(variant.name) {
@@ -51,7 +51,7 @@ class LibraryConfig : Plugin<Project> {
                 }
             }
         }
-        target.dependencies.add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:1.1.5")
+        target.dependencies.add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.2")
     }
 
     private fun LibraryExtension.kotlinOptions(configure: Action<KotlinJvmOptions>) {

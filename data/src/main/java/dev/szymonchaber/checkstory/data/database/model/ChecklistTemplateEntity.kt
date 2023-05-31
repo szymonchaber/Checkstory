@@ -4,11 +4,12 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
 import java.time.LocalDateTime
+import java.util.*
 
 @Entity
 data class ChecklistTemplateEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long,
+    @PrimaryKey
+    val id: UUID,
     val title: String,
     val description: String,
     val createdAt: LocalDateTime
@@ -28,4 +29,3 @@ data class ChecklistTemplateEntity(
         }
     }
 }
-

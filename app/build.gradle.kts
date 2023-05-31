@@ -6,7 +6,7 @@ plugins {
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("dependencies")
-    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
+    id("com.google.devtools.ksp") version "1.8.20-1.0.11"
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("com.google.firebase.firebase-perf")
@@ -34,27 +34,30 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            versionNameSuffix = "-DEBUG"
+            resValue("string", "app_name", "Devstory")
         }
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            resValue("string", "app_name", "Checkstory")
         }
     }
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.4"
+        kotlinCompilerExtensionVersion = "1.4.6"
     }
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -87,6 +90,7 @@ dependencies {
     implementation(project(":payments"))
     implementation(project(":about"))
     implementation(project(":onboarding"))
+    implementation(project(":account"))
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
@@ -94,6 +98,8 @@ dependencies {
     Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)
 
+    implementation(Dependencies.hiltWork)
+    kapt(Dependencies.hiltWorkKapt)
     kapt(Dependencies.hiltKapt)
 
     implementation(Dependencies.ads)

@@ -9,12 +9,18 @@ import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderSta
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalType
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.take
 import java.time.LocalDateTime
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
@@ -48,9 +54,9 @@ class EditReminderViewModel @Inject constructor(
         return filterIsInstance<EditReminderEvent.CreateReminder>()
             .map {
                 val newReminder = Reminder.Exact(
-                    ReminderId(0),
-                    ChecklistTemplateId(0),
-                    LocalDateTime.now()
+                    ReminderId(UUID.randomUUID()),
+                    it.templateId,
+                    LocalDateTime.now().withSecond(0)
                 )
                 EditReminderState(EditReminderLoadingState.Success.fromReminder(newReminder)) to null
             }
@@ -87,7 +93,7 @@ class EditReminderViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 val newState = success.updateReminder {
-                    updateTime(event.time)
+                    updateTime(event.time.withSecond(0))
                 }
                 tracker.logEvent("reminder_time_set", bundleOf("time" to event.time))
                 EditReminderState(newState) to null

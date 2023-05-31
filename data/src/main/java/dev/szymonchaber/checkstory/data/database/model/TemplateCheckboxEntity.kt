@@ -3,30 +3,41 @@ package dev.szymonchaber.checkstory.data.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import java.util.*
 
 @Entity
 data class TemplateCheckboxEntity(
-    @PrimaryKey(autoGenerate = true)
-    val checkboxId: Long,
-    val templateId: Long,
+    @PrimaryKey
+    val checkboxId: UUID,
+    val templateId: UUID,
     val checkboxTitle: String,
-    val parentId: Long?,
+    val parentId: UUID?,
     @ColumnInfo(defaultValue = "0")
     val sortPosition: Long
 ) {
 
+    fun toTemplateCheckbox(children: List<TemplateCheckbox> = emptyList()): TemplateCheckbox {
+        return TemplateCheckbox(
+            id = TemplateCheckboxId(checkboxId),
+            parentId = parentId?.let { TemplateCheckboxId(it) },
+            title = checkboxTitle,
+            children = children,
+            sortPosition = sortPosition,
+            templateId = ChecklistTemplateId(templateId)
+        )
+    }
+
     companion object {
 
-        fun fromDomainTemplateCheckbox(
-            templateCheckbox: TemplateCheckbox,
-            templateId: Long
-        ): TemplateCheckboxEntity {
+        fun fromDomainTemplateCheckbox(templateCheckbox: TemplateCheckbox): TemplateCheckboxEntity {
             return with(templateCheckbox) {
                 TemplateCheckboxEntity(
                     checkboxId = id.id,
-                    parentId = templateCheckbox.parentId?.id,
-                    templateId = templateId,
+                    parentId = parentId?.id,
+                    templateId = templateId.id,
                     checkboxTitle = title,
                     sortPosition = sortPosition
                 )

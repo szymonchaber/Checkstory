@@ -28,6 +28,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import java.time.LocalDateTime
+import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -89,12 +90,19 @@ private fun NotesTextView(notes: String) {
 @Composable
 fun RecentChecklistItemPreview() {
     val items = listOf(
-        Checkbox(CheckboxId(0), null, ChecklistId(0), "Check this", true, listOf()),
-        Checkbox(CheckboxId(0), null, ChecklistId(0), "Do not check that", false, listOf())
+        Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId.new(), "Check this", true, listOf()),
+        Checkbox(
+            CheckboxId(UUID.randomUUID()),
+            null,
+            ChecklistId.new(),
+            "Do not check that",
+            false,
+            listOf()
+        )
     )
     val checklist = Checklist(
-        ChecklistId(0),
-        ChecklistTemplateId(0),
+        ChecklistId.new(),
+        ChecklistTemplateId.new(),
         "Recent checklist",
         "Description",
         items,

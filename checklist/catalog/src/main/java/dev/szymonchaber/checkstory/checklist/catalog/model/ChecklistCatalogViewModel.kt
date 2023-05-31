@@ -8,9 +8,11 @@ import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.usecase.CheckForUnassignedPaymentUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.SynchronizeDataUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -18,6 +20,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -32,9 +36,11 @@ import javax.inject.Inject
 class ChecklistCatalogViewModel @Inject constructor(
     private val getChecklistTemplatesUseCase: GetChecklistTemplatesUseCase,
     private val getRecentChecklistsUseCase: GetRecentChecklistsUseCase,
-    private val getUserUseCase: GetUserUseCase,
+    private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val tracker: Tracker,
-    private val onboardingPreferences: OnboardingPreferences
+    private val onboardingPreferences: OnboardingPreferences,
+    private val synchronizeDataUseCase: SynchronizeDataUseCase,
+    private val checkForUnassignedPaymentUseCase: CheckForUnassignedPaymentUseCase
 ) : BaseViewModel<
         ChecklistCatalogEvent,
         ChecklistCatalogState,
@@ -44,6 +50,14 @@ class ChecklistCatalogViewModel @Inject constructor(
 ) {
 
     init {
+        viewModelScope.launch {
+            if (
+                checkForUnassignedPaymentUseCase.isUnassignedPaymentPresent() &&
+                onboardingPreferences.didShowOnboarding.first()
+            ) {
+                onEvent(ChecklistCatalogEvent.UnassignedPaymentPresent)
+            }
+        }
         viewModelScope.launch {
             onboardingPreferences.didShowOnboarding
                 .flatMapLatest { didShowOnboarding ->
@@ -62,6 +76,9 @@ class ChecklistCatalogViewModel @Inject constructor(
         return merge(
             eventFlow.handleLoadCatalog(),
             eventFlow.handleGoToOnboarding(),
+            eventFlow.handleUnassignedPaymentPresent(),
+            eventFlow.handleCreateAccountForPaymentClicked(),
+            eventFlow.handleAccountClicked(),
             eventFlow.handleTemplateClicked(),
             eventFlow.handleRecentChecklistClicked(),
             eventFlow.handleRecentChecklistInTemplateClicked(),
@@ -69,7 +86,8 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleEditTemplateClicked(),
             eventFlow.handleHistoryClicked(),
             eventFlow.handleGetProClicked(),
-            eventFlow.handleAboutClicked()
+            eventFlow.handleAboutClicked(),
+            eventFlow.handleRefreshCatalog(),
         ).catch {
             FirebaseCrashlytics.getInstance().recordException(it)
         }
@@ -77,7 +95,7 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.LoadChecklistCatalog>()
-            .flatMapLatest {
+            .flatMapMerge {
                 val templatesLoading = getChecklistTemplatesUseCase.getChecklistTemplates()
                     .map {
                         ChecklistCatalogLoadingState.Success(it)
@@ -98,10 +116,42 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
     }
 
+    private fun Flow<ChecklistCatalogEvent>.handleRefreshCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.PulledToRefresh>()
+            .flatMapLatest {
+                flow {
+                    emit(state.first().copy(isRefreshing = true) to null)
+                    synchronizeDataUseCase.synchronizeData()
+                    emit(state.first().copy(isRefreshing = false) to null)
+                }
+            }
+    }
+
     private fun Flow<ChecklistCatalogEvent>.handleGoToOnboarding(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.GoToOnboarding>()
-            .mapLatest {
+            .map {
                 state.first() to ChecklistCatalogEffect.NavigateToOnboarding()
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleUnassignedPaymentPresent(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.UnassignedPaymentPresent>()
+            .map {
+                state.first() to ChecklistCatalogEffect.ShowUnassignedPaymentDialog()
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleCreateAccountForPaymentClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.CreateAccountForPaymentClicked>()
+            .mapLatest {
+                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen()
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleAccountClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.AccountClicked>()
+            .mapLatest {
+                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen()
             }
     }
 
@@ -112,7 +162,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
             .withSuccessState()
             .mapLatest { (_, event) ->
-                val user = getUserUseCase.getUser().first()
+                val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (canAddChecklistToTemplate(user, event.template)) {
                     ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
                 } else {
@@ -159,7 +209,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
             .withSuccessState()
             .mapLatest { (state, _) ->
-                val user = getUserUseCase.getUser().first()
+                val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (canAddTemplate(user, state.checklistTemplates)) {
                     ChecklistCatalogEffect.NavigateToNewTemplate()
                 } else {

@@ -29,3 +29,4 @@ include ":notifications"
 include ':payments'
 include ':about'
 include ':onboarding'
+include ':account'

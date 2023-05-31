@@ -7,12 +7,14 @@ import androidx.room.TypeConverters
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
+import dev.szymonchaber.checkstory.data.database.model.command.CommandEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 
 @Database(
@@ -21,14 +23,16 @@ import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
         TemplateCheckboxEntity::class,
         ChecklistEntity::class,
         CheckboxEntity::class,
-        ReminderEntity::class
+        ReminderEntity::class,
+        CommandEntity::class
     ],
-    version = 5,
+    version = 7,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 6, to = 7),
     ]
 )
 @TypeConverters(value = [Converters::class])
@@ -43,4 +47,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val checkboxDao: CheckboxDao
 
     abstract val reminderDao: ReminderDao
+
+    abstract val commandDao: CommandDao
 }

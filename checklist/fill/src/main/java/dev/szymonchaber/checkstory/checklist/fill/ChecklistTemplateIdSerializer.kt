@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.checklist.fill
 import com.ramcosta.composedestinations.navargs.DestinationsNavTypeSerializer
 import com.ramcosta.composedestinations.navargs.NavTypeSerializer
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import java.util.*
 
 @NavTypeSerializer
 class ChecklistTemplateIdSerializer : DestinationsNavTypeSerializer<ChecklistTemplateId> {
@@ -12,6 +13,6 @@ class ChecklistTemplateIdSerializer : DestinationsNavTypeSerializer<ChecklistTem
     }
 
     override fun fromRouteString(routeStr: String): ChecklistTemplateId {
-        return ChecklistTemplateId(routeStr.toLong())
+        return ChecklistTemplateId(UUID.fromString(routeStr))
     }
 }

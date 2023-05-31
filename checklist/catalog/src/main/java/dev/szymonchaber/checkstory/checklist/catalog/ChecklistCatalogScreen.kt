@@ -10,17 +10,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -86,6 +91,11 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
 //                        }) {
 //                            Text(text = "Debug menu")
 //                        }
+                        DropdownMenuItem(onClick = {
+                            viewModel.onEvent(ChecklistCatalogEvent.AccountClicked)
+                        }) {
+                            Text(text = "Account")
+                        }
                     }
                 }
             )
@@ -109,6 +119,7 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     )
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ChecklistCatalogView(
     viewModel: ChecklistCatalogViewModel,
@@ -117,15 +128,24 @@ private fun ChecklistCatalogView(
     val state by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
-    val context = LocalContext.current
+
+    var showUnassignedPaymentDialog by remember { mutableStateOf(false) }
+    if (showUnassignedPaymentDialog) {
+        UnassignedPaymentDialog(onDismiss = { showUnassignedPaymentDialog = false }) {
+            viewModel.onEvent(ChecklistCatalogEvent.CreateAccountForPaymentClicked)
+            showUnassignedPaymentDialog = false
+        }
+    }
     LaunchedEffect(effect) {
         when (val value = effect) {
             is ChecklistCatalogEffect.NavigateToOnboarding -> {
                 navigator.navigate(Routes.onboardingScreen())
             }
+
             is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
                 navigator.navigate(Routes.newChecklistScreen(value.basedOn))
             }
+
             is ChecklistCatalogEffect.NavigateToChecklist -> {
                 navigator.navigate(Routes.editChecklistScreen(value.checklistId))
             }
@@ -135,28 +155,48 @@ private fun ChecklistCatalogView(
             is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
                 navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
             }
+
             is ChecklistCatalogEffect.NavigateToNewTemplate -> {
                 navigator.navigate(Routes.newChecklistTemplateScreen())
             }
+
             is ChecklistCatalogEffect.NavigateToPaymentScreen -> {
                 navigator.navigate(Routes.paymentScreen())
             }
+
             is ChecklistCatalogEffect.NavigateToAboutScreen -> {
                 navigator.navigate(Routes.aboutScreen())
             }
+
+            is ChecklistCatalogEffect.ShowUnassignedPaymentDialog -> {
+                showUnassignedPaymentDialog = true
+            }
+
+            is ChecklistCatalogEffect.NavigateToAccountScreen -> {
+                navigator.navigate(Routes.accountScreen())
+            }
+
             null -> Unit
         }
     }
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        item {
-            RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
+
+    val pullRefreshState = rememberPullRefreshState(state.isRefreshing, {
+        viewModel.onEvent(ChecklistCatalogEvent.PulledToRefresh)
+    })
+
+    Box(Modifier.pullRefresh(pullRefreshState)) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
+            }
+            checklistTemplates(state, viewModel)
         }
-        checklistTemplates(state, viewModel)
+        PullRefreshIndicator(state.isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
     }
 }
 
@@ -205,4 +245,30 @@ fun NoTemplatesView() {
             text = stringResource(id = R.string.templates_empty)
         )
     }
+}
+
+@Composable
+fun UnassignedPaymentDialog(
+    onDismiss: () -> Unit,
+    onConfirmClicked: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Cloud synchronization is now available for PRO users!")
+        },
+        text = {
+            Text("Create an account to keep your checklists backed up")
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirmClicked) {
+                Text("Sign in")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Not now")
+            }
+        }
+    )
 }

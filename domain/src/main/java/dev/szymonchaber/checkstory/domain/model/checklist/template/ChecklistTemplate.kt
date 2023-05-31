@@ -11,11 +11,35 @@ data class ChecklistTemplate(
     val items: List<TemplateCheckbox>,
     val createdAt: LocalDateTime,
     val checklists: List<Checklist>,
-    val reminders: List<Reminder>
+    val reminders: List<Reminder>,
+    val isRemoved: Boolean = false
 ) {
 
-    val isStored: Boolean
-        get() = id.id != 0L
+    val flattenedItems: List<TemplateCheckbox>
+        get() {
+            return items.flatMap {
+                flatten(it)
+            }
+        }
+
+    private fun flatten(checkbox: TemplateCheckbox): List<TemplateCheckbox> {
+        return listOf(checkbox) + checkbox.children.flatMap { flatten(it) }
+    }
+
+    companion object {
+
+        fun empty(id: ChecklistTemplateId, createdAt: LocalDateTime = LocalDateTime.now()): ChecklistTemplate {
+            return ChecklistTemplate(
+                id = id,
+                title = "",
+                description = "",
+                items = listOf(),
+                createdAt = createdAt,
+                checklists = listOf(),
+                reminders = listOf()
+            )
+        }
+    }
 }
 
 data class TemplateCheckbox(
@@ -23,5 +47,6 @@ data class TemplateCheckbox(
     val parentId: TemplateCheckboxId?,
     val title: String,
     val children: List<TemplateCheckbox>,
-    val sortPosition: Long
+    val sortPosition: Long,
+    val templateId: ChecklistTemplateId
 )

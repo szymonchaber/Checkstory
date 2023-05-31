@@ -5,18 +5,21 @@ import android.app.Application
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.google.android.gms.tasks.OnCompleteListener
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.common.LogStorage
-import dev.szymonchaber.checkstory.domain.usecase.IsProUserUseCase
-import dev.szymonchaber.checkstory.domain.usecase.UpdateChecklistTemplateUseCase
+import dev.szymonchaber.checkstory.data.synchronization.SynchronizationWorker
+import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
 import dev.szymonchaber.checkstory.notifications.ScheduleTodayRemindersReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.time.Instant
@@ -24,23 +27,27 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import javax.inject.Inject
 
-
 @HiltAndroidApp
-class App : Application() {
+class App : Application(), Configuration.Provider {
+
+    @Inject
+    lateinit var workerFactory: HiltWorkerFactory
 
     @Inject
     lateinit var reminderScheduler: ReminderScheduler
 
     @Inject
-    lateinit var updateChecklistTemplateUseCase: UpdateChecklistTemplateUseCase
-
-    @Inject
-    lateinit var isProUserUseCase: IsProUserUseCase
+    lateinit var getCurrentUserUseCase: GetCurrentUserUseCase
 
     @Inject
     lateinit var logStorage: LogStorage
 
     private val alarmManager by lazy { getSystemService(Context.ALARM_SERVICE) as AlarmManager }
+
+    override fun getWorkManagerConfiguration() =
+        Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
@@ -51,13 +58,24 @@ class App : Application() {
         }
         setPaymentTierProperty()
         runReminderSchedulerDaily()
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Timber.w("Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
+        synchronizeDataPeriodically()
+        fetchFirebaseToken()
+    }
+
+    private fun fetchFirebaseToken() {
+        GlobalScope.launch {
+            try {
+                Timber.d("Firebase messaging token: ${FirebaseMessaging.getInstance().token.await()}")
+            } catch (exception: Exception) {
+                Timber.e("Fetching FCM registration token failed", exception)
             }
-//            Timber.d("Token: ${task.result}")
-        })
+        }
+    }
+
+    private fun synchronizeDataPeriodically() {
+        GlobalScope.launch {
+            SynchronizationWorker.scheduleRepeating(WorkManager.getInstance(this@App))
+        }
     }
 
     private fun plantProductionDebugTree() {
@@ -89,7 +107,11 @@ class App : Application() {
     private fun setPaymentTierProperty() {
         GlobalScope.launch {
             withContext(Dispatchers.IO) {
-                val tier = if (isProUserUseCase.isProUser()) SUBSCRIPTION_TIER_PRO else SUBSCRIPTION_TIER_FREE
+                val tier = if (getCurrentUserUseCase.getCurrentUser().isPaidUser) {
+                    SUBSCRIPTION_TIER_PRO
+                } else {
+                    SUBSCRIPTION_TIER_FREE
+                }
                 FirebaseAnalytics.getInstance(this@App).setUserProperty(SUBSCRIPTION_TIER, tier)
             }
         }

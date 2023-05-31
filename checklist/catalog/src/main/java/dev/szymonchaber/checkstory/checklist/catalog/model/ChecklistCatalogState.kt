@@ -4,12 +4,17 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 
 data class ChecklistCatalogState(
     val templatesLoadingState: ChecklistCatalogLoadingState,
-    val recentChecklistsLoadingState: RecentChecklistsLoadingState
+    val recentChecklistsLoadingState: RecentChecklistsLoadingState,
+    val isRefreshing: Boolean
 ) {
 
     companion object {
 
-        val initial = ChecklistCatalogState(ChecklistCatalogLoadingState.Loading, RecentChecklistsLoadingState.Loading)
+        val initial = ChecklistCatalogState(
+            templatesLoadingState = ChecklistCatalogLoadingState.Loading,
+            recentChecklistsLoadingState = RecentChecklistsLoadingState.Loading,
+            isRefreshing = false
+        )
     }
 }
 

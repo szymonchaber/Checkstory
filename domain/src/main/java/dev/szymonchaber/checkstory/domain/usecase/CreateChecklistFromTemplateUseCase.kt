@@ -9,9 +9,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemp
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDateTime
-import java.util.concurrent.atomic.AtomicLong
+import java.util.*
 import javax.inject.Inject
 
 class CreateChecklistFromTemplateUseCase @Inject constructor(
@@ -19,22 +20,24 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
 ) {
 
     fun createChecklistFromTemplate(checklistTemplateId: ChecklistTemplateId): Flow<Checklist> {
-        return checklistTemplateRepository.get(checklistTemplateId)
+        return flow {
+            emit(checklistTemplateRepository.get(checklistTemplateId)!!) // TODO handle when this fails
+        }
             .map { basedOn ->
                 createChecklist(basedOn)
             }
     }
 
     private fun createChecklist(basedOn: ChecklistTemplate): Checklist {
-        val temporaryIdGenerator = AtomicLong(0)
         return with(basedOn) {
+            val checklistId = ChecklistId.new()
             Checklist(
-                ChecklistId(0),
+                checklistId,
                 basedOn.id,
                 title,
                 description,
                 items.map {
-                    toCheckbox(it, temporaryIdGenerator)
+                    toCheckbox(it, checklistId)
                 },
                 "",
                 LocalDateTime.now()
@@ -42,15 +45,20 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
         }
     }
 
-    private fun toCheckbox(basedOn: TemplateCheckbox, idGenerator: AtomicLong): Checkbox {
+    private fun toCheckbox(
+        basedOn: TemplateCheckbox,
+        checklistId: ChecklistId,
+        parentId: CheckboxId? = null
+    ): Checkbox {
+        val id = CheckboxId(UUID.randomUUID())
         return Checkbox(
-            CheckboxId(idGenerator.getAndIncrement()),
-            null,
-            ChecklistId(0),
-            basedOn.title,
-            false,
-            basedOn.children.map { child ->
-                toCheckbox(child, idGenerator)
+            id,
+            parentId = parentId,
+            checklistId = checklistId,
+            title = basedOn.title,
+            isChecked = false,
+            children = basedOn.children.map { child ->
+                toCheckbox(child, checklistId, id)
             }
         )
     }
