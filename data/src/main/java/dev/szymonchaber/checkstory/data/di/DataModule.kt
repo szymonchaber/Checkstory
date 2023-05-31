@@ -13,12 +13,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.szymonchaber.checkstory.data.api.payment.UserPaymentInteractorImpl
 import dev.szymonchaber.checkstory.data.interactor.AuthInteractorImpl
 import dev.szymonchaber.checkstory.data.repository.*
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizerImpl
 import dev.szymonchaber.checkstory.domain.interactor.AuthInteractor
-import dev.szymonchaber.checkstory.domain.interactor.UserPaymentInteractor
 import dev.szymonchaber.checkstory.domain.repository.*
 import javax.inject.Named
 import javax.inject.Singleton
@@ -47,9 +45,6 @@ internal interface DataModule {
 
     @Binds
     fun bindUserRepository(userRepository: UserRepositoryImpl): UserRepository
-
-    @Binds
-    fun bindUserPaymentInteractor(userPaymentInteractorImpl: UserPaymentInteractorImpl): UserPaymentInteractor
 
     companion object {
 

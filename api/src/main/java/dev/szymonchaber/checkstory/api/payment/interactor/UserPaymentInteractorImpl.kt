@@ -1,6 +1,7 @@
-package dev.szymonchaber.checkstory.data.api.payment
+package dev.szymonchaber.checkstory.api.payment.interactor
 
 import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
+import dev.szymonchaber.checkstory.api.payment.model.AssignPurchaseTokenPayload
 import dev.szymonchaber.checkstory.domain.interactor.AssignPaymentError
 import dev.szymonchaber.checkstory.domain.interactor.UserPaymentInteractor
 import dev.szymonchaber.checkstory.domain.model.Result
@@ -9,7 +10,6 @@ import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
-import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
 internal class UserPaymentInteractorImpl @Inject constructor(private val client: ConfiguredHttpClient) :
@@ -32,6 +32,3 @@ internal class UserPaymentInteractorImpl @Inject constructor(private val client:
         }
     }
 }
-
-@Serializable
-internal data class AssignPurchaseTokenPayload(val token: String)

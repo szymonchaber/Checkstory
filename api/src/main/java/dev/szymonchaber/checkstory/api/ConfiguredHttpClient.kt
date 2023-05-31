@@ -2,10 +2,13 @@ package dev.szymonchaber.checkstory.api
 
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dev.szymonchaber.checkstory.api.payment.interactor.UserPaymentInteractorImpl
+import dev.szymonchaber.checkstory.domain.interactor.UserPaymentInteractor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.DefaultRequest
@@ -30,6 +33,9 @@ typealias ConfiguredHttpClient = HttpClient
 @Module
 @InstallIn(SingletonComponent::class)
 internal interface ApiModule {
+
+    @Binds
+    fun bindUserPaymentInteractor(userPaymentInteractorImpl: UserPaymentInteractorImpl): UserPaymentInteractor
 
     companion object {
 
