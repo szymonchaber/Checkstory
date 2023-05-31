@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.data.api.event.dto
+package dev.szymonchaber.checkstory.api.event.dto
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

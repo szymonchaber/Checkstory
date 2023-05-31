@@ -13,10 +13,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.szymonchaber.checkstory.data.interactor.AuthInteractorImpl
 import dev.szymonchaber.checkstory.data.repository.*
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizerImpl
-import dev.szymonchaber.checkstory.domain.interactor.AuthInteractor
 import dev.szymonchaber.checkstory.domain.repository.*
 import javax.inject.Named
 import javax.inject.Singleton
@@ -39,9 +37,6 @@ internal interface DataModule {
 
     @Binds
     fun bindSynchronizer(synchronizer: SynchronizerImpl): Synchronizer
-
-    @Binds
-    fun bindAuthInteractor(authInteractor: AuthInteractorImpl): AuthInteractor
 
     @Binds
     fun bindUserRepository(userRepository: UserRepositoryImpl): UserRepository

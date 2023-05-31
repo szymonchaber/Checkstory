@@ -3,9 +3,9 @@ package dev.szymonchaber.checkstory.data.synchronization
 import androidx.work.WorkManager
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import dev.szymonchaber.checkstory.data.api.event.ChecklistsApi
-import dev.szymonchaber.checkstory.data.api.event.CommandsApi
-import dev.szymonchaber.checkstory.data.api.event.TemplatesApi
+import dev.szymonchaber.checkstory.api.event.ChecklistsApi
+import dev.szymonchaber.checkstory.api.event.CommandsApi
+import dev.szymonchaber.checkstory.api.event.TemplatesApi
 import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.CommandRepository
 import dev.szymonchaber.checkstory.domain.model.DomainCommand

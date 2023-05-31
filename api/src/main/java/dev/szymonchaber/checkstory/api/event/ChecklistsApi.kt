@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.data.api.event
+package dev.szymonchaber.checkstory.api.event
 
 import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
@@ -16,7 +16,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-internal class ChecklistsApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
+class ChecklistsApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
 
     suspend fun getChecklists(): List<Checklist> {
         return httpClient.get("checklists")

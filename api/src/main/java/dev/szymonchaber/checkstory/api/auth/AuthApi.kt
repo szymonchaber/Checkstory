@@ -1,7 +1,8 @@
-package dev.szymonchaber.checkstory.data.api.auth
+package dev.szymonchaber.checkstory.api.auth
 
 import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
-import dev.szymonchaber.checkstory.data.api.auth.dto.ApiUser
+import dev.szymonchaber.checkstory.api.auth.dto.ApiUser
+import dev.szymonchaber.checkstory.api.auth.dto.RegisterPayload
 import dev.szymonchaber.checkstory.domain.model.Result
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.usecase.LoginError
@@ -10,10 +11,9 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-internal class AuthApi @Inject constructor(private val client: ConfiguredHttpClient) {
+class AuthApi @Inject constructor(private val client: ConfiguredHttpClient) {
 
     suspend fun login(): Result<LoginError, User> {
         return try {
@@ -43,6 +43,3 @@ internal class AuthApi @Inject constructor(private val client: ConfiguredHttpCli
         }
     }
 }
-
-@Serializable
-internal class RegisterPayload

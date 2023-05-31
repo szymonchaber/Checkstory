@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.data.api.event
+package dev.szymonchaber.checkstory.api.event
 
 import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
@@ -21,7 +21,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-internal class TemplatesApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
+class TemplatesApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
 
     suspend fun getTemplates(): List<ChecklistTemplate> {
         return httpClient.get("templates")

@@ -1,6 +1,5 @@
-package dev.szymonchaber.checkstory.data.interactor
+package dev.szymonchaber.checkstory.api.auth
 
-import dev.szymonchaber.checkstory.data.api.auth.AuthApi
 import dev.szymonchaber.checkstory.domain.interactor.AuthInteractor
 import dev.szymonchaber.checkstory.domain.model.Result
 import dev.szymonchaber.checkstory.domain.model.User
