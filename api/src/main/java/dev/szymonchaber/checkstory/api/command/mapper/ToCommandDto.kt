@@ -1,32 +1,15 @@
 package dev.szymonchaber.checkstory.api.command.mapper
 
-import dev.szymonchaber.checkstory.api.command.dto.AddOrUpdateTemplateReminderApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.AddTemplateTaskApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.ChangeTaskCheckedApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.ChecklistApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.CreateChecklistApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.CreateTemplateApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.DeleteChecklistApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.DeleteTemplateApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.DeleteTemplateReminderApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.DeleteTemplateTaskApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.EditChecklistNotesApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.EditTemplateDescriptionApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.EditTemplateTitleApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.MoveTemplateTaskApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.RenameTemplateTaskApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.TaskDto
+import dev.szymonchaber.checkstory.api.command.dto.ApiChecklistCommandTask
+import dev.szymonchaber.checkstory.api.command.dto.ApiTemplateCommandReminder
 import dev.szymonchaber.checkstory.api.command.dto.TemplateApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.UpdateTasksPositionsApiCommand
-import dev.szymonchaber.checkstory.api.command.dto.toReminderDto
-import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 
 internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
     return when (this) {
         is TemplateDomainCommand.CreateNewTemplate -> {
-            CreateTemplateApiCommand(
+            TemplateApiCommand.CreateTemplateApiCommand(
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
@@ -34,7 +17,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.RenameTemplate -> {
-            EditTemplateTitleApiCommand(
+            TemplateApiCommand.EditTemplateTitleApiCommand(
                 templateId = templateId.id,
                 newTitle = newTitle,
                 commandId = commandId,
@@ -43,7 +26,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.ChangeTemplateDescription -> {
-            EditTemplateDescriptionApiCommand(
+            TemplateApiCommand.EditTemplateDescriptionApiCommand(
                 templateId = templateId.id,
                 newDescription = newDescription,
                 commandId = commandId,
@@ -52,7 +35,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.AddTemplateTask -> {
-            AddTemplateTaskApiCommand(
+            TemplateApiCommand.AddTemplateTaskApiCommand(
                 templateId = templateId.id,
                 taskId = taskId.id,
                 parentTaskId = parentTaskId?.id?.toString(),
@@ -62,7 +45,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.RenameTemplateTask -> {
-            RenameTemplateTaskApiCommand(
+            TemplateApiCommand.RenameTemplateTaskApiCommand(
                 templateId = templateId.id,
                 taskId = taskId.id,
                 newTitle = newTitle,
@@ -72,7 +55,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.DeleteTemplateTask -> {
-            DeleteTemplateTaskApiCommand(
+            TemplateApiCommand.DeleteTemplateTaskApiCommand(
                 taskId = taskId.id,
                 templateId = templateId.id,
                 commandId = commandId,
@@ -81,7 +64,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.UpdateCheckboxPositions -> {
-            UpdateTasksPositionsApiCommand(
+            TemplateApiCommand.UpdateTasksPositionsApiCommand(
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
@@ -90,7 +73,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.MoveTemplateTask -> {
-            MoveTemplateTaskApiCommand(
+            TemplateApiCommand.MoveTemplateTaskApiCommand(
                 templateId = templateId.id,
                 taskId = taskId.id,
                 newParentTaskId = newParentTaskId?.id,
@@ -100,16 +83,16 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.AddOrReplaceTemplateReminder -> {
-            AddOrUpdateTemplateReminderApiCommand(
+            TemplateApiCommand.AddOrUpdateTemplateReminderApiCommand(
                 templateId = templateId.id,
-                reminder = reminder.toReminderDto(),
+                reminder = ApiTemplateCommandReminder.fromReminder(reminder),
                 commandId = commandId,
                 timestamp = timestamp,
             )
         }
 
         is TemplateDomainCommand.DeleteTemplateReminder -> {
-            DeleteTemplateReminderApiCommand(
+            TemplateApiCommand.DeleteTemplateReminderApiCommand(
                 templateId = templateId.id,
                 reminderId = reminderId.id,
                 commandId = commandId,
@@ -118,7 +101,7 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
         }
 
         is TemplateDomainCommand.DeleteTemplate -> {
-            DeleteTemplateApiCommand(
+            TemplateApiCommand.DeleteTemplateApiCommand(
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
@@ -127,45 +110,8 @@ internal fun TemplateDomainCommand.toCommandDto(): TemplateApiCommand {
     }
 }
 
-internal fun ChecklistDomainCommand.toCommandDto(): ChecklistApiCommand {
-    return when (this) {
-        is ChecklistDomainCommand.CreateChecklistCommand -> CreateChecklistApiCommand(
-            checklistId.id,
-            templateId.id,
-            title,
-            description,
-            tasks.map {
-                it.toTaskDto()
-            },
-            commandId,
-            timestamp,
-        )
-
-        is ChecklistDomainCommand.ChangeTaskCheckedCommand -> ChangeTaskCheckedApiCommand(
-            checklistId = checklistId.id,
-            taskId = taskId.id,
-            isChecked = isChecked,
-            commandId = commandId,
-            timestamp = timestamp,
-        )
-
-        is ChecklistDomainCommand.DeleteChecklistCommand -> DeleteChecklistApiCommand(
-            checklistId = checklistId.id,
-            commandId = commandId,
-            timestamp = timestamp,
-        )
-
-        is ChecklistDomainCommand.EditChecklistNotesCommand -> EditChecklistNotesApiCommand(
-            checklistId = checklistId.id,
-            newNotes = newNotes,
-            commandId = commandId,
-            timestamp = timestamp,
-        )
-    }
-}
-
-private fun Checkbox.toTaskDto(): TaskDto {
-    return TaskDto(
+internal fun Checkbox.toTaskDto(): ApiChecklistCommandTask {
+    return ApiChecklistCommandTask(
         id = id.id,
         checklistId = checklistId.id,
         title = title,

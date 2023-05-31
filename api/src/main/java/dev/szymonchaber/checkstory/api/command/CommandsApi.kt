@@ -2,6 +2,7 @@ package dev.szymonchaber.checkstory.api.command
 
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import dev.szymonchaber.checkstory.api.command.dto.ChecklistApiCommand
 import dev.szymonchaber.checkstory.api.command.mapper.toCommandDto
 import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
@@ -24,7 +25,7 @@ class CommandsApi @Inject constructor(private val httpClient: HttpClient) {
             it.toCommandDto()
         }
         val checklistCommandDtos = checklistCommands.map {
-            it.toCommandDto()
+            ChecklistApiCommand.fromCommand(it)
         }
 
         httpClient.post("commands") {
