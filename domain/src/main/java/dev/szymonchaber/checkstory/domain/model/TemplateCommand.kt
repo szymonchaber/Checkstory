@@ -27,7 +27,8 @@ sealed interface TemplateCommand : Command {
     data class CreateNewTemplate(
         override val templateId: ChecklistTemplateId,
         override val timestamp: Instant,
-        override val commandId: UUID = UUID.randomUUID()
+        override val commandId: UUID = UUID.randomUUID(),
+        val existingData: ChecklistTemplate? = null
     ) : TemplateCommand {
 
         override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {

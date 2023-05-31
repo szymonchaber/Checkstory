@@ -1,8 +1,6 @@
 package dev.szymonchaber.checkstory.data.synchronization
 
 import androidx.work.WorkManager
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dev.szymonchaber.checkstory.api.checklist.ChecklistsApi
 import dev.szymonchaber.checkstory.api.command.CommandsApi
 import dev.szymonchaber.checkstory.api.template.TemplatesApi
@@ -12,6 +10,7 @@ import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
+import dev.szymonchaber.checkstory.domain.repository.UserRepository
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import javax.inject.Inject
@@ -25,7 +24,8 @@ class SynchronizerImpl @Inject internal constructor(
     private val templatesApi: TemplatesApi,
     private val checklistsApi: ChecklistsApi,
     private val checklistRepository: ChecklistRepositoryImpl,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val userRepository: UserRepository
 ) : Synchronizer {
 
     override suspend fun synchronizeCommands(commands: List<Command>) {
@@ -46,7 +46,9 @@ class SynchronizerImpl @Inject internal constructor(
     }
 
     suspend fun performSynchronization(): SynchronizationResult {
-        if (Firebase.auth.currentUser == null) {
+        val currentUser = userRepository.getCurrentUser()
+        val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
+        if (!isLoggedInPayingUser) {
             return SynchronizationResult.Success
         }
         return try {

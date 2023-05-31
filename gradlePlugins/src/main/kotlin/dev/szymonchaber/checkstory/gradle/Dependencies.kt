@@ -116,7 +116,9 @@ class Dependencies : Plugin<Project> {
         val unitTest = listOf(
             "junit:junit:4.13.2",
             "com.google.truth:truth:1.1.3",
-            "androidx.room:room-testing:$roomVersion"
+            "androidx.room:room-testing:$roomVersion",
+            "org.mockito:mockito-core:5.3.1",
+            "org.mockito.kotlin:mockito-kotlin:4.1.0"
         )
 
         val uiTest = listOf(

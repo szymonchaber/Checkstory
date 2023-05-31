@@ -23,6 +23,7 @@ sealed interface ChecklistCommand : Command {
         val tasks: List<Checkbox>,
         override val commandId: UUID,
         override val timestamp: Instant,
+        val notes: String? = null
     ) : ChecklistCommand {
 
         override fun applyTo(checklist: Checklist): Checklist {

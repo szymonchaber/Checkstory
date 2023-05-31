@@ -12,6 +12,7 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.common.LogStorage
+import dev.szymonchaber.checkstory.data.migration.CommandModelMigration
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizationWorker
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
@@ -42,6 +43,9 @@ class App : Application(), Configuration.Provider {
     @Inject
     lateinit var logStorage: LogStorage
 
+    @Inject
+    lateinit var commandModelMigration: CommandModelMigration
+
     private val alarmManager by lazy { getSystemService(Context.ALARM_SERVICE) as AlarmManager }
 
     override fun getWorkManagerConfiguration() =
@@ -56,10 +60,17 @@ class App : Application(), Configuration.Provider {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
+//        migrateToCommandModel()
         setPaymentTierProperty()
         runReminderSchedulerDaily()
         synchronizeDataPeriodically()
         fetchFirebaseToken()
+    }
+
+    private fun migrateToCommandModel() {
+        GlobalScope.launch {
+            commandModelMigration.run()
+        }
     }
 
     private fun fetchFirebaseToken() {

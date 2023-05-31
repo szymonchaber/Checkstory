@@ -25,6 +25,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
         val tasks: List<TaskEntity>,
         override val commandId: DtoUUID,
         override val timestamp: Instant,
+        val notes: String?
     ) : ChecklistCommandEntity
 
     @Serializable
@@ -64,7 +65,8 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
                     description,
                     tasks.map(TaskEntity::toCheckbox),
                     commandId,
-                    timestamp
+                    timestamp,
+                    notes
                 )
             }
 
@@ -109,7 +111,8 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
                         description = description,
                         tasks = tasks.map { it.toTaskEntity() },
                         commandId = commandId,
-                        timestamp = timestamp
+                        timestamp = timestamp,
+                        notes = notes
                     )
 
                     is ChecklistCommand.EditChecklistNotesCommand -> EditChecklistNotesEntity(
