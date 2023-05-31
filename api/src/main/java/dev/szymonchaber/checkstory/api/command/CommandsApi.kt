@@ -1,8 +1,8 @@
-package dev.szymonchaber.checkstory.api.event
+package dev.szymonchaber.checkstory.api.command
 
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import dev.szymonchaber.checkstory.api.event.mapper.toCommandDto
+import dev.szymonchaber.checkstory.api.command.mapper.toCommandDto
 import dev.szymonchaber.checkstory.domain.model.ChecklistDomainCommand
 import dev.szymonchaber.checkstory.domain.model.DomainCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand

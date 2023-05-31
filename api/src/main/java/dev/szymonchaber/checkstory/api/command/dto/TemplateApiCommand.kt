@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.api.event.dto
+package dev.szymonchaber.checkstory.api.command.dto
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
@@ -12,115 +12,115 @@ import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-internal sealed interface TemplateCommandDto : CommandDto {
+internal sealed interface TemplateApiCommand : ApiCommand {
 
     val templateId: DtoUUID
 }
 
 @Serializable
 @SerialName("createTemplate")
-internal data class CreateTemplateCommandDto(
+internal data class CreateTemplateApiCommand(
     override val templateId: DtoUUID,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("editTemplateTitle")
-internal data class EditTemplateTitleCommandDto(
+internal data class EditTemplateTitleApiCommand(
     override val templateId: DtoUUID,
     val newTitle: String,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("editTemplateDescription")
-internal data class EditTemplateDescriptionCommandDto(
+internal data class EditTemplateDescriptionApiCommand(
     override val templateId: DtoUUID,
     val newDescription: String,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("addTemplateTask")
-internal data class AddTemplateTaskCommandDto(
+internal data class AddTemplateTaskApiCommand(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
     val parentTaskId: String?,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("renameTemplateTask")
-internal data class RenameTemplateTaskCommandDto(
+internal data class RenameTemplateTaskApiCommand(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
     val newTitle: String,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("deleteTemplateTask")
-internal data class DeleteTemplateTaskCommandDto(
+internal data class DeleteTemplateTaskApiCommand(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("updateTemplateTasksPositions")
-internal data class UpdateTasksPositionsCommandDto(
+internal data class UpdateTasksPositionsApiCommand(
     override val templateId: DtoUUID,
     val taskIdToLocalPosition: Map<DtoUUID, Long>,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("moveTemplateTask")
-internal data class MoveTemplateTaskCommandDto(
+internal data class MoveTemplateTaskApiCommand(
     override val templateId: DtoUUID,
     val taskId: DtoUUID,
     val newParentTaskId: DtoUUID?,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("addOrUpdateTemplateReminder")
-internal data class AddOrUpdateTemplateReminderCommandDto(
+internal data class AddOrUpdateTemplateReminderApiCommand(
     override val templateId: DtoUUID,
-    val reminder: ReminderDto,
+    val reminder: ApiTemplateCommandReminder,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("deleteTemplateReminder")
-internal data class DeleteTemplateReminderCommandDto(
+internal data class DeleteTemplateReminderApiCommand(
     override val templateId: DtoUUID,
     val reminderId: DtoUUID,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
 @Serializable
 @SerialName("deleteTemplate")
-internal data class DeleteTemplateCommandDto(
+internal data class DeleteTemplateApiCommand(
     override val templateId: DtoUUID,
     override val commandId: DtoUUID,
     override val timestamp: Instant
-) : TemplateCommandDto
+) : TemplateApiCommand
 
-internal fun Reminder.toReminderDto(): ReminderDto {
+internal fun Reminder.toReminderDto(): ApiTemplateCommandReminder {
     return when (this) {
         is Reminder.Exact -> {
-            ReminderDto.ExactDto(
+            ApiTemplateCommandReminder.Exact(
                 this.id.id,
                 this.forTemplate.id,
                 this.startDateTime.toKotlinLocalDateTime()
@@ -128,13 +128,13 @@ internal fun Reminder.toReminderDto(): ReminderDto {
         }
 
         is Reminder.Recurring -> {
-            ReminderDto.RecurringDto(
+            ApiTemplateCommandReminder.Recurring(
                 this.id.id, this.forTemplate.id, this.startDateTime.toKotlinLocalDateTime(),
                 when (val actualInterval = interval) {
-                    Interval.Daily -> IntervalDto.DailyDto
-                    is Interval.Monthly -> IntervalDto.MonthlyDto(actualInterval.dayOfMonth)
-                    is Interval.Weekly -> IntervalDto.WeeklyDto(actualInterval.dayOfWeek)
-                    is Interval.Yearly -> IntervalDto.YearlyDto(actualInterval.dayOfYear)
+                    Interval.Daily -> ApiTemplateCommandInterval.Daily
+                    is Interval.Monthly -> ApiTemplateCommandInterval.Monthly(actualInterval.dayOfMonth)
+                    is Interval.Weekly -> ApiTemplateCommandInterval.Weekly(actualInterval.dayOfWeek)
+                    is Interval.Yearly -> ApiTemplateCommandInterval.Yearly(actualInterval.dayOfYear)
                 }
             )
         }
@@ -142,7 +142,7 @@ internal fun Reminder.toReminderDto(): ReminderDto {
 }
 
 @Serializable
-internal sealed interface ReminderDto {
+internal sealed interface ApiTemplateCommandReminder {
 
     val id: DtoUUID
     val forTemplate: DtoUUID
@@ -150,38 +150,38 @@ internal sealed interface ReminderDto {
 
     @Serializable
     @SerialName("exact")
-    data class ExactDto(
+    data class Exact(
         override val id: DtoUUID,
         override val forTemplate: DtoUUID,
         override val startDateTime: LocalDateTime
-    ) : ReminderDto
+    ) : ApiTemplateCommandReminder
 
     @Serializable
     @SerialName("recurring")
-    data class RecurringDto(
+    data class Recurring(
         override val id: DtoUUID,
         override val forTemplate: DtoUUID,
         override val startDateTime: LocalDateTime,
-        val interval: IntervalDto
-    ) : ReminderDto
+        val interval: ApiTemplateCommandInterval
+    ) : ApiTemplateCommandReminder
 }
 
 @Serializable
-internal sealed interface IntervalDto {
+internal sealed interface ApiTemplateCommandInterval {
 
     @Serializable
     @SerialName("daily")
-    object DailyDto : IntervalDto
+    object Daily : ApiTemplateCommandInterval
 
     @Serializable
     @SerialName("weekly")
-    data class WeeklyDto(val dayOfWeek: DayOfWeek) : IntervalDto
+    data class Weekly(val dayOfWeek: DayOfWeek) : ApiTemplateCommandInterval
 
     @Serializable
     @SerialName("monthly")
-    data class MonthlyDto(val dayOfMonth: Int) : IntervalDto
+    data class Monthly(val dayOfMonth: Int) : ApiTemplateCommandInterval
 
     @Serializable
     @SerialName("yearly")
-    data class YearlyDto(val dayOfYear: Int) : IntervalDto
+    data class Yearly(val dayOfYear: Int) : ApiTemplateCommandInterval
 }

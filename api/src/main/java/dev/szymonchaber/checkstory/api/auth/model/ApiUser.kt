@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.api.auth.dto
+package dev.szymonchaber.checkstory.api.auth.model
 
 import dev.szymonchaber.checkstory.domain.model.Tier
 import dev.szymonchaber.checkstory.domain.model.User

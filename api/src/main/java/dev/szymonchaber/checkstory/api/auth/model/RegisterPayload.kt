@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.api.auth.dto
+package dev.szymonchaber.checkstory.api.auth.model
 
 import kotlinx.serialization.Serializable
 
