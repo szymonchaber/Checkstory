@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.data.api.event.dto
 
-import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
+import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

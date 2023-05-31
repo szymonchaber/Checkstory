@@ -13,7 +13,7 @@ plugins {
 
 android {
 
-    namespace = "dev.szymonchaber.checkstory.data"
+    namespace = "dev.szymonchaber.checkstory.api"
     ksp {
         arg("room.schemaLocation", "$projectDir/schemas")
     }
@@ -39,19 +39,12 @@ android {
 dependencies {
     implementation(project(":common"))
     implementation(project(":domain"))
-    implementation(project(":api"))
+    implementation("androidx.test:monitor:1.5.0")
 
     Dependencies.common.forEach(::implementation)
     Dependencies.ui.forEach(::implementation)
 
     kapt(Dependencies.hiltKapt)
-
-    Dependencies.room.forEach(::implementation)
-    ksp(Dependencies.roomKsp)
-
-    implementation(Dependencies.rrule)
-    implementation(Dependencies.dataStore)
-
 
     implementation(platform(Dependencies.firebasePlatform))
     implementation(Dependencies.crashlytics)
@@ -64,7 +57,6 @@ dependencies {
     implementation(Dependencies.hiltWork)
     kapt(Dependencies.hiltWorkKapt)
 
-    implementation("androidx.test:monitor:1.5.0")
     Dependencies.unitTest.forEach(::testImplementation)
     Dependencies.unitTest.forEach(::androidTestImplementation)
     Dependencies.uiTest.forEach(::androidTestImplementation)

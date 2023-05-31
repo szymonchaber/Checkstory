@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.data.database.model.command
 
+import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.data.api.event.dto.ReminderEntity
 import dev.szymonchaber.checkstory.data.api.event.dto.toReminder
 import dev.szymonchaber.checkstory.data.api.event.dto.toReminderEntity
-import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.TemplateDomainCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId

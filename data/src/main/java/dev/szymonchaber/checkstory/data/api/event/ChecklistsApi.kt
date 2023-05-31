@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.data.api.event
 
-import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.data.di.ConfiguredHttpClient
+import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
+import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist

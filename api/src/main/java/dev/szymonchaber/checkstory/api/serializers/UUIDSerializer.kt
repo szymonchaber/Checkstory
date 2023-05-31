@@ -1,7 +1,6 @@
-package dev.szymonchaber.checkstory.data.api.serializers
+package dev.szymonchaber.checkstory.api.serializers
 
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -20,5 +19,3 @@ object UUIDSerializer : KSerializer<UUID> {
         encoder.encodeString(value.toString())
     }
 }
-
-typealias DtoUUID = @Serializable(UUIDSerializer::class) UUID

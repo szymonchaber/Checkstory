@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.data.api.event.dto
 
-import dev.szymonchaber.checkstory.data.api.serializers.DtoUUID
+import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
