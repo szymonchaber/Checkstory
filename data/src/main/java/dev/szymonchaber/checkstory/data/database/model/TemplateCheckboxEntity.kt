@@ -3,9 +3,9 @@ package dev.szymonchaber.checkstory.data.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import java.util.*
 
 @Entity
@@ -19,10 +19,10 @@ data class TemplateCheckboxEntity(
     val sortPosition: Long
 ) {
 
-    fun toTemplateCheckbox(children: List<TemplateCheckbox> = emptyList()): TemplateCheckbox {
-        return TemplateCheckbox(
-            id = TemplateCheckboxId(checkboxId),
-            parentId = parentId?.let { TemplateCheckboxId(it) },
+    fun toTemplateTask(children: List<TemplateTask> = emptyList()): TemplateTask {
+        return TemplateTask(
+            id = TemplateTaskId(checkboxId),
+            parentId = parentId?.let { TemplateTaskId(it) },
             title = checkboxTitle,
             children = children,
             sortPosition = sortPosition,
@@ -32,8 +32,8 @@ data class TemplateCheckboxEntity(
 
     companion object {
 
-        fun fromDomainTemplateCheckbox(templateCheckbox: TemplateCheckbox): TemplateCheckboxEntity {
-            return with(templateCheckbox) {
+        fun fromDomainTemplateTask(templateTask: TemplateTask): TemplateCheckboxEntity {
+            return with(templateTask) {
                 TemplateCheckboxEntity(
                     checkboxId = id.id,
                     parentId = parentId?.id,

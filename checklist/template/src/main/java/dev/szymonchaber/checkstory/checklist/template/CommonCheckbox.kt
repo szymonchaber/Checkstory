@@ -17,14 +17,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
-import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateCheckbox
+import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateTask
 import dev.szymonchaber.checkstory.checklist.template.reoder.DropTarget
 import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 
 @Composable
 fun CommonCheckbox(
-    checkbox: ViewTemplateCheckbox,
+    checkbox: ViewTemplateTask,
     paddingStart: Dp,
     nestingLevel: Int,
     eventCollector: (EditTemplateEvent) -> Unit,
@@ -70,7 +70,7 @@ fun CommonCheckbox(
 
 @Composable
 private fun Receptacles(
-    forCheckbox: TemplateCheckboxId,
+    forCheckbox: TemplateTaskId,
     modifier: Modifier = Modifier,
     acceptChildren: Boolean,
     dropTargetOffset: Dp,

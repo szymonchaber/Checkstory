@@ -5,9 +5,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.LocalDateTime
@@ -17,29 +17,29 @@ internal object ChecklistTestUtils {
 
     fun createTemplate(): Template {
         val templateId = TemplateId.new()
-        val templateCheckboxId = TemplateCheckboxId(UUID.randomUUID())
-        val templateCheckboxId2 = TemplateCheckboxId(UUID.randomUUID())
+        val templateTaskId = TemplateTaskId(UUID.randomUUID())
+        val templateTaskId2 = TemplateTaskId(UUID.randomUUID())
         return Template(
             id = templateId,
             title = "Example template",
             description = "Example template description",
-            items = listOf(
-                TemplateCheckbox(
-                    id = templateCheckboxId,
+            tasks = listOf(
+                TemplateTask(
+                    id = templateTaskId,
                     parentId = null,
                     title = "Top task 0",
                     children = listOf(
-                        TemplateCheckbox(
-                            id = TemplateCheckboxId(UUID.randomUUID()),
-                            parentId = templateCheckboxId,
+                        TemplateTask(
+                            id = TemplateTaskId(UUID.randomUUID()),
+                            parentId = templateTaskId,
                             title = "CHILD_TASK_0",
                             children = listOf(),
                             sortPosition = 0,
                             templateId = templateId
                         ),
-                        TemplateCheckbox(
-                            id = TemplateCheckboxId(UUID.randomUUID()),
-                            parentId = templateCheckboxId,
+                        TemplateTask(
+                            id = TemplateTaskId(UUID.randomUUID()),
+                            parentId = templateTaskId,
                             title = "CHILD_TASK_1",
                             children = listOf(),
                             sortPosition = 1,
@@ -49,22 +49,22 @@ internal object ChecklistTestUtils {
                     sortPosition = 0,
                     templateId = templateId
                 ),
-                TemplateCheckbox(
-                    id = templateCheckboxId2,
+                TemplateTask(
+                    id = templateTaskId2,
                     parentId = null,
                     title = "Top task 1",
                     children = listOf(
-                        TemplateCheckbox(
-                            id = TemplateCheckboxId(UUID.randomUUID()),
-                            parentId = templateCheckboxId2,
+                        TemplateTask(
+                            id = TemplateTaskId(UUID.randomUUID()),
+                            parentId = templateTaskId2,
                             title = "CHILD_TASK_2",
                             children = listOf(),
                             sortPosition = 0,
                             templateId = templateId
                         ),
-                        TemplateCheckbox(
-                            id = TemplateCheckboxId(UUID.randomUUID()),
-                            parentId = templateCheckboxId2,
+                        TemplateTask(
+                            id = TemplateTaskId(UUID.randomUUID()),
+                            parentId = templateTaskId2,
                             title = "CHILD_TASK_3",
                             children = listOf(),
                             sortPosition = 1,

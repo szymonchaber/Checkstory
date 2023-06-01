@@ -94,8 +94,8 @@ import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 import java.time.Duration.*
@@ -219,7 +219,7 @@ val LocalRecentlyAddedUnconsumedItem = compositionLocalOf {
     RecentlyAddedUnconsumedItem()
 }
 
-val LocalIsReorderValidLookup = compositionLocalOf<(TemplateCheckboxId, TemplateCheckboxId) -> Boolean> {
+val LocalIsReorderValidLookup = compositionLocalOf<(TemplateTaskId, TemplateTaskId) -> Boolean> {
     { _, _ ->
         true
     }
@@ -227,7 +227,7 @@ val LocalIsReorderValidLookup = compositionLocalOf<(TemplateCheckboxId, Template
 
 class RecentlyAddedUnconsumedItem {
 
-    var item by mutableStateOf<TemplateCheckboxId?>(null)
+    var item by mutableStateOf<TemplateTaskId?>(null)
 }
 
 @Composable
@@ -331,7 +331,7 @@ fun EditTemplateView(
     LaunchedEffect(recentlyAddedItem.item) {
         recentlyAddedItem.item?.let { newItem ->
             val isNewItemNotVisible =
-                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key as? TemplateCheckboxId == newItem }
+                dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key as? TemplateTaskId == newItem }
             if (isNewItemNotVisible) {
                 dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.id == newItem } + 1)
             }

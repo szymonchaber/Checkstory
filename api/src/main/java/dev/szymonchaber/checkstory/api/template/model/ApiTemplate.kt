@@ -26,7 +26,7 @@ internal data class ApiTemplate(
             id = TemplateId(id),
             title = name,
             description = description,
-            items = tasks.map { it.toTask() },
+            tasks = tasks.map { it.toTask() },
             createdAt = createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
             checklists = listOf(),
             reminders = reminders.map { it.toReminder() },

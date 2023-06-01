@@ -40,9 +40,9 @@ import dev.szymonchaber.checkstory.checklist.catalog.recent.ChecklistsCarousel
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import java.time.LocalDateTime
 import java.util.*
 
@@ -221,8 +221,8 @@ fun TemplateViewPreview() {
             "Template",
             "Description",
             listOf(
-                TemplateCheckbox(
-                    TemplateCheckboxId(UUID.randomUUID()),
+                TemplateTask(
+                    TemplateTaskId(UUID.randomUUID()),
                     null,
                     "Checkbox 1",
                     listOf(),

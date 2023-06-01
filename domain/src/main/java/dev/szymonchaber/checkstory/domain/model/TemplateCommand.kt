@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.domain.model
 
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import kotlinx.datetime.Instant
@@ -64,24 +64,24 @@ sealed interface TemplateCommand : Command {
 
     class AddTemplateTask(
         override val templateId: TemplateId,
-        val taskId: TemplateCheckboxId,
-        val parentTaskId: TemplateCheckboxId?,
+        val taskId: TemplateTaskId,
+        val parentTaskId: TemplateTaskId?,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
         override fun applyTo(template: Template): Template {
             return if (parentTaskId != null) {
-                template.copy(items = template.items.map { it.plusChildCheckboxRecursive(parentTaskId, taskId) })
+                template.copy(tasks = template.tasks.map { it.plusChildCheckboxRecursive(parentTaskId, taskId) })
             } else {
                 template.copy(
-                    items = template.items.plus(
-                        TemplateCheckbox(
+                    tasks = template.tasks.plus(
+                        TemplateTask(
                             taskId,
                             null,
                             "",
                             listOf(),
-                            template.items.size.toLong(),
+                            template.tasks.size.toLong(),
                             templateId
                         )
                     )
@@ -89,15 +89,14 @@ sealed interface TemplateCommand : Command {
             }
         }
 
-
-        private fun TemplateCheckbox.plusChildCheckboxRecursive(
-            parentId: TemplateCheckboxId,
-            newCheckboxId: TemplateCheckboxId
-        ): TemplateCheckbox {
+        private fun TemplateTask.plusChildCheckboxRecursive(
+            parentId: TemplateTaskId,
+            newCheckboxId: TemplateTaskId
+        ): TemplateTask {
             return copy(
                 children = if (id == parentId) {
                     children.plus(
-                        TemplateCheckbox(
+                        TemplateTask(
                             id = newCheckboxId,
                             parentId = parentId,
                             title = "",
@@ -117,14 +116,14 @@ sealed interface TemplateCommand : Command {
 
     class RenameTemplateTask(
         override val templateId: TemplateId,
-        val taskId: TemplateCheckboxId,
+        val taskId: TemplateTaskId,
         val newTitle: String,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
         override fun applyTo(template: Template): Template {
-            return template.copy(items = template.items
+            return template.copy(tasks = template.tasks
                 .map {
                     it.withUpdatedTitleRecursive(taskId, newTitle)
                 })
@@ -132,10 +131,10 @@ sealed interface TemplateCommand : Command {
 
         companion object {
 
-            fun TemplateCheckbox.withUpdatedTitleRecursive(
-                idToUpdate: TemplateCheckboxId,
+            fun TemplateTask.withUpdatedTitleRecursive(
+                idToUpdate: TemplateTaskId,
                 newTitle: String,
-            ): TemplateCheckbox {
+            ): TemplateTask {
                 return if (id == idToUpdate) {
                     copy(title = newTitle)
                 } else {
@@ -147,18 +146,18 @@ sealed interface TemplateCommand : Command {
 
     class DeleteTemplateTask(
         override val templateId: TemplateId,
-        val taskId: TemplateCheckboxId,
+        val taskId: TemplateTaskId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
         override fun applyTo(template: Template): Template {
-            return template.copy(items = template.items.withExtractedTask(taskId).first)
+            return template.copy(tasks = template.tasks.withExtractedTask(taskId).first)
         }
     }
 
     data class UpdateCheckboxPositions(
-        val localPositions: Map<TemplateCheckboxId, Long>,
+        val localPositions: Map<TemplateTaskId, Long>,
         override val timestamp: Instant,
         override val commandId: UUID,
         override val templateId: TemplateId
@@ -166,42 +165,42 @@ sealed interface TemplateCommand : Command {
 
         override fun applyTo(template: Template): Template {
             return template.copy(
-                items = template.items.map(::updatePosition).sortedBy(TemplateCheckbox::sortPosition)
+                tasks = template.tasks.map(::updatePosition).sortedBy(TemplateTask::sortPosition)
             )
         }
 
-        private fun updatePosition(templateCheckbox: TemplateCheckbox): TemplateCheckbox {
-            val newPosition = localPositions[templateCheckbox.id] ?: templateCheckbox.sortPosition
-            return templateCheckbox.copy(
+        private fun updatePosition(templateTask: TemplateTask): TemplateTask {
+            val newPosition = localPositions[templateTask.id] ?: templateTask.sortPosition
+            return templateTask.copy(
                 sortPosition = newPosition,
-                children = templateCheckbox.children.map(::updatePosition).sortedBy(TemplateCheckbox::sortPosition)
+                children = templateTask.children.map(::updatePosition).sortedBy(TemplateTask::sortPosition)
             )
         }
     }
 
     data class MoveTemplateTask(
-        val taskId: TemplateCheckboxId,
-        val newParentTaskId: TemplateCheckboxId?,
+        val taskId: TemplateTaskId,
+        val newParentTaskId: TemplateTaskId?,
         override val timestamp: Instant,
         override val commandId: UUID,
         override val templateId: TemplateId
     ) : TemplateCommand {
 
         override fun applyTo(template: Template): Template {
-            val (filteredTasks, movedItem) = template.items.withExtractedTask(taskId)
+            val (filteredTasks, movedItem) = template.tasks.withExtractedTask(taskId)
             val movedItemWithTargetParent = movedItem.copy(parentId = newParentTaskId)
             val items = if (newParentTaskId == null) {
                 filteredTasks.plus(movedItemWithTargetParent)
             } else {
                 filteredTasks.map { it.withMovedChildRecursive(newParentTaskId, movedItemWithTargetParent) }
             }
-            return template.copy(items = items)
+            return template.copy(tasks = items)
         }
 
-        private fun TemplateCheckbox.withMovedChildRecursive(
-            parentTask: TemplateCheckboxId,
-            childTask: TemplateCheckbox
-        ): TemplateCheckbox {
+        private fun TemplateTask.withMovedChildRecursive(
+            parentTask: TemplateTaskId,
+            childTask: TemplateTask
+        ): TemplateTask {
             val updatedChildren = if (id == parentTask) {
                 children.plus(childTask)
             } else {
@@ -258,9 +257,9 @@ sealed interface TemplateCommand : Command {
     }
 }
 
-private fun List<TemplateCheckbox>.withExtractedTask(id: TemplateCheckboxId): Pair<List<TemplateCheckbox>, TemplateCheckbox> {
-    var movedItem: TemplateCheckbox? = null
-    val onItemFoundAndRemoved: (TemplateCheckbox) -> Unit = {
+private fun List<TemplateTask>.withExtractedTask(id: TemplateTaskId): Pair<List<TemplateTask>, TemplateTask> {
+    var movedItem: TemplateTask? = null
+    val onItemFoundAndRemoved: (TemplateTask) -> Unit = {
         movedItem = it
     }
     val withExtractedElement = this
@@ -278,10 +277,10 @@ private fun List<TemplateCheckbox>.withExtractedTask(id: TemplateCheckboxId): Pa
     return withExtractedElement to movedItem!!
 }
 
-private fun TemplateCheckbox.withoutChild(
-    childTaskId: TemplateCheckboxId,
-    onItemFoundAndRemoved: (TemplateCheckbox) -> Unit
-): TemplateCheckbox {
+private fun TemplateTask.withoutChild(
+    childTaskId: TemplateTaskId,
+    onItemFoundAndRemoved: (TemplateTask) -> Unit
+): TemplateTask {
     val updatedChildren = children
         .firstOrNull {
             it.id == childTaskId

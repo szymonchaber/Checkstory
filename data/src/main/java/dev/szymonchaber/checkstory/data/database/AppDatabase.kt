@@ -8,8 +8,8 @@ import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
-import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.TemplateTaskDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
@@ -40,7 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract val templateDao: TemplateDao
 
-    abstract val templateCheckboxDao: TemplateCheckboxDao
+    abstract val templateTaskDao: TemplateTaskDao
 
     abstract val checklistDao: ChecklistDao
 

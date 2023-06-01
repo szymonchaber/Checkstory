@@ -14,15 +14,15 @@ import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.DropTargetInfo
 import dev.szymonchaber.checkstory.checklist.template.LocalIsReorderValidLookup
 import dev.szymonchaber.checkstory.common.extensions.let
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 
 @Composable
 fun DropTarget(
     modifier: Modifier,
-    onDataDropped: (TemplateCheckboxId) -> Unit,
+    onDataDropped: (TemplateTaskId) -> Unit,
     content: @Composable (BoxScope.() -> Unit) = {},
     placeTargetLineOnTop: Boolean = false,
-    id: TemplateCheckboxId? = null,
+    id: TemplateTaskId? = null,
     dropTargetOffset: Dp = 0.dp
 ) {
     val dragInfo = LocalDragDropState.current
@@ -31,7 +31,7 @@ fun DropTarget(
     val density = LocalDensity.current
     val isReorderValid = LocalIsReorderValidLookup.current
 
-    fun canReceive(subject: TemplateCheckboxId?): Boolean {
+    fun canReceive(subject: TemplateTaskId?): Boolean {
         if (id == null) {
             return true
         }

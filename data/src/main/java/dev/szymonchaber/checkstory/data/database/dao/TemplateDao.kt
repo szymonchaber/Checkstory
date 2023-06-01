@@ -33,7 +33,7 @@ interface TemplateDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(
         templates: List<ChecklistTemplateEntity>,
-        templateCheckboxes: List<TemplateCheckboxEntity>,
+        templateTasks: List<TemplateCheckboxEntity>,
         reminders: List<ReminderEntity>
     )
 
@@ -44,7 +44,7 @@ interface TemplateDao {
     suspend fun deleteAllTemplates()
 
     @Query("DELETE from templateCheckboxEntity")
-    suspend fun deleteAllTemplateCheckboxes()
+    suspend fun deleteAllTemplateTasks()
 
     @Query("DELETE from reminderEntity")
     suspend fun deleteAllReminders()
@@ -52,17 +52,17 @@ interface TemplateDao {
     @Transaction
     suspend fun replaceData(
         templates: List<ChecklistTemplateEntity>,
-        templateCheckboxes: List<TemplateCheckboxEntity>,
+        templateTasks: List<TemplateCheckboxEntity>,
         reminders: List<ReminderEntity>
     ) {
         deleteAll()
-        insertAll(templates, templateCheckboxes, reminders)
+        insertAll(templates, templateTasks, reminders)
     }
 
     @Transaction
     suspend fun deleteAll() {
         deleteAllTemplates()
-        deleteAllTemplateCheckboxes()
+        deleteAllTemplateTasks()
         deleteAllReminders()
     }
 }

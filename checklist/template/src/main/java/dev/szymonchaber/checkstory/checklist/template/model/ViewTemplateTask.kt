@@ -1,32 +1,32 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 
-sealed interface ViewTemplateCheckbox : java.io.Serializable {
+sealed interface ViewTemplateTask : java.io.Serializable {
 
-    val id: TemplateCheckboxId
-    val parentId: TemplateCheckboxId?
+    val id: TemplateTaskId
+    val parentId: TemplateTaskId?
     val title: String
-    val children: List<ViewTemplateCheckbox>
+    val children: List<ViewTemplateTask>
 
     val placeholderTitle: String?
 
     fun toDomainModel(
-        parentId: TemplateCheckboxId? = null,
+        parentId: TemplateTaskId? = null,
         position: Int,
         templateId: TemplateId
-    ): TemplateCheckbox
+    ): TemplateTask
 
-    fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
+    fun minusChildCheckboxRecursive(checkbox: ViewTemplateTask): ViewTemplateTask {
         return withoutChild(checkbox.id) {}
     }
 
     fun withoutChild(
-        childTaskId: TemplateCheckboxId,
-        onItemFoundAndRemoved: (ViewTemplateCheckbox) -> Unit
-    ): ViewTemplateCheckbox {
+        childTaskId: TemplateTaskId,
+        onItemFoundAndRemoved: (ViewTemplateTask) -> Unit
+    ): ViewTemplateTask {
         val updatedChildren = children
             .firstOrNull {
                 it.id == childTaskId
@@ -42,11 +42,11 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     }
 
     fun withMovedChildRecursive(
-        parentTask: TemplateCheckboxId,
-        childTask: ViewTemplateCheckbox
-    ): ViewTemplateCheckbox {
+        parentTask: TemplateTaskId,
+        childTask: ViewTemplateTask
+    ): ViewTemplateTask {
         val updatedChildren = if (id == parentTask) {
-            children.withCheckboxAtIndex(childTask.updateParentId(id), 0)
+            children.withTaskAtIndex(childTask.updateParentId(id), 0)
         } else {
             children.map { it.withMovedChildRecursive(parentTask, childTask) }
         }
@@ -54,13 +54,13 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     }
 
     fun withMovedSiblingRecursive(
-        siblingViewKey: TemplateCheckboxId,
-        movedItem: ViewTemplateCheckbox
-    ): ViewTemplateCheckbox {
+        siblingViewKey: TemplateTaskId,
+        movedItem: ViewTemplateTask
+    ): ViewTemplateTask {
         val siblingIndex = children.indexOfFirst { it.id == siblingViewKey }
         val isSiblingOnThisLevel = siblingIndex > -1
         val updatedChildren = if (isSiblingOnThisLevel) {
-            children.withCheckboxAtIndex(movedItem.updateParentId(this.id), siblingIndex + 1)
+            children.withTaskAtIndex(movedItem.updateParentId(this.id), siblingIndex + 1)
         } else {
             children.map {
                 it.withMovedSiblingRecursive(siblingViewKey, movedItem)
@@ -69,7 +69,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         return abstractCopy(children = updatedChildren)
     }
 
-    fun withUpdatedTitleRecursive(checkbox: ViewTemplateCheckbox, newTitle: String): ViewTemplateCheckbox {
+    fun withUpdatedTitleRecursive(checkbox: ViewTemplateTask, newTitle: String): ViewTemplateTask {
         return if (id == checkbox.id) {
             abstractCopy(title = newTitle)
         } else {
@@ -78,10 +78,10 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     }
 
     fun plusChildCheckboxRecursive(
-        parentId: TemplateCheckboxId,
-        newCheckboxId: TemplateCheckboxId,
+        parentId: TemplateTaskId,
+        newCheckboxId: TemplateTaskId,
         placeholderTitle: String? = null
-    ): ViewTemplateCheckbox {
+    ): ViewTemplateTask {
         return abstractCopy(
             children = if (id == parentId) {
                 children.plus(
@@ -105,37 +105,37 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         )
     }
 
-    fun withIsLastChild(isLastChild: Boolean): ViewTemplateCheckbox {
+    fun withIsLastChild(isLastChild: Boolean): ViewTemplateTask {
         return abstractCopy()
     }
 
-    fun updateParentId(parentId: TemplateCheckboxId?): ViewTemplateCheckbox {
+    fun updateParentId(parentId: TemplateTaskId?): ViewTemplateTask {
         val updatedCheckbox = abstractCopy(parentId = parentId)
         return updatedCheckbox.abstractCopy(children = updatedCheckbox.children.updateParentIds(updatedCheckbox.id))
     }
 
     fun abstractCopy(
-        id: TemplateCheckboxId = this.id,
-        parentId: TemplateCheckboxId? = this.parentId,
+        id: TemplateTaskId = this.id,
+        parentId: TemplateTaskId? = this.parentId,
         isParent: Boolean = false,
         title: String = this.title,
-        children: List<ViewTemplateCheckbox> = this.children
-    ): ViewTemplateCheckbox
+        children: List<ViewTemplateTask> = this.children
+    ): ViewTemplateTask
 
     data class New(
-        override val id: TemplateCheckboxId,
-        override val parentId: TemplateCheckboxId?,
+        override val id: TemplateTaskId,
+        override val parentId: TemplateTaskId?,
         override val title: String,
-        override val children: List<ViewTemplateCheckbox>,
+        override val children: List<ViewTemplateTask>,
         override val placeholderTitle: String? = null
-    ) : ViewTemplateCheckbox {
+    ) : ViewTemplateTask {
 
         override fun toDomainModel(
-            parentId: TemplateCheckboxId?,
+            parentId: TemplateTaskId?,
             position: Int,
             templateId: TemplateId
-        ): TemplateCheckbox {
-            return TemplateCheckbox(
+        ): TemplateTask {
+            return TemplateTask(
                 id = id,
                 parentId = parentId,
                 title = title,
@@ -148,12 +148,12 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         }
 
         override fun abstractCopy(
-            id: TemplateCheckboxId,
-            parentId: TemplateCheckboxId?,
+            id: TemplateTaskId,
+            parentId: TemplateTaskId?,
             isParent: Boolean,
             title: String,
-            children: List<ViewTemplateCheckbox>,
-        ): ViewTemplateCheckbox {
+            children: List<ViewTemplateTask>,
+        ): ViewTemplateTask {
             return copy(
                 id = id,
                 parentId = parentId,
@@ -164,19 +164,19 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     }
 
     data class Existing(
-        override val id: TemplateCheckboxId,
-        override val parentId: TemplateCheckboxId?,
+        override val id: TemplateTaskId,
+        override val parentId: TemplateTaskId?,
         override val title: String,
-        override val children: List<ViewTemplateCheckbox>,
+        override val children: List<ViewTemplateTask>,
         override val placeholderTitle: String? = null
-    ) : ViewTemplateCheckbox {
+    ) : ViewTemplateTask {
 
         override fun toDomainModel(
-            parentId: TemplateCheckboxId?,
+            parentId: TemplateTaskId?,
             position: Int,
             templateId: TemplateId
-        ): TemplateCheckbox {
-            return TemplateCheckbox(
+        ): TemplateTask {
+            return TemplateTask(
                 id = id,
                 parentId = parentId,
                 title = title,
@@ -189,12 +189,12 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         }
 
         override fun abstractCopy(
-            id: TemplateCheckboxId,
-            parentId: TemplateCheckboxId?,
+            id: TemplateTaskId,
+            parentId: TemplateTaskId?,
             isParent: Boolean,
             title: String,
-            children: List<ViewTemplateCheckbox>,
-        ): ViewTemplateCheckbox {
+            children: List<ViewTemplateTask>,
+        ): ViewTemplateTask {
             return copy(
                 id = id,
                 parentId = parentId,
@@ -206,12 +206,12 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         companion object {
 
             fun fromDomainModel(
-                templateCheckbox: TemplateCheckbox
+                templateTask: TemplateTask
             ): Existing {
-                return with(templateCheckbox) {
+                return with(templateTask) {
                     Existing(
                         id = this.id,
-                        parentId = templateCheckbox.parentId,
+                        parentId = templateTask.parentId,
                         title = title,
                         children = children.map {
                             fromDomainModel(it)
@@ -223,13 +223,13 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     }
 }
 
-private fun List<ViewTemplateCheckbox>.reindexed(): List<ViewTemplateCheckbox> {
+private fun List<ViewTemplateTask>.reindexed(): List<ViewTemplateTask> {
     return mapIndexed { index, item ->
         item.withIsLastChild(index == lastIndex)
     }
 }
 
-fun renderCheckbox(checkbox: ViewTemplateCheckbox, prefix: String = "     "): String {
+fun renderCheckbox(checkbox: ViewTemplateTask, prefix: String = "     "): String {
     val children = checkbox.children.joinToString("\n") { child ->
         "$prefix${child.title.ifEmpty { "Empty" }} \n${
             child.children.joinToString("") {
@@ -245,9 +245,9 @@ fun renderCheckbox(checkbox: ViewTemplateCheckbox, prefix: String = "     "): St
     return "${checkbox.title.ifEmpty { "Empty" }} ${children.let { "\n$it" }}"
 }
 
-fun printTemplateCheckbox(templateCheckbox: TemplateCheckbox, prefix: String = "") {
-    println("$prefix|----${templateCheckbox.title}")
-    templateCheckbox.children.forEach { child ->
-        printTemplateCheckbox(child, "$prefix    ")
+fun printTemplateTask(templateTask: TemplateTask, prefix: String = "") {
+    println("$prefix|----${templateTask.title}")
+    templateTask.children.forEach { child ->
+        printTemplateTask(child, "$prefix    ")
     }
 }

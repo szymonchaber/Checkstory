@@ -31,7 +31,7 @@ internal interface DataModule {
     fun bindTemplateRepository(repository: TemplateRepositoryImpl): TemplateRepository
 
     @Binds
-    fun bindTemplateCheckboxRepository(repository: TemplateCheckboxRepositoryImpl): TemplateCheckboxRepository
+    fun bindTemplateTaskRepository(repository: TemplateTaskRepositoryImpl): TemplateTaskRepository
 
     @Binds
     fun bindTemplateReminderRepository(repository: TemplateReminderRepositoryImpl): TemplateReminderRepository

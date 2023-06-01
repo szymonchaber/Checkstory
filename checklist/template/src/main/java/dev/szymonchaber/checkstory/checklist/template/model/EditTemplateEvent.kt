@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 
 sealed interface EditTemplateEvent {
@@ -16,11 +16,11 @@ sealed interface EditTemplateEvent {
 
     data class DescriptionChanged(val newDescription: String) : EditTemplateEvent
 
-    data class ItemRemoved(val checkbox: ViewTemplateCheckbox) : EditTemplateEvent
+    data class ItemRemoved(val checkbox: ViewTemplateTask) : EditTemplateEvent
 
-    data class ItemTitleChanged(val checkbox: ViewTemplateCheckbox, val newTitle: String) : EditTemplateEvent
+    data class ItemTitleChanged(val checkbox: ViewTemplateTask, val newTitle: String) : EditTemplateEvent
 
-    data class ChildItemAdded(val parentViewKey: TemplateCheckboxId) : EditTemplateEvent
+    data class ChildItemAdded(val parentViewKey: TemplateTaskId) : EditTemplateEvent
 
     object AddReminderClicked : EditTemplateEvent
 
@@ -31,26 +31,26 @@ sealed interface EditTemplateEvent {
     data class DeleteReminderClicked(val reminder: Reminder) : EditTemplateEvent
 
     data class SiblingMovedBelow(
-        val target: TemplateCheckboxId,
-        val newSibling: TemplateCheckboxId
+        val target: TemplateTaskId,
+        val newSibling: TemplateTaskId
     ) : EditTemplateEvent
 
-    data class NewSiblingDraggedBelow(val target: TemplateCheckboxId) : EditTemplateEvent
+    data class NewSiblingDraggedBelow(val target: TemplateTaskId) : EditTemplateEvent
 
     data class ChildMovedBelow(
-        val target: TemplateCheckboxId,
-        val newChild: TemplateCheckboxId
+        val target: TemplateTaskId,
+        val newChild: TemplateTaskId
     ) : EditTemplateEvent
 
-    data class NewChildDraggedBelow(val target: TemplateCheckboxId) : EditTemplateEvent
+    data class NewChildDraggedBelow(val target: TemplateTaskId) : EditTemplateEvent
 
     object NewCheckboxDraggedToTop : EditTemplateEvent
 
     object NewCheckboxDraggedToBottom : EditTemplateEvent
 
-    data class CheckboxMovedToTop(val checkboxKey: TemplateCheckboxId) : EditTemplateEvent
+    data class CheckboxMovedToTop(val checkboxKey: TemplateTaskId) : EditTemplateEvent
 
-    data class CheckboxMovedToBottom(val checkboxKey: TemplateCheckboxId) : EditTemplateEvent
+    data class CheckboxMovedToBottom(val checkboxKey: TemplateTaskId) : EditTemplateEvent
 
     object AddCheckboxClicked : EditTemplateEvent
 

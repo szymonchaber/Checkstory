@@ -26,7 +26,7 @@ import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -57,8 +57,8 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
         private set
     var dragOffset by mutableStateOf(Offset.Zero)
         private set
-    var checkboxViewId by mutableStateOf<TemplateCheckboxId?>(null)
-    var dataToDrop by mutableStateOf<TemplateCheckboxId?>(null)
+    var checkboxViewId by mutableStateOf<TemplateTaskId?>(null)
+    var dataToDrop by mutableStateOf<TemplateTaskId?>(null)
 
     var previousDropTargetInfo: DropTargetInfo? by mutableStateOf(null)
     var currentDropTargetInfo: DropTargetInfo? by mutableStateOf(null)
@@ -78,18 +78,18 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
                     .firstOrNull { item ->
                         offset.y.toInt() in item.offset..(item.offsetEnd)
                     }
-                    ?.takeUnless { it.key !is TemplateCheckboxId }
+                    ?.takeUnless { it.key !is TemplateTaskId }
                     ?.also { itemInfo ->
                         currentIndexOfDraggedItem = itemInfo.index
                         initialDragPosition = Offset(dragSource.handlePosition.x, itemInfo.offset.toFloat())
                         initialDragSize = IntSize(width = dragSource.handleSize.width, height = itemInfo.size)
                         isDragging = true
-                        checkboxViewId = itemInfo.key as? TemplateCheckboxId
+                        checkboxViewId = itemInfo.key as? TemplateTaskId
                     }
             }
             is DragSource.NewTaskDraggable -> {
-                dataToDrop = TemplateCheckboxId(NEW_TASK_ID)
-                checkboxViewId = TemplateCheckboxId(NEW_TASK_ID)
+                dataToDrop = TemplateTaskId(NEW_TASK_ID)
+                checkboxViewId = TemplateTaskId(NEW_TASK_ID)
                 isDragging = true
                 initialDragPosition = dragSource.initialPosition
                 initialDragSize = dragSource.initialSize
@@ -347,4 +347,4 @@ sealed interface DragSource {
     data class LazyList(val handlePosition: Offset, val handleSize: IntSize) : DragSource
 }
 
-data class DropTargetInfo(val offset: Offset, val onDataDropped: (TemplateCheckboxId) -> Unit)
+data class DropTargetInfo(val offset: Offset, val onDataDropped: (TemplateTaskId) -> Unit)

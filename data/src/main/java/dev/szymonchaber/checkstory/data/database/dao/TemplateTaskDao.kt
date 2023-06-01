@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 @Dao
-interface TemplateCheckboxDao {
+interface TemplateTaskDao {
 
     @Query("SELECT * FROM templateCheckboxEntity WHERE templateCheckboxEntity.checkboxId = :checkboxId")
     suspend fun getById(checkboxId: Long): TemplateCheckboxEntity

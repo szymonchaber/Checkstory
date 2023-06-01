@@ -4,8 +4,8 @@ import android.content.res.Resources
 import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import kotlinx.datetime.Clock
 import java.time.LocalDateTime
 import java.util.*
@@ -35,30 +35,29 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
 
 class OnboardingCheckboxes {
 
-    val placeholderToParentId = mutableListOf<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>>()
+    val placeholderToParentId = mutableListOf<Triple<TemplateTaskId, TemplateTaskId?, String>>()
 
     fun topLevelPlaceholder(placeholderTitle: String, block: ParentScope.() -> Unit = {}) {
-        val parentId = TemplateCheckboxId(UUID.randomUUID())
+        val parentId = TemplateTaskId(UUID.randomUUID())
         placeholderToParentId.add(Triple(parentId, null, placeholderTitle))
         ParentScope(parentId).block()
     }
 
-    inner class ParentScope(private val outerParentId: TemplateCheckboxId) {
+    inner class ParentScope(private val outerParentId: TemplateTaskId) {
 
         fun nestedPlaceholder(placeholderTitle: String, block: ParentScope.() -> Unit = {}) {
-            val innerParentId = TemplateCheckboxId(UUID.randomUUID())
+            val innerParentId = TemplateTaskId(UUID.randomUUID())
             placeholderToParentId.add(Triple(innerParentId, outerParentId, placeholderTitle))
             ParentScope(innerParentId).block()
         }
     }
 }
 
-fun placeholderCheckboxes(block: OnboardingCheckboxes.() -> Unit): MutableList<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>> {
+fun placeholderCheckboxes(block: OnboardingCheckboxes.() -> Unit): MutableList<Triple<TemplateTaskId, TemplateTaskId?, String>> {
     return OnboardingCheckboxes().apply(block).placeholderToParentId
 }
 
-
-fun generateOnboardingCheckboxes(): MutableList<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>> {
+fun generateOnboardingCheckboxes(): MutableList<Triple<TemplateTaskId, TemplateTaskId?, String>> {
     return placeholderCheckboxes {
         topLevelPlaceholder("Add as many tasks as you want")
 
@@ -90,7 +89,7 @@ fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
     return generateWriteOfferCheckboxes().foldInto(templateLoadingState)
 }
 
-fun generateWriteOfferCheckboxes(): List<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>> {
+fun generateWriteOfferCheckboxes(): List<Triple<TemplateTaskId, TemplateTaskId?, String>> {
     return placeholderCheckboxes {
         topLevelPlaceholder("Fetch the prospect and start writing") {
             nestedPlaceholder("Write your own steps - Checkstory is a vessel for your knowledge") {
@@ -128,7 +127,7 @@ fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
         .foldInto(templateLoadingState)
 }
 
-fun List<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>>.foldInto(success: TemplateLoadingState.Success): TemplateLoadingState.Success {
+fun List<Triple<TemplateTaskId, TemplateTaskId?, String>>.foldInto(success: TemplateLoadingState.Success): TemplateLoadingState.Success {
     return fold(success) { state, (id, parentId, placeholder) ->
         if (parentId != null) {
             state.plusChildCheckbox(parentId, id, placeholder)

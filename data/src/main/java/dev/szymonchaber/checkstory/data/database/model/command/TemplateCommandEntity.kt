@@ -3,9 +3,9 @@ package dev.szymonchaber.checkstory.data.database.model.command
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -52,7 +52,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                         id.id,
                         title,
                         description,
-                        items.map {
+                        tasks.map {
                             it.toCommandTemplateTask()
                         },
                         createdAt.toKotlinLocalDateTime().toInstant(TimeZone.currentSystemDefault()),
@@ -61,7 +61,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 }
             }
 
-            private fun TemplateCheckbox.toCommandTemplateTask(): CommandTemplateTaskEntity {
+            private fun TemplateTask.toCommandTemplateTask(): CommandTemplateTaskEntity {
                 return CommandTemplateTaskEntity(
                     id = id.id,
                     templateId = templateId.id,
@@ -200,15 +200,15 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
 
             is AddTemplateTaskEntity -> TemplateCommand.AddTemplateTask(
                 templateId = TemplateId(templateId),
-                taskId = TemplateCheckboxId(taskId),
-                parentTaskId = parentTaskId?.let { TemplateCheckboxId(it) },
+                taskId = TemplateTaskId(taskId),
+                parentTaskId = parentTaskId?.let { TemplateTaskId(it) },
                 timestamp = timestamp,
                 commandId = commandId
             )
 
             is RenameTemplateTaskEntity -> TemplateCommand.RenameTemplateTask(
                 templateId = TemplateId(templateId),
-                taskId = TemplateCheckboxId(taskId),
+                taskId = TemplateTaskId(taskId),
                 newTitle = newTitle,
                 timestamp = timestamp,
                 commandId = commandId
@@ -216,21 +216,21 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
 
             is DeleteTemplateTaskEntity -> TemplateCommand.DeleteTemplateTask(
                 templateId = TemplateId(templateId),
-                taskId = TemplateCheckboxId(taskId),
+                taskId = TemplateTaskId(taskId),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
             is UpdateCheckboxPositionsEntity -> TemplateCommand.UpdateCheckboxPositions(
-                localPositions = localPositions.mapKeys { TemplateCheckboxId(it.key) },
+                localPositions = localPositions.mapKeys { TemplateTaskId(it.key) },
                 timestamp = timestamp,
                 commandId = commandId,
                 templateId = TemplateId(templateId)
             )
 
             is MoveTemplateTaskEntity -> TemplateCommand.MoveTemplateTask(
-                taskId = TemplateCheckboxId(taskId),
-                newParentTaskId = newParentTaskId?.let { TemplateCheckboxId(it) },
+                taskId = TemplateTaskId(taskId),
+                newParentTaskId = newParentTaskId?.let { TemplateTaskId(it) },
                 timestamp = timestamp,
                 commandId = commandId,
                 templateId = TemplateId(templateId)

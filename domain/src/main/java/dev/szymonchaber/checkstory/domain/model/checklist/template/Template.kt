@@ -8,22 +8,22 @@ data class Template(
     val id: TemplateId,
     val title: String,
     val description: String,
-    val items: List<TemplateCheckbox>,
+    val tasks: List<TemplateTask>,
     val createdAt: LocalDateTime,
     val checklists: List<Checklist>,
     val reminders: List<Reminder>,
     val isRemoved: Boolean = false
 ) {
 
-    val flattenedItems: List<TemplateCheckbox>
+    val flattenedTasks: List<TemplateTask>
         get() {
-            return items.flatMap {
+            return tasks.flatMap {
                 flatten(it)
             }
         }
 
-    private fun flatten(checkbox: TemplateCheckbox): List<TemplateCheckbox> {
-        return listOf(checkbox) + checkbox.children.flatMap { flatten(it) }
+    private fun flatten(task: TemplateTask): List<TemplateTask> {
+        return listOf(task) + task.children.flatMap { flatten(it) }
     }
 
     companion object {
@@ -33,7 +33,7 @@ data class Template(
                 id = id,
                 title = "",
                 description = "",
-                items = listOf(),
+                tasks = listOf(),
                 createdAt = createdAt,
                 checklists = listOf(),
                 reminders = listOf()
@@ -42,11 +42,11 @@ data class Template(
     }
 }
 
-data class TemplateCheckbox(
-    val id: TemplateCheckboxId,
-    val parentId: TemplateCheckboxId?,
+data class TemplateTask(
+    val id: TemplateTaskId,
+    val parentId: TemplateTaskId?,
     val title: String,
-    val children: List<TemplateCheckbox>,
+    val children: List<TemplateTask>,
     val sortPosition: Long,
     val templateId: TemplateId
 )

@@ -7,8 +7,8 @@ import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
@@ -257,7 +257,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    EditTemplateState(loadingState.plusChildCheckbox(TemplateCheckboxId(event.parentViewKey.id))) to null
+                    EditTemplateState(loadingState.plusChildCheckbox(TemplateTaskId(event.parentViewKey.id))) to null
                 }
             }
     }
@@ -289,7 +289,7 @@ class EditTemplateViewModel @Inject constructor(
                     "save_template_clicked", bundleOf(
                         "title_length" to template.title.length,
                         "description_length" to template.description.length,
-                        "checkbox_count" to template.items.flatMap { it.children + it }.count(),
+                        "checkbox_count" to template.tasks.flatMap { it.children + it }.count(),
                         "reminder_count" to template.reminders.count()
                     )
                 )
@@ -455,7 +455,7 @@ class EditTemplateViewModel @Inject constructor(
         }
     }
 
-    fun isReorderValid(subject: TemplateCheckboxId, target: TemplateCheckboxId): Boolean {
+    fun isReorderValid(subject: TemplateTaskId, target: TemplateTaskId): Boolean {
         return (_state.value.templateLoadingState as? TemplateLoadingState.Success)?.let {
             !it.getAllAncestorsOf(target).contains(subject)
         } ?: false
@@ -468,13 +468,13 @@ private fun Template.trimEndingWhitespaces(): Template {
         copy(
             title = title.trimEnd(),
             description = description.trimEnd(),
-            items = items.map {
+            tasks = tasks.map {
                 it.trimEndTitlesRecursive()
             }
         )
     }
 }
 
-private fun TemplateCheckbox.trimEndTitlesRecursive(): TemplateCheckbox {
+private fun TemplateTask.trimEndTitlesRecursive(): TemplateTask {
     return copy(title = title.trimEnd(), children = children.map { it.trimEndTitlesRecursive() })
 }

@@ -5,8 +5,8 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -36,7 +36,7 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
                 basedOn.id,
                 title,
                 description,
-                items.map {
+                tasks.map {
                     toCheckbox(it, checklistId)
                 },
                 "",
@@ -46,7 +46,7 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
     }
 
     private fun toCheckbox(
-        basedOn: TemplateCheckbox,
+        basedOn: TemplateTask,
         checklistId: ChecklistId,
         parentId: CheckboxId? = null
     ): Checkbox {

@@ -4,4 +4,4 @@ import java.io.Serializable
 import java.util.*
 
 @JvmInline
-value class TemplateCheckboxId(val id: UUID) : Serializable
+value class TemplateTaskId(val id: UUID) : Serializable

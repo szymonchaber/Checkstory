@@ -14,8 +14,8 @@ import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
-import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.TemplateTaskDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
@@ -69,7 +69,7 @@ object DatabaseModule {
                         LocalDateTime.now().minusDays(2)
                     )
                 )
-                templateCheckboxDao.insertAll(
+                templateTaskDao.insertAll(
                     TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item", null, 0),
                     TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item 2", null, 0)
                 )
@@ -101,8 +101,8 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideTemplateCheckboxDao(database: AppDatabase): TemplateCheckboxDao {
-        return database.templateCheckboxDao
+    fun provideTemplateCheckboxDao(database: AppDatabase): TemplateTaskDao {
+        return database.templateTaskDao
     }
 
     @Provides
