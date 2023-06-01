@@ -139,8 +139,8 @@ sealed interface ViewTemplateTask : java.io.Serializable {
                 id = id,
                 parentId = parentId,
                 title = title,
-                children = children.mapIndexed { index, it ->
-                    it.toDomainModel(id, index, templateId)
+                children = children.mapIndexed { index, child ->
+                    child.toDomainModel(id, index, templateId)
                 },
                 position.toLong(),
                 templateId
