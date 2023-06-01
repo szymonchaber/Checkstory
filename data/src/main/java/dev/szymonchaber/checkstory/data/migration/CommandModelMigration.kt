@@ -21,8 +21,7 @@ class CommandModelMigration @Inject internal constructor(
     private val migrationPreferences: MigrationPreferences,
     private val templateRepository: ChecklistTemplateRepository,
     private val synchronizer: Synchronizer,
-    private val firebaseCrashlytics: FirebaseCrashlytics,
-    private val uuidGenerator: () -> UUID = { UUID.randomUUID() }
+    private val firebaseCrashlytics: FirebaseCrashlytics = FirebaseCrashlytics.getInstance(),
 ) {
 
     suspend fun run() {
@@ -57,7 +56,7 @@ class CommandModelMigration @Inject internal constructor(
             TemplateCommand.CreateNewTemplate(
                 checklistTemplate.id,
                 checklistTemplate.createdAt.toKotlinLocalDateTime().toInstant(TimeZone.currentSystemDefault()),
-                uuidGenerator(),
+                UUID.randomUUID(),
                 checklistTemplate
             ),
         ) + toCreateChecklistCommands(checklistTemplate.checklists)
@@ -71,7 +70,7 @@ class CommandModelMigration @Inject internal constructor(
                 checklist.title,
                 checklist.description,
                 checklist.items,
-                uuidGenerator(),
+                UUID.randomUUID(),
                 checklist.createdAt.toKotlinLocalDateTime().toInstant(TimeZone.currentSystemDefault()),
                 checklist.notes,
             )

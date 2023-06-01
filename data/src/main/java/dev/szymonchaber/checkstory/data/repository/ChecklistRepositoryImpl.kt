@@ -34,7 +34,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ChecklistRepositoryImpl @Inject constructor(
+internal class ChecklistRepositoryImpl @Inject constructor(
     private val checklistTemplateDao: ChecklistTemplateDao,
     private val checklistDao: ChecklistDao,
     private val checkboxDao: CheckboxDao,

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import androidx.work.WorkManager
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -56,6 +57,11 @@ internal interface DataModule {
         fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
             return WorkManager
                 .getInstance(context)
+        }
+
+        @Provides
+        fun provideFirebaseCrashlytics(): FirebaseCrashlytics {
+            return FirebaseCrashlytics.getInstance()
         }
     }
 }

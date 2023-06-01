@@ -18,24 +18,23 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CommandRepository @Inject constructor(
-    private val dao: CommandDao
+internal class CommandRepository @Inject constructor(
+    private val dao: CommandDao,
+    private val commandMapper: CommandMapper
 ) {
 
     fun getUnappliedCommandsFlow(): Flow<List<Command>> {
         return dao.getAll()
             .map { commands ->
                 withContext(Dispatchers.Default) {
-                    commands.map(CommandMapper::toDomainCommand)
+                    commands.map(commandMapper::toDomainCommand)
                 }
             }
     }
 
     suspend fun storeCommands(commands: List<Command>) {
         withContext(Dispatchers.Default) {
-            dao.insertAll(commands.map {
-                CommandMapper.toCommandEntity(it)
-            })
+            dao.insertAll(commands.map(commandMapper::toCommandEntity))
         }
     }
 

@@ -7,7 +7,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class TemplateCheckboxRepositoryImpl @Inject constructor(
+internal class TemplateCheckboxRepositoryImpl @Inject constructor(
     private val dataSource: ChecklistTemplateRepositoryImpl
 ) : TemplateCheckboxRepository {
 
