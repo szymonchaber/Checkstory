@@ -179,22 +179,22 @@ sealed interface ViewTemplateTask : java.io.Serializable {
                 children = children
             )
         }
+    }
 
-        companion object {
+    companion object {
 
-            fun fromDomainModel(
-                templateTask: TemplateTask
-            ): Existing {
-                return with(templateTask) {
-                    Existing(
-                        id = this.id,
-                        parentId = templateTask.parentId,
-                        title = title,
-                        children = children.map {
-                            fromDomainModel(it)
-                        }.reindexed(),
-                    )
-                }
+        fun fromDomainModel(
+            templateTask: TemplateTask
+        ): Existing {
+            return with(templateTask) {
+                Existing(
+                    id = this.id,
+                    parentId = templateTask.parentId,
+                    title = title,
+                    children = children.map {
+                        fromDomainModel(it)
+                    }.reindexed(),
+                )
             }
         }
     }

@@ -14,7 +14,7 @@ sealed interface TemplateLoadingState {
     data class Success(
         val originalTemplate: Template,
         val tasks: List<ViewTemplateTask> = originalTemplate.tasks.map {
-            ViewTemplateTask.Existing.fromDomainModel(it)
+            ViewTemplateTask.fromDomainModel(it)
         },
         val updatedTemplate: Template = originalTemplate,
         val mostRecentlyAddedItem: TemplateTaskId? = null,
