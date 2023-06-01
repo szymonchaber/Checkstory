@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.api.template.model
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -39,7 +39,7 @@ internal sealed interface ApiReminder {
             is Exact -> {
                 Reminder.Exact(
                     id = ReminderId(id),
-                    forTemplate = ChecklistTemplateId(this.forTemplate),
+                    forTemplate = TemplateId(this.forTemplate),
                     startDateTime = this.startDateTime.toJavaLocalDateTime()
                 )
             }
@@ -53,7 +53,7 @@ internal sealed interface ApiReminder {
                 }
                 Reminder.Recurring(
                     id = ReminderId(this.id),
-                    forTemplate = ChecklistTemplateId(this.forTemplate),
+                    forTemplate = TemplateId(this.forTemplate),
                     startDateTime = this.startDateTime.toJavaLocalDateTime(),
                     interval = interval
                 )

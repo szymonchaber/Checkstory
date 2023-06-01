@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.domain.model.checklist.template.reminder
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import java.io.Serializable
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -11,18 +11,18 @@ import java.util.*
 sealed interface Reminder {
 
     val id: ReminderId
-    val forTemplate: ChecklistTemplateId
+    val forTemplate: TemplateId
     val startDateTime: LocalDateTime
 
     data class Exact(
         override val id: ReminderId,
-        override val forTemplate: ChecklistTemplateId,
+        override val forTemplate: TemplateId,
         override val startDateTime: LocalDateTime
     ) : Reminder
 
     data class Recurring(
         override val id: ReminderId,
-        override val forTemplate: ChecklistTemplateId,
+        override val forTemplate: TemplateId,
         override val startDateTime: LocalDateTime,
         val interval: Interval
     ) : Reminder

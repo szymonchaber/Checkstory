@@ -39,17 +39,17 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.recent.ChecklistsCarousel
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.SectionLabel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import java.time.LocalDateTime
 import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun ChecklistTemplateView(
-    checklistTemplate: ChecklistTemplate,
+fun TemplateView(
+    template: Template,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     var isCollapsed by remember { mutableStateOf(true) }
@@ -74,26 +74,26 @@ fun ChecklistTemplateView(
                         .weight(1f)
                         .padding(vertical = 16.dp)
                         .padding(start = 16.dp, end = 8.dp),
-                    text = checklistTemplate.title,
+                    text = template.title,
                     style = MaterialTheme.typography.subtitle1
                 )
-                TemplateActions(interactionSource, eventListener, checklistTemplate)
+                TemplateActions(interactionSource, eventListener, template)
             }
             DateFormatText(
-                localDateTime = checklistTemplate.createdAt,
+                localDateTime = template.createdAt,
                 modifier = Modifier
                     .align(Alignment.End)
                     .padding(horizontal = 16.dp)
                     .padding(top = 16.dp)
             )
-            TemplateActionButtons(checklistTemplate, interactionSource, eventListener)
+            TemplateActionButtons(template, interactionSource, eventListener)
             if (!isCollapsed) {
                 SectionLabel(
                     modifier = Modifier.padding(start = 16.dp),
                     text = stringResource(id = R.string.template_checklists)
                 )
                 ChecklistsCarousel(
-                    checklists = checklistTemplate.checklists,
+                    checklists = template.checklists,
                     paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                     cardElevation = 1.dp,
                     onChecklistClicked = {
@@ -101,7 +101,7 @@ fun ChecklistTemplateView(
                             ChecklistCatalogEvent.RecentChecklistClicked(it.id)
                         )
                     },
-//                    header = UseTemplateHeader(eventListener, checklistTemplate)
+//                    header = UseTemplateHeader(eventListener, template)
                 )
             }
         }
@@ -112,7 +112,7 @@ fun ChecklistTemplateView(
 @Composable
 private fun UseTemplateHeader(
     eventListener: (ChecklistCatalogEvent) -> Unit,
-    checklistTemplate: ChecklistTemplate
+    template: Template
 ): @Composable() (LazyItemScope.() -> Unit) = {
     Box {
         Card(
@@ -122,7 +122,7 @@ private fun UseTemplateHeader(
             elevation = 1.dp,
             onClick = {
                 eventListener(
-                    ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate)
+                    ChecklistCatalogEvent.NewChecklistFromTemplateClicked(template)
                 )
             }
         ) {
@@ -143,7 +143,7 @@ private fun UseTemplateHeader(
 private fun RowScope.TemplateActions(
     interactionSource: MutableInteractionSource,
     eventListener: (ChecklistCatalogEvent) -> Unit,
-    checklistTemplate: ChecklistTemplate
+    template: Template
 ) {
     var showMenu by remember { mutableStateOf(false) }
     IconButton(
@@ -158,13 +158,13 @@ private fun RowScope.TemplateActions(
         ) {
             DropdownMenuItem(onClick = {
                 showMenu = false
-                eventListener(ChecklistCatalogEvent.EditTemplateClicked(checklistTemplate.id))
+                eventListener(ChecklistCatalogEvent.EditTemplateClicked(template.id))
             }) {
                 Text(text = stringResource(id = R.string.edit))
             }
             DropdownMenuItem(onClick = {
                 showMenu = false
-                eventListener(ChecklistCatalogEvent.TemplateHistoryClicked(checklistTemplate.id))
+                eventListener(ChecklistCatalogEvent.TemplateHistoryClicked(template.id))
             }) {
                 Text(text = stringResource(id = R.string.template_checklists))
             }
@@ -174,14 +174,14 @@ private fun RowScope.TemplateActions(
 
 @Composable
 private fun TemplateActionButtons(
-    checklistTemplate: ChecklistTemplate,
+    template: Template,
     targetInteractionSource: MutableInteractionSource,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     Row(Modifier.fillMaxWidth()) {
         TextButton(
             onClick = {
-                eventListener(ChecklistCatalogEvent.NewChecklistFromTemplateClicked(checklistTemplate))
+                eventListener(ChecklistCatalogEvent.NewChecklistFromTemplateClicked(template))
             }
         ) {
             Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
@@ -214,10 +214,10 @@ private fun TemplateActionButtons(
 
 @Preview(showBackground = true)
 @Composable
-fun ChecklistTemplateViewPreview() {
-    ChecklistTemplateView(
-        checklistTemplate = ChecklistTemplate(
-            ChecklistTemplateId.new(),
+fun TemplateViewPreview() {
+    TemplateView(
+        template = Template(
+            TemplateId.new(),
             "Template",
             "Description",
             listOf(
@@ -227,7 +227,7 @@ fun ChecklistTemplateViewPreview() {
                     "Checkbox 1",
                     listOf(),
                     0,
-                    ChecklistTemplateId.new()
+                    TemplateId.new()
                 )
             ),
             LocalDateTime.now(),

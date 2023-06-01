@@ -2,8 +2,8 @@ package dev.szymonchaber.checkstory.domain.repository
 
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.coroutines.flow.Flow
 
 interface ChecklistRepository {
@@ -16,11 +16,11 @@ interface ChecklistRepository {
 
     fun getAllChecklists(): Flow<List<Checklist>>
 
-    fun getChecklists(basedOn: ChecklistTemplateId): Flow<List<Checklist>>
+    fun getChecklists(basedOn: TemplateId): Flow<List<Checklist>>
 
     suspend fun delete(checklist: Checklist)
 
-    suspend fun deleteBasedOnTemplate(checklistTemplate: ChecklistTemplate)
+    suspend fun deleteBasedOnTemplate(template: Template)
 
     suspend fun deleteAllData()
 }

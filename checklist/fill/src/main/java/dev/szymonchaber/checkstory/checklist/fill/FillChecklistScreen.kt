@@ -83,7 +83,7 @@ import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 
@@ -104,7 +104,7 @@ import kotlinx.coroutines.launch
 fun FillChecklistScreen(
     navigator: DestinationsNavigator,
     checklistId: ChecklistId?,
-    createChecklistFrom: ChecklistTemplateId?
+    createChecklistFrom: TemplateId?
 ) {
     trackScreenName("fill_checklist")
     val viewModel = hiltViewModel<FillChecklistViewModel>()
@@ -156,7 +156,7 @@ fun FillChecklistScreen(
     LaunchedEffect(effect) {
         when (val value = effect) {
             is FillChecklistEffect.NavigateToEditTemplate -> {
-                navigator.navigate(Routes.editChecklistTemplateScreen(value.templateId))
+                navigator.navigate(Routes.editTemplateScreen(value.templateId))
             }
             FillChecklistEffect.CloseScreen -> {
                 navigator.navigateUp()

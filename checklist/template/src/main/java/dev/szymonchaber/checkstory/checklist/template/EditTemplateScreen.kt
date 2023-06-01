@@ -93,9 +93,9 @@ import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 import java.time.Duration.*
@@ -107,7 +107,7 @@ import java.util.*
 fun EditTemplateScreen(
     navigator: DestinationsNavigator,
     generateOnboarding: Boolean = false,
-    templateId: ChecklistTemplateId?,
+    templateId: TemplateId?,
 ) {
     trackScreenName("edit_template")
     val viewModel = hiltViewModel<EditTemplateViewModel>()
@@ -115,12 +115,12 @@ fun EditTemplateScreen(
 
     LaunchedEffect(templateId) {
         templateId?.let {
-            viewModel.onEvent(EditTemplateEvent.EditChecklistTemplate(it))
+            viewModel.onEvent(EditTemplateEvent.EditTemplate(it))
         } ?: run {
             if (generateOnboarding) {
-                viewModel.onEvent(EditTemplateEvent.GenerateOnboardingChecklistTemplate)
+                viewModel.onEvent(EditTemplateEvent.GenerateOnboardingTemplate)
             } else {
-                viewModel.onEvent(EditTemplateEvent.CreateChecklistTemplate)
+                viewModel.onEvent(EditTemplateEvent.CreateTemplate)
             }
         }
     }
@@ -344,7 +344,7 @@ fun EditTemplateView(
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                val template = success.checklistTemplate
+                val template = success.template
                 LazyColumn(
                     Modifier
                         .detectLazyListReorder()
@@ -352,7 +352,7 @@ fun EditTemplateView(
                     state = dragDropState.lazyListState,
                 ) {
                     item {
-                        ChecklistTemplateDetails(template, success.onboardingPlaceholders, eventCollector)
+                        TemplateDetails(template, success.onboardingPlaceholders, eventCollector)
                     }
                     items(
                         items = success.unwrappedCheckboxes,
@@ -486,15 +486,15 @@ private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
 }
 
 @Composable
-private fun ChecklistTemplateDetails(
-    checklistTemplate: ChecklistTemplate,
+private fun TemplateDetails(
+    template: Template,
     onboardingPlaceholders: OnboardingPlaceholders?,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Box(Modifier.height(IntrinsicSize.Min)) {
         Column(Modifier.padding(top = 16.dp)) {
-            TitleTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
-            DescriptionTextField(checklistTemplate, onboardingPlaceholders, eventCollector)
+            TitleTextField(template, onboardingPlaceholders, eventCollector)
+            DescriptionTextField(template, onboardingPlaceholders, eventCollector)
             SectionLabel(
                 modifier = Modifier.padding(
                     top = 8.dp,
@@ -521,13 +521,13 @@ private fun ChecklistTemplateDetails(
 
 @Composable
 private fun TitleTextField(
-    checklistTemplate: ChecklistTemplate,
+    template: Template,
     onboardingPlaceholders: OnboardingPlaceholders?,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val focusManager = LocalFocusManager.current
     TextFieldWithFixedPlaceholder(
-        value = checklistTemplate.title,
+        value = template.title,
         onValueChange = {
             eventCollector(EditTemplateEvent.TitleChanged(it))
         },
@@ -552,12 +552,12 @@ private fun TitleTextField(
 
 @Composable
 private fun DescriptionTextField(
-    checklistTemplate: ChecklistTemplate,
+    template: Template,
     onboardingPlaceholders: OnboardingPlaceholders?,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     TextFieldWithFixedPlaceholder(
-        value = checklistTemplate.description,
+        value = template.description,
         onValueChange = {
             eventCollector(EditTemplateEvent.DescriptionChanged(it))
         },

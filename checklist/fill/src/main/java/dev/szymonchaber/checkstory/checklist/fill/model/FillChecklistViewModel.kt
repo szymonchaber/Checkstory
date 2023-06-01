@@ -84,14 +84,14 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<FillChecklistEvent>.handleCreateChecklist(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
         return filterIsInstance<FillChecklistEvent.CreateChecklistFromTemplate>()
             .flatMapLatest { loadEvent ->
-                createChecklistFromTemplateUseCase.createChecklistFromTemplate(loadEvent.checklistTemplateId)
+                createChecklistFromTemplateUseCase.createChecklistFromTemplate(loadEvent.templateId)
                     .map {
                         val checklistLoadingState = ChecklistLoadingState.Success(it)
                             .copy(
                                 commands = listOf(
                                     ChecklistCommand.CreateChecklistCommand(
                                         it.id,
-                                        it.checklistTemplateId,
+                                        it.templateId,
                                         it.title,
                                         it.description,
                                         it.items,
@@ -130,7 +130,7 @@ class FillChecklistViewModel @Inject constructor(
             }
             .map {
                 tracker.logEvent("checklist_edit_template_clicked")
-                state.first() to FillChecklistEffect.NavigateToEditTemplate(it.checklist.checklistTemplateId)
+                state.first() to FillChecklistEffect.NavigateToEditTemplate(it.checklist.templateId)
             }
     }
 

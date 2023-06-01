@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import java.time.LocalDateTime
 import java.util.*
 
@@ -25,7 +25,7 @@ data class ChecklistEntity(
     ): Checklist {
         return Checklist(
             ChecklistId(checklistId),
-            ChecklistTemplateId(templateId),
+            TemplateId(templateId),
             templateTitle,
             templateDescription,
             checkboxes,
@@ -40,7 +40,7 @@ data class ChecklistEntity(
             return with(checklist) {
                 ChecklistEntity(
                     checklistId = checklist.id.id,
-                    templateId = checklistTemplateId.id,
+                    templateId = templateId.id,
                     notes = notes,
                     checklist.createdAt
                 )

@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.api.template.model
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -23,7 +23,7 @@ internal data class ApiTemplateTask(
             title = title,
             children = children.map { it.toTask(id) },
             sortPosition = sortPosition,
-            templateId = ChecklistTemplateId(templateId)
+            templateId = TemplateId(templateId)
         )
     }
 }

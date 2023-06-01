@@ -4,10 +4,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -16,19 +16,19 @@ import java.util.*
 import javax.inject.Inject
 
 class CreateChecklistFromTemplateUseCase @Inject constructor(
-    private val checklistTemplateRepository: ChecklistTemplateRepository,
+    private val templateRepository: TemplateRepository,
 ) {
 
-    fun createChecklistFromTemplate(checklistTemplateId: ChecklistTemplateId): Flow<Checklist> {
+    fun createChecklistFromTemplate(templateId: TemplateId): Flow<Checklist> {
         return flow {
-            emit(checklistTemplateRepository.get(checklistTemplateId)!!) // TODO handle when this fails
+            emit(templateRepository.get(templateId)!!) // TODO handle when this fails
         }
             .map { basedOn ->
                 createChecklist(basedOn)
             }
     }
 
-    private fun createChecklist(basedOn: ChecklistTemplate): Checklist {
+    private fun createChecklist(basedOn: Template): Checklist {
         return with(basedOn) {
             val checklistId = ChecklistId.new()
             Checklist(

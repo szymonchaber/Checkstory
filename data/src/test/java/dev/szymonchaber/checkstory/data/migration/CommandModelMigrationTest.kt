@@ -4,9 +4,9 @@ import com.google.common.truth.Truth.assertThat
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
+import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.TimeZone
@@ -26,7 +26,7 @@ internal class CommandModelMigrationTest {
 
     private val migrationPreferences = mock<MigrationPreferences>()
 
-    private val templateRepository = mock<ChecklistTemplateRepository> {
+    private val templateRepository = mock<TemplateRepository> {
         on { getAll() } doReturn flowOf(listOf())
     }
 
@@ -106,7 +106,7 @@ internal class CommandModelMigrationTest {
             // given
             whenever(migrationPreferences.didRunCommandModelMigration()) doReturn false
             whenever(synchronizer.hasUnsynchronizedCommands()) doReturn false
-            val templates = checklistTemplates()
+            val templates = templates()
             whenever(templateRepository.getAll()) doReturn flowOf(templates)
 
             // when
@@ -126,7 +126,7 @@ internal class CommandModelMigrationTest {
                 assertThat(it[1]).isEqualTo(
                     ChecklistCommand.CreateChecklistCommand(
                         templates.first().checklists[0].id,
-                        templates.first().checklists[0].checklistTemplateId,
+                        templates.first().checklists[0].templateId,
                         templates.first().checklists[0].title,
                         templates.first().checklists[0].description,
                         templates.first().checklists[0].items,
@@ -139,7 +139,7 @@ internal class CommandModelMigrationTest {
                 assertThat(it[2]).isEqualTo(
                     ChecklistCommand.CreateChecklistCommand(
                         templates.first().checklists[1].id,
-                        templates.first().checklists[1].checklistTemplateId,
+                        templates.first().checklists[1].templateId,
                         templates.first().checklists[1].title,
                         templates.first().checklists[1].description,
                         templates.first().checklists[1].items,
@@ -152,7 +152,7 @@ internal class CommandModelMigrationTest {
             })
         }
 
-    private fun checklistTemplates(): List<ChecklistTemplate> {
-        return listOf(ChecklistTestUtils.createChecklistTemplate())
+    private fun templates(): List<Template> {
+        return listOf(ChecklistTestUtils.createTemplate())
     }
 }

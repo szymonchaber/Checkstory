@@ -3,9 +3,9 @@ package dev.szymonchaber.checkstory.data.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import java.util.*
 
 @Entity
@@ -26,7 +26,7 @@ data class TemplateCheckboxEntity(
             title = checkboxTitle,
             children = children,
             sortPosition = sortPosition,
-            templateId = ChecklistTemplateId(templateId)
+            templateId = TemplateId(templateId)
         )
     }
 

@@ -1,27 +1,27 @@
 package dev.szymonchaber.checkstory.navigation
 
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 
 object Routes {
 
-    fun onboardingChecklistTemplateScreen(): String {
+    fun onboardingTemplateScreen(): String {
         return "edit_template_screen?generateOnboarding=true"
     }
 
-    fun newChecklistTemplateScreen(): String {
+    fun newTemplateScreen(): String {
         return "edit_template_screen"
     }
 
-    fun editChecklistTemplateScreen(templateId: ChecklistTemplateId): String {
+    fun editTemplateScreen(templateId: TemplateId): String {
         return "edit_template_screen?templateId=${templateId.id}"
     }
 
-    fun checklistHistoryScreen(templateId: ChecklistTemplateId): String {
+    fun checklistHistoryScreen(templateId: TemplateId): String {
         return "checklist_history?templateId=${templateId.id}"
     }
 
-    fun newChecklistScreen(templateId: ChecklistTemplateId): String {
+    fun newChecklistScreen(templateId: TemplateId): String {
         return "fill_checklist_screen?createChecklistFrom=${templateId.id}"
     }
 

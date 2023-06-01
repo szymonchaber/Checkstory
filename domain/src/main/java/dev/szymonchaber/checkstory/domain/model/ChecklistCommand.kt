@@ -4,7 +4,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import java.time.LocalDateTime
@@ -17,7 +17,7 @@ sealed interface ChecklistCommand : Command {
 
     data class CreateChecklistCommand(
         override val checklistId: ChecklistId,
-        val templateId: ChecklistTemplateId,
+        val templateId: TemplateId,
         val title: String,
         val description: String,
         val tasks: List<Checkbox>,
@@ -30,7 +30,7 @@ sealed interface ChecklistCommand : Command {
             val localDateTime = LocalDateTime.ofInstant(timestamp.toJavaInstant(), ZoneId.systemDefault())
             return checklist.copy(
                 id = checklistId,
-                checklistTemplateId = templateId,
+                templateId = templateId,
                 title = title,
                 description = description,
                 items = tasks,

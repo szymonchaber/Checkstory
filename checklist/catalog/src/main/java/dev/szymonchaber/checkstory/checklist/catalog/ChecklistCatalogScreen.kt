@@ -150,14 +150,14 @@ private fun ChecklistCatalogView(
                 navigator.navigate(Routes.editChecklistScreen(value.checklistId))
             }
             is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
-                navigator.navigate(Routes.editChecklistTemplateScreen(value.templateId))
+                navigator.navigate(Routes.editTemplateScreen(value.templateId))
             }
             is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
                 navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
             }
 
             is ChecklistCatalogEffect.NavigateToNewTemplate -> {
-                navigator.navigate(Routes.newChecklistTemplateScreen())
+                navigator.navigate(Routes.newTemplateScreen())
             }
 
             is ChecklistCatalogEffect.NavigateToPaymentScreen -> {
@@ -194,13 +194,13 @@ private fun ChecklistCatalogView(
             item {
                 RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
             }
-            checklistTemplates(state, viewModel)
+            templates(state, viewModel)
         }
         PullRefreshIndicator(state.isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
     }
 }
 
-private fun LazyListScope.checklistTemplates(
+private fun LazyListScope.templates(
     state: ChecklistCatalogState,
     viewModel: ChecklistCatalogViewModel
 ) {
@@ -217,13 +217,13 @@ private fun LazyListScope.checklistTemplates(
             }
         }
         is ChecklistCatalogLoadingState.Success -> {
-            if (loadingState.checklistTemplates.isEmpty()) {
+            if (loadingState.templates.isEmpty()) {
                 item {
                     NoTemplatesView()
                 }
             } else {
-                items(loadingState.checklistTemplates) {
-                    ChecklistTemplateView(it, viewModel::onEvent)
+                items(loadingState.templates) {
+                    TemplateView(it, viewModel::onEvent)
                 }
             }
         }

@@ -5,11 +5,11 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.net.toUri
 import dagger.hilt.android.AndroidEntryPoint
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
-import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetReminderUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetTemplateUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,7 +22,7 @@ class ReminderReceiver : BroadcastReceiver() {
     lateinit var notificationsManager: NotificationsManager
 
     @Inject
-    lateinit var getChecklistTemplateUseCase: GetChecklistTemplateUseCase
+    lateinit var getTemplateUseCase: GetTemplateUseCase
 
     @Inject
     lateinit var getReminderUseCase: GetReminderUseCase
@@ -31,12 +31,12 @@ class ReminderReceiver : BroadcastReceiver() {
     lateinit var reminderScheduler: ReminderScheduler
 
     override fun onReceive(context: Context, intent: Intent) {
-        val templateId = intent.getStringExtra(KEY_TEMPLATE_ID)?.let(ChecklistTemplateId::fromUuidString) ?: return
+        val templateId = intent.getStringExtra(KEY_TEMPLATE_ID)?.let(TemplateId::fromUuidString) ?: return
         val reminderId = intent.getStringExtra(KEY_REMINDER_ID)?.let(ReminderId::fromUuidString) ?: return
         CoroutineScope(Dispatchers.Main)
             .launch {
                 val reminder = getReminderUseCase.getReminder(reminderId) ?: return@launch
-                val template = getChecklistTemplateUseCase.getTemplate(templateId) ?: return@launch
+                val template = getTemplateUseCase.getTemplate(templateId) ?: return@launch
                 val newChecklistIntent = Intent(
                     Intent.ACTION_VIEW,
                     "app://checkstory/checklist/new/${template.id.id}".toUri()
@@ -64,7 +64,7 @@ class ReminderReceiver : BroadcastReceiver() {
         private const val KEY_TEMPLATE_ID = "TEMPLATE_ID"
         private const val KEY_REMINDER_ID = "REMINDER_ID"
 
-        fun newIntent(context: Context, templateId: ChecklistTemplateId, reminderId: ReminderId): Intent {
+        fun newIntent(context: Context, templateId: TemplateId, reminderId: ReminderId): Intent {
             return Intent(context, ReminderReceiver::class.java)
                 .putExtra(KEY_TEMPLATE_ID, templateId.id.toString())
                 .putExtra(KEY_REMINDER_ID, reminderId.id.toString())

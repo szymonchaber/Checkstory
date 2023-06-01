@@ -2,10 +2,10 @@ package dev.szymonchaber.checkstory.data.database.model.command
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -46,7 +46,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
 
         companion object {
 
-            fun from(template: ChecklistTemplate): ExistingTemplateEntity {
+            fun from(template: Template): ExistingTemplateEntity {
                 return with(template) {
                     ExistingTemplateEntity(
                         id.id,
@@ -179,27 +179,27 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
     fun toDomainCommand(): TemplateCommand {
         return when (this) {
             is CreateNewTemplateEntity -> TemplateCommand.CreateNewTemplate(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
             is RenameTemplateEntity -> TemplateCommand.RenameTemplate(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 newTitle = newTitle,
                 timestamp = timestamp,
                 commandId = commandId
             )
 
             is ChangeTemplateDescriptionEntity -> TemplateCommand.ChangeTemplateDescription(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 newDescription = newDescription,
                 timestamp = timestamp,
                 commandId = commandId
             )
 
             is AddTemplateTaskEntity -> TemplateCommand.AddTemplateTask(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 taskId = TemplateCheckboxId(taskId),
                 parentTaskId = parentTaskId?.let { TemplateCheckboxId(it) },
                 timestamp = timestamp,
@@ -207,7 +207,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
             )
 
             is RenameTemplateTaskEntity -> TemplateCommand.RenameTemplateTask(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 taskId = TemplateCheckboxId(taskId),
                 newTitle = newTitle,
                 timestamp = timestamp,
@@ -215,7 +215,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
             )
 
             is DeleteTemplateTaskEntity -> TemplateCommand.DeleteTemplateTask(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 taskId = TemplateCheckboxId(taskId),
                 timestamp = timestamp,
                 commandId = commandId
@@ -225,7 +225,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 localPositions = localPositions.mapKeys { TemplateCheckboxId(it.key) },
                 timestamp = timestamp,
                 commandId = commandId,
-                templateId = ChecklistTemplateId(templateId)
+                templateId = TemplateId(templateId)
             )
 
             is MoveTemplateTaskEntity -> TemplateCommand.MoveTemplateTask(
@@ -233,25 +233,25 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 newParentTaskId = newParentTaskId?.let { TemplateCheckboxId(it) },
                 timestamp = timestamp,
                 commandId = commandId,
-                templateId = ChecklistTemplateId(templateId)
+                templateId = TemplateId(templateId)
             )
 
             is AddOrReplaceTemplateReminderEntity -> TemplateCommand.AddOrReplaceTemplateReminder(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 reminder = reminder.toReminder(),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
             is DeleteTemplateReminderEntity -> TemplateCommand.DeleteTemplateReminder(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 reminderId = ReminderId(reminderId),
                 timestamp = timestamp,
                 commandId = commandId
             )
 
             is DeleteTemplateEntity -> TemplateCommand.DeleteTemplate(
-                templateId = ChecklistTemplateId(templateId),
+                templateId = TemplateId(templateId),
                 timestamp = timestamp,
                 commandId = commandId
             )
@@ -421,7 +421,7 @@ internal fun CommandReminderEntity.toReminder(): Reminder {
         is CommandReminderEntity.ExactEntity -> {
             Reminder.Exact(
                 id = ReminderId(id),
-                forTemplate = ChecklistTemplateId(forTemplate),
+                forTemplate = TemplateId(forTemplate),
                 startDateTime = startDateTime.toJavaLocalDateTime()
             )
         }
@@ -435,7 +435,7 @@ internal fun CommandReminderEntity.toReminder(): Reminder {
             }
             Reminder.Recurring(
                 id = ReminderId(id),
-                forTemplate = ChecklistTemplateId(forTemplate),
+                forTemplate = TemplateId(forTemplate),
                 startDateTime = startDateTime.toJavaLocalDateTime(),
                 interval = interval
             )

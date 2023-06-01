@@ -7,9 +7,9 @@ import dev.szymonchaber.checkstory.api.template.TemplatesApi
 import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
 import dev.szymonchaber.checkstory.data.repository.CommandRepository
 import dev.szymonchaber.checkstory.domain.model.Command
-import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
+import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 @Singleton
 class SynchronizerImpl @Inject internal constructor(
-    private val templateRepository: ChecklistTemplateRepository,
+    private val templateRepository: TemplateRepository,
     private val commandsApi: CommandsApi,
     private val commandRepository: CommandRepository,
     private val templatesApi: TemplatesApi,

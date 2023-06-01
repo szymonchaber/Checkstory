@@ -6,8 +6,8 @@ import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -42,7 +42,7 @@ internal class CommandRepository @Inject constructor(
         return dao.getAllSuspend().size
     }
 
-    suspend fun commandOnlyTemplates(): List<ChecklistTemplate> {
+    suspend fun commandOnlyTemplates(): List<Template> {
         return getUnappliedCommandsFlow().first()
             .filterIsInstance<TemplateCommand>()
             .groupBy { it.templateId }
@@ -52,7 +52,7 @@ internal class CommandRepository @Inject constructor(
                 }
             }
             .map { (id, commands) ->
-                commands.fold(ChecklistTemplate.empty(id)) { acc, command ->
+                commands.fold(Template.empty(id)) { acc, command ->
                     command.applyTo(acc)
                 }
             }
@@ -74,7 +74,7 @@ internal class CommandRepository @Inject constructor(
             }
     }
 
-    suspend fun hydrate(template: ChecklistTemplate): ChecklistTemplate {
+    suspend fun hydrate(template: Template): Template {
         return commandsForTemplate(template.id)
             .fold(template) { acc, command ->
                 command.applyTo(acc)
@@ -88,7 +88,7 @@ internal class CommandRepository @Inject constructor(
             }
     }
 
-    private suspend fun commandsForTemplate(templateId: ChecklistTemplateId): List<TemplateCommand> {
+    private suspend fun commandsForTemplate(templateId: TemplateId): List<TemplateCommand> {
         return getUnappliedCommandsFlow().first()
             .filterIsInstance<TemplateCommand>()
             .filter { command -> command.templateId == templateId }

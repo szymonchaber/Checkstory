@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.domain.model
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import kotlinx.datetime.Instant
@@ -20,18 +20,18 @@ sealed interface Command {
 
 sealed interface TemplateCommand : Command {
 
-    fun applyTo(template: ChecklistTemplate): ChecklistTemplate
+    fun applyTo(template: Template): Template
 
-    val templateId: ChecklistTemplateId
+    val templateId: TemplateId
 
     data class CreateNewTemplate(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID(),
-        val existingData: ChecklistTemplate? = null
+        val existingData: Template? = null
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             val instant = timestamp
             val localDateTime = LocalDateTime.ofInstant(instant.toJavaInstant(), ZoneId.systemDefault())
             return template.copy(createdAt = localDateTime)
@@ -39,38 +39,38 @@ sealed interface TemplateCommand : Command {
     }
 
     data class RenameTemplate(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         val newTitle: String,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return template.copy(title = newTitle)
         }
     }
 
     data class ChangeTemplateDescription(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         val newDescription: String,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return template.copy(description = newDescription)
         }
     }
 
     class AddTemplateTask(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         val taskId: TemplateCheckboxId,
         val parentTaskId: TemplateCheckboxId?,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return if (parentTaskId != null) {
                 template.copy(items = template.items.map { it.plusChildCheckboxRecursive(parentTaskId, taskId) })
             } else {
@@ -116,14 +116,14 @@ sealed interface TemplateCommand : Command {
     }
 
     class RenameTemplateTask(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         val taskId: TemplateCheckboxId,
         val newTitle: String,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return template.copy(items = template.items
                 .map {
                     it.withUpdatedTitleRecursive(taskId, newTitle)
@@ -146,13 +146,13 @@ sealed interface TemplateCommand : Command {
     }
 
     class DeleteTemplateTask(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         val taskId: TemplateCheckboxId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return template.copy(items = template.items.withExtractedTask(taskId).first)
         }
     }
@@ -161,10 +161,10 @@ sealed interface TemplateCommand : Command {
         val localPositions: Map<TemplateCheckboxId, Long>,
         override val timestamp: Instant,
         override val commandId: UUID,
-        override val templateId: ChecklistTemplateId
+        override val templateId: TemplateId
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return template.copy(
                 items = template.items.map(::updatePosition).sortedBy(TemplateCheckbox::sortPosition)
             )
@@ -184,10 +184,10 @@ sealed interface TemplateCommand : Command {
         val newParentTaskId: TemplateCheckboxId?,
         override val timestamp: Instant,
         override val commandId: UUID,
-        override val templateId: ChecklistTemplateId
+        override val templateId: TemplateId
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             val (filteredTasks, movedItem) = template.items.withExtractedTask(taskId)
             val movedItemWithTargetParent = movedItem.copy(parentId = newParentTaskId)
             val items = if (newParentTaskId == null) {
@@ -212,13 +212,13 @@ sealed interface TemplateCommand : Command {
     }
 
     class AddOrReplaceTemplateReminder(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         val reminder: Reminder,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             val newReminders = if (template.reminders.any { it.id == reminder.id }) {
                 template.reminders.map {
                     if (it.id == reminder.id) {
@@ -235,24 +235,24 @@ sealed interface TemplateCommand : Command {
     }
 
     class DeleteTemplateReminder(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         val reminderId: ReminderId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return template.copy(reminders = template.reminders.filterNot { it.id == reminderId })
         }
     }
 
     class DeleteTemplate(
-        override val templateId: ChecklistTemplateId,
+        override val templateId: TemplateId,
         override val timestamp: Instant,
         override val commandId: UUID = UUID.randomUUID()
     ) : TemplateCommand {
 
-        override fun applyTo(template: ChecklistTemplate): ChecklistTemplate {
+        override fun applyTo(template: Template): Template {
             return template.copy(isRemoved = true)
         }
     }

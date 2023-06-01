@@ -1,17 +1,17 @@
 package dev.szymonchaber.checkstory.data.repository
 
-import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
+import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
-import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
+import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -25,29 +25,29 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-internal class ChecklistTemplateRepositoryImpl @Inject constructor(
-    private val checklistTemplateDao: ChecklistTemplateDao,
+internal class TemplateRepositoryImpl @Inject constructor(
+    private val templateDao: TemplateDao,
     private val templateCheckboxDao: TemplateCheckboxDao,
     private val reminderDao: ReminderDao,
     private val commandRepository: CommandRepository,
     private val checklistRepository: ChecklistRepositoryImpl
-) : ChecklistTemplateRepository {
+) : TemplateRepository {
 
-    override suspend fun get(checklistTemplateId: ChecklistTemplateId): ChecklistTemplate? {
-        return checklistTemplateDao.getByIdOrNull(checklistTemplateId.id)
-            ?.let { combineIntoDomainChecklistTemplate(it) }
+    override suspend fun get(templateId: TemplateId): Template? {
+        return templateDao.getByIdOrNull(templateId.id)
+            ?.let { combineIntoDomainTemplate(it) }
             ?.firstOrNull()
             ?.let {
                 commandRepository.hydrate(it)
             }
-            ?: commandRepository.commandOnlyTemplates().find { it.id == checklistTemplateId }
+            ?: commandRepository.commandOnlyTemplates().find { it.id == templateId }
     }
 
-    override fun getAll(): Flow<List<ChecklistTemplate>> {
-        return checklistTemplateDao.getAll()
+    override fun getAll(): Flow<List<Template>> {
+        return templateDao.getAll()
             .flatMapLatest {
                 withContext(Dispatchers.Default) {
-                    it.map { combineIntoDomainChecklistTemplate(it) }.toFlowOfLists()
+                    it.map { combineIntoDomainTemplate(it) }.toFlowOfLists()
                 }
             }
             .combine(commandRepository.getUnappliedCommandsFlow()) { templates, _ ->
@@ -60,51 +60,51 @@ internal class ChecklistTemplateRepositoryImpl @Inject constructor(
             }
     }
 
-    override suspend fun update(checklistTemplate: ChecklistTemplate) {
-        insert(checklistTemplate)
+    override suspend fun update(template: Template) {
+        insert(template)
     }
 
-    suspend fun insert(checklistTemplate: ChecklistTemplate): UUID {
+    suspend fun insert(template: Template): UUID {
         return withContext(Dispatchers.Default) {
-            val checklistTemplateId = checklistTemplate.id.id
-            checklistTemplateDao.insert(
-                ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate)
+            val templateId = template.id.id
+            templateDao.insert(
+                ChecklistTemplateEntity.fromDomainTemplate(template)
             )
             awaitAll(
                 async {
                     templateCheckboxDao.insertAll(
-                        checklistTemplate.flattenedItems
+                        template.flattenedItems
                             .map(TemplateCheckboxEntity::fromDomainTemplateCheckbox)
                     )
                 },
                 async {
-                    reminderDao.insertAll(checklistTemplate.reminders.map(ReminderEntity::fromDomainReminder))
+                    reminderDao.insertAll(template.reminders.map(ReminderEntity::fromDomainReminder))
                 }
             )
-            checklistTemplateId
+            templateId
         }
     }
 
-    private suspend fun combineIntoDomainChecklistTemplate(entity: ChecklistTemplateEntity): Flow<ChecklistTemplate> {
+    private suspend fun combineIntoDomainTemplate(entity: ChecklistTemplateEntity): Flow<Template> {
         return withContext(Dispatchers.Default) {
-            val checkboxesFlow = templateCheckboxDao.getAllForChecklistTemplate(entity.id)
-            val checklistsFlow = checklistRepository.getBasedOn(ChecklistTemplateId(entity.id))
-            val remindersFlow = reminderDao.getAllForChecklistTemplate(entity.id)
+            val checkboxesFlow = templateCheckboxDao.getAllForTemplate(entity.id)
+            val checklistsFlow = checklistRepository.getBasedOn(TemplateId(entity.id))
+            val remindersFlow = reminderDao.getAllForTemplate(entity.id)
             combine(checkboxesFlow, checklistsFlow, remindersFlow) { checkboxes, checklists, reminders ->
-                mapChecklistTemplate(entity, checkboxes, checklists, reminders)
+                mapTemplate(entity, checkboxes, checklists, reminders)
             }
         }
     }
 
-    private fun mapChecklistTemplate(
+    private fun mapTemplate(
         template: ChecklistTemplateEntity,
         checkboxes: List<TemplateCheckboxEntity>,
         checklists: List<Checklist>,
         reminders: List<ReminderEntity>
-    ): ChecklistTemplate {
+    ): Template {
         return with(template) {
-            ChecklistTemplate(
-                ChecklistTemplateId(id),
+            Template(
+                TemplateId(id),
                 title,
                 description,
                 groupToDomain(checkboxes),
@@ -147,17 +147,17 @@ internal class ChecklistTemplateRepositoryImpl @Inject constructor(
         val children: MutableList<CheckboxToChildren> = mutableListOf()
     )
 
-    override suspend fun delete(checklistTemplate: ChecklistTemplate) {
-        checklistTemplateDao.delete(ChecklistTemplateEntity.fromDomainChecklistTemplate(checklistTemplate))
-        deleteTemplateReminders(checklistTemplate)
+    override suspend fun delete(template: Template) {
+        templateDao.delete(ChecklistTemplateEntity.fromDomainTemplate(template))
+        deleteTemplateReminders(template)
     }
 
-    private suspend fun deleteTemplateReminders(checklistTemplate: ChecklistTemplate) {
-        reminderDao.deleteAllFromTemplate(checklistTemplate.id.id)
+    private suspend fun deleteTemplateReminders(template: Template) {
+        reminderDao.deleteAllFromTemplate(template.id.id)
     }
 
-    suspend fun deleteCheckboxesFromTemplate(checklistTemplate: ChecklistTemplate) {
-        templateCheckboxDao.deleteAllFromTemplate(checklistTemplate.id.id)
+    suspend fun deleteCheckboxesFromTemplate(template: Template) {
+        templateCheckboxDao.deleteAllFromTemplate(template.id.id)
     }
 
     suspend fun deleteTemplateCheckbox(templateCheckbox: TemplateCheckbox) {
@@ -172,15 +172,15 @@ internal class ChecklistTemplateRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun replaceData(with: List<ChecklistTemplate>) {
-        val templates = with.map(ChecklistTemplateEntity::fromDomainChecklistTemplate)
+    override suspend fun replaceData(with: List<Template>) {
+        val templates = with.map(ChecklistTemplateEntity::fromDomainTemplate)
         val flatItems =
-            with.flatMap(ChecklistTemplate::flattenedItems).map(TemplateCheckboxEntity::fromDomainTemplateCheckbox)
-        val flatReminders = with.flatMap(ChecklistTemplate::reminders).map(ReminderEntity::fromDomainReminder)
-        checklistTemplateDao.replaceData(templates, flatItems, flatReminders)
+            with.flatMap(Template::flattenedItems).map(TemplateCheckboxEntity::fromDomainTemplateCheckbox)
+        val flatReminders = with.flatMap(Template::reminders).map(ReminderEntity::fromDomainReminder)
+        templateDao.replaceData(templates, flatItems, flatReminders)
     }
 
     override suspend fun deleteAllData() {
-        checklistTemplateDao.deleteAll()
+        templateDao.deleteAll()
     }
 }

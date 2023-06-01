@@ -3,7 +3,7 @@ package dev.szymonchaber.checkstory.api.checklist.model
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
@@ -26,7 +26,7 @@ internal data class ApiChecklist(
     fun toChecklist(): Checklist {
         return Checklist(
             id = ChecklistId(id),
-            checklistTemplateId = ChecklistTemplateId(templateId),
+            templateId = TemplateId(templateId),
             title = title,
             description = description,
             items = tasks.sortedBy(ApiTask::sortPosition).map(ApiTask::toTask),

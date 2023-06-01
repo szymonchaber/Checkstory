@@ -12,10 +12,10 @@ import dev.szymonchaber.checkstory.data.database.AppDatabase
 import dev.szymonchaber.checkstory.data.database.Migration5to6
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
-import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateCheckboxDao
+import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
@@ -61,7 +61,7 @@ object DatabaseModule {
             withContext(Dispatchers.IO) {
                 // TODO the app without below code will crash
                 val templateId = UUID.randomUUID()
-                checklistTemplateDao.insert(
+                templateDao.insert(
                     ChecklistTemplateEntity(
                         templateId,
                         "Cleaning something",
@@ -96,8 +96,8 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideChecklistTemplateDao(database: AppDatabase): ChecklistTemplateDao {
-        return database.checklistTemplateDao
+    fun provideTemplateDao(database: AppDatabase): TemplateDao {
+        return database.templateDao
     }
 
     @Provides

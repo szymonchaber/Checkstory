@@ -13,10 +13,10 @@ class Migration5to6(
 ) : Migration(5, 6) {
 
     override fun migrate(database: SupportSQLiteDatabase) {
-        database.migrateChecklistTemplateEntities()
+        database.migrateTemplateEntities()
     }
 
-    private fun SupportSQLiteDatabase.migrateChecklistTemplateEntities() {
+    private fun SupportSQLiteDatabase.migrateTemplateEntities() {
         val checklisTemplateUuidColumn = "templateUuid"
         addTemporaryUuids(this, "ChecklistTemplateEntity", "id", checklisTemplateUuidColumn)
 
@@ -32,15 +32,14 @@ class Migration5to6(
         )
     }
 
-
-    private fun SupportSQLiteDatabase.migrateReminderIds(checklistTemplateUuidColumn: String) {
+    private fun SupportSQLiteDatabase.migrateReminderIds(templateUuidColumn: String) {
         addTemporaryUuids(this, "ReminderEntity", "reminderId", "uuid")
         execSQL("ALTER TABLE ReminderEntity ADD COLUMN template_uuid BLOB")
 
         execSQL(
             """
             UPDATE ReminderEntity SET template_uuid = (
-            SELECT $checklistTemplateUuidColumn FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = ReminderEntity.templateId
+            SELECT $templateUuidColumn FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = ReminderEntity.templateId
             );
         """.trimIndent()
         )
@@ -82,7 +81,7 @@ class Migration5to6(
         )
     }
 
-    private fun SupportSQLiteDatabase.migrateTemplateCheckboxEntities(checklistTemplateUuidColumn: String) {
+    private fun SupportSQLiteDatabase.migrateTemplateCheckboxEntities(templateUuidColumn: String) {
         addTemporaryUuids(this, "TemplateCheckboxEntity", "checkboxId", "uuid")
         execSQL("ALTER TABLE TemplateCheckboxEntity ADD COLUMN parent_uuid BLOB")
         execSQL("ALTER TABLE TemplateCheckboxEntity ADD COLUMN template_uuid BLOB")
@@ -97,7 +96,7 @@ class Migration5to6(
         execSQL(
             """
             UPDATE TemplateCheckboxEntity SET template_uuid = (
-            SELECT $checklistTemplateUuidColumn FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = TemplateCheckboxEntity.templateId
+            SELECT $templateUuidColumn FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = TemplateCheckboxEntity.templateId
             );
         """.trimIndent()
         )
@@ -111,7 +110,7 @@ class Migration5to6(
         )
     }
 
-    private fun SupportSQLiteDatabase.migrateChecklistEntities(checklistTemplateUuidColumn: String) {
+    private fun SupportSQLiteDatabase.migrateChecklistEntities(templateUuidColumn: String) {
         val checklistUuidColumn = "checklist_uuid"
         addTemporaryUuids(this, "ChecklistEntity", "checklistId", checklistUuidColumn)
         execSQL("ALTER TABLE ChecklistEntity ADD COLUMN template_uuid BLOB")
@@ -121,7 +120,7 @@ class Migration5to6(
         execSQL(
             """
             UPDATE ChecklistEntity SET template_uuid = (
-            SELECT $checklistTemplateUuidColumn FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = ChecklistEntity.templateId
+            SELECT $templateUuidColumn FROM ChecklistTemplateEntity WHERE ChecklistTemplateEntity.id = ChecklistEntity.templateId
             );
         """.trimIndent()
         )

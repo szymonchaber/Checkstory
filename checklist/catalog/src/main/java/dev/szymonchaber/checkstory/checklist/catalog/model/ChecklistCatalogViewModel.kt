@@ -7,9 +7,9 @@ import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.User
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.usecase.CheckForUnassignedPaymentUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplatesUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetAllTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SynchronizeDataUseCase
@@ -34,7 +34,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChecklistCatalogViewModel @Inject constructor(
-    private val getChecklistTemplatesUseCase: GetChecklistTemplatesUseCase,
+    private val getAllTemplatesUseCase: GetAllTemplatesUseCase,
     private val getRecentChecklistsUseCase: GetRecentChecklistsUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val tracker: Tracker,
@@ -96,7 +96,7 @@ class ChecklistCatalogViewModel @Inject constructor(
     private fun Flow<ChecklistCatalogEvent>.handleLoadCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.LoadChecklistCatalog>()
             .flatMapMerge {
-                val templatesLoading = getChecklistTemplatesUseCase.getChecklistTemplates()
+                val templatesLoading = getAllTemplatesUseCase.getAllTemplates()
                     .map {
                         ChecklistCatalogLoadingState.Success(it)
                     }.onStart<ChecklistCatalogLoadingState> {
@@ -210,7 +210,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             .withSuccessState()
             .mapLatest { (state, _) ->
                 val user = getCurrentUserUseCase.getCurrentUserFlow().first()
-                val effect = if (canAddTemplate(user, state.checklistTemplates)) {
+                val effect = if (canAddTemplate(user, state.templates)) {
                     ChecklistCatalogEffect.NavigateToNewTemplate()
                 } else {
                     ChecklistCatalogEffect.NavigateToPaymentScreen()
@@ -239,11 +239,11 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
     }
 
-    private fun canAddTemplate(user: User, list: List<ChecklistTemplate>): Boolean {
+    private fun canAddTemplate(user: User, list: List<Template>): Boolean {
         return list.count() < MAX_FREE_CHECKLIST_TEMPLATES || user.isPaidUser
     }
 
-    private fun canAddChecklistToTemplate(user: User, template: ChecklistTemplate): Boolean {
+    private fun canAddChecklistToTemplate(user: User, template: Template): Boolean {
         return template.checklists.count() < MAX_FREE_CHECKLISTS || user.isPaidUser
     }
 

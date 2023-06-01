@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.data.database.model.reminder
 
 import com.google.common.truth.Truth
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -139,7 +139,7 @@ class ReminderEntityTest {
     private fun reminder(interval: Interval): Reminder.Recurring {
         return Reminder.Recurring(
             ReminderId(UUID.randomUUID()),
-            ChecklistTemplateId.new(),
+            TemplateId.new(),
             LocalDateTime.of(2022, 4, 18, 14, 0),
             interval = interval
         )

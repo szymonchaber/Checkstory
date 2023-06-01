@@ -6,13 +6,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
-import dev.szymonchaber.checkstory.domain.usecase.GetChecklistTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
     private val application: Application,
-    private val getChecklistTemplateUseCase: GetChecklistTemplateUseCase,
+    private val getTemplateUseCase: GetTemplateUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val synchronizeCommandsUseCase: SynchronizeCommandsUseCase,
     private val tracker: Tracker
@@ -82,17 +82,17 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private fun Flow<EditTemplateEvent>.handleCreateChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.CreateChecklistTemplate>()
+        return filterIsInstance<EditTemplateEvent.CreateTemplate>()
             .map {
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
-                    val checklistTemplate = emptyChecklistTemplate()
-                    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
+                    val template = emptyTemplate()
+                    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(template)
                         .copy(
                             commands = listOf(
                                 TemplateCommand.CreateNewTemplate(
-                                    checklistTemplate.id,
+                                    template.id,
                                     Clock.System.now()
                                 )
                             )
@@ -103,7 +103,7 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private fun Flow<EditTemplateEvent>.handleGenerateOnboardingTemplate(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.GenerateOnboardingChecklistTemplate>()
+        return filterIsInstance<EditTemplateEvent.GenerateOnboardingTemplate>()
             .map {
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
@@ -115,13 +115,13 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private fun Flow<EditTemplateEvent>.handleEditChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.EditChecklistTemplate>()
+        return filterIsInstance<EditTemplateEvent.EditTemplate>()
             .flatMapLatest { event ->
                 if (isTemplateAlreadyLoaded(event)) {
                     flowOf(state.first() to null)
                 } else {
                     flowOf(
-                        getChecklistTemplateUseCase.getTemplate(event.checklistTemplateId)?.let {
+                        getTemplateUseCase.getTemplate(event.templateId)?.let {
                             withContext(Dispatchers.Default) {
                                 TemplateLoadingState.Success.fromTemplate(it)
                             }
@@ -137,8 +137,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private suspend fun isTemplateAlreadyLoaded(event: EditTemplateEvent.EditChecklistTemplate): Boolean {
-        return (state.first().templateLoadingState as? TemplateLoadingState.Success)?.checklistTemplate?.id == event.checklistTemplateId
+    private suspend fun isTemplateAlreadyLoaded(event: EditTemplateEvent.EditTemplate): Boolean {
+        return (state.first().templateLoadingState as? TemplateLoadingState.Success)?.template?.id == event.templateId
     }
 
     private suspend fun isTemplateAlreadyCreated(): Boolean {
@@ -283,14 +283,14 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.SaveTemplateClicked>()
             .withSuccessState()
             .mapLatest { (loadingState, _) ->
-                val checklistTemplate = loadingState.checklistTemplate
+                val template = loadingState.template
                 synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.finalizedCommands()))
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
-                        "title_length" to checklistTemplate.title.length,
-                        "description_length" to checklistTemplate.description.length,
-                        "checkbox_count" to checklistTemplate.items.flatMap { it.children + it }.count(),
-                        "reminder_count" to checklistTemplate.reminders.count()
+                        "title_length" to template.title.length,
+                        "description_length" to template.description.length,
+                        "checkbox_count" to template.items.flatMap { it.children + it }.count(),
+                        "reminder_count" to template.reminders.count()
                     )
                 )
                 if (loadingState.isOnboardingTemplate) {
@@ -380,7 +380,7 @@ class EditTemplateViewModel @Inject constructor(
                 tracker.logEvent("add_reminder_clicked")
                 val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (user.isPaidUser) {
-                    EditTemplateEffect.ShowAddReminderSheet(state.checklistTemplate.id)
+                    EditTemplateEffect.ShowAddReminderSheet(state.template.id)
                 } else {
                     EditTemplateEffect.ShowFreeRemindersUsed()
                 }
@@ -442,7 +442,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, _) ->
                 tracker.logEvent("edit_template_history_clicked")
-                state.first() to EditTemplateEffect.OpenTemplateHistory(success.checklistTemplate.id)
+                state.first() to EditTemplateEffect.OpenTemplateHistory(success.template.id)
             }
     }
 
@@ -463,7 +463,7 @@ class EditTemplateViewModel @Inject constructor(
 }
 
 // TODO use this
-private fun ChecklistTemplate.trimEndingWhitespaces(): ChecklistTemplate {
+private fun Template.trimEndingWhitespaces(): Template {
     return with(this) {
         copy(
             title = title.trimEnd(),

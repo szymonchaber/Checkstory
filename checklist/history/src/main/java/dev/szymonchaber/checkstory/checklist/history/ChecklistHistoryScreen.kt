@@ -40,7 +40,7 @@ import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 
 @SuppressLint("MissingPermission")
@@ -48,7 +48,7 @@ import dev.szymonchaber.checkstory.navigation.Routes
 @Destination(route = "checklist_history", start = true)
 fun ChecklistHistoryScreen(
     navigator: DestinationsNavigator,
-    templateId: ChecklistTemplateId?
+    templateId: TemplateId?
 ) {
     trackScreenName("checklist_history")
     val viewModel = hiltViewModel<ChecklistHistoryViewModel>()

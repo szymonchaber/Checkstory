@@ -1,16 +1,16 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 
 sealed interface EditTemplateEvent {
 
-    object CreateChecklistTemplate : EditTemplateEvent
+    object CreateTemplate : EditTemplateEvent
 
-    object GenerateOnboardingChecklistTemplate : EditTemplateEvent
+    object GenerateOnboardingTemplate : EditTemplateEvent
 
-    data class EditChecklistTemplate(val checklistTemplateId: ChecklistTemplateId) : EditTemplateEvent
+    data class EditTemplate(val templateId: TemplateId) : EditTemplateEvent
 
     data class TitleChanged(val newTitle: String) : EditTemplateEvent
 

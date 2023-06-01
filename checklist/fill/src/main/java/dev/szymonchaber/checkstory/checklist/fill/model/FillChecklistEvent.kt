@@ -2,13 +2,13 @@ package dev.szymonchaber.checkstory.checklist.fill.model
 
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 
 sealed class FillChecklistEvent {
 
     object EditTemplateClicked : FillChecklistEvent()
 
-    data class CreateChecklistFromTemplate(val checklistTemplateId: ChecklistTemplateId) : FillChecklistEvent()
+    data class CreateChecklistFromTemplate(val templateId: TemplateId) : FillChecklistEvent()
 
     data class LoadChecklist(val checklistId: ChecklistId) : FillChecklistEvent()
 

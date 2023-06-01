@@ -12,7 +12,7 @@ interface ReminderDao {
     fun getAll(): Flow<List<ReminderEntity>>
 
     @Query("SELECT * FROM reminderEntity WHERE reminderEntity.templateId=:templateId")
-    fun getAllForChecklistTemplate(templateId: UUID): Flow<List<ReminderEntity>>
+    fun getAllForTemplate(templateId: UUID): Flow<List<ReminderEntity>>
 
     @Query("SELECT * FROM reminderEntity WHERE reminderEntity.reminderId=:id")
     suspend fun getById(id: UUID): ReminderEntity?

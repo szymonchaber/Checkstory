@@ -1,8 +1,8 @@
 package dev.szymonchaber.checkstory.api.template.model
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDateTime
@@ -21,9 +21,9 @@ internal data class ApiTemplate(
     val isDeleted: Boolean = false
 ) {
 
-    fun toTemplate(): ChecklistTemplate {
-        return ChecklistTemplate(
-            id = ChecklistTemplateId(id),
+    fun toTemplate(): Template {
+        return Template(
+            id = TemplateId(id),
             title = name,
             description = description,
             items = tasks.map { it.toTask() },

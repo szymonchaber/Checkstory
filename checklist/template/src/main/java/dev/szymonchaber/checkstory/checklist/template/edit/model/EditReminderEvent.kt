@@ -2,7 +2,7 @@ package dev.szymonchaber.checkstory.checklist.template.edit.model
 
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.IntervalType
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.ReminderType
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -10,7 +10,7 @@ import java.time.LocalTime
 
 sealed interface EditReminderEvent {
 
-    data class CreateReminder(val templateId: ChecklistTemplateId) : EditReminderEvent
+    data class CreateReminder(val templateId: TemplateId) : EditReminderEvent
 
     data class EditReminder(val reminder: Reminder) : EditReminderEvent
 

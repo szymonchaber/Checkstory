@@ -4,8 +4,8 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import java.time.LocalDateTime
 
-data class ChecklistTemplate(
-    val id: ChecklistTemplateId,
+data class Template(
+    val id: TemplateId,
     val title: String,
     val description: String,
     val items: List<TemplateCheckbox>,
@@ -28,8 +28,8 @@ data class ChecklistTemplate(
 
     companion object {
 
-        fun empty(id: ChecklistTemplateId, createdAt: LocalDateTime = LocalDateTime.now()): ChecklistTemplate {
-            return ChecklistTemplate(
+        fun empty(id: TemplateId, createdAt: LocalDateTime = LocalDateTime.now()): Template {
+            return Template(
                 id = id,
                 title = "",
                 description = "",
@@ -48,5 +48,5 @@ data class TemplateCheckbox(
     val title: String,
     val children: List<TemplateCheckbox>,
     val sortPosition: Long,
-    val templateId: ChecklistTemplateId
+    val templateId: TemplateId
 )

@@ -1,8 +1,8 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 
 sealed interface ViewTemplateCheckbox : java.io.Serializable {
 
@@ -16,7 +16,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
     fun toDomainModel(
         parentId: TemplateCheckboxId? = null,
         position: Int,
-        templateId: ChecklistTemplateId
+        templateId: TemplateId
     ): TemplateCheckbox
 
     fun minusChildCheckboxRecursive(checkbox: ViewTemplateCheckbox): ViewTemplateCheckbox {
@@ -133,7 +133,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override fun toDomainModel(
             parentId: TemplateCheckboxId?,
             position: Int,
-            templateId: ChecklistTemplateId
+            templateId: TemplateId
         ): TemplateCheckbox {
             return TemplateCheckbox(
                 id = id,
@@ -174,7 +174,7 @@ sealed interface ViewTemplateCheckbox : java.io.Serializable {
         override fun toDomainModel(
             parentId: TemplateCheckboxId?,
             position: Int,
-            templateId: ChecklistTemplateId
+            templateId: TemplateId
         ): TemplateCheckbox {
             return TemplateCheckbox(
                 id = id,

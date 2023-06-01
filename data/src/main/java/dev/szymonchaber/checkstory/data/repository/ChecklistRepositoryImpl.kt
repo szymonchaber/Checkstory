@@ -3,15 +3,15 @@ package dev.szymonchaber.checkstory.data.repository
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
-import dev.szymonchaber.checkstory.data.database.dao.ChecklistTemplateDao
+import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import dev.szymonchaber.checkstory.domain.repository.ChecklistSaved
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +35,7 @@ import javax.inject.Singleton
 
 @Singleton
 internal class ChecklistRepositoryImpl @Inject constructor(
-    private val checklistTemplateDao: ChecklistTemplateDao,
+    private val templateDao: TemplateDao,
     private val checklistDao: ChecklistDao,
     private val checkboxDao: CheckboxDao,
     private val commandRepository: CommandRepository
@@ -67,12 +67,12 @@ internal class ChecklistRepositoryImpl @Inject constructor(
             .hydrated()
     }
 
-    override fun getChecklists(basedOn: ChecklistTemplateId): Flow<List<Checklist>> {
+    override fun getChecklists(basedOn: TemplateId): Flow<List<Checklist>> {
         return getBasedOn(basedOn)
     }
 
-    override suspend fun deleteBasedOnTemplate(checklistTemplate: ChecklistTemplate) {
-        getBasedOn(checklistTemplate.id)
+    override suspend fun deleteBasedOnTemplate(template: Template) {
+        getBasedOn(template.id)
             .first()
             .forEach {
                 withContext(Dispatchers.IO) {
@@ -107,12 +107,12 @@ internal class ChecklistRepositoryImpl @Inject constructor(
         return checklist.id
     }
 
-    fun getBasedOn(basedOn: ChecklistTemplateId): Flow<List<Checklist>> {
+    fun getBasedOn(basedOn: TemplateId): Flow<List<Checklist>> {
         val all = checklistDao.getAll(basedOn.id)
         return all.toDomainChecklistFlow()
             .hydrated()
             .map { checklists ->
-                checklists.filter { it.checklistTemplateId == basedOn }
+                checklists.filter { it.templateId == basedOn }
             }
     }
 
@@ -125,7 +125,7 @@ internal class ChecklistRepositoryImpl @Inject constructor(
     }
 
     private fun combineIntoDomainChecklist(checklist: ChecklistEntity): Flow<Checklist?> {
-        return checklistTemplateDao.getById(checklist.templateId)
+        return templateDao.getById(checklist.templateId)
             .onEach {
                 if (it == null) {
                     FirebaseCrashlytics.getInstance()

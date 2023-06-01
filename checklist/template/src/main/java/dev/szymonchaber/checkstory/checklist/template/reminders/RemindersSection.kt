@@ -20,11 +20,11 @@ import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.checklist.template.views.AddButton
 import dev.szymonchaber.checkstory.design.views.SectionLabel
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 
 @Composable
 fun RemindersSection(
-    checklistTemplate: ChecklistTemplate,
+    template: Template,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     Column(Modifier.fillMaxWidth()) {
@@ -45,10 +45,10 @@ fun RemindersSection(
                 text = stringResource(R.string.pro)
             )
         }
-        if (checklistTemplate.reminders.isNotEmpty()) {
+        if (template.reminders.isNotEmpty()) {
             Spacer(modifier = Modifier.height(8.dp))
         }
-        checklistTemplate.reminders.forEach {
+        template.reminders.forEach {
             ReminderItem(it, eventCollector)
         }
         AddButton(

@@ -1,11 +1,11 @@
 package dev.szymonchaber.checkstory.domain.repository
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 
 interface TemplateCheckboxRepository {
 
-    suspend fun deleteFromTemplate(checklistTemplate: ChecklistTemplate)
+    suspend fun deleteFromTemplate(template: Template)
 
     suspend fun deleteTemplateCheckbox(templateCheckbox: TemplateCheckbox)
 

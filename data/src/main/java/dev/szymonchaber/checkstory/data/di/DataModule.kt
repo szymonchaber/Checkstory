@@ -28,7 +28,7 @@ internal interface DataModule {
     fun bindChecklistRepository(repository: ChecklistRepositoryImpl): ChecklistRepository
 
     @Binds
-    fun bindChecklistTemplateRepository(repository: ChecklistTemplateRepositoryImpl): ChecklistTemplateRepository
+    fun bindTemplateRepository(repository: TemplateRepositoryImpl): TemplateRepository
 
     @Binds
     fun bindTemplateCheckboxRepository(repository: TemplateCheckboxRepositoryImpl): TemplateCheckboxRepository

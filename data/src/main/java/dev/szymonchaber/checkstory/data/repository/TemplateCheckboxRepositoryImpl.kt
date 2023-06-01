@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.data.repository
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.repository.TemplateCheckboxRepository
 import javax.inject.Inject
@@ -8,11 +8,11 @@ import javax.inject.Singleton
 
 @Singleton
 internal class TemplateCheckboxRepositoryImpl @Inject constructor(
-    private val dataSource: ChecklistTemplateRepositoryImpl
+    private val dataSource: TemplateRepositoryImpl
 ) : TemplateCheckboxRepository {
 
-    override suspend fun deleteFromTemplate(checklistTemplate: ChecklistTemplate) {
-        dataSource.deleteCheckboxesFromTemplate(checklistTemplate)
+    override suspend fun deleteFromTemplate(template: Template) {
+        dataSource.deleteCheckboxesFromTemplate(template)
     }
 
     override suspend fun deleteTemplateCheckbox(templateCheckbox: TemplateCheckbox) {

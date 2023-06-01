@@ -5,7 +5,7 @@ import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -60,7 +60,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
             is CreateChecklistEntity -> {
                 ChecklistCommand.CreateChecklistCommand(
                     ChecklistId(checklistId),
-                    ChecklistTemplateId(templateId),
+                    TemplateId(templateId),
                     title,
                     description,
                     tasks.map(TaskEntity::toCheckbox),

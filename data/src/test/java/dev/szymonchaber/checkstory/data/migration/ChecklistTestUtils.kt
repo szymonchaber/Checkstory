@@ -4,10 +4,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckbox
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import java.time.LocalDateTime
@@ -15,11 +15,11 @@ import java.util.*
 
 internal object ChecklistTestUtils {
 
-    fun createChecklistTemplate(): ChecklistTemplate {
-        val templateId = ChecklistTemplateId.new()
+    fun createTemplate(): Template {
+        val templateId = TemplateId.new()
         val templateCheckboxId = TemplateCheckboxId(UUID.randomUUID())
         val templateCheckboxId2 = TemplateCheckboxId(UUID.randomUUID())
-        return ChecklistTemplate(
+        return Template(
             id = templateId,
             title = "Example template",
             description = "Example template description",
@@ -81,7 +81,7 @@ internal object ChecklistTestUtils {
         )
     }
 
-    private fun reminderExact(templateId: ChecklistTemplateId): Reminder {
+    private fun reminderExact(templateId: TemplateId): Reminder {
         return Reminder.Exact(
             id = ReminderId(UUID.randomUUID()),
             forTemplate = templateId,
@@ -89,11 +89,11 @@ internal object ChecklistTestUtils {
         )
     }
 
-    private fun checklist(templateId: ChecklistTemplateId): Checklist {
+    private fun checklist(templateId: TemplateId): Checklist {
         val checklistId = ChecklistId(UUID.randomUUID())
         return Checklist(
             id = checklistId,
-            checklistTemplateId = templateId,
+            templateId = templateId,
             title = "Example checklist",
             description = "Example checklist description",
             items = List(5) { checkbox(checklistId, it) },

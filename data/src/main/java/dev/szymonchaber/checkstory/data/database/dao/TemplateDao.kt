@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 @Dao
-interface ChecklistTemplateDao {
+interface TemplateDao {
 
     @Query(
         "SELECT * FROM checklistTemplateEntity"

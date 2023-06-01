@@ -6,7 +6,7 @@ import com.philjay.Frequency
 import com.philjay.RRule
 import com.philjay.Weekday
 import com.philjay.WeekdayNum
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -28,14 +28,14 @@ data class ReminderEntity(
         return if (isRecurring) {
             Reminder.Recurring(
                 ReminderId(reminderId),
-                ChecklistTemplateId(templateId),
+                TemplateId(templateId),
                 startDateUtc, // TODO check if storage works correctly
                 parseInterval()
             )
         } else {
             Reminder.Exact(
                 ReminderId(reminderId),
-                ChecklistTemplateId(templateId),
+                TemplateId(templateId),
                 startDateUtc, // TODO check if storage works correctly
             )
         }

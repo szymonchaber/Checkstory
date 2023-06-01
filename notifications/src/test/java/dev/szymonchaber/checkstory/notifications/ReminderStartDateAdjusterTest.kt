@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.notifications
 
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
@@ -194,7 +194,7 @@ class ReminderStartDateAdjusterTest {
     }
 
     private fun reminder(startDateTime: LocalDateTime, interval: Interval): Reminder.Recurring {
-        return Reminder.Recurring(ReminderId(0), ChecklistTemplateId(0), startDateTime, interval)
+        return Reminder.Recurring(ReminderId(0), TemplateId(0), startDateTime, interval)
     }
 
     companion object {

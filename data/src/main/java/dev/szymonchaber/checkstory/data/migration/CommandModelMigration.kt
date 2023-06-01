@@ -5,9 +5,9 @@ import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.repository.ChecklistTemplateRepository
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
+import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 class CommandModelMigration @Inject internal constructor(
     private val migrationPreferences: MigrationPreferences,
-    private val templateRepository: ChecklistTemplateRepository,
+    private val templateRepository: TemplateRepository,
     private val synchronizer: Synchronizer,
     private val firebaseCrashlytics: FirebaseCrashlytics = FirebaseCrashlytics.getInstance(),
 ) {
@@ -51,22 +51,22 @@ class CommandModelMigration @Inject internal constructor(
         }
     }
 
-    private fun toCreationCommandsDeep(checklistTemplate: ChecklistTemplate): List<Command> {
+    private fun toCreationCommandsDeep(template: Template): List<Command> {
         return listOf(
             TemplateCommand.CreateNewTemplate(
-                checklistTemplate.id,
-                checklistTemplate.createdAt.toKotlinLocalDateTime().toInstant(TimeZone.currentSystemDefault()),
+                template.id,
+                template.createdAt.toKotlinLocalDateTime().toInstant(TimeZone.currentSystemDefault()),
                 UUID.randomUUID(),
-                checklistTemplate
+                template
             ),
-        ) + toCreateChecklistCommands(checklistTemplate.checklists)
+        ) + toCreateChecklistCommands(template.checklists)
     }
 
     private fun toCreateChecklistCommands(checklists: List<Checklist>): List<ChecklistCommand> {
         return checklists.map { checklist ->
             ChecklistCommand.CreateChecklistCommand(
                 checklist.id,
-                checklist.checklistTemplateId,
+                checklist.templateId,
                 checklist.title,
                 checklist.description,
                 checklist.items,

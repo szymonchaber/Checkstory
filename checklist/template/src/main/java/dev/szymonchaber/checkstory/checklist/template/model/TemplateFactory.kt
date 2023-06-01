@@ -3,20 +3,20 @@ package dev.szymonchaber.checkstory.checklist.template.model
 import android.content.res.Resources
 import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplate
-import dev.szymonchaber.checkstory.domain.model.checklist.template.ChecklistTemplateId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateCheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.datetime.Clock
 import java.time.LocalDateTime
 import java.util.*
 
 fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Success {
-    val checklistTemplate = emptyChecklistTemplate()
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(checklistTemplate)
+    val template = emptyTemplate()
+    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(template)
         .copy(
             commands = listOf(
                 TemplateCommand.CreateNewTemplate(
-                    checklistTemplate.id,
+                    template.id,
                     Clock.System.now()
                 )
             )
@@ -84,7 +84,7 @@ fun generateOnboardingCheckboxes(): MutableList<Triple<TemplateCheckboxId, Templ
 }
 
 fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
+    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
         .withNewTitle("Write an offer to a prospect")
         .withNewDescription("Find prospects here: drive.link/prospects")
     return generateWriteOfferCheckboxes().foldInto(templateLoadingState)
@@ -106,7 +106,7 @@ fun generateWriteOfferCheckboxes(): List<Triple<TemplateCheckboxId, TemplateChec
 }
 
 fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
+    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
         .withNewTitle("Onboard a new employee")
     return placeholderCheckboxes {
         repeat(18) {
@@ -117,7 +117,7 @@ fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
 }
 
 fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyChecklistTemplate())
+    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
         .withNewDescription("Daily routine")
 
     return placeholderCheckboxes {
@@ -138,9 +138,9 @@ fun List<Triple<TemplateCheckboxId, TemplateCheckboxId?, String>>.foldInto(succe
     }.copy(mostRecentlyAddedItem = null)
 }
 
-fun emptyChecklistTemplate(): ChecklistTemplate {
-    return ChecklistTemplate(
-        ChecklistTemplateId.new(),
+fun emptyTemplate(): Template {
+    return Template(
+        TemplateId.new(),
         "",
         "",
         listOf(),
