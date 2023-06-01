@@ -4,14 +4,13 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 
-sealed interface ViewTemplateTask : java.io.Serializable {
-
-    val id: TemplateTaskId
-    val parentId: TemplateTaskId?
-    val title: String
-    val children: List<ViewTemplateTask>
-
-    val placeholderTitle: String?
+data class ViewTemplateTask(
+    val id: TemplateTaskId,
+    val parentId: TemplateTaskId?,
+    val title: String,
+    val children: List<ViewTemplateTask>,
+    val placeholderTitle: String? = null
+) : java.io.Serializable {
 
     fun toDomainModel(
         position: Int,
@@ -25,8 +24,8 @@ sealed interface ViewTemplateTask : java.io.Serializable {
             children = children.mapIndexed { index, child ->
                 child.toDomainModel(index, templateId, id)
             },
-            position.toLong(),
-            templateId
+            sortPosition = position.toLong(),
+            templateId = templateId
         )
     }
 
@@ -49,7 +48,7 @@ sealed interface ViewTemplateTask : java.io.Serializable {
             ?: children.map {
                 it.withoutChild(childTaskId, onItemFoundAndRemoved)
             }
-        return abstractCopy(children = updatedChildren)
+        return copy(children = updatedChildren)
     }
 
     fun withMovedChildRecursive(
@@ -61,7 +60,7 @@ sealed interface ViewTemplateTask : java.io.Serializable {
         } else {
             children.map { it.withMovedChildRecursive(parentTask, childTask) }
         }
-        return abstractCopy(children = updatedChildren)
+        return copy(children = updatedChildren)
     }
 
     fun withMovedSiblingRecursive(
@@ -77,14 +76,14 @@ sealed interface ViewTemplateTask : java.io.Serializable {
                 it.withMovedSiblingRecursive(siblingViewKey, movedItem)
             }
         }
-        return abstractCopy(children = updatedChildren)
+        return copy(children = updatedChildren)
     }
 
     fun withUpdatedTitleRecursive(checkbox: ViewTemplateTask, newTitle: String): ViewTemplateTask {
         return if (id == checkbox.id) {
-            abstractCopy(title = newTitle)
+            copy(title = newTitle)
         } else {
-            abstractCopy(children = children.map { it.withUpdatedTitleRecursive(checkbox, newTitle) })
+            copy(children = children.map { it.withUpdatedTitleRecursive(checkbox, newTitle) })
         }
     }
 
@@ -93,10 +92,10 @@ sealed interface ViewTemplateTask : java.io.Serializable {
         newCheckboxId: TemplateTaskId,
         placeholderTitle: String? = null
     ): ViewTemplateTask {
-        return abstractCopy(
+        return copy(
             children = if (id == parentId) {
                 children.plus(
-                    New(
+                    ViewTemplateTask(
                         id = newCheckboxId,
                         parentId = id,
                         title = "",
@@ -116,93 +115,23 @@ sealed interface ViewTemplateTask : java.io.Serializable {
         )
     }
 
-    fun withIsLastChild(isLastChild: Boolean): ViewTemplateTask {
-        return abstractCopy()
-    }
-
     fun updateParentId(parentId: TemplateTaskId?): ViewTemplateTask {
-        val updatedCheckbox = abstractCopy(parentId = parentId)
-        return updatedCheckbox.abstractCopy(children = updatedCheckbox.children.updateParentIds(updatedCheckbox.id))
-    }
-
-    fun abstractCopy(
-        id: TemplateTaskId = this.id,
-        parentId: TemplateTaskId? = this.parentId,
-        isParent: Boolean = false,
-        title: String = this.title,
-        children: List<ViewTemplateTask> = this.children
-    ): ViewTemplateTask
-
-    data class New(
-        override val id: TemplateTaskId,
-        override val parentId: TemplateTaskId?,
-        override val title: String,
-        override val children: List<ViewTemplateTask>,
-        override val placeholderTitle: String? = null
-    ) : ViewTemplateTask {
-
-        override fun abstractCopy(
-            id: TemplateTaskId,
-            parentId: TemplateTaskId?,
-            isParent: Boolean,
-            title: String,
-            children: List<ViewTemplateTask>,
-        ): ViewTemplateTask {
-            return copy(
-                id = id,
-                parentId = parentId,
-                title = title,
-                children = children,
-            )
-        }
-    }
-
-    data class Existing(
-        override val id: TemplateTaskId,
-        override val parentId: TemplateTaskId?,
-        override val title: String,
-        override val children: List<ViewTemplateTask>,
-        override val placeholderTitle: String? = null
-    ) : ViewTemplateTask {
-
-        override fun abstractCopy(
-            id: TemplateTaskId,
-            parentId: TemplateTaskId?,
-            isParent: Boolean,
-            title: String,
-            children: List<ViewTemplateTask>,
-        ): ViewTemplateTask {
-            return copy(
-                id = id,
-                parentId = parentId,
-                title = title,
-                children = children
-            )
-        }
+        val updatedCheckbox = copy(parentId = parentId)
+        return updatedCheckbox.copy(children = updatedCheckbox.children.updateParentIds(updatedCheckbox.id))
     }
 
     companion object {
 
-        fun fromDomainModel(
-            templateTask: TemplateTask
-        ): Existing {
+        fun fromDomainModel(templateTask: TemplateTask): ViewTemplateTask {
             return with(templateTask) {
-                Existing(
-                    id = this.id,
+                ViewTemplateTask(
+                    id = id,
                     parentId = templateTask.parentId,
                     title = title,
-                    children = children.map {
-                        fromDomainModel(it)
-                    }.reindexed(),
+                    children = children.map(::fromDomainModel),
                 )
             }
         }
-    }
-}
-
-private fun List<ViewTemplateTask>.reindexed(): List<ViewTemplateTask> {
-    return mapIndexed { index, item ->
-        item.withIsLastChild(index == lastIndex)
     }
 }
 

@@ -370,8 +370,8 @@ sealed interface TemplateLoadingState {
             title: String = "",
             placeholderTitle: String? = null,
             id: TemplateTaskId = TemplateTaskId(UUID.randomUUID())
-        ): ViewTemplateTask.New {
-            return ViewTemplateTask.New(
+        ): ViewTemplateTask {
+            return ViewTemplateTask(
                 id = id,
                 parentId = null,
                 title = title,
@@ -425,6 +425,6 @@ fun List<ViewTemplateTask>.withTaskAtIndex(
 // TODO not sure if this is still required
 fun List<ViewTemplateTask>.updateParentIds(parentId: TemplateTaskId? = null): List<ViewTemplateTask> {
     return map {
-        it.abstractCopy(parentId = parentId, children = it.children.updateParentIds(it.id))
+        it.copy(parentId = parentId, children = it.children.updateParentIds(it.id))
     }
 }
