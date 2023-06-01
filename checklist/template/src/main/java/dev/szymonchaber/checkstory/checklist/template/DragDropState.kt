@@ -57,7 +57,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
         private set
     var dragOffset by mutableStateOf(Offset.Zero)
         private set
-    var checkboxViewId by mutableStateOf<TemplateTaskId?>(null)
+    var taskViewId by mutableStateOf<TemplateTaskId?>(null)
     var dataToDrop by mutableStateOf<TemplateTaskId?>(null)
 
     var previousDropTargetInfo: DropTargetInfo? by mutableStateOf(null)
@@ -84,12 +84,12 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
                         initialDragPosition = Offset(dragSource.handlePosition.x, itemInfo.offset.toFloat())
                         initialDragSize = IntSize(width = dragSource.handleSize.width, height = itemInfo.size)
                         isDragging = true
-                        checkboxViewId = itemInfo.key as? TemplateTaskId
+                        taskViewId = itemInfo.key as? TemplateTaskId
                     }
             }
             is DragSource.NewTaskDraggable -> {
                 dataToDrop = TemplateTaskId(NEW_TASK_ID)
-                checkboxViewId = TemplateTaskId(NEW_TASK_ID)
+                taskViewId = TemplateTaskId(NEW_TASK_ID)
                 isDragging = true
                 initialDragPosition = dragSource.initialPosition
                 initialDragSize = dragSource.initialSize
@@ -101,7 +101,7 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
     fun onDragInterrupt() {
         dataToDrop?.let {
             dataToDrop = null
-            checkboxViewId = null
+            taskViewId = null
             currentDropTargetInfo?.onDataDropped?.invoke(it)
         }
         draggedDistance = 0f

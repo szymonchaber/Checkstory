@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.domain.model
 
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
@@ -20,7 +20,7 @@ sealed interface ChecklistCommand : Command {
         val templateId: TemplateId,
         val title: String,
         val description: String,
-        val tasks: List<Checkbox>,
+        val tasks: List<Task>,
         override val commandId: UUID,
         override val timestamp: Instant,
         val notes: String? = null
@@ -53,7 +53,7 @@ sealed interface ChecklistCommand : Command {
 
     data class ChangeTaskCheckedCommand(
         override val checklistId: ChecklistId,
-        val taskId: CheckboxId,
+        val taskId: TaskId,
         val isChecked: Boolean,
         override val commandId: UUID,
         override val timestamp: Instant,
@@ -81,9 +81,9 @@ sealed interface ChecklistCommand : Command {
     fun applyTo(checklist: Checklist): Checklist
 }
 
-private fun List<Checkbox>.withExtractedTask(id: CheckboxId): Pair<List<Checkbox>, Checkbox> {
-    var movedItem: Checkbox? = null
-    val onItemFoundAndRemoved: (Checkbox) -> Unit = {
+private fun List<Task>.withExtractedTask(id: TaskId): Pair<List<Task>, Task> {
+    var movedItem: Task? = null
+    val onItemFoundAndRemoved: (Task) -> Unit = {
         movedItem = it
     }
     val withExtractedElement = this
@@ -101,10 +101,10 @@ private fun List<Checkbox>.withExtractedTask(id: CheckboxId): Pair<List<Checkbox
     return withExtractedElement to movedItem!!
 }
 
-private fun Checkbox.withoutChild(
-    childTaskId: CheckboxId,
-    onItemFoundAndRemoved: (Checkbox) -> Unit
-): Checkbox {
+private fun Task.withoutChild(
+    childTaskId: TaskId,
+    onItemFoundAndRemoved: (Task) -> Unit
+): Task {
     val updatedChildren = children
         .firstOrNull {
             it.id == childTaskId

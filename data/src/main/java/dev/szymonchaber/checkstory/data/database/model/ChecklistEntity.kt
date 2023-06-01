@@ -2,9 +2,9 @@ package dev.szymonchaber.checkstory.data.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import java.time.LocalDateTime
 import java.util.*
@@ -21,14 +21,14 @@ data class ChecklistEntity(
     fun toDomainChecklist(
         templateTitle: String,
         templateDescription: String,
-        checkboxes: List<Checkbox>
+        tasks: List<Task>
     ): Checklist {
         return Checklist(
             ChecklistId(checklistId),
             TemplateId(templateId),
             templateTitle,
             templateDescription,
-            checkboxes,
+            tasks,
             notes,
             createdAt
         )

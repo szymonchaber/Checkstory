@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.api.checklist.model
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -16,9 +16,9 @@ internal data class ApiTask(
     val children: List<ApiTask> = listOf()
 ) {
 
-    fun toTask(parentId: CheckboxId? = null): Checkbox {
-        val id = CheckboxId(id)
-        return Checkbox(
+    fun toTask(parentId: TaskId? = null): Task {
+        val id = TaskId(id)
+        return Task(
             id = id,
             parentId = parentId,
             title = title,

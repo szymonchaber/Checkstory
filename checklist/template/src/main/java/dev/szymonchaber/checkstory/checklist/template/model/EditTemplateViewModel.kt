@@ -55,22 +55,22 @@ class EditTemplateViewModel @Inject constructor(
             handleEditChecklist(),
             handleTitleChanged(),
             handleDescriptionChanged(),
-            handleAddCheckboxClicked(),
-            handleItemRemoved(),
+            handleAddTaskClicked(),
+            handleTaskRemoved(),
             handleSiblingMoved(),
             handleChildMoved(),
             handleNewSiblingDragged(),
             handleNewChildDragged(),
-            handleNewCheckboxDraggedToTop(),
-            handleNewCheckboxDraggedToBottom(),
-            handleCheckboxMovedToTop(),
-            handleCheckboxMovedToBottom(),
-            handleNewCheckboxDraggableClicked(),
+            handleNewTaskDraggedToTop(),
+            handleNewTaskDraggedToBottom(),
+            handleTaskMovedToTop(),
+            handleTaskMovedToBottom(),
+            handleNewTaskDraggableClicked(),
             handleItemTitleChanged(),
             handleSaveTemplateClicked(),
             handleDeleteTemplateClicked(),
             handleConfirmDeleteTemplateClicked(),
-            handleChildItemAdded(),
+            handleChildTaskAdded(),
             handleAddReminderClicked(),
             handleReminderClicked(),
             handleReminderSaved(),
@@ -161,12 +161,12 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleItemRemoved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ItemRemoved>()
+    private fun Flow<EditTemplateEvent>.handleTaskRemoved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.TaskRemoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("delete_checkbox_clicked")
-                EditTemplateState(loadingState.minusCheckbox(event.checkbox)) to null
+                EditTemplateState(loadingState.minusTask(event.task)) to null
             }
     }
 
@@ -206,34 +206,34 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleCheckboxMovedToTop(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.CheckboxMovedToTop>()
+    private fun Flow<EditTemplateEvent>.handleTaskMovedToTop(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.TaskMovedToTop>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_top")
-                EditTemplateState(loadingState.withCheckboxMovedToTop(event.checkboxKey)) to null
+                EditTemplateState(loadingState.withTaskMovedToTop(event.taskId)) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewCheckboxDraggedToTop(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.NewCheckboxDraggedToTop>()
+    private fun Flow<EditTemplateEvent>.handleNewTaskDraggedToTop(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.NewTaskDraggedToTop>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_dragged_to_top")
-                EditTemplateState(loadingState.withNewCheckboxAtTop()) to null
+                EditTemplateState(loadingState.withNewTaskAtTop()) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleCheckboxMovedToBottom(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.CheckboxMovedToBottom>()
+    private fun Flow<EditTemplateEvent>.handleTaskMovedToBottom(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.TaskMovedToBottom>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_bottom")
-                EditTemplateState(loadingState.withCheckboxMovedToBottom(event.checkboxKey)) to null
+                EditTemplateState(loadingState.withTaskMovedToBottom(event.taskId)) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewCheckboxDraggableClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+    private fun Flow<EditTemplateEvent>.handleNewTaskDraggableClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.NewTaskDraggableClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
@@ -242,40 +242,40 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewCheckboxDraggedToBottom(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.NewCheckboxDraggedToBottom>()
+    private fun Flow<EditTemplateEvent>.handleNewTaskDraggedToBottom(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.NewTaskDraggedToBottom>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_dragged_to_bottom")
-                EditTemplateState(loadingState.withNewCheckboxAtBottom()) to null
+                EditTemplateState(loadingState.withNewTaskAtBottom()) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleChildItemAdded(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ChildItemAdded>()
+    private fun Flow<EditTemplateEvent>.handleChildTaskAdded(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.ChildTaskAdded>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    EditTemplateState(loadingState.plusChildCheckbox(TemplateTaskId(event.parentViewKey.id))) to null
+                    EditTemplateState(loadingState.plusChildTask(TemplateTaskId(event.parentViewKey.id))) to null
                 }
             }
     }
 
     private fun Flow<EditTemplateEvent>.handleItemTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ItemTitleChanged>()
+        return filterIsInstance<EditTemplateEvent.TaskTitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                EditTemplateState(loadingState.changeCheckboxTitle(event.checkbox, event.newTitle)) to null
+                EditTemplateState(loadingState.changeTaskTitle(event.task, event.newTitle)) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleAddCheckboxClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.AddCheckboxClicked>()
+    private fun Flow<EditTemplateEvent>.handleAddTaskClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+        return filterIsInstance<EditTemplateEvent.AddTaskClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("add_checkbox_clicked")
-                EditTemplateState(loadingState.plusNewCheckbox("")) to null
+                EditTemplateState(loadingState.plusNewTask("")) to null
             }
     }
 

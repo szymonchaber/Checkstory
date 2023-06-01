@@ -34,7 +34,7 @@ import dev.szymonchaber.checkstory.checklist.template.detectDragHandleReorder
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @Composable
-fun CheckboxItem(
+fun TaskView(
     modifier: Modifier = Modifier,
     title: String,
     placeholder: String? = null,
@@ -117,9 +117,9 @@ fun CheckboxItem(
 
 @Preview(showBackground = true)
 @Composable
-fun CheckboxItemPreview() {
+fun TaskPreview() {
     rememberReorderableLazyListState({ _, _ -> })
-    CheckboxItem(
+    TaskView(
         modifier = Modifier,
         title = "Checkbox",
         placeholder = null,

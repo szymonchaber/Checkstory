@@ -72,7 +72,7 @@ sealed interface TemplateCommand : Command {
 
         override fun applyTo(template: Template): Template {
             return if (parentTaskId != null) {
-                template.copy(tasks = template.tasks.map { it.plusChildCheckboxRecursive(parentTaskId, taskId) })
+                template.copy(tasks = template.tasks.map { it.plusChildTaskRecursive(parentTaskId, taskId) })
             } else {
                 template.copy(
                     tasks = template.tasks.plus(
@@ -89,15 +89,15 @@ sealed interface TemplateCommand : Command {
             }
         }
 
-        private fun TemplateTask.plusChildCheckboxRecursive(
+        private fun TemplateTask.plusChildTaskRecursive(
             parentId: TemplateTaskId,
-            newCheckboxId: TemplateTaskId
+            newTaskId: TemplateTaskId
         ): TemplateTask {
             return copy(
                 children = if (id == parentId) {
                     children.plus(
                         TemplateTask(
-                            id = newCheckboxId,
+                            id = newTaskId,
                             parentId = parentId,
                             title = "",
                             children = listOf(),
@@ -107,7 +107,7 @@ sealed interface TemplateCommand : Command {
                     )
                 } else {
                     children.map {
-                        it.plusChildCheckboxRecursive(parentId, newCheckboxId)
+                        it.plusChildTaskRecursive(parentId, newTaskId)
                     }
                 }
             )
@@ -156,7 +156,7 @@ sealed interface TemplateCommand : Command {
         }
     }
 
-    data class UpdateCheckboxPositions(
+    data class UpdateTaskPositions(
         val localPositions: Map<TemplateTaskId, Long>,
         override val timestamp: Instant,
         override val commandId: UUID,

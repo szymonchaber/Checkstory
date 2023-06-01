@@ -24,10 +24,10 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.model.RecentChecklistsLoadingState
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import java.time.LocalDateTime
 import java.util.*
@@ -120,9 +120,9 @@ fun RecentChecklistsLoadingPreview() {
 fun RecentChecklistsSuccessPreview() {
     Column {
         val items = listOf(
-            Checkbox(CheckboxId(UUID.randomUUID()), null, ChecklistId.new(), "Check this", true, listOf()),
-            Checkbox(
-                CheckboxId(UUID.randomUUID()),
+            Task(TaskId(UUID.randomUUID()), null, ChecklistId.new(), "Check this", true, listOf()),
+            Task(
+                TaskId(UUID.randomUUID()),
                 null,
                 ChecklistId.new(),
                 "Do not check that",

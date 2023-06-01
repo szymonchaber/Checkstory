@@ -224,7 +224,7 @@ fun TemplateViewPreview() {
                 TemplateTask(
                     TemplateTaskId(UUID.randomUUID()),
                     null,
-                    "Checkbox 1",
+                    "Task 1",
                     listOf(),
                     0,
                     TemplateId.new()

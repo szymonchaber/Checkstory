@@ -2,9 +2,9 @@ package dev.szymonchaber.checkstory.data.database.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import java.util.*
 
 @Entity
@@ -17,10 +17,10 @@ data class CheckboxEntity(
     val parentId: UUID?
 ) {
 
-    fun toDomainCheckbox(children: List<Checkbox>): Checkbox {
-        return Checkbox(
-            CheckboxId(checkboxId),
-            parentId?.let(::CheckboxId),
+    fun toDomainTask(children: List<Task>): Task {
+        return Task(
+            TaskId(checkboxId),
+            parentId?.let(::TaskId),
             ChecklistId(checklistId),
             checkboxTitle,
             isChecked,
@@ -30,8 +30,8 @@ data class CheckboxEntity(
 
     companion object {
 
-        fun fromDomainCheckbox(checkbox: Checkbox): CheckboxEntity {
-            return with(checkbox) {
+        fun fromDomainTask(task: Task): CheckboxEntity {
+            return with(task) {
                 CheckboxEntity(
                     checkboxId = id.id,
                     checklistId = checklistId.id,

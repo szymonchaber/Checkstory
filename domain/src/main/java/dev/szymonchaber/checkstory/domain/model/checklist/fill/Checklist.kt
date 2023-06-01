@@ -8,21 +8,21 @@ data class Checklist(
     val templateId: TemplateId,
     val title: String,
     val description: String,
-    val items: List<Checkbox>,
+    val items: List<Task>,
     val notes: String,
     val createdAt: LocalDateTime,
     val isRemoved: Boolean = false
 ) {
 
-    val flattenedItems: List<Checkbox>
+    val flattenedItems: List<Task>
         get() {
             return items.flatMap {
                 flatten(it)
             }
         }
 
-    private fun flatten(checkbox: Checkbox): List<Checkbox> {
-        return listOf(checkbox) + checkbox.children.flatMap { flatten(it) }
+    private fun flatten(task: Task): List<Task> {
+        return listOf(task) + task.children.flatMap { flatten(it) }
     }
 
     companion object {

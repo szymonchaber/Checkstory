@@ -19,12 +19,12 @@ import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.checklist.template.model.ViewTemplateTask
 import dev.szymonchaber.checkstory.checklist.template.reoder.DropTarget
-import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
+import dev.szymonchaber.checkstory.checklist.template.views.TaskView
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 
 @Composable
-fun CommonCheckbox(
-    checkbox: ViewTemplateTask,
+fun CommonTask(
+    task: ViewTemplateTask,
     paddingStart: Dp,
     nestingLevel: Int,
     eventCollector: (EditTemplateEvent) -> Unit,
@@ -33,26 +33,26 @@ fun CommonCheckbox(
     val focusRequester = remember { FocusRequester() }
     Box(Modifier.height(IntrinsicSize.Min)) {
         val acceptChildren = nestingLevel < 3
-        CheckboxItem(
+        TaskView(
             modifier = Modifier
 //                .drawFolderStructure(nestingLevel, paddingStart, taskTopPadding) TODO decide if this should stay
                 .padding(top = taskTopPadding, start = paddingStart + 16.dp, end = 16.dp),
-            title = checkbox.title,
-            placeholder = checkbox.placeholderTitle,
+            title = task.title,
+            placeholder = task.placeholderTitle,
             focusRequester = focusRequester,
             onTitleChange = {
-                eventCollector(EditTemplateEvent.ItemTitleChanged(checkbox, it))
+                eventCollector(EditTemplateEvent.TaskTitleChanged(task, it))
             },
             onAddSubtask = {
-                eventCollector(EditTemplateEvent.ChildItemAdded(checkbox.id))
+                eventCollector(EditTemplateEvent.ChildTaskAdded(task.id))
             },
             onDeleteClick = {
-                eventCollector(EditTemplateEvent.ItemRemoved(checkbox))
+                eventCollector(EditTemplateEvent.TaskRemoved(task))
             },
             acceptChildren = acceptChildren
         )
         Receptacles(
-            forCheckbox = checkbox.id,
+            forTask = task.id,
             modifier = Modifier,
             acceptChildren = acceptChildren,
             dropTargetOffset = paddingStart + 16.dp,
@@ -61,7 +61,7 @@ fun CommonCheckbox(
     }
     val recentlyAddedItem = LocalRecentlyAddedUnconsumedItem.current
     LaunchedEffect(recentlyAddedItem.item) {
-        if (checkbox.id == recentlyAddedItem.item) {
+        if (task.id == recentlyAddedItem.item) {
             focusRequester.requestFocus()
             recentlyAddedItem.item = null
         }
@@ -70,7 +70,7 @@ fun CommonCheckbox(
 
 @Composable
 private fun Receptacles(
-    forCheckbox: TemplateTaskId,
+    forTask: TemplateTaskId,
     modifier: Modifier = Modifier,
     acceptChildren: Boolean,
     dropTargetOffset: Dp,
@@ -89,13 +89,13 @@ private fun Receptacles(
                     }
                 },
 //                .background(Color.Red.copy(alpha = 0.2f)),
-            id = forCheckbox,
+            id = forTask,
             dropTargetOffset = dropTargetOffset,
             onDataDropped = { siblingTask ->
                 if (siblingTask.id == NEW_TASK_ID) {
-                    eventCollector(EditTemplateEvent.NewSiblingDraggedBelow(forCheckbox))
+                    eventCollector(EditTemplateEvent.NewSiblingDraggedBelow(forTask))
                 } else {
-                    eventCollector(EditTemplateEvent.SiblingMovedBelow(forCheckbox, siblingTask))
+                    eventCollector(EditTemplateEvent.SiblingMovedBelow(forTask, siblingTask))
                 }
             }
         )
@@ -105,12 +105,12 @@ private fun Receptacles(
                     .fillMaxHeight()
                     .weight(1f),
 //                    .background(Color.Yellow.copy(alpha = 0.2f)),
-                id = forCheckbox,
+                id = forTask,
                 onDataDropped = { childTask ->
                     if (childTask.id == NEW_TASK_ID) {
-                        eventCollector(EditTemplateEvent.NewChildDraggedBelow(forCheckbox))
+                        eventCollector(EditTemplateEvent.NewChildDraggedBelow(forTask))
                     } else {
-                        eventCollector(EditTemplateEvent.ChildMovedBelow(forCheckbox, childTask))
+                        eventCollector(EditTemplateEvent.ChildMovedBelow(forTask, childTask))
                     }
                 }
             )

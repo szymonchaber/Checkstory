@@ -2,9 +2,9 @@ package dev.szymonchaber.checkstory.data.database.model.command
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
 import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
@@ -63,7 +63,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
                     TemplateId(templateId),
                     title,
                     description,
-                    tasks.map(TaskEntity::toCheckbox),
+                    tasks.map(TaskEntity::toTask),
                     commandId,
                     timestamp,
                     notes
@@ -82,7 +82,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
             is ChangeTaskCheckedEntity -> {
                 ChecklistCommand.ChangeTaskCheckedCommand(
                     ChecklistId(checklistId),
-                    CheckboxId(taskId),
+                    TaskId(taskId),
                     isChecked,
                     commandId,
                     timestamp
@@ -141,7 +141,7 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
     }
 }
 
-private fun Checkbox.toTaskEntity(): TaskEntity {
+private fun Task.toTaskEntity(): TaskEntity {
     return TaskEntity(
         id = id.id,
         checklistId = checklistId.id,
@@ -162,15 +162,15 @@ data class TaskEntity(
     val children: List<TaskEntity> = listOf()
 ) {
 
-    fun toCheckbox(parentId: CheckboxId? = null): Checkbox {
-        val id = CheckboxId(id)
-        return Checkbox(
+    fun toTask(parentId: TaskId? = null): Task {
+        val id = TaskId(id)
+        return Task(
             id,
             parentId,
             ChecklistId(checklistId),
             title,
             isChecked,
-            children.map { it.toCheckbox(id) }
+            children.map { it.toTask(id) }
         )
     }
 }

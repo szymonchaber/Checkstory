@@ -8,13 +8,13 @@ import androidx.room.Query
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 
 @Dao
-interface CheckboxDao {
+interface TaskDao {
 
     @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checkboxId = :checkboxId")
     suspend fun getById(checkboxId: Long): CheckboxEntity
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertAll(checkboxes: List<CheckboxEntity>)
+    fun insertAll(tasks: List<CheckboxEntity>)
 
     @Delete
     suspend fun delete(vararg checkbox: CheckboxEntity)

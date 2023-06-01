@@ -4,7 +4,7 @@ import dev.szymonchaber.checkstory.api.command.dto.ApiChecklistCommandTask
 import dev.szymonchaber.checkstory.api.command.dto.ApiTemplateCommandReminder
 import dev.szymonchaber.checkstory.api.command.dto.TemplateApiCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 
 internal fun TemplateCommand.toCommandDto(): TemplateApiCommand {
     return when (this) {
@@ -63,7 +63,7 @@ internal fun TemplateCommand.toCommandDto(): TemplateApiCommand {
             )
         }
 
-        is TemplateCommand.UpdateCheckboxPositions -> {
+        is TemplateCommand.UpdateTaskPositions -> {
             TemplateApiCommand.UpdateTasksPositionsApiCommand(
                 templateId = templateId.id,
                 commandId = commandId,
@@ -110,7 +110,7 @@ internal fun TemplateCommand.toCommandDto(): TemplateApiCommand {
     }
 }
 
-internal fun Checkbox.toTaskDto(): ApiChecklistCommandTask {
+internal fun Task.toTaskDto(): ApiChecklistCommandTask {
     return ApiChecklistCommandTask(
         id = id.id,
         checklistId = checklistId.id,

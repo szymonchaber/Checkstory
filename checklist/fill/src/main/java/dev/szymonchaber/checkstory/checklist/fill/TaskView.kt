@@ -9,12 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import dev.szymonchaber.checkstory.design.views.LinkifyText
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 
 @Composable
-fun CheckboxItem(
+fun TaskView(
     modifier: Modifier = Modifier,
-    checkbox: Checkbox,
+    task: Task,
     onCheckedChange: (Boolean) -> Unit,
     icon: @Composable RowScope.() -> Unit = {}
 ) {
@@ -25,12 +25,12 @@ fun CheckboxItem(
         Row(Modifier.weight(1f)) {
             Checkbox(
                 modifier = Modifier.align(Alignment.CenterVertically),
-                checked = checkbox.isChecked,
+                checked = task.isChecked,
                 onCheckedChange = onCheckedChange
             )
             LinkifyText(
                 modifier = Modifier.align(Alignment.CenterVertically),
-                text = checkbox.title
+                text = task.title
             )
         }
         Row {

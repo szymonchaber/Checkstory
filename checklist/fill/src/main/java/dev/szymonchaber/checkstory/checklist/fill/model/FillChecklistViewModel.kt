@@ -5,9 +5,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox.Companion.checkedCount
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task.Companion.checkedCount
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
@@ -206,9 +206,9 @@ class FillChecklistViewModel @Inject constructor(
     }
 }
 
-private fun Checkbox.setUuidsRecursive(): Checkbox {
+private fun Task.setUuidsRecursive(): Task {
     return copy(
-        id = CheckboxId(UUID.randomUUID()),
+        id = TaskId(UUID.randomUUID()),
         children = children.map {
             it.setUuidsRecursive()
         }

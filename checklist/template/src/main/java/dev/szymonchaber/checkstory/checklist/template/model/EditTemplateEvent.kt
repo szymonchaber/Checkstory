@@ -16,11 +16,11 @@ sealed interface EditTemplateEvent {
 
     data class DescriptionChanged(val newDescription: String) : EditTemplateEvent
 
-    data class ItemRemoved(val checkbox: ViewTemplateTask) : EditTemplateEvent
+    data class TaskRemoved(val task: ViewTemplateTask) : EditTemplateEvent
 
-    data class ItemTitleChanged(val checkbox: ViewTemplateTask, val newTitle: String) : EditTemplateEvent
+    data class TaskTitleChanged(val task: ViewTemplateTask, val newTitle: String) : EditTemplateEvent
 
-    data class ChildItemAdded(val parentViewKey: TemplateTaskId) : EditTemplateEvent
+    data class ChildTaskAdded(val parentViewKey: TemplateTaskId) : EditTemplateEvent
 
     object AddReminderClicked : EditTemplateEvent
 
@@ -44,15 +44,15 @@ sealed interface EditTemplateEvent {
 
     data class NewChildDraggedBelow(val target: TemplateTaskId) : EditTemplateEvent
 
-    object NewCheckboxDraggedToTop : EditTemplateEvent
+    object NewTaskDraggedToTop : EditTemplateEvent
 
-    object NewCheckboxDraggedToBottom : EditTemplateEvent
+    object NewTaskDraggedToBottom : EditTemplateEvent
 
-    data class CheckboxMovedToTop(val checkboxKey: TemplateTaskId) : EditTemplateEvent
+    data class TaskMovedToTop(val taskId: TemplateTaskId) : EditTemplateEvent
 
-    data class CheckboxMovedToBottom(val checkboxKey: TemplateTaskId) : EditTemplateEvent
+    data class TaskMovedToBottom(val taskId: TemplateTaskId) : EditTemplateEvent
 
-    object AddCheckboxClicked : EditTemplateEvent
+    object AddTaskClicked : EditTemplateEvent
 
     object SaveTemplateClicked : EditTemplateEvent
 

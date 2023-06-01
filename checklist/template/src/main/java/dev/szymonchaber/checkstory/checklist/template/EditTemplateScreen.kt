@@ -333,7 +333,7 @@ fun EditTemplateView(
             val isNewItemNotVisible =
                 dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key as? TemplateTaskId == newItem }
             if (isNewItemNotVisible) {
-                dragDropState.lazyListState.animateScrollToItem(success.unwrappedCheckboxes.indexOfFirst { it.first.id == newItem } + 1)
+                dragDropState.lazyListState.animateScrollToItem(success.unwrappedTasks.indexOfFirst { it.first.id == newItem } + 1)
             }
         }
     }
@@ -355,19 +355,19 @@ fun EditTemplateView(
                         TemplateDetails(template, success.onboardingPlaceholders, eventCollector)
                     }
                     items(
-                        items = success.unwrappedCheckboxes,
+                        items = success.unwrappedTasks,
                         key = { (item, _) ->
                             item.id
                         }
-                    ) { (checkbox, nestingLevel) ->
+                    ) { (task, nestingLevel) ->
                         Row(
                             Modifier.animateItemPlacement()
                         ) {
                             val startPadding by animateDpAsState(
                                 nestedPaddingStart * nestingLevel
                             )
-                            CommonCheckbox(
-                                checkbox = checkbox,
+                            CommonTask(
+                                task = task,
                                 paddingStart = startPadding,
                                 nestingLevel = nestingLevel,
                                 eventCollector = eventCollector
@@ -388,9 +388,9 @@ fun EditTemplateView(
                                 placeTargetLineOnTop = true,
                                 onDataDropped = { taskKey ->
                                     if (taskKey.id == NEW_TASK_ID) {
-                                        eventCollector(EditTemplateEvent.NewCheckboxDraggedToBottom)
+                                        eventCollector(EditTemplateEvent.NewTaskDraggedToBottom)
                                     } else {
-                                        eventCollector(EditTemplateEvent.CheckboxMovedToBottom(taskKey))
+                                        eventCollector(EditTemplateEvent.TaskMovedToBottom(taskKey))
                                     }
                                 },
                                 dropTargetOffset = 16.dp
@@ -467,8 +467,8 @@ private fun DebugFloatingPoint(offset: Offset, color: Color) {
 private fun AddTaskButton(eventCollector: (EditTemplateEvent) -> Unit) {
     AddButton(
         modifier = Modifier.padding(start = 8.dp, top = 4.dp),
-        onClick = { eventCollector(EditTemplateEvent.AddCheckboxClicked) },
-        text = stringResource(R.string.new_checkbox)
+        onClick = { eventCollector(EditTemplateEvent.AddTaskClicked) },
+        text = stringResource(R.string.new_task)
     )
 }
 
@@ -509,9 +509,9 @@ private fun TemplateDetails(
 //                .background(Color.Blue.copy(alpha = 0.2f)),
             onDataDropped = { taskKey ->
                 if (taskKey.id == NEW_TASK_ID) {
-                    eventCollector(EditTemplateEvent.NewCheckboxDraggedToTop)
+                    eventCollector(EditTemplateEvent.NewTaskDraggedToTop)
                 } else {
-                    eventCollector(EditTemplateEvent.CheckboxMovedToTop(taskKey))
+                    eventCollector(EditTemplateEvent.TaskMovedToTop(taskKey))
                 }
             },
             dropTargetOffset = 16.dp

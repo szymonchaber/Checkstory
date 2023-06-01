@@ -16,7 +16,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import dev.szymonchaber.checkstory.checklist.template.NewTask
 import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
-import dev.szymonchaber.checkstory.checklist.template.views.CheckboxItem
+import dev.szymonchaber.checkstory.checklist.template.views.TaskView
 
 @Composable
 fun FloatingDraggable(success: TemplateLoadingState.Success) {
@@ -41,11 +41,11 @@ fun FloatingDraggable(success: TemplateLoadingState.Success) {
                     targetSize = it.size
                 }
         ) {
-            val task by remember(success.unwrappedCheckboxes, dragDropState.checkboxViewId) {
+            val task by remember(success.unwrappedTasks, dragDropState.taskViewId) {
                 derivedStateOf {
-                    success.unwrappedCheckboxes
+                    success.unwrappedTasks
                         .find {
-                            it.first.id == dragDropState.checkboxViewId
+                            it.first.id == dragDropState.taskViewId
                         }
                 }
             }
@@ -53,7 +53,7 @@ fun FloatingDraggable(success: TemplateLoadingState.Success) {
                 LaunchedEffect(key1 = foundTask) {
                     dragDropState.dataToDrop = foundTask.id
                 }
-                CheckboxItem(
+                TaskView(
                     title = foundTask.title,
                     placeholder = foundTask.placeholderTitle,
                     isFunctional = false,

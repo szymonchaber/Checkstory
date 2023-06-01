@@ -1,15 +1,15 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
+import dev.szymonchaber.checkstory.data.database.dao.TaskDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.toFlowOfLists
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
@@ -37,7 +37,7 @@ import javax.inject.Singleton
 internal class ChecklistRepositoryImpl @Inject constructor(
     private val templateDao: TemplateDao,
     private val checklistDao: ChecklistDao,
-    private val checkboxDao: CheckboxDao,
+    private val taskDao: TaskDao,
     private val commandRepository: CommandRepository
 ) : ChecklistRepository {
 
@@ -49,7 +49,7 @@ internal class ChecklistRepositoryImpl @Inject constructor(
 
     override suspend fun save(checklist: Checklist) {
         checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        checkboxDao.insertAll(checklist.items.map(CheckboxEntity::fromDomainCheckbox))
+        taskDao.insertAll(checklist.items.map(CheckboxEntity::fromDomainTask))
         _checklistSavedEvents.tryEmit(ChecklistSaved)
     }
 
@@ -99,11 +99,11 @@ internal class ChecklistRepositoryImpl @Inject constructor(
                 .filterNot(Checklist::isRemoved)
         }
 
-    private fun getCheckboxes(checklistId: UUID) = checklistDao.getCheckboxesForChecklist(checklistId)
+    private fun getTasks(checklistId: UUID) = checklistDao.getTasksForChecklist(checklistId)
 
     suspend fun insert(checklist: Checklist): ChecklistId {
         checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        checkboxDao.insertAll(checklist.flattenedItems.map(CheckboxEntity::fromDomainCheckbox))
+        taskDao.insertAll(checklist.flattenedItems.map(CheckboxEntity::fromDomainTask))
         return checklist.id
     }
 
@@ -133,12 +133,12 @@ internal class ChecklistRepositoryImpl @Inject constructor(
                     Timber.e("Found orphaned checklist (no related checklist template found). Cascading deletion seems to be broken")
                 }
             }
-            .combine(getCheckboxes(checklist.checklistId)) { template, checkboxes ->
+            .combine(getTasks(checklist.checklistId)) { template, tasks ->
                 template?.let {
                     checklist.toDomainChecklist(
                         it.title,
                         template.description,
-                        groupToDomain(checkboxes)
+                        groupToDomain(tasks)
                     )
                 }
             }
@@ -149,44 +149,44 @@ internal class ChecklistRepositoryImpl @Inject constructor(
             }
     }
 
-    private fun groupToDomain(checkboxes: List<CheckboxEntity>): List<Checkbox> {
-        return convertToNestedCheckboxes(checkboxes)
+    private fun groupToDomain(tasks: List<CheckboxEntity>): List<Task> {
+        return convertToNestedTasks(tasks)
     }
 
-    private fun convertToNestedCheckboxes(entities: List<CheckboxEntity>): List<Checkbox> {
+    private fun convertToNestedTasks(entities: List<CheckboxEntity>): List<Task> {
         val entityMap = entities.associateBy { it.checkboxId }
-        val checkboxes = entities.map { CheckboxToChildren(it) }
-        checkboxes.forEach { checkbox ->
-            val parentId = checkbox.checkbox.parentId
+        val tasks = entities.map { TaskToChildren(it) }
+        tasks.forEach { task ->
+            val parentId = task.task.parentId
             if (parentId != null) {
                 val parent = entityMap[parentId]
                 if (parent != null) {
-                    val parentCheckbox = checkboxes.firstOrNull { it.checkbox.checkboxId == parent.checkboxId }
-                    if (parentCheckbox != null) {
-                        parentCheckbox.children += checkbox
+                    val parentTask = tasks.firstOrNull { it.task.checkboxId == parent.checkboxId }
+                    if (parentTask != null) {
+                        parentTask.children += task
                     }
                 }
             }
         }
-        return checkboxes.filter { it.checkbox.parentId == null }
+        return tasks.filter { it.task.parentId == null }
             .map {
                 toDomain(it)
             }
     }
 
-    private fun toDomain(checkboxToChildren: CheckboxToChildren): Checkbox {
-        return checkboxToChildren.checkbox.toDomainCheckbox(checkboxToChildren.children.map { toDomain(it) })
+    private fun toDomain(taskToChildren: TaskToChildren): Task {
+        return taskToChildren.task.toDomainTask(taskToChildren.children.map { toDomain(it) })
     }
 
     override suspend fun delete(checklist: Checklist) {
-        val checkboxEntities = checklist.items.map(CheckboxEntity::fromDomainCheckbox)
-        checkboxDao.delete(*checkboxEntities.toTypedArray())
+        val checkboxEntities = checklist.items.map(CheckboxEntity::fromDomainTask)
+        taskDao.delete(*checkboxEntities.toTypedArray())
         checklistDao.delete(ChecklistEntity.fromDomainChecklist(checklist))
     }
 
     suspend fun replaceData(with: List<Checklist>) {
         val checklists = with.map(ChecklistEntity.Companion::fromDomainChecklist)
-        val flatTasks = with.flatMap(Checklist::flattenedItems).map(CheckboxEntity.Companion::fromDomainCheckbox)
+        val flatTasks = with.flatMap(Checklist::flattenedItems).map(CheckboxEntity.Companion::fromDomainTask)
         checklistDao.replaceData(checklists, flatTasks)
     }
 
@@ -194,8 +194,8 @@ internal class ChecklistRepositoryImpl @Inject constructor(
         checklistDao.deleteAllData()
     }
 
-    class CheckboxToChildren(
-        val checkbox: CheckboxEntity,
-        val children: MutableList<CheckboxToChildren> = mutableListOf()
+    class TaskToChildren(
+        val task: CheckboxEntity,
+        val children: MutableList<TaskToChildren> = mutableListOf()
     )
 }

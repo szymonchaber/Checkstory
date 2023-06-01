@@ -33,7 +33,7 @@ interface ChecklistDao {
     suspend fun getByIdOrNull(id: UUID): ChecklistEntity?
 
     @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checklistId=:checklistId")
-    fun getCheckboxesForChecklist(checklistId: UUID): Flow<List<CheckboxEntity>>
+    fun getTasksForChecklist(checklistId: UUID): Flow<List<CheckboxEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(checklistEntity: ChecklistEntity)
@@ -51,17 +51,17 @@ interface ChecklistDao {
     suspend fun deleteAllChecklists()
 
     @Query("DELETE FROM checkboxEntity")
-    suspend fun deleteAllCheckboxes()
+    suspend fun deleteAllTasks()
 
     @Transaction
-    suspend fun replaceData(checklists: List<ChecklistEntity>, checkboxes: List<CheckboxEntity>) {
+    suspend fun replaceData(checklists: List<ChecklistEntity>, tasks: List<CheckboxEntity>) {
         deleteAllData()
-        insertAll(checklists, checkboxes)
+        insertAll(checklists, tasks)
     }
 
     @Transaction
     suspend fun deleteAllData() {
         deleteAllChecklists()
-        deleteAllCheckboxes()
+        deleteAllTasks()
     }
 }

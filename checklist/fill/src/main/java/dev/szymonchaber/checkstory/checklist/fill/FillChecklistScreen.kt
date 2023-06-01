@@ -80,9 +80,9 @@ import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.LinkifyText
 import dev.szymonchaber.checkstory.design.views.SectionLabel
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
@@ -282,7 +282,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
         }
         items(checklist.items, key = { it.id.id }) {
             Box(Modifier.padding(start = 8.dp)) {
-                CheckboxSection(checkbox = it, paddingStart = nestedPaddingStart, eventCollector = eventCollector)
+                TaskSection(task = it, paddingStart = nestedPaddingStart, eventCollector = eventCollector)
             }
         }
         item {
@@ -359,10 +359,9 @@ private fun NotesSection(
     }
 }
 
-
 @Composable
-fun CheckboxSection(
-    checkbox: Checkbox,
+fun TaskSection(
+    task: Task,
     paddingStart: Dp,
     nestingLevel: Int = 1,
     isLastChild: Boolean = true,
@@ -370,7 +369,7 @@ fun CheckboxSection(
     eventCollector: (FillChecklistEvent) -> Unit,
 ) {
     Column {
-        val shouldIncludeIcon = checkbox.children.isNotEmpty()
+        val shouldIncludeIcon = task.children.isNotEmpty()
         var isCollapsed by remember(collapsedByDefault) { mutableStateOf(collapsedByDefault) }
         val endPadding = if (shouldIncludeIcon) 8.dp else 44.dp
         Row(Modifier.height(IntrinsicSize.Min)) {
@@ -390,11 +389,11 @@ fun CheckboxSection(
                         .width(nestedPaddingStart)
                 )
             }
-            CheckboxItem(
+            TaskView(
                 modifier = Modifier.padding(end = endPadding),
-                checkbox = checkbox,
+                task = task,
                 onCheckedChange = {
-                    eventCollector(FillChecklistEvent.CheckChanged(checkbox, it))
+                    eventCollector(FillChecklistEvent.CheckChanged(task, it))
                 }
             ) {
                 if (shouldIncludeIcon) {
@@ -435,12 +434,12 @@ fun CheckboxSection(
                         .onGloballyPositioned {
                             columnHeightDp = with(localDensity) { it.size.height.toDp() }
                         }) {
-                    checkbox.children.forEachIndexed { index, child ->
-                        CheckboxSection(
-                            checkbox = child,
+                    task.children.forEachIndexed { index, child ->
+                        TaskSection(
+                            task = child,
                             paddingStart = nestedPaddingStart,
                             nestingLevel = nestingLevel + 1,
-                            isLastChild = checkbox.children.lastIndex == index,
+                            isLastChild = task.children.lastIndex == index,
                             collapsedByDefault = true,
                             eventCollector
                         )

@@ -1,15 +1,15 @@
 package dev.szymonchaber.checkstory.domain.model.checklist.fill
 
-data class Checkbox(
-    val id: CheckboxId,
-    val parentId: CheckboxId?,
+data class Task(
+    val id: TaskId,
+    val parentId: TaskId?,
     val checklistId: ChecklistId,
     val title: String,
     val isChecked: Boolean,
-    val children: List<Checkbox>
+    val children: List<Task>
 ) {
 
-    fun withUpdatedIsCheckedRecursive(id: CheckboxId, isChecked: Boolean): Checkbox {
+    fun withUpdatedIsCheckedRecursive(id: TaskId, isChecked: Boolean): Task {
         return if (this.id == id) {
             copy(isChecked = isChecked)
         } else {
@@ -19,7 +19,7 @@ data class Checkbox(
 
     companion object {
 
-        fun List<Checkbox>.checkedCount(): Int {
+        fun List<Task>.checkedCount(): Int {
             return count { it.isChecked }
         }
     }

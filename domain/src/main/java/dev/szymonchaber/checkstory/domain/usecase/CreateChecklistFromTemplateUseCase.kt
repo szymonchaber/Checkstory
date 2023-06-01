@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.domain.usecase
 
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
@@ -37,7 +37,7 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
                 title,
                 description,
                 tasks.map {
-                    toCheckbox(it, checklistId)
+                    toTask(it, checklistId)
                 },
                 "",
                 LocalDateTime.now()
@@ -45,20 +45,20 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
         }
     }
 
-    private fun toCheckbox(
+    private fun toTask(
         basedOn: TemplateTask,
         checklistId: ChecklistId,
-        parentId: CheckboxId? = null
-    ): Checkbox {
-        val id = CheckboxId(UUID.randomUUID())
-        return Checkbox(
+        parentId: TaskId? = null
+    ): Task {
+        val id = TaskId(UUID.randomUUID())
+        return Task(
             id,
             parentId = parentId,
             checklistId = checklistId,
             title = basedOn.title,
             isChecked = false,
             children = basedOn.children.map { child ->
-                toCheckbox(child, checklistId, id)
+                toTask(child, checklistId, id)
             }
         )
     }

@@ -1,9 +1,9 @@
 package dev.szymonchaber.checkstory.data.migration
 
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
@@ -102,25 +102,25 @@ internal object ChecklistTestUtils {
         )
     }
 
-    private fun checkbox(checklistId: ChecklistId, index: Int): Checkbox {
-        val parentId = CheckboxId(UUID.randomUUID())
-        return Checkbox(
+    private fun checkbox(checklistId: ChecklistId, index: Int): Task {
+        val parentId = TaskId(UUID.randomUUID())
+        return Task(
             id = parentId,
             parentId = null,
             checklistId = checklistId,
             title = "Example item $index",
             isChecked = false,
             children = listOf(
-                Checkbox(
-                    id = CheckboxId(UUID.randomUUID()),
+                Task(
+                    id = TaskId(UUID.randomUUID()),
                     parentId = parentId,
                     checklistId = checklistId,
                     title = "Example item child item 0",
                     isChecked = false,
                     children = emptyList()
                 ),
-                Checkbox(
-                    id = CheckboxId(UUID.randomUUID()),
+                Task(
+                    id = TaskId(UUID.randomUUID()),
                     parentId = parentId,
                     checklistId = checklistId,
                     title = "Example item child item 1",

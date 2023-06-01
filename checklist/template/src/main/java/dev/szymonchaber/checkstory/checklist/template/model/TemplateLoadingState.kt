@@ -23,7 +23,7 @@ sealed interface TemplateLoadingState {
         private val commands: List<TemplateCommand> = listOf()
     ) : TemplateLoadingState {
 
-        val unwrappedCheckboxes = flattenWithNestedLevel()
+        val unwrappedTasks = flattenWithNestedLevel()
 
         val template = commands
             .fold(originalTemplate) { template, templateCommand ->
@@ -31,16 +31,16 @@ sealed interface TemplateLoadingState {
             }
 
         fun finalizedCommands(): List<TemplateCommand> {
-            val indexedCheckboxes = tasks
-                .mapIndexed { index, checkbox ->
-                    checkbox.toDomainModel(position = index, templateId = template.id)
+            val indexedTasks = tasks
+                .mapIndexed { index, task ->
+                    task.toDomainModel(position = index, templateId = template.id)
                 }
-            val localPositions = indexedCheckboxes.flatten()
+            val localPositions = indexedTasks.flatten()
                 .associate {
                     it.id to it.sortPosition
                 }
             return commands.plus(
-                TemplateCommand.UpdateCheckboxPositions(
+                TemplateCommand.UpdateTaskPositions(
                     localPositions,
                     Clock.System.now(),
                     UUID.randomUUID(),
@@ -58,12 +58,12 @@ sealed interface TemplateLoadingState {
         private fun flattenWithNestedLevel(): List<Pair<ViewTemplateTask, Int>> {
             val result = mutableListOf<Pair<ViewTemplateTask, Int>>()
 
-            fun visit(checkbox: ViewTemplateTask, level: Int) {
-                result.add(Pair(checkbox, level))
-                checkbox.children.forEach { child -> visit(child, level + 1) }
+            fun visit(task: ViewTemplateTask, level: Int) {
+                result.add(Pair(task, level))
+                task.children.forEach { child -> visit(child, level + 1) }
             }
 
-            tasks.forEach { checkbox -> visit(checkbox, 0) }
+            tasks.forEach { task -> visit(task, 0) }
             return result
         }
 
@@ -87,46 +87,46 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun plusNewCheckbox(
+        fun plusNewTask(
             title: String,
             placeholderTitle: String? = null,
             id: TemplateTaskId = TemplateTaskId(UUID.randomUUID())
         ): Success {
-            val newCheckbox = newCheckbox(title, placeholderTitle, id)
+            val newTask = newTask(title, placeholderTitle, id)
             return copy(
-                tasks = tasks.plus(newCheckbox),
-                mostRecentlyAddedItem = newCheckbox.id
+                tasks = tasks.plus(newTask),
+                mostRecentlyAddedItem = newTask.id
             )
                 .plusCommand(
                     TemplateCommand.AddTemplateTask(
                         template.id,
-                        newCheckbox.id,
+                        newTask.id,
                         null,
                         Clock.System.now()
                     )
                 )
         }
 
-        fun minusCheckbox(checkbox: ViewTemplateTask): Success {
-            val filteredCheckboxes =
+        fun minusTask(task: ViewTemplateTask): Success {
+            val filteredTasks =
                 tasks
-                    .filterNot { it.id == checkbox.id }
+                    .filterNot { it.id == task.id }
                     .map {
-                        it.minusChildCheckboxRecursive(checkbox)
+                        it.minusChildTaskRecursive(task)
                     }
             return copy(
-                tasks = filteredCheckboxes,
+                tasks = filteredTasks,
                 mostRecentlyAddedItem = null
             ).plusCommand(
                 TemplateCommand.DeleteTemplateTask(
                     originalTemplate.id,
-                    checkbox.id,
+                    task.id,
                     Clock.System.now()
                 )
             )
         }
 
-        fun plusChildCheckbox(
+        fun plusChildTask(
             parentId: TemplateTaskId,
             newId: TemplateTaskId = TemplateTaskId(UUID.randomUUID()),
             placeholderTitle: String? = null
@@ -147,16 +147,16 @@ sealed interface TemplateLoadingState {
                 )
         }
 
-        fun changeCheckboxTitle(checkbox: ViewTemplateTask, title: String): Success {
+        fun changeTaskTitle(task: ViewTemplateTask, title: String): Success {
             return copy(
                 tasks = tasks.map {
-                    it.withUpdatedTitleRecursive(checkbox, title)
+                    it.withUpdatedTitleRecursive(task, title)
                 }
             )
                 .plusCommand(
                     TemplateCommand.RenameTemplateTask(
                         templateId = template.id,
-                        taskId = checkbox.id,
+                        taskId = task.id,
                         newTitle = title,
                         timestamp = Clock.System.now()
                     )
@@ -184,7 +184,7 @@ sealed interface TemplateLoadingState {
         }
 
         fun withNewSiblingMovedBelow(below: TemplateTaskId): TemplateLoadingState {
-            val newCheckbox = newCheckbox()
+            val newCheckbox = newTask()
             val parentId = findParentId(tasks, below)
             return copy(
                 tasks = tasks.withSiblingBelow(below, newCheckbox),
@@ -245,7 +245,7 @@ sealed interface TemplateLoadingState {
         }
 
         fun withNewChildMovedBelow(below: TemplateTaskId): TemplateLoadingState {
-            val newItem = newCheckbox()
+            val newItem = newTask()
             return copy(
                 tasks = tasks.withChildBelow(below, newItem),
                 mostRecentlyAddedItem = newItem.id
@@ -286,13 +286,13 @@ sealed interface TemplateLoadingState {
             }
         }
 
-        fun withCheckboxMovedToTop(checkboxId: TemplateTaskId): TemplateLoadingState {
-            val (filteredTasks, movedItem) = withExtractedTask(checkboxId)
+        fun withTaskMovedToTop(taskId: TemplateTaskId): TemplateLoadingState {
+            val (filteredTasks, movedItem) = withExtractedTask(taskId)
             return copy(
                 tasks = filteredTasks.withTaskAtIndex(movedItem.updateParentId(null), 0)
             ).plusCommand(
                 TemplateCommand.MoveTemplateTask(
-                    taskId = checkboxId,
+                    taskId = taskId,
                     newParentTaskId = null,
                     timestamp = Clock.System.now(),
                     commandId = UUID.randomUUID(),
@@ -301,8 +301,8 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun withNewCheckboxAtTop(): TemplateLoadingState {
-            val newItem = newCheckbox()
+        fun withNewTaskAtTop(): TemplateLoadingState {
+            val newItem = newTask()
             return copy(
                 tasks = tasks.withTaskAtIndex(newItem, 0),
                 mostRecentlyAddedItem = newItem.id
@@ -316,7 +316,7 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun withCheckboxMovedToBottom(checkboxId: TemplateTaskId): TemplateLoadingState {
+        fun withTaskMovedToBottom(checkboxId: TemplateTaskId): TemplateLoadingState {
             val (filteredTasks, movedItem) = withExtractedTask(checkboxId)
             return copy(
                 tasks = filteredTasks.withTaskAtIndex(movedItem.updateParentId(null), filteredTasks.size)
@@ -331,8 +331,8 @@ sealed interface TemplateLoadingState {
             )
         }
 
-        fun withNewCheckboxAtBottom(): TemplateLoadingState {
-            val newItem = newCheckbox()
+        fun withNewTaskAtBottom(): TemplateLoadingState {
+            val newItem = newTask()
             return copy(
                 tasks = tasks.withTaskAtIndex(newItem, tasks.size),
                 mostRecentlyAddedItem = newItem.id
@@ -366,7 +366,7 @@ sealed interface TemplateLoadingState {
             return withExtractedElement to movedItem!!
         }
 
-        private fun newCheckbox(
+        private fun newTask(
             title: String = "",
             placeholderTitle: String? = null,
             id: TemplateTaskId = TemplateTaskId(UUID.randomUUID())

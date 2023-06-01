@@ -87,18 +87,18 @@ internal class TemplateRepositoryImpl @Inject constructor(
 
     private suspend fun combineIntoDomainTemplate(entity: ChecklistTemplateEntity): Flow<Template> {
         return withContext(Dispatchers.Default) {
-            val checkboxesFlow = templateTaskDao.getAllForTemplate(entity.id)
+            val tasksFlow = templateTaskDao.getAllForTemplate(entity.id)
             val checklistsFlow = checklistRepository.getBasedOn(TemplateId(entity.id))
             val remindersFlow = reminderDao.getAllForTemplate(entity.id)
-            combine(checkboxesFlow, checklistsFlow, remindersFlow) { checkboxes, checklists, reminders ->
-                mapTemplate(entity, checkboxes, checklists, reminders)
+            combine(tasksFlow, checklistsFlow, remindersFlow) { tasks, checklists, reminders ->
+                mapTemplate(entity, tasks, checklists, reminders)
             }
         }
     }
 
     private fun mapTemplate(
         template: ChecklistTemplateEntity,
-        checkboxes: List<TemplateCheckboxEntity>,
+        tasks: List<TemplateCheckboxEntity>,
         checklists: List<Checklist>,
         reminders: List<ReminderEntity>
     ): Template {
@@ -107,7 +107,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
                 TemplateId(id),
                 title,
                 description,
-                groupToDomain(checkboxes),
+                groupToDomain(tasks),
                 template.createdAt,
                 checklists,
                 reminders.map(ReminderEntity::toDomainReminder)
@@ -115,36 +115,36 @@ internal class TemplateRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun groupToDomain(checkboxes: List<TemplateCheckboxEntity>): List<TemplateTask> {
-        return convertToNestedCheckboxes(checkboxes)
+    private fun groupToDomain(tasks: List<TemplateCheckboxEntity>): List<TemplateTask> {
+        return convertToNestedTasks(tasks)
     }
 
-    private fun convertToNestedCheckboxes(entities: List<TemplateCheckboxEntity>): List<TemplateTask> {
+    private fun convertToNestedTasks(entities: List<TemplateCheckboxEntity>): List<TemplateTask> {
         val entityMap = entities.associateBy { it.checkboxId }
-        val checkboxes = entities.map { CheckboxToChildren(it) }
-        checkboxes.forEach { checkbox ->
-            val parentId = checkbox.checkbox.parentId
+        val tasks = entities.map { TaskToChildren(it) }
+        tasks.forEach { task ->
+            val parentId = task.task.parentId
             if (parentId != null) {
                 val parent = entityMap[parentId]
                 if (parent != null) {
-                    val parentCheckbox = checkboxes.firstOrNull { it.checkbox.checkboxId == parent.checkboxId }
-                    if (parentCheckbox != null) {
-                        parentCheckbox.children += checkbox
+                    val parentTask = tasks.firstOrNull { it.task.checkboxId == parent.checkboxId }
+                    if (parentTask != null) {
+                        parentTask.children += task
                     }
                 }
             }
         }
-        return checkboxes.filter { it.checkbox.parentId == null }
+        return tasks.filter { it.task.parentId == null }
             .map(::toDomain)
     }
 
-    private fun toDomain(checkboxToChildren: CheckboxToChildren): TemplateTask {
-        return checkboxToChildren.checkbox.toTemplateTask(checkboxToChildren.children.map { toDomain(it) })
+    private fun toDomain(taskToChildren: TaskToChildren): TemplateTask {
+        return taskToChildren.task.toTemplateTask(taskToChildren.children.map { toDomain(it) })
     }
 
-    class CheckboxToChildren(
-        val checkbox: TemplateCheckboxEntity,
-        val children: MutableList<CheckboxToChildren> = mutableListOf()
+    class TaskToChildren(
+        val task: TemplateCheckboxEntity,
+        val children: MutableList<TaskToChildren> = mutableListOf()
     )
 
     override suspend fun delete(template: Template) {
@@ -156,7 +156,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
         reminderDao.deleteAllFromTemplate(template.id.id)
     }
 
-    suspend fun deleteCheckboxesFromTemplate(template: Template) {
+    suspend fun deleteTasksFromTemplate(template: Template) {
         templateTaskDao.deleteAllFromTemplate(template.id.id)
     }
 

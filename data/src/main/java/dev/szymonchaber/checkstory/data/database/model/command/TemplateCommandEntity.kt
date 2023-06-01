@@ -221,7 +221,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 commandId = commandId
             )
 
-            is UpdateCheckboxPositionsEntity -> TemplateCommand.UpdateCheckboxPositions(
+            is UpdateCheckboxPositionsEntity -> TemplateCommand.UpdateTaskPositions(
                 localPositions = localPositions.mapKeys { TemplateTaskId(it.key) },
                 timestamp = timestamp,
                 commandId = commandId,
@@ -306,7 +306,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                     commandId = templateCommand.commandId
                 )
 
-                is TemplateCommand.UpdateCheckboxPositions -> UpdateCheckboxPositionsEntity(
+                is TemplateCommand.UpdateTaskPositions -> UpdateCheckboxPositionsEntity(
                     localPositions = templateCommand.localPositions.mapKeys { it.key.id },
                     timestamp = templateCommand.timestamp,
                     commandId = templateCommand.commandId,

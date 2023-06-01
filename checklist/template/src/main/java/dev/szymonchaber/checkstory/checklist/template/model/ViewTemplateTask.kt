@@ -19,7 +19,7 @@ sealed interface ViewTemplateTask : java.io.Serializable {
         templateId: TemplateId
     ): TemplateTask
 
-    fun minusChildCheckboxRecursive(checkbox: ViewTemplateTask): ViewTemplateTask {
+    fun minusChildTaskRecursive(checkbox: ViewTemplateTask): ViewTemplateTask {
         return withoutChild(checkbox.id) {}
     }
 

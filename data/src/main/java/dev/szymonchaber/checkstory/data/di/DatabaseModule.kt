@@ -10,19 +10,19 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
 import dev.szymonchaber.checkstory.data.database.Migration5to6
-import dev.szymonchaber.checkstory.data.database.dao.CheckboxDao
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
+import dev.szymonchaber.checkstory.data.database.dao.TaskDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateTaskDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checkbox
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -75,20 +75,20 @@ object DatabaseModule {
                 )
                 insert {
                     checklist(UUID.randomUUID(), templateId, "This was an awesome session") {
-                        checkbox("Clean the table", true)
-                        checkbox("Dust the lamp shade", false)
-                        checkbox("Clean all the windows", false)
-                        checkbox("Be awesome", true)
+                        task("Clean the table", true)
+                        task("Dust the lamp shade", false)
+                        task("Clean all the windows", false)
+                        task("Be awesome", true)
                     }
                     checklist(
                         UUID.randomUUID(),
                         templateId,
                         "We should focus on upkeep of cleanliness, rather than doing this huge cleaning sessions"
                     ) {
-                        checkbox("Clean the table", false)
-                        checkbox("Dust the lamp shade", false)
-                        checkbox("Clean all the windows", false)
-                        checkbox("Be totally awesome", true)
+                        task("Clean the table", false)
+                        task("Dust the lamp shade", false)
+                        task("Clean all the windows", false)
+                        task("Be totally awesome", true)
                     }
                 }
             }
@@ -111,8 +111,8 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideCheckboxDao(database: AppDatabase): CheckboxDao {
-        return database.checkboxDao
+    fun provideTaskDao(database: AppDatabase): TaskDao {
+        return database.taskDao
     }
 
     @Provides
@@ -130,16 +130,16 @@ class InsertDsl {
 
     class Checklist(val checklistId: UUID, val templateId: UUID, val notes: String = "")
 
-    private val items = mutableMapOf<Checklist, List<Checkbox>>()
+    private val items = mutableMapOf<Checklist, List<Task>>()
 
-    class CheckboxDsl(val checklistId: UUID) {
+    class TaskDsl(val checklistId: UUID) {
 
-        val checkboxes = mutableListOf<Checkbox>()
+        val tasks = mutableListOf<Task>()
 
-        fun checkbox(title: String, isChecked: Boolean = false) {
-            checkboxes.add(
-                Checkbox(
-                    CheckboxId(UUID.randomUUID()),
+        fun task(title: String, isChecked: Boolean = false) {
+            tasks.add(
+                Task(
+                    TaskId(UUID.randomUUID()),
                     null,
                     ChecklistId(checklistId),
                     title,
@@ -150,8 +150,8 @@ class InsertDsl {
         }
     }
 
-    fun checklist(checklistId: UUID, templateId: UUID, notes: String = "", checkboxesBlock: CheckboxDsl.() -> Unit) {
-        items[Checklist(checklistId, templateId, notes)] = CheckboxDsl(checklistId).apply(checkboxesBlock).checkboxes
+    fun checklist(checklistId: UUID, templateId: UUID, notes: String = "", checkboxesBlock: TaskDsl.() -> Unit) {
+        items[Checklist(checklistId, templateId, notes)] = TaskDsl(checklistId).apply(checkboxesBlock).tasks
     }
 
     fun insertInto(appDatabase: AppDatabase) {
@@ -169,7 +169,7 @@ class InsertDsl {
 
                     checklist.checklistId to checkboxes
                 }.forEach { (checklistId, checkboxes) ->
-                    appDatabase.checkboxDao.insertAll(
+                    appDatabase.taskDao.insertAll(
                         checkboxes.map {
                             CheckboxEntity(
                                 it.id.id,

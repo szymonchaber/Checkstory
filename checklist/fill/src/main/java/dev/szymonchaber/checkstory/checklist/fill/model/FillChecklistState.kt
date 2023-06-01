@@ -2,8 +2,8 @@ package dev.szymonchaber.checkstory.checklist.fill.model
 
 import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.Command
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.CheckboxId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
+import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import kotlinx.datetime.Clock
 import java.util.*
 
@@ -26,11 +26,11 @@ sealed interface ChecklistLoadingState {
             command.applyTo(checklist)
         }
 
-        fun withUpdatedItemChecked(checkboxId: CheckboxId, isChecked: Boolean): Success {
+        fun withUpdatedItemChecked(taskId: TaskId, isChecked: Boolean): Success {
             return plusCommand(
                 ChecklistCommand.ChangeTaskCheckedCommand(
                     originalChecklist.id,
-                    checkboxId,
+                    taskId,
                     isChecked,
                     UUID.randomUUID(),
                     Clock.System.now()

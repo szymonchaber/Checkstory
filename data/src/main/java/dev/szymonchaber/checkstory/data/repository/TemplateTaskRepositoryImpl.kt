@@ -12,7 +12,7 @@ internal class TemplateTaskRepositoryImpl @Inject constructor(
 ) : TemplateTaskRepository {
 
     override suspend fun deleteFromTemplate(template: Template) {
-        dataSource.deleteCheckboxesFromTemplate(template)
+        dataSource.deleteTasksFromTemplate(template)
     }
 
     override suspend fun deleteTemplateTask(templateTask: TemplateTask) {

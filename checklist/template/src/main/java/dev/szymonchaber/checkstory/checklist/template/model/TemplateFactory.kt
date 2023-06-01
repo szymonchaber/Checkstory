@@ -22,7 +22,7 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
             )
         )
 
-    return generateOnboardingCheckboxes()
+    return generateOnboardingTasks()
         .foldInto(templateLoadingState)
         .copy(
             onboardingPlaceholders = OnboardingPlaceholders(
@@ -33,7 +33,7 @@ fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Succe
         )
 }
 
-class OnboardingCheckboxes {
+class OnboardingTasks {
 
     val placeholderToParentId = mutableListOf<Triple<TemplateTaskId, TemplateTaskId?, String>>()
 
@@ -53,12 +53,12 @@ class OnboardingCheckboxes {
     }
 }
 
-fun placeholderCheckboxes(block: OnboardingCheckboxes.() -> Unit): MutableList<Triple<TemplateTaskId, TemplateTaskId?, String>> {
-    return OnboardingCheckboxes().apply(block).placeholderToParentId
+fun placeholderTasks(block: OnboardingTasks.() -> Unit): MutableList<Triple<TemplateTaskId, TemplateTaskId?, String>> {
+    return OnboardingTasks().apply(block).placeholderToParentId
 }
 
-fun generateOnboardingCheckboxes(): MutableList<Triple<TemplateTaskId, TemplateTaskId?, String>> {
-    return placeholderCheckboxes {
+fun generateOnboardingTasks(): MutableList<Triple<TemplateTaskId, TemplateTaskId?, String>> {
+    return placeholderTasks {
         topLevelPlaceholder("Add as many tasks as you want")
 
         topLevelPlaceholder("Nest them as needed") {
@@ -86,11 +86,11 @@ fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
         .withNewTitle("Write an offer to a prospect")
         .withNewDescription("Find prospects here: drive.link/prospects")
-    return generateWriteOfferCheckboxes().foldInto(templateLoadingState)
+    return generateWriteOfferTasks().foldInto(templateLoadingState)
 }
 
-fun generateWriteOfferCheckboxes(): List<Triple<TemplateTaskId, TemplateTaskId?, String>> {
-    return placeholderCheckboxes {
+fun generateWriteOfferTasks(): List<Triple<TemplateTaskId, TemplateTaskId?, String>> {
+    return placeholderTasks {
         topLevelPlaceholder("Fetch the prospect and start writing") {
             nestedPlaceholder("Write your own steps - Checkstory is a vessel for your knowledge") {
                 nestedPlaceholder("You can nest your tasks") {
@@ -107,7 +107,7 @@ fun generateWriteOfferCheckboxes(): List<Triple<TemplateTaskId, TemplateTaskId?,
 fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
         .withNewTitle("Onboard a new employee")
-    return placeholderCheckboxes {
+    return placeholderTasks {
         repeat(18) {
             topLevelPlaceholder("Fluff to make the checklist look full of tasks")
         }
@@ -119,7 +119,7 @@ fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
     val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
         .withNewDescription("Daily routine")
 
-    return placeholderCheckboxes {
+    return placeholderTasks {
         repeat(5) {
             topLevelPlaceholder("Fluff to make the checklist look full of tasks")
         }
@@ -130,9 +130,9 @@ fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
 fun List<Triple<TemplateTaskId, TemplateTaskId?, String>>.foldInto(success: TemplateLoadingState.Success): TemplateLoadingState.Success {
     return fold(success) { state, (id, parentId, placeholder) ->
         if (parentId != null) {
-            state.plusChildCheckbox(parentId, id, placeholder)
+            state.plusChildTask(parentId, id, placeholder)
         } else {
-            state.plusNewCheckbox("", placeholderTitle = placeholder, id)
+            state.plusNewTask("", placeholderTitle = placeholder, id)
         }
     }.copy(mostRecentlyAddedItem = null)
 }
