@@ -95,6 +95,7 @@ internal class ChecklistRepositoryImpl @Inject constructor(
                 commandRepository.hydrate(it)
             }
                 .plus(commandRepository.commandOnlyChecklists())
+                .distinctBy { it.id }
                 .sortedByDescending(Checklist::createdAt)
                 .filterNot(Checklist::isRemoved)
         }

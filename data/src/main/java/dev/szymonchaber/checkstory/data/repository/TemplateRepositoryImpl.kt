@@ -55,6 +55,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
                     commandRepository.hydrate(it)
                 }
                     .plus(commandRepository.commandOnlyTemplates())
+                    .distinctBy { it.id }
                     .sortedBy { it.createdAt }
                     .filterNot { it.isRemoved }
             }
