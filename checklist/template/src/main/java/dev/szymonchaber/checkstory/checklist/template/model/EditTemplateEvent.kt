@@ -20,7 +20,7 @@ sealed interface EditTemplateEvent {
 
     data class TaskTitleChanged(val task: ViewTemplateTask, val newTitle: String) : EditTemplateEvent
 
-    data class ChildTaskAdded(val parentViewKey: TemplateTaskId) : EditTemplateEvent
+    data class ChildTaskAdded(val parentId: TemplateTaskId) : EditTemplateEvent
 
     object AddReminderClicked : EditTemplateEvent
 

@@ -257,7 +257,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    EditTemplateState(loadingState.plusChildTask(TemplateTaskId(event.parentViewKey.id))) to null
+                    EditTemplateState(loadingState.plusChildTask(TemplateTaskId(event.parentId.id))) to null
                 }
             }
     }

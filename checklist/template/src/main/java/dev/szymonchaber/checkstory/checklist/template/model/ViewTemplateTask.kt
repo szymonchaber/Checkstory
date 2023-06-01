@@ -64,16 +64,16 @@ data class ViewTemplateTask(
     }
 
     fun withMovedSiblingRecursive(
-        siblingViewKey: TemplateTaskId,
+        siblingId: TemplateTaskId,
         movedItem: ViewTemplateTask
     ): ViewTemplateTask {
-        val siblingIndex = children.indexOfFirst { it.id == siblingViewKey }
+        val siblingIndex = children.indexOfFirst { it.id == siblingId }
         val isSiblingOnThisLevel = siblingIndex > -1
         val updatedChildren = if (isSiblingOnThisLevel) {
             children.withTaskAtIndex(movedItem.updateParentId(this.id), siblingIndex + 1)
         } else {
             children.map {
-                it.withMovedSiblingRecursive(siblingViewKey, movedItem)
+                it.withMovedSiblingRecursive(siblingId, movedItem)
             }
         }
         return copy(children = updatedChildren)
