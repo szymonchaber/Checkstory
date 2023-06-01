@@ -14,10 +14,21 @@ sealed interface ViewTemplateTask : java.io.Serializable {
     val placeholderTitle: String?
 
     fun toDomainModel(
-        parentId: TemplateTaskId? = null,
         position: Int,
-        templateId: TemplateId
-    ): TemplateTask
+        templateId: TemplateId,
+        parentId: TemplateTaskId? = null
+    ): TemplateTask {
+        return TemplateTask(
+            id = id,
+            parentId = parentId,
+            title = title,
+            children = children.mapIndexed { index, child ->
+                child.toDomainModel(index, templateId, id)
+            },
+            position.toLong(),
+            templateId
+        )
+    }
 
     fun minusChildTaskRecursive(checkbox: ViewTemplateTask): ViewTemplateTask {
         return withoutChild(checkbox.id) {}
@@ -130,23 +141,6 @@ sealed interface ViewTemplateTask : java.io.Serializable {
         override val placeholderTitle: String? = null
     ) : ViewTemplateTask {
 
-        override fun toDomainModel(
-            parentId: TemplateTaskId?,
-            position: Int,
-            templateId: TemplateId
-        ): TemplateTask {
-            return TemplateTask(
-                id = id,
-                parentId = parentId,
-                title = title,
-                children = children.mapIndexed { index, child ->
-                    child.toDomainModel(id, index, templateId)
-                },
-                position.toLong(),
-                templateId
-            )
-        }
-
         override fun abstractCopy(
             id: TemplateTaskId,
             parentId: TemplateTaskId?,
@@ -170,23 +164,6 @@ sealed interface ViewTemplateTask : java.io.Serializable {
         override val children: List<ViewTemplateTask>,
         override val placeholderTitle: String? = null
     ) : ViewTemplateTask {
-
-        override fun toDomainModel(
-            parentId: TemplateTaskId?,
-            position: Int,
-            templateId: TemplateId
-        ): TemplateTask {
-            return TemplateTask(
-                id = id,
-                parentId = parentId,
-                title = title,
-                children = children.mapIndexed { index, child ->
-                    child.toDomainModel(id, index, templateId)
-                },
-                position.toLong(),
-                templateId
-            )
-        }
 
         override fun abstractCopy(
             id: TemplateTaskId,
