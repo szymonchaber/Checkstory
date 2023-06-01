@@ -293,7 +293,7 @@ class EditTemplateViewModel @Inject constructor(
                         "reminder_count" to template.reminders.count()
                     )
                 )
-                if (loadingState.isOnboardingTemplate) {
+                if (loadingState.onboardingPlaceholders != null) {
                     tracker.logEvent("template_saved_during_onboarding")
                 }
                 null to EditTemplateEffect.CloseScreen
@@ -344,7 +344,7 @@ class EditTemplateViewModel @Inject constructor(
                 synchronizeCommandsUseCase.synchronizeCommands(
                     consolidateCommands(loadingState.markDeleted().finalizedCommands())
                 )
-                if (loadingState.isOnboardingTemplate) {
+                if (loadingState.onboardingPlaceholders != null) {
                     tracker.logEvent("template_creation_cancelled_during_onboarding")
                 }
                 null to EditTemplateEffect.CloseScreen

@@ -16,10 +16,8 @@ sealed interface TemplateLoadingState {
         val tasks: List<ViewTemplateTask> = originalTemplate.tasks.map {
             ViewTemplateTask.fromDomainModel(it)
         },
-        val updatedTemplate: Template = originalTemplate,
         val mostRecentlyAddedItem: TemplateTaskId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
-        val isOnboardingTemplate: Boolean = false,
         private val commands: List<TemplateCommand> = listOf()
     ) : TemplateLoadingState {
 
