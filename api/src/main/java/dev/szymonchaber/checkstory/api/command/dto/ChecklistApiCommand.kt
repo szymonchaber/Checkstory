@@ -20,6 +20,7 @@ internal sealed interface ChecklistApiCommand : ApiCommand {
         val title: String,
         val description: String,
         val tasks: List<ApiChecklistCommandTask>,
+        val notes: String?,
         override val commandId: DtoUUID,
         override val timestamp: Instant
     ) : ChecklistApiCommand
@@ -63,6 +64,7 @@ internal sealed interface ChecklistApiCommand : ApiCommand {
                     checklistCommand.tasks.map {
                         it.toTaskDto()
                     },
+                    checklistCommand.notes,
                     checklistCommand.commandId,
                     checklistCommand.timestamp,
                 )
