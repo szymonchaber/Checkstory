@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.api.template
 
-import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
+import dev.szymonchaber.checkstory.api.di.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.api.template.model.ApiTemplate
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import io.ktor.client.call.body

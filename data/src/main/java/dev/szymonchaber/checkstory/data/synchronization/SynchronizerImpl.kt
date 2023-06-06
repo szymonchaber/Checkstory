@@ -61,7 +61,7 @@ class SynchronizerImpl @Inject internal constructor(
             commandRepository.deleteCommands(commands.map(Command::commandId))
             SynchronizationResult.Success
         } catch (exception: Exception) {
-            Timber.e("API error - skipping synchronization for now", exception)
+            Timber.e(exception, "API error - skipping synchronization for now")
             SynchronizationResult.Error
         }
     }

@@ -1,8 +1,8 @@
 package dev.szymonchaber.checkstory.api.auth
 
-import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.api.auth.model.ApiUser
 import dev.szymonchaber.checkstory.api.auth.model.RegisterPayload
+import dev.szymonchaber.checkstory.api.di.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.domain.model.Result
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.usecase.LoginError

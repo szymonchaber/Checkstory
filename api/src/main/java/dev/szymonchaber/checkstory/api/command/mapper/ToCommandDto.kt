@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.api.command.mapper
 
 import dev.szymonchaber.checkstory.api.command.dto.ApiChecklistCommandTask
+import dev.szymonchaber.checkstory.api.command.dto.ApiExistingTemplateData
 import dev.szymonchaber.checkstory.api.command.dto.ApiTemplateCommandReminder
 import dev.szymonchaber.checkstory.api.command.dto.TemplateApiCommand
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
@@ -13,6 +14,7 @@ internal fun TemplateCommand.toCommandDto(): TemplateApiCommand {
                 templateId = templateId.id,
                 commandId = commandId,
                 timestamp = timestamp,
+                existingTemplateData = existingData?.let(ApiExistingTemplateData::fromTemplate)
             )
         }
 

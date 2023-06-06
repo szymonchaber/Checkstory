@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.api.payment.interactor
 
-import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
+import dev.szymonchaber.checkstory.api.di.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.api.payment.model.AssignPurchaseTokenPayload
 import dev.szymonchaber.checkstory.domain.interactor.AssignPaymentError
 import dev.szymonchaber.checkstory.domain.interactor.UserPaymentInteractor

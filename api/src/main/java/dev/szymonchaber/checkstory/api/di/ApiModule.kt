@@ -7,7 +7,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import dev.szymonchaber.checkstory.api.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.api.auth.AuthInteractorImpl
 import dev.szymonchaber.checkstory.api.payment.interactor.UserPaymentInteractorImpl
 import dev.szymonchaber.checkstory.domain.interactor.AuthInteractor
@@ -55,7 +54,6 @@ internal interface ApiModule {
                 install(ContentNegotiation) {
                     json(Json {
                         prettyPrint = true
-                        isLenient = true
                         ignoreUnknownKeys = true
                     })
                 }
@@ -65,6 +63,7 @@ internal interface ApiModule {
                             getFirebaseIdToken(forceRefresh = false)
                         }
                         refreshTokens {
+                            Timber.d("Got 401 - refreshing Firebase token")
                             getFirebaseIdToken(forceRefresh = true)
                         }
                     }
@@ -82,8 +81,8 @@ internal interface ApiModule {
                     level = LogLevel.ALL
                 }
                 install(ResponseObserver) {
-                    onResponse { response ->
-                        Timber.d("HTTP status: ${response.status.value}")
+                    onResponse {
+                        // TODO implement auto-logout
                     }
                 }
                 install(DefaultRequest) {
@@ -103,3 +102,5 @@ internal interface ApiModule {
         }
     }
 }
+
+internal typealias ConfiguredHttpClient = HttpClient

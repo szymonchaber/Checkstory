@@ -1,6 +1,8 @@
 package dev.szymonchaber.checkstory.api.command.dto
 
 import dev.szymonchaber.checkstory.api.serializers.DtoUUID
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
+import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -16,7 +18,8 @@ internal sealed interface TemplateApiCommand : ApiCommand {
     data class CreateTemplateApiCommand(
         override val templateId: DtoUUID,
         override val commandId: DtoUUID,
-        override val timestamp: Instant
+        override val timestamp: Instant,
+        val existingTemplateData: ApiExistingTemplateData?
     ) : TemplateApiCommand
 
     @Serializable
@@ -110,4 +113,52 @@ internal sealed interface TemplateApiCommand : ApiCommand {
         override val commandId: DtoUUID,
         override val timestamp: Instant
     ) : TemplateApiCommand
+}
+
+@Serializable
+internal data class ApiExistingTemplateData(
+    val title: String,
+    val description: String,
+    val tasks: List<ApiExistingTemplateTask>,
+    val reminders: List<ApiTemplateCommandReminder>,
+) {
+
+    companion object {
+
+        fun fromTemplate(existingData: Template): ApiExistingTemplateData {
+            return with(existingData) {
+                ApiExistingTemplateData(
+                    title,
+                    description,
+                    tasks.map(ApiExistingTemplateTask.Companion::fromDomain),
+                    reminders.map(ApiTemplateCommandReminder.Companion::fromReminder)
+                )
+            }
+        }
+    }
+}
+
+@Serializable
+internal data class ApiExistingTemplateTask(
+    val id: DtoUUID,
+    val parentId: DtoUUID?,
+    val title: String,
+    val children: List<ApiExistingTemplateTask>,
+    val sortPosition: Long,
+) {
+
+    companion object {
+
+        fun fromDomain(task: TemplateTask): ApiExistingTemplateTask {
+            return with(task) {
+                ApiExistingTemplateTask(
+                    id.id,
+                    parentId?.id,
+                    title,
+                    children.map { fromDomain(it) },
+                    sortPosition,
+                )
+            }
+        }
+    }
 }

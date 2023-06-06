@@ -16,6 +16,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toKotlinLocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.*
@@ -43,6 +44,20 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
         val createdAt: Instant,
         val reminders: List<CommandReminderEntity>
     ) {
+
+        fun toTemplate(): Template {
+            return Template(
+                TemplateId(id),
+                title,
+                description,
+                items.map(CommandTemplateTaskEntity::toTask),
+                createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
+                listOf(),
+                reminders.map {
+                    it.toReminder()
+                }
+            )
+        }
 
         companion object {
 
@@ -82,7 +97,19 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
         val title: String,
         val children: List<CommandTemplateTaskEntity>,
         val sortPosition: Long,
-    )
+    ) {
+
+        fun toTask(): TemplateTask {
+            return TemplateTask(
+                TemplateTaskId(id),
+                parentTaskId?.let { TemplateTaskId(it) },
+                title,
+                children.map { it.toTask() },
+                sortPosition,
+                TemplateId(templateId),
+            )
+        }
+    }
 
     @Serializable
     @SerialName("editTemplateTitle")
@@ -178,11 +205,14 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
 
     fun toDomainCommand(): TemplateCommand {
         return when (this) {
-            is CreateNewTemplateEntity -> TemplateCommand.CreateNewTemplate(
-                templateId = TemplateId(templateId),
-                timestamp = timestamp,
-                commandId = commandId
-            )
+            is CreateNewTemplateEntity -> {
+                TemplateCommand.CreateNewTemplate(
+                    templateId = TemplateId(templateId),
+                    timestamp = timestamp,
+                    commandId = commandId,
+                    existingData = existingData?.toTemplate()
+                )
+            }
 
             is RenameTemplateEntity -> TemplateCommand.RenameTemplate(
                 templateId = TemplateId(templateId),
@@ -262,12 +292,14 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
 
         fun fromDomainCommand(templateCommand: TemplateCommand): TemplateCommandEntity {
             return when (templateCommand) {
-                is TemplateCommand.CreateNewTemplate -> CreateNewTemplateEntity(
-                    templateId = templateCommand.templateId.id,
-                    timestamp = templateCommand.timestamp,
-                    commandId = templateCommand.commandId,
-                    existingData = templateCommand.existingData?.let { ExistingTemplateEntity.from(it) }
-                )
+                is TemplateCommand.CreateNewTemplate -> {
+                    CreateNewTemplateEntity(
+                        templateId = templateCommand.templateId.id,
+                        timestamp = templateCommand.timestamp,
+                        commandId = templateCommand.commandId,
+                        existingData = templateCommand.existingData?.let { ExistingTemplateEntity.from(it) }
+                    )
+                }
 
                 is TemplateCommand.RenameTemplate -> RenameTemplateEntity(
                     templateId = templateCommand.templateId.id,
