@@ -60,7 +60,7 @@ class App : Application(), Configuration.Provider {
         if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
         }
-//        migrateToCommandModel()
+        migrateToCommandModel()
         setPaymentTierProperty()
         runReminderSchedulerDaily()
         synchronizeDataPeriodically()
