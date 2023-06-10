@@ -19,9 +19,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.szymonchaber.checkstory.checklist.catalog.R
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.model.RecentChecklistsLoadingState
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -45,6 +45,7 @@ fun RecentChecklistsView(
         RecentChecklistsLoadingState.Loading -> {
             LoadingView()
         }
+
         is RecentChecklistsLoadingState.Success -> {
             if (state.checklists.isEmpty()) {
                 NoRecentChecklistsView()

@@ -6,6 +6,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
+import dev.szymonchaber.checkstory.design.R
 
 @Composable
 fun ConfirmDeleteChecklistDialog(openDialog: MutableState<Boolean>, onConfirmClicked: () -> Unit) {

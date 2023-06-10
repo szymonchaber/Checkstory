@@ -6,7 +6,7 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import dev.szymonchaber.checkstory.checklist.template.R
+import dev.szymonchaber.checkstory.design.R
 
 @Composable
 fun DragHandle(modifier: Modifier = Modifier) {

@@ -9,6 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.ReminderId
 import javax.inject.Inject
 import javax.inject.Singleton

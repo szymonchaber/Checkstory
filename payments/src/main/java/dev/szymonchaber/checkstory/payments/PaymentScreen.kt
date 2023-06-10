@@ -49,6 +49,7 @@ import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
@@ -81,9 +82,11 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
                     scaffoldState.snackbarHostState.showSnackbar(message = somethingWentWrongText) // TODO add "you were not charged" to the message
                 }
             }
+
             is PaymentEffect.ExitPaymentScreen -> {
                 navigator.popBackStack()
             }
+
             null -> Unit
         }
     }
@@ -195,6 +198,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
             is PaymentState.PaymentLoadingState.Loading -> {
                 LoadingView()
             }
+
             is PaymentState.PaymentLoadingState.Success -> {
                 PaymentsPlans(
                     loadingState.plans, loadingState.selectedPlan
@@ -202,6 +206,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
                     viewModel.onEvent(PaymentEvent.PlanSelected(it))
                 }
             }
+
             PaymentState.PaymentLoadingState.LoadingError -> {
                 Text(
                     modifier = Modifier
@@ -214,6 +219,7 @@ fun PaymentView(viewModel: PaymentViewModel) {
                     Text(text = stringResource(id = R.string.try_again))
                 }
             }
+
             PaymentState.PaymentLoadingState.Paid -> {
                 SubscriptionSuccessfulView()
             }

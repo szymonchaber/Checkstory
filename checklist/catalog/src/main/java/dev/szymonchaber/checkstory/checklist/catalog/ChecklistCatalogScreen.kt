@@ -50,6 +50,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.common.trackScreenName
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
@@ -149,9 +150,11 @@ private fun ChecklistCatalogView(
             is ChecklistCatalogEffect.NavigateToChecklist -> {
                 navigator.navigate(Routes.editChecklistScreen(value.checklistId))
             }
+
             is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
                 navigator.navigate(Routes.editTemplateScreen(value.templateId))
             }
+
             is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
                 navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
             }
@@ -216,6 +219,7 @@ private fun LazyListScope.templates(
                 LoadingView()
             }
         }
+
         is ChecklistCatalogLoadingState.Success -> {
             if (loadingState.templates.isEmpty()) {
                 item {

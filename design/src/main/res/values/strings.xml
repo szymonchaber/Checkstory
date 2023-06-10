@@ -96,4 +96,9 @@
     <string name="about_email">szymon@szymonchaber.dev</string>
     <string name="about_second_paragraph">I’m also documenting my journey building this app on Twitter: </string>
     <string name="about_twitter">\@SzymonChaber</string>
+    <string name="new_template">New template</string>
+    <string name="use">Use</string>
+    <string name="pro">PRO</string>
+    <string name="save_template">Save template</string>
+    <string name="save_reminder">Save reminder</string>
 </resources>

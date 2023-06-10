@@ -37,6 +37,7 @@ import com.google.accompanist.pager.rememberPagerState
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 

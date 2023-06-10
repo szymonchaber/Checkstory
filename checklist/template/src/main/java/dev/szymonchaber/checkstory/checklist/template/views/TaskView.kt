@@ -29,8 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.checklist.template.detectDragHandleReorder
+import dev.szymonchaber.checkstory.design.R
 import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @Composable

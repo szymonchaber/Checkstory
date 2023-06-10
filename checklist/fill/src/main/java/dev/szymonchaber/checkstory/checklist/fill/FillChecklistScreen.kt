@@ -74,6 +74,7 @@ import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
 import dev.szymonchaber.checkstory.common.trackScreenName
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DeleteButton

@@ -36,12 +36,12 @@ import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
-import dev.szymonchaber.checkstory.checklist.template.R
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEffect
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEvent
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderLoadingState
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderState
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder.Exact

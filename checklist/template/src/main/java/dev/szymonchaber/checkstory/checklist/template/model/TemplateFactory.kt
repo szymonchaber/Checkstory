@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import android.content.res.Resources
-import dev.szymonchaber.checkstory.checklist.template.R
+import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
