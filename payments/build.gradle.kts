@@ -31,15 +31,15 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":navigation"))
 
-    Dependencies.common.forEach(::implementation)
-    Dependencies.ui.forEach(::implementation)
+    implementation(libs.bundles.common)
+    implementation(libs.bundles.ui)
 
     Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)
 
     kapt(Dependencies.hiltKapt)
 
-    implementation(Dependencies.billing)
+    implementation(libs.billing)
 
     implementation(Dependencies.arrow)
 

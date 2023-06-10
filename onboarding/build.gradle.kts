@@ -45,8 +45,8 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":navigation"))
 
-    Dependencies.common.forEach(::implementation)
-    Dependencies.ui.forEach(::implementation)
+    implementation(libs.bundles.common)
+    implementation(libs.bundles.ui)
 
     kapt(Dependencies.hiltKapt)
 

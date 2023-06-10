@@ -93,8 +93,8 @@ dependencies {
     implementation(project(":onboarding"))
     implementation(project(":account"))
 
-    Dependencies.common.forEach(::implementation)
-    Dependencies.ui.forEach(::implementation)
+    implementation(libs.bundles.common)
+    implementation(libs.bundles.ui)
 
     Dependencies.composeDestinations.forEach(::implementation)
     ksp(Dependencies.composeDestinationsKsp)

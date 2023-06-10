@@ -35,8 +35,8 @@ android {
 
 dependencies {
     implementation(project(mapOf("path" to ":domain")))
-    Dependencies.common.forEach(::implementation)
-    Dependencies.ui.forEach(::implementation)
+    implementation(libs.bundles.common)
+    implementation(libs.bundles.ui)
 
     Dependencies.composeDestinations.forEach(::implementation)
 

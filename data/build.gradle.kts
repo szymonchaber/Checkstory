@@ -41,8 +41,8 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":api"))
 
-    Dependencies.common.forEach(::implementation)
-    Dependencies.ui.forEach(::implementation)
+    implementation(libs.bundles.common)
+    implementation(libs.bundles.ui)
 
     kapt(Dependencies.hiltKapt)
 
@@ -57,7 +57,7 @@ dependencies {
     implementation(Dependencies.crashlytics)
     implementation(Dependencies.auth)
 
-    Dependencies.ktor.forEach(::implementation)
+    implementation(libs.bundles.ktor)
     implementation(Dependencies.kotlinx_datetime)
 
     implementation(Dependencies.work)

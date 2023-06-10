@@ -9,40 +9,13 @@ class Dependencies : Plugin<Project> {
 
     companion object {
 
-        const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
-
         private const val hiltVersion = "2.44.2"
-        private const val hiltLibrary = "com.google.dagger:hilt-android:$hiltVersion"
         const val hiltKapt = "com.google.dagger:hilt-compiler:$hiltVersion"
 
         const val hiltWork = "androidx.hilt:hilt-work:1.0.0"
         const val hiltWorkKapt = "androidx.hilt:hilt-compiler:1.0.0"
 
-        private const val timber = "com.jakewharton.timber:timber:5.0.1"
-        private const val kotlinImmutableCollections = "org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5"
-        private const val kotlinxDatetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
-
-        val common = listOf(coroutines, hiltLibrary, timber, kotlinImmutableCollections, kotlinxDatetime)
-
-        const val androidXCore = "androidx.core:core-ktx:1.9.0"
-        const val appCompat = "androidx.appcompat:appcompat:1.7.0-alpha02"
-
-        private const val lifecycleVersion = "2.4.1"
-        val lifecycle = listOf(
-            "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion",
-            "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion",
-            "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion"
-        )
-
         const val composeVersion = "1.4.0"
-        val compose = listOf(
-            "androidx.compose.ui:ui:$composeVersion",
-            "androidx.compose.ui:ui-tooling-preview:$composeVersion",
-            "androidx.compose.material:material:$composeVersion",
-            "androidx.activity:activity-compose:1.7.0-beta01",
-            "androidx.navigation:navigation-compose:2.5.3",
-            "androidx.hilt:hilt-navigation-compose:1.0.0"
-        )
 
         val debugUiTooling = "androidx.compose.ui:ui-tooling:$composeVersion"
 
@@ -54,11 +27,6 @@ class Dependencies : Plugin<Project> {
         val composeDestinationsKsp =
             "io.github.raamcosta.compose-destinations:ksp:$composeDestinationsVersion"
 
-        val accompanist = listOf(
-            "com.google.accompanist:accompanist-pager:0.29.1-alpha",
-            "com.google.accompanist:accompanist-pager-indicators:0.29.1-alpha"
-        )
-
         private const val roomVersion = "2.5.1"
 
         val room = listOf(
@@ -69,8 +37,6 @@ class Dependencies : Plugin<Project> {
         val roomKsp = "androidx.room:room-compiler:$roomVersion"
 
         val dataStore = "androidx.datastore:datastore-preferences:1.0.0"
-
-        val ui = listOf(androidXCore, appCompat) + compose + lifecycle + accompanist
 
         val ads = "com.google.android.gms:play-services-ads:22.0.0"
 
@@ -86,9 +52,7 @@ class Dependencies : Plugin<Project> {
 
         val rrule = "com.github.PhilJay:RRule:1.0.3"
 
-        const val workVersion = "2.8.1"
-
-        val work = "androidx.work:work-runtime-ktx:$workVersion"
+        val work = "androidx.work:work-runtime-ktx:2.8.1"
 
         private val billing_version = "5.1.0"
 
@@ -101,15 +65,6 @@ class Dependencies : Plugin<Project> {
         val composeDialogsDateTime = "io.github.vanpra.compose-material-dialogs:datetime:0.9.0"
 
         val composeReorderable = "org.burnoutcrew.composereorderable:reorderable:0.9.6"
-
-        val ktor = listOf(
-            "io.ktor:ktor-client-android:2.3.0",
-            "io.ktor:ktor-client-serialization:2.3.0",
-            "io.ktor:ktor-client-content-negotiation:2.3.0",
-            "io.ktor:ktor-serialization-kotlinx-json:2.3.0",
-            "io.ktor:ktor-client-logging-jvm:2.3.0",
-            "io.ktor:ktor-client-auth:2.3.0"
-        )
 
         const val kotlinx_datetime = "org.jetbrains.kotlinx:kotlinx-datetime:0.4.0"
 
