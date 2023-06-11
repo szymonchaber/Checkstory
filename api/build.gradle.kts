@@ -3,7 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
-    id("com.google.devtools.ksp") version "1.8.20-1.0.11"
+    id("com.google.devtools.ksp")
     id("library-config")
     id("kotlinx-serialization")
 }
@@ -36,7 +36,6 @@ android {
 dependencies {
     implementation(project(":common"))
     implementation(project(":domain"))
-    implementation("androidx.test:monitor:1.5.0")
 
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)

@@ -5,13 +5,15 @@ buildscript {
     }
 }
 plugins {
-    id("com.android.application") version "8.0.2" apply false
-    id("com.android.library") version "8.0.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.8.20" apply false
-    id("com.google.dagger.hilt.android") version "2.44.2" apply false
-    id("com.google.gms.google-services") version "4.3.15" apply false
-    id("com.google.firebase.crashlytics") version "2.9.5" apply false
-    id("com.google.firebase.firebase-perf") version "1.4.2" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.20" apply false
-    id("com.github.ben-manes.versions") version "0.45.0"
+
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+    alias(libs.plugins.firebase.perf) apply false
+    alias(libs.plugins.gms) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.ksp) apply false
+    alias(libs.plugins.versions) apply false
 }
