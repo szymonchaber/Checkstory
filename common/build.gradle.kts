@@ -1,5 +1,3 @@
-import dev.szymonchaber.checkstory.gradle.Dependencies
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -27,12 +25,12 @@ dependencies {
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
 
-    implementation(platform(Dependencies.firebasePlatform))
-    implementation(Dependencies.analytics)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
-    kapt(Dependencies.hiltKapt)
+    kapt(libs.hilt.compiler)
 
-    debugImplementation(Dependencies.debugUiTooling)
-    Dependencies.unitTest.forEach(::testImplementation)
-    Dependencies.uiTest.forEach(::androidTestImplementation)
+    debugImplementation(libs.compose.debugUiTooling)
+    testImplementation(libs.bundles.unitTest)
+    androidTestImplementation(libs.bundles.uiTest)
 }

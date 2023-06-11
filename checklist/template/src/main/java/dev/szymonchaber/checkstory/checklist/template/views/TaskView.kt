@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.template.detectDragHandleReorder
 import dev.szymonchaber.checkstory.design.R
-import org.burnoutcrew.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun TaskView(
@@ -118,7 +117,6 @@ fun TaskView(
 @Preview(showBackground = true)
 @Composable
 fun TaskPreview() {
-    rememberReorderableLazyListState({ _, _ -> })
     TaskView(
         modifier = Modifier,
         title = "Checkbox",

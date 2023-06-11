@@ -1,5 +1,3 @@
-import dev.szymonchaber.checkstory.gradle.Dependencies
-
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -44,28 +42,25 @@ dependencies {
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
 
-    kapt(Dependencies.hiltKapt)
+    kapt(libs.hilt.compiler)
 
-    Dependencies.room.forEach(::implementation)
-    ksp(Dependencies.roomKsp)
+    implementation(libs.bundles.room)
+    ksp(libs.room.compiler)
 
-    implementation(Dependencies.rrule)
-    implementation(Dependencies.dataStore)
+    implementation(libs.rrule)
+    implementation(libs.dataStore)
 
-
-    implementation(platform(Dependencies.firebasePlatform))
-    implementation(Dependencies.crashlytics)
-    implementation(Dependencies.auth)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.auth)
 
     implementation(libs.bundles.ktor)
-    implementation(Dependencies.kotlinx_datetime)
 
-    implementation(Dependencies.work)
-    implementation(Dependencies.hiltWork)
-    kapt(Dependencies.hiltWorkKapt)
+    implementation(libs.work)
+    implementation(libs.hilt.work)
+    kapt(libs.hilt.work.compiler)
 
     implementation("androidx.test:monitor:1.5.0")
-    Dependencies.unitTest.forEach(::testImplementation)
-    Dependencies.unitTest.forEach(::androidTestImplementation)
-    Dependencies.uiTest.forEach(::androidTestImplementation)
+    testImplementation(libs.bundles.unitTest)
+    androidTestImplementation(libs.bundles.uiTest)
 }

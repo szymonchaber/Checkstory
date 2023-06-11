@@ -1,5 +1,3 @@
-import dev.szymonchaber.checkstory.gradle.Dependencies
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -96,23 +94,22 @@ dependencies {
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
 
-    Dependencies.composeDestinations.forEach(::implementation)
-    ksp(Dependencies.composeDestinationsKsp)
+    ksp(libs.compose.destinations.ksp)
 
-    implementation(Dependencies.hiltWork)
-    kapt(Dependencies.hiltWorkKapt)
-    kapt(Dependencies.hiltKapt)
+    implementation(libs.hilt.work)
+    kapt(libs.hilt.work.compiler)
+    kapt(libs.hilt.compiler)
 
-    implementation(Dependencies.ads)
-    implementation(Dependencies.review)
+    implementation(libs.ads)
+    implementation(libs.review)
 
-    implementation(platform(Dependencies.firebasePlatform))
-    implementation(Dependencies.analytics)
-    implementation(Dependencies.crashlytics)
-    implementation(Dependencies.performance)
-    implementation(Dependencies.messaging)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.performance)
+    implementation(libs.firebase.cloud.messaging)
 
-    debugImplementation(Dependencies.debugUiTooling)
-    Dependencies.unitTest.forEach(::testImplementation)
-    Dependencies.uiTest.forEach(::androidTestImplementation)
+    debugImplementation(libs.compose.debugUiTooling)
+    testImplementation(libs.bundles.unitTest)
+    androidTestImplementation(libs.bundles.uiTest)
 }
