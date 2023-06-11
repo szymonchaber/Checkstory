@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
-    id("dependencies")
     id("com.google.devtools.ksp") version "1.8.20-1.0.11"
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")

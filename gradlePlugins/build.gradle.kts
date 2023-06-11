@@ -16,10 +16,6 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("dependencies") {
-            id = "dependencies"
-            implementationClass = "dev.szymonchaber.checkstory.gradle.Dependencies"
-        }
         create("library-config") {
             id = "library-config"
             implementationClass = "dev.szymonchaber.checkstory.gradle.LibraryConfig"
