@@ -42,6 +42,7 @@ dependencies {
     implementation(project(":data"))
     implementation(project(":navigation"))
 
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
 

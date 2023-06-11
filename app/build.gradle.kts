@@ -72,7 +72,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.2")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(project(":common"))
     implementation(project(":design"))
@@ -90,6 +90,7 @@ dependencies {
     implementation(project(":onboarding"))
     implementation(project(":account"))
 
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
 

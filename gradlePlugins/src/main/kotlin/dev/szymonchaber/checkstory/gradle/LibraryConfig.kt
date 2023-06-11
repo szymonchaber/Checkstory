@@ -51,7 +51,6 @@ class LibraryConfig : Plugin<Project> {
                 }
             }
         }
-        target.dependencies.add("coreLibraryDesugaring", "com.android.tools:desugar_jdk_libs:2.0.2")
     }
 
     private fun LibraryExtension.kotlinOptions(configure: Action<KotlinJvmOptions>) {
