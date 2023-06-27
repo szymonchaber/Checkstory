@@ -1,12 +1,10 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
-import dev.szymonchaber.checkstory.data.database.dao.ChecklistWithTemplate
+import dev.szymonchaber.checkstory.data.database.dao.DeepChecklistEntity
 import dev.szymonchaber.checkstory.data.database.dao.TaskDao
-import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
-import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
@@ -21,8 +19,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
@@ -33,7 +29,6 @@ import javax.inject.Singleton
 
 @Singleton
 internal class ChecklistRepositoryImpl @Inject constructor(
-    private val templateDao: TemplateDao,
     private val checklistDao: ChecklistDao,
     private val taskDao: TaskDao,
     private val commandRepository: CommandRepository
@@ -61,7 +56,11 @@ internal class ChecklistRepositoryImpl @Inject constructor(
 
     override fun getAllChecklists(): Flow<List<Checklist>> {
         return checklistDao.getAll()
-            .toDeepDomainChecklistFlow()
+            .map {
+                it.map {
+                    toDomain(it)
+                }
+            }
             .hydrated()
     }
 
@@ -81,10 +80,9 @@ internal class ChecklistRepositoryImpl @Inject constructor(
 
     private suspend fun getByIdOrNull(id: UUID): Checklist? {
         return checklistDao.getByIdOrNull(id)?.let {
-            combineIntoDomainChecklist(it)
-        }?.firstOrNull()
-            ?: commandRepository.commandOnlyChecklists()
-                .find { it.id.id == id }
+            toDomain(it)
+        } ?: commandRepository.commandOnlyChecklists()
+            .find { it.id.id == id }
     }
 
     private fun Flow<List<Checklist>>.hydrated(): Flow<List<Checklist>> =
@@ -98,8 +96,6 @@ internal class ChecklistRepositoryImpl @Inject constructor(
                 .filterNot(Checklist::isRemoved)
         }
 
-    private fun getTasks(checklistId: UUID) = checklistDao.getTasksForChecklist(checklistId)
-
     suspend fun insert(checklist: Checklist): ChecklistId {
         checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
         taskDao.insertAll(checklist.flattenedItems.map(CheckboxEntity::fromDomainTask))
@@ -108,33 +104,26 @@ internal class ChecklistRepositoryImpl @Inject constructor(
 
     fun getBasedOn(basedOn: TemplateId): Flow<List<Checklist>> {
         return checklistDao.getAllForTemplate(basedOn.id)
-            .toDeepDomainChecklistFlow()
+            .map {
+                it.map { checklist ->
+                    toDomain(checklist)
+                }
+            }
             .hydrated()
             .map { checklists ->
                 checklists.filter { it.templateId == basedOn }
             }
     }
 
-    private fun Flow<List<ChecklistWithTemplate>>.toDeepDomainChecklistFlow(): Flow<List<Checklist>> {
-        return flatMapLatest {
-            it.map(::combineIntoDomainChecklist)
-                .toFlowOfLists()
-                .map(List<Checklist?>::filterNotNull)
+    private suspend fun toDomain(deepChecklistEntity: DeepChecklistEntity): Checklist {
+        val (checklist, template, tasks) = deepChecklistEntity
+        return checklist.toDomainChecklist(
+            template.title,
+            template.description,
+            convertToNestedTasks(tasks)
+        ).let {
+            commandRepository.hydrate(it)
         }
-    }
-
-    private fun combineIntoDomainChecklist(checklistWithTemplate: ChecklistWithTemplate): Flow<Checklist?> {
-        val (checklist, template) = checklistWithTemplate
-        return getTasks(checklist.checklistId).map { tasks ->
-            checklist.toDomainChecklist(
-                template.title,
-                template.description,
-                convertToNestedTasks(tasks)
-            )
-        }
-            .map {
-                commandRepository.hydrate(it)
-            }
     }
 
     private fun convertToNestedTasks(entities: List<CheckboxEntity>): List<Task> {

@@ -13,22 +13,19 @@ interface ChecklistDao {
         "SELECT * FROM checklistEntity " +
                 "ORDER BY checklistEntity.createdAt DESC"
     )
-    fun getAll(): Flow<List<ChecklistWithTemplate>>
+    fun getAll(): Flow<List<DeepChecklistEntity>>
 
     @Query(
         "SELECT * FROM checklistEntity " +
                 "WHERE checklistEntity.templateId=:templateId " +
                 "ORDER BY checklistEntity.createdAt DESC"
     )
-    fun getAllForTemplate(templateId: UUID): Flow<List<ChecklistWithTemplate>>
+    fun getAllForTemplate(templateId: UUID): Flow<List<DeepChecklistEntity>>
 
     @Query(
         "SELECT * FROM checklistEntity WHERE checklistEntity.checklistId=:id"
     )
-    suspend fun getByIdOrNull(id: UUID): ChecklistWithTemplate?
-
-    @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checklistId=:checklistId")
-    fun getTasksForChecklist(checklistId: UUID): Flow<List<CheckboxEntity>>
+    suspend fun getByIdOrNull(id: UUID): DeepChecklistEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(checklistEntity: ChecklistEntity)
