@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.data.repository
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
+import dev.szymonchaber.checkstory.data.database.dao.ChecklistWithTemplate
 import dev.szymonchaber.checkstory.data.database.dao.TaskDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
@@ -25,10 +25,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -63,7 +61,7 @@ internal class ChecklistRepositoryImpl @Inject constructor(
 
     override fun getAllChecklists(): Flow<List<Checklist>> {
         return checklistDao.getAll()
-            .toDomainChecklistFlow()
+            .toDeepDomainChecklistFlow()
             .hydrated()
     }
 
@@ -109,15 +107,15 @@ internal class ChecklistRepositoryImpl @Inject constructor(
     }
 
     fun getBasedOn(basedOn: TemplateId): Flow<List<Checklist>> {
-        val all = checklistDao.getAll(basedOn.id)
-        return all.toDomainChecklistFlow()
+        return checklistDao.getAllForTemplate(basedOn.id)
+            .toDeepDomainChecklistFlow()
             .hydrated()
             .map { checklists ->
                 checklists.filter { it.templateId == basedOn }
             }
     }
 
-    private fun Flow<List<ChecklistEntity>>.toDomainChecklistFlow(): Flow<List<Checklist>> {
+    private fun Flow<List<ChecklistWithTemplate>>.toDeepDomainChecklistFlow(): Flow<List<Checklist>> {
         return flatMapLatest {
             it.map(::combineIntoDomainChecklist)
                 .toFlowOfLists()
@@ -125,33 +123,18 @@ internal class ChecklistRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun combineIntoDomainChecklist(checklist: ChecklistEntity): Flow<Checklist?> {
-        return templateDao.getById(checklist.templateId)
-            .onEach {
-                if (it == null) {
-                    FirebaseCrashlytics.getInstance()
-                        .recordException(Exception("Found orphaned checklist (no related checklist template found). Cascading deletion seems to be broken"))
-                    Timber.e("Found orphaned checklist (no related checklist template found). Cascading deletion seems to be broken")
-                }
-            }
-            .combine(getTasks(checklist.checklistId)) { template, tasks ->
-                template?.let {
-                    checklist.toDomainChecklist(
-                        it.title,
-                        template.description,
-                        groupToDomain(tasks)
-                    )
-                }
-            }
+    private fun combineIntoDomainChecklist(checklistWithTemplate: ChecklistWithTemplate): Flow<Checklist?> {
+        val (checklist, template) = checklistWithTemplate
+        return getTasks(checklist.checklistId).map { tasks ->
+            checklist.toDomainChecklist(
+                template.title,
+                template.description,
+                convertToNestedTasks(tasks)
+            )
+        }
             .map {
-                it?.let {
-                    commandRepository.hydrate(it)
-                }
+                commandRepository.hydrate(it)
             }
-    }
-
-    private fun groupToDomain(tasks: List<CheckboxEntity>): List<Task> {
-        return convertToNestedTasks(tasks)
     }
 
     private fun convertToNestedTasks(entities: List<CheckboxEntity>): List<Task> {

@@ -13,24 +13,19 @@ interface ChecklistDao {
         "SELECT * FROM checklistEntity " +
                 "ORDER BY checklistEntity.createdAt DESC"
     )
-    fun getAll(): Flow<List<ChecklistEntity>>
+    fun getAll(): Flow<List<ChecklistWithTemplate>>
 
     @Query(
         "SELECT * FROM checklistEntity " +
                 "WHERE checklistEntity.templateId=:templateId " +
                 "ORDER BY checklistEntity.createdAt DESC"
     )
-    fun getAll(templateId: UUID): Flow<List<ChecklistEntity>>
+    fun getAllForTemplate(templateId: UUID): Flow<List<ChecklistWithTemplate>>
 
     @Query(
         "SELECT * FROM checklistEntity WHERE checklistEntity.checklistId=:id"
     )
-    fun getById(id: UUID): Flow<ChecklistEntity?>
-
-    @Query(
-        "SELECT * FROM checklistEntity WHERE checklistEntity.checklistId=:id"
-    )
-    suspend fun getByIdOrNull(id: UUID): ChecklistEntity?
+    suspend fun getByIdOrNull(id: UUID): ChecklistWithTemplate?
 
     @Query("SELECT * FROM checkboxEntity WHERE checkboxEntity.checklistId=:checklistId")
     fun getTasksForChecklist(checklistId: UUID): Flow<List<CheckboxEntity>>
