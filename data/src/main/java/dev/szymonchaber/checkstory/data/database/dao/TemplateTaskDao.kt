@@ -5,20 +5,10 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
-import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 @Dao
 interface TemplateTaskDao {
-
-    @Query("SELECT * FROM templateCheckboxEntity WHERE templateCheckboxEntity.checkboxId = :checkboxId")
-    suspend fun getById(checkboxId: Long): TemplateCheckboxEntity
-
-    @Query(
-        "SELECT * FROM templateCheckboxEntity WHERE templateCheckboxEntity.templateId=:templateId " +
-                "ORDER BY templateCheckboxEntity.sortPosition ASC"
-    )
-    fun getAllForTemplate(templateId: UUID): Flow<List<TemplateCheckboxEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(templateCheckbox: TemplateCheckboxEntity)

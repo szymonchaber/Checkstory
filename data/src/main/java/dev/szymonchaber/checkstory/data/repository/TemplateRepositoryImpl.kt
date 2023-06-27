@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
@@ -86,12 +87,10 @@ internal class TemplateRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun combineIntoDomainTemplate(deepTemplate: TemplateDao.TemplateWithReminders): Flow<Template> {
+    private suspend fun combineIntoDomainTemplate(deepTemplate: TemplateDao.DeepTemplateEntity): Flow<Template> {
         return withContext(Dispatchers.Default) {
-            val (entity, reminders) = deepTemplate
-            val tasksFlow = templateTaskDao.getAllForTemplate(entity.id)
-            val checklistsFlow = checklistRepository.getBasedOn(TemplateId(entity.id))
-            combine(tasksFlow, checklistsFlow) { tasks, checklists ->
+            val (entity, reminders, tasks) = deepTemplate
+            checklistRepository.getBasedOn(TemplateId(entity.id)).map { checklists ->
                 mapTemplate(entity, tasks, checklists, reminders)
             }
         }
@@ -108,16 +107,12 @@ internal class TemplateRepositoryImpl @Inject constructor(
                 TemplateId(id),
                 title,
                 description,
-                groupToDomain(tasks),
+                convertToNestedTasks(tasks.sortedBy { it.sortPosition }),
                 template.createdAt,
                 checklists,
                 reminders.map(ReminderEntity::toDomainReminder)
             )
         }
-    }
-
-    private fun groupToDomain(tasks: List<TemplateCheckboxEntity>): List<TemplateTask> {
-        return convertToNestedTasks(tasks)
     }
 
     private fun convertToNestedTasks(entities: List<TemplateCheckboxEntity>): List<TemplateTask> {
