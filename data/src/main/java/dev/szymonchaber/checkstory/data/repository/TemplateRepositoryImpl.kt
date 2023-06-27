@@ -1,12 +1,13 @@
 package dev.szymonchaber.checkstory.data.repository
 
+import dev.szymonchaber.checkstory.data.database.dao.DeepChecklistEntity
+import dev.szymonchaber.checkstory.data.database.dao.DeepTemplateEntity
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateTaskDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
-import dev.szymonchaber.checkstory.data.database.toFlowOfLists
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
@@ -17,11 +18,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,14 +28,12 @@ internal class TemplateRepositoryImpl @Inject constructor(
     private val templateDao: TemplateDao,
     private val templateTaskDao: TemplateTaskDao,
     private val reminderDao: ReminderDao,
-    private val commandRepository: CommandRepository,
-    private val checklistRepository: ChecklistRepositoryImpl
+    private val commandRepository: CommandRepository
 ) : TemplateRepository {
 
     override suspend fun get(templateId: TemplateId): Template? {
         return templateDao.getByIdOrNull(templateId.id)
-            ?.let { combineIntoDomainTemplate(it) }
-            ?.firstOrNull()
+            ?.let { toDomain(it) }
             ?.let {
                 commandRepository.hydrate(it)
             }
@@ -46,14 +42,14 @@ internal class TemplateRepositoryImpl @Inject constructor(
 
     override fun getAll(): Flow<List<Template>> {
         return templateDao.getAllDeep()
-            .flatMapLatest {
+            .mapLatest {
                 withContext(Dispatchers.Default) {
-                    it.map { combineIntoDomainTemplate(it) }.toFlowOfLists()
+                    it.map { toDomain(it) }
                 }
             }
             .combine(commandRepository.getUnappliedCommandsFlow()) { templates, _ ->
                 templates.map {
-                    commandRepository.hydrate(it)
+                    commandRepository.hydrate(it.copy(checklists = it.checklists.map { commandRepository.hydrate(it) }))
                 }
                     .plus(commandRepository.commandOnlyTemplates())
                     .distinctBy { it.id }
@@ -63,11 +59,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
     }
 
     override suspend fun update(template: Template) {
-        insert(template)
-    }
-
-    suspend fun insert(template: Template): UUID {
-        return withContext(Dispatchers.Default) {
+        withContext(Dispatchers.Default) {
             val templateId = template.id.id
             templateDao.insert(
                 ChecklistTemplateEntity.fromDomainTemplate(template)
@@ -87,12 +79,17 @@ internal class TemplateRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun combineIntoDomainTemplate(deepTemplate: TemplateDao.DeepTemplateEntity): Flow<Template> {
+    private suspend fun toDomain(deepTemplate: DeepTemplateEntity): Template {
         return withContext(Dispatchers.Default) {
-            val (entity, reminders, tasks) = deepTemplate
-            checklistRepository.getBasedOn(TemplateId(entity.id)).map { checklists ->
-                mapTemplate(entity, tasks, checklists, reminders)
-            }
+            val (entity, reminders, tasks, checklists) = deepTemplate
+            val checklistsIncludingCommandOnly = checklists
+                .map(DeepChecklistEntity::toDomain)
+                .plus(commandRepository.commandOnlyChecklists())
+                .distinctBy { it.id }
+                .sortedByDescending(Checklist::createdAt)
+                .filterNot(Checklist::isRemoved)
+                .filter { it.templateId.id == entity.id }
+            mapTemplate(entity, tasks, checklistsIncludingCommandOnly, reminders)
         }
     }
 
@@ -131,7 +128,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
             }
         }
         return tasks.filter { it.task.parentId == null }
-            .map(::toDomain)
+            .map(this::toDomain)
     }
 
     private fun toDomain(taskToChildren: TaskToChildren): TemplateTask {

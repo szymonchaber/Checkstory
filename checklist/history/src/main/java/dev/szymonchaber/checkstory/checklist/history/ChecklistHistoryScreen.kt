@@ -94,10 +94,11 @@ private fun ChecklistHistoryView(
             null -> Unit
         }
     }
-    when (val loadingState = state.historyLoadingState) {
+    when (val loadingState = state.loadingState) {
         HistoryLoadingState.Loading -> {
             FullSizeLoadingView()
         }
+
         is HistoryLoadingState.Success -> {
             if (loadingState.checklists.isEmpty()) {
                 NoChecklistsInHistoryView()

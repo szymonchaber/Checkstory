@@ -33,9 +33,6 @@ interface ChecklistDao {
     @Update
     suspend fun update(checklist: ChecklistEntity)
 
-    @Delete
-    suspend fun delete(checklistEntity: ChecklistEntity)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(checklists: List<ChecklistEntity>, checkboxes: List<CheckboxEntity>)
 

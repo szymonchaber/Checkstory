@@ -1,7 +1,6 @@
 package dev.szymonchaber.checkstory.data.database.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,7 +14,4 @@ interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertAll(tasks: List<CheckboxEntity>)
-
-    @Delete
-    suspend fun delete(vararg checkbox: CheckboxEntity)
 }

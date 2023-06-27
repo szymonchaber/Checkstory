@@ -20,20 +20,6 @@ interface TemplateDao {
     )
     fun getAllDeep(): Flow<List<DeepTemplateEntity>>
 
-    data class DeepTemplateEntity(
-        @Embedded val template: ChecklistTemplateEntity,
-        @Relation(
-            parentColumn = "id",
-            entityColumn = "templateId"
-        )
-        val reminders: List<ReminderEntity>,
-        @Relation(
-            parentColumn = "id",
-            entityColumn = "templateId"
-        )
-        val tasks: List<TemplateCheckboxEntity>
-    )
-
     @Query("SELECT * FROM reminderEntity WHERE reminderEntity.templateId=:templateId")
     fun getAllRemindersForTemplate(templateId: UUID): Flow<List<ReminderEntity>>
 

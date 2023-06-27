@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.history
 
 data class ChecklistHistoryState(
-    val historyLoadingState: HistoryLoadingState = HistoryLoadingState.Loading
+    val loadingState: HistoryLoadingState = HistoryLoadingState.Loading
 ) {
 
     companion object {
@@ -9,4 +9,3 @@ data class ChecklistHistoryState(
         val initial = ChecklistHistoryState()
     }
 }
-
