@@ -16,6 +16,23 @@ interface TemplateDao {
     fun getAll(): Flow<List<ChecklistTemplateEntity>>
 
     @Query(
+        "SELECT * FROM checklistTemplateEntity"
+    )
+    fun getAllDeep(): Flow<List<TemplateWithReminders>>
+
+    data class TemplateWithReminders(
+        @Embedded val template: ChecklistTemplateEntity,
+        @Relation(
+            parentColumn = "id",
+            entityColumn = "templateId"
+        )
+        val reminders: List<ReminderEntity>
+    )
+
+    @Query("SELECT * FROM reminderEntity WHERE reminderEntity.templateId=:templateId")
+    fun getAllRemindersForTemplate(templateId: UUID): Flow<List<ReminderEntity>>
+
+    @Query(
         "SELECT * FROM checklistTemplateEntity " +
                 "WHERE checklistTemplateEntity.id=:id"
     )
@@ -25,7 +42,7 @@ interface TemplateDao {
         "SELECT * FROM checklistTemplateEntity " +
                 "WHERE checklistTemplateEntity.id=:id"
     )
-    suspend fun getByIdOrNull(id: UUID): ChecklistTemplateEntity?
+    suspend fun getByIdOrNull(id: UUID): TemplateWithReminders?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(template: ChecklistTemplateEntity): Long

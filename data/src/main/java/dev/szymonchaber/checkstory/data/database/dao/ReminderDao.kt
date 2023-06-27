@@ -11,9 +11,6 @@ interface ReminderDao {
     @Query("SELECT * FROM reminderEntity")
     fun getAll(): Flow<List<ReminderEntity>>
 
-    @Query("SELECT * FROM reminderEntity WHERE reminderEntity.templateId=:templateId")
-    fun getAllForTemplate(templateId: UUID): Flow<List<ReminderEntity>>
-
     @Query("SELECT * FROM reminderEntity WHERE reminderEntity.reminderId=:id")
     suspend fun getById(id: UUID): ReminderEntity?
 

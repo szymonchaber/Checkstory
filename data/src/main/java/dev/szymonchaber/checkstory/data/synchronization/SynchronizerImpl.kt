@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import javax.inject.Inject
@@ -54,6 +55,7 @@ class SynchronizerImpl @Inject internal constructor(
         return try {
             val commands = commandRepository.getUnappliedCommandsFlow().first()
             commandsApi.pushCommands(commands)
+            delay(1000)
             val templates = templatesApi.getTemplates()
             val checklists = checklistsApi.getChecklists()
             templateRepository.replaceData(templates)

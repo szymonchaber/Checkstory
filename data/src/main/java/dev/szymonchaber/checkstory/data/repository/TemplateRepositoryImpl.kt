@@ -44,7 +44,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
     }
 
     override fun getAll(): Flow<List<Template>> {
-        return templateDao.getAll()
+        return templateDao.getAllDeep()
             .flatMapLatest {
                 withContext(Dispatchers.Default) {
                     it.map { combineIntoDomainTemplate(it) }.toFlowOfLists()
@@ -86,12 +86,12 @@ internal class TemplateRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun combineIntoDomainTemplate(entity: ChecklistTemplateEntity): Flow<Template> {
+    private suspend fun combineIntoDomainTemplate(deepTemplate: TemplateDao.TemplateWithReminders): Flow<Template> {
         return withContext(Dispatchers.Default) {
+            val (entity, reminders) = deepTemplate
             val tasksFlow = templateTaskDao.getAllForTemplate(entity.id)
             val checklistsFlow = checklistRepository.getBasedOn(TemplateId(entity.id))
-            val remindersFlow = reminderDao.getAllForTemplate(entity.id)
-            combine(tasksFlow, checklistsFlow, remindersFlow) { tasks, checklists, reminders ->
+            combine(tasksFlow, checklistsFlow) { tasks, checklists ->
                 mapTemplate(entity, tasks, checklists, reminders)
             }
         }
