@@ -91,18 +91,22 @@ class BillingInteractorImpl @Inject constructor(@ApplicationContext private val 
 
     private fun prefetchData() {
         GlobalScope.launch {
-            _subscriptionPlans.emit(getPaymentPlans().tapLeft { Timber.e("Prefetching plans failed: $it") })
-            _subscriptionStatusFlow.emit(fetchCurrentSubscription()
-                .map {
-                    it?.purchaseToken?.let { purchaseToken ->
-                        SubscriptionStatus.Active(ActiveSubscription(PurchaseToken(purchaseToken)))
-                    } ?: SubscriptionStatus.Inactive
-                }
-                .tapLeft {
-                    Timber.e("Prefetching active subscription failed: $it")
-                }
-                .orNull()
-            )
+            try {
+                _subscriptionPlans.emit(getPaymentPlans().tapLeft { Timber.e("Prefetching plans failed: $it") })
+                _subscriptionStatusFlow.emit(fetchCurrentSubscription()
+                    .map {
+                        it?.purchaseToken?.let { purchaseToken ->
+                            SubscriptionStatus.Active(ActiveSubscription(PurchaseToken(purchaseToken)))
+                        } ?: SubscriptionStatus.Inactive
+                    }
+                    .tapLeft {
+                        Timber.e("Prefetching active subscription failed: $it")
+                    }
+                    .orNull()
+                )
+            } catch (exception: Exception) {
+                Timber.e(exception)
+            }
         }
     }
 
