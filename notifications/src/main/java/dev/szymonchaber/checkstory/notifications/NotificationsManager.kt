@@ -1,11 +1,13 @@
 package dev.szymonchaber.checkstory.notifications
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -54,32 +56,54 @@ class NotificationsManager @Inject constructor(@ApplicationContext val context: 
             }
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
-        createNotificationChannel()
+        createNotificationChannels()
         with(NotificationManagerCompat.from(context)) {
             notify(requestCode, builder.build())
         }
     }
 
-    private fun createNotificationChannel() {
+    fun createSynchronizationNotification(): Notification {
+        createNotificationChannels()
+        return NotificationCompat.Builder(context, REMINDERS_CHANNEL_ID)
+            .setSmallIcon(R.drawable.checkbox_marked)
+            .setContentTitle(context.getString(R.string.synchronization_ongoing_title))
+            .build()
+    }
+
+    private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = context.getString(R.string.reminder_channel_name)
-            val descriptionText = context.getString(R.string.reminder_channel_description)
-            val channel =
-                NotificationChannel(
-                    REMINDERS_CHANNEL_ID,
-                    name,
-                    NotificationManager.IMPORTANCE_DEFAULT
-                ).apply {
-                    description = descriptionText
-                }
-            val notificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            createChannel(
+                context.getString(R.string.reminder_channel_name),
+                context.getString(R.string.reminder_channel_description),
+                REMINDERS_CHANNEL_ID,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            createChannel(
+                context.getString(R.string.synchronization_channel_name),
+                context.getString(R.string.synchronization_channel_description),
+                SYNCHRONIZATION_CHANNEL_ID,
+                NotificationManager.IMPORTANCE_LOW
+            )
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun createChannel(name: String, description: String, channelId: String, importance: Int) {
+        val channel = NotificationChannel(
+            channelId,
+            name,
+            importance
+        ).apply {
+            this.description = description
+        }
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
     }
 
     companion object {
 
         private const val REMINDERS_CHANNEL_ID = "reminders"
+        private const val SYNCHRONIZATION_CHANNEL_ID = "synchronization"
     }
 }
