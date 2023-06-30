@@ -15,6 +15,7 @@ import dev.szymonchaber.checkstory.common.LogStorage
 import dev.szymonchaber.checkstory.data.migration.CommandModelMigration
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizationWorker
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.PushFirebaseMessagingTokenUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
 import dev.szymonchaber.checkstory.notifications.ScheduleTodayRemindersReceiver
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,9 @@ class App : Application(), Configuration.Provider {
 
     @Inject
     lateinit var getCurrentUserUseCase: GetCurrentUserUseCase
+
+    @Inject
+    lateinit var pushFirebaseMessagingTokenUseCase: PushFirebaseMessagingTokenUseCase
 
     @Inject
     lateinit var logStorage: LogStorage
@@ -76,7 +80,9 @@ class App : Application(), Configuration.Provider {
     private fun fetchFirebaseToken() {
         GlobalScope.launch {
             try {
-                Timber.d("Firebase messaging token: ${FirebaseMessaging.getInstance().token.await()}")
+                val token = FirebaseMessaging.getInstance().token.await()
+                pushFirebaseMessagingTokenUseCase.pushFirebaseMessagingToken(token)
+                Timber.d("Firebase messaging token: $token")
             } catch (exception: Exception) {
                 Timber.e("Fetching FCM registration token failed", exception)
             }

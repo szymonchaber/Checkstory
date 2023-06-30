@@ -8,8 +8,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.api.auth.AuthInteractorImpl
+import dev.szymonchaber.checkstory.api.firebase.FirebaseMessagingInteractorImpl
 import dev.szymonchaber.checkstory.api.payment.interactor.UserPaymentInteractorImpl
 import dev.szymonchaber.checkstory.domain.interactor.AuthInteractor
+import dev.szymonchaber.checkstory.domain.interactor.FirebaseMessagingInteractor
 import dev.szymonchaber.checkstory.domain.interactor.UserPaymentInteractor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -39,6 +41,9 @@ internal interface ApiModule {
 
     @Binds
     fun bindAuthInteractor(authInteractor: AuthInteractorImpl): AuthInteractor
+
+    @Binds
+    fun bindFirebaseMessagingInteractorImpl(interactor: FirebaseMessagingInteractorImpl): FirebaseMessagingInteractor
 
     companion object {
 

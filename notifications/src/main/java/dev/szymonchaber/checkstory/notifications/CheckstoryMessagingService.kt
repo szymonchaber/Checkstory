@@ -6,6 +6,7 @@ import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizationWorker
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
+import dev.szymonchaber.checkstory.domain.usecase.PushFirebaseMessagingTokenUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -22,7 +23,14 @@ class CheckstoryMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var loginUseCase: LoginUseCase
 
-    override fun onNewToken(token: String) = Unit // TODO handle when we get actual backend
+    @Inject
+    lateinit var firebaseTokenUseCase: PushFirebaseMessagingTokenUseCase
+
+    override fun onNewToken(token: String) {
+        scope.launch {
+            firebaseTokenUseCase.pushFirebaseMessagingToken(token)
+        }
+    }
 
     override fun onMessageReceived(message: RemoteMessage) {
         Timber.e("Got message! ${message.notification}")
