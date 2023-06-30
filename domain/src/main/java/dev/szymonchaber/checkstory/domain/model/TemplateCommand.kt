@@ -188,7 +188,7 @@ sealed interface TemplateCommand : Command {
 
         override fun applyTo(template: Template): Template {
             val (filteredTasks, movedItem) = template.tasks.withExtractedTask(taskId)
-            val movedItemWithTargetParent = movedItem.copy(parentId = newParentTaskId)
+            val movedItemWithTargetParent = movedItem!!.copy(parentId = newParentTaskId)
             val items = if (newParentTaskId == null) {
                 filteredTasks.plus(movedItemWithTargetParent)
             } else {
@@ -257,7 +257,7 @@ sealed interface TemplateCommand : Command {
     }
 }
 
-private fun List<TemplateTask>.withExtractedTask(id: TemplateTaskId): Pair<List<TemplateTask>, TemplateTask> {
+private fun List<TemplateTask>.withExtractedTask(id: TemplateTaskId): Pair<List<TemplateTask>, TemplateTask?> {
     var movedItem: TemplateTask? = null
     val onItemFoundAndRemoved: (TemplateTask) -> Unit = {
         movedItem = it
@@ -274,7 +274,7 @@ private fun List<TemplateTask>.withExtractedTask(id: TemplateTaskId): Pair<List<
         .map {
             it.withoutChild(id, onItemFoundAndRemoved)
         }
-    return withExtractedElement to movedItem!!
+    return withExtractedElement to movedItem
 }
 
 private fun TemplateTask.withoutChild(
