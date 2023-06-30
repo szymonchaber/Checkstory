@@ -4,7 +4,7 @@ import androidx.work.WorkManager
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
-import dev.szymonchaber.checkstory.data.synchronization.SynchronizationWorker
+import dev.szymonchaber.checkstory.data.synchronization.FetchDataWorker
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
 import dev.szymonchaber.checkstory.domain.usecase.PushFirebaseMessagingTokenUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +35,7 @@ class CheckstoryMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         Timber.e("Got message! ${message.notification}")
         scope.launch {
-            SynchronizationWorker.scheduleExpeditedUnlessOngoing(WorkManager.getInstance(application))
+            FetchDataWorker.scheduleExpeditedUnlessOngoing(WorkManager.getInstance(application))
             loginUseCase.login()
         }
     }

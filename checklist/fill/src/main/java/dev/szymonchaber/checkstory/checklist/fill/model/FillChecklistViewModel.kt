@@ -8,9 +8,9 @@ import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task.Companion.checkedCount
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
-import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
+import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -28,7 +28,7 @@ class FillChecklistViewModel @Inject constructor(
     private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
     private val tracker: Tracker,
-    private val synchronizer: Synchronizer
+    private val commandsUseCase: SynchronizeCommandsUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
         FillChecklistState.initial
@@ -142,7 +142,7 @@ class FillChecklistViewModel @Inject constructor(
                 val trackingParams =
                     bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
                 tracker.logEvent("save_checklist_clicked", trackingParams)
-                synchronizer.synchronizeCommands(success.consolidatedCommands())
+                commandsUseCase.synchronizeCommands(success.consolidatedCommands())
                 null to FillChecklistEffect.CloseScreen
             }
     }
@@ -161,7 +161,7 @@ class FillChecklistViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, _) ->
                 tracker.logEvent("delete_checklist_confirmation_clicked")
-                synchronizer.synchronizeCommands(
+                commandsUseCase.synchronizeCommands(
                     success.consolidatedCommands().plus(
                         ChecklistCommand.DeleteChecklistCommand(
                             checklistId = success.originalChecklist.id,

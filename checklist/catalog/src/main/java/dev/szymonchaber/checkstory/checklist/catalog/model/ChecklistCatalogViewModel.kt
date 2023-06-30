@@ -121,7 +121,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             .flatMapLatest {
                 flow {
                     emit(state.first().copy(isRefreshing = true) to null)
-                    synchronizeDataUseCase.synchronizeData()
+                    synchronizeDataUseCase.fetchData()
                     emit(state.first().copy(isRefreshing = false) to null)
                 }
             }

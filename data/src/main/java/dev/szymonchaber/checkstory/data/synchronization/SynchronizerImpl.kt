@@ -31,7 +31,7 @@ class SynchronizerImpl @Inject internal constructor(
 
     override suspend fun synchronizeCommands(commands: List<Command>) {
         commandRepository.storeCommands(commands)
-        scheduleSynchronization()
+        scheduleCommandsSynchronization()
     }
 
     override suspend fun hasUnsynchronizedCommands(): Boolean {
@@ -42,11 +42,15 @@ class SynchronizerImpl @Inject internal constructor(
         commandRepository.deleteAllCommands()
     }
 
-    override suspend fun scheduleSynchronization() {
-        SynchronizationWorker.forceScheduleExpedited(workManager)
+    override suspend fun scheduleCommandsSynchronization() {
+        PushCommandsWorker.forceScheduleExpedited(workManager)
     }
 
-    suspend fun performSynchronization(): SynchronizationResult {
+    override suspend fun scheduleDataFetch() {
+        FetchDataWorker.forceScheduleExpedited(workManager)
+    }
+
+    suspend fun pushCommands(): SynchronizationResult {
         val currentUser = userRepository.getCurrentUser()
         val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
         if (!isLoggedInPayingUser) {
@@ -55,12 +59,26 @@ class SynchronizerImpl @Inject internal constructor(
         return try {
             val commands = commandRepository.getUnappliedCommandsFlow().first()
             commandsApi.pushCommands(commands)
-            delay(1000)
+            delay(5000)
+            commandRepository.deleteCommands(commands.map(Command::commandId))
+            SynchronizationResult.Success
+        } catch (exception: Exception) {
+            Timber.e(exception, "API error - skipping synchronization for now")
+            SynchronizationResult.Error
+        }
+    }
+
+    suspend fun fetchData(): SynchronizationResult {
+        val currentUser = userRepository.getCurrentUser()
+        val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
+        if (!isLoggedInPayingUser) {
+            return SynchronizationResult.Success
+        }
+        return try {
             val templates = templatesApi.getTemplates()
             val checklists = checklistsApi.getChecklists()
             templateRepository.replaceData(templates)
             checklistRepository.replaceData(checklists)
-            commandRepository.deleteCommands(commands.map(Command::commandId))
             SynchronizationResult.Success
         } catch (exception: Exception) {
             Timber.e(exception, "API error - skipping synchronization for now")

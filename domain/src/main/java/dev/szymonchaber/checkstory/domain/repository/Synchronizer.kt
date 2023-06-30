@@ -6,11 +6,13 @@ interface Synchronizer {
 
     suspend fun hasUnsynchronizedCommands(): Boolean
 
-    suspend fun scheduleSynchronization()
+    suspend fun scheduleCommandsSynchronization()
 
     suspend fun synchronizeCommands(commands: List<Command>)
 
     suspend fun deleteCommands()
+
+    suspend fun scheduleDataFetch()
 }
 
 sealed interface SynchronizationResult {

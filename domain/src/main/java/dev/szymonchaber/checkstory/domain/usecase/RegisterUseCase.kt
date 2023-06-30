@@ -26,7 +26,7 @@ class RegisterUseCase @Inject constructor(
             }
             .tapSuccess {
                 userRepository.storeCurrentUser(it)
-                synchronizer.scheduleSynchronization()
+                synchronizer.scheduleDataFetch()
             }
     }
 

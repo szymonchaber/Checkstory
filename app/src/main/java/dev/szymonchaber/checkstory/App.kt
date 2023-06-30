@@ -13,7 +13,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.HiltAndroidApp
 import dev.szymonchaber.checkstory.common.LogStorage
 import dev.szymonchaber.checkstory.data.migration.CommandModelMigration
-import dev.szymonchaber.checkstory.data.synchronization.SynchronizationWorker
+import dev.szymonchaber.checkstory.data.synchronization.FetchDataWorker
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.PushFirebaseMessagingTokenUseCase
 import dev.szymonchaber.checkstory.notifications.ReminderScheduler
@@ -91,7 +91,7 @@ class App : Application(), Configuration.Provider {
 
     private fun synchronizeDataPeriodically() {
         GlobalScope.launch {
-            SynchronizationWorker.scheduleRepeating(WorkManager.getInstance(this@App))
+            FetchDataWorker.scheduleRepeating(WorkManager.getInstance(this@App))
         }
     }
 
