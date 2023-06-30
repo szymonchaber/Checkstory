@@ -64,7 +64,7 @@ class NotificationsManager @Inject constructor(@ApplicationContext val context: 
 
     fun createSynchronizationNotification(): Notification {
         createNotificationChannels()
-        return NotificationCompat.Builder(context, REMINDERS_CHANNEL_ID)
+        return NotificationCompat.Builder(context, SYNCHRONIZATION_CHANNEL_ID)
             .setSmallIcon(R.drawable.checkbox_marked)
             .setContentTitle(context.getString(R.string.synchronization_ongoing_title))
             .build()

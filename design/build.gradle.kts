@@ -31,7 +31,7 @@ android {
 }
 
 dependencies {
-    implementation(project(mapOf("path" to ":domain")))
+    implementation(project(":domain"))
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
