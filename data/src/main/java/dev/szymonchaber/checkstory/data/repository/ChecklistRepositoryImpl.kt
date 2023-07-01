@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.DeepChecklistEntity
-import dev.szymonchaber.checkstory.data.database.dao.TaskDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -24,7 +23,6 @@ import javax.inject.Singleton
 @Singleton
 internal class ChecklistRepositoryImpl @Inject constructor(
     private val checklistDao: ChecklistDao,
-    private val taskDao: TaskDao,
     private val commandRepository: CommandRepository
 ) : ChecklistRepository {
 
@@ -36,7 +34,7 @@ internal class ChecklistRepositoryImpl @Inject constructor(
 
     override suspend fun save(checklist: Checklist) {
         checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        taskDao.insertAll(checklist.items.map(CheckboxEntity::fromDomainTask))
+        checklistDao.insertAll(checklist.items.map(CheckboxEntity::fromDomainTask))
         _checklistSavedEvents.tryEmit(ChecklistSaved)
     }
 
@@ -78,7 +76,7 @@ internal class ChecklistRepositoryImpl @Inject constructor(
 
     suspend fun insert(checklist: Checklist): ChecklistId {
         checklistDao.insert(ChecklistEntity.fromDomainChecklist(checklist))
-        taskDao.insertAll(checklist.flattenedItems.map(CheckboxEntity::fromDomainTask))
+        checklistDao.insertAll(checklist.flattenedItems.map(CheckboxEntity::fromDomainTask))
         return checklist.id
     }
 

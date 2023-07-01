@@ -7,9 +7,7 @@ import androidx.room.TypeConverters
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
-import dev.szymonchaber.checkstory.data.database.dao.TaskDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
-import dev.szymonchaber.checkstory.data.database.dao.TemplateTaskDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
@@ -40,11 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract val templateDao: TemplateDao
 
-    abstract val templateTaskDao: TemplateTaskDao
-
     abstract val checklistDao: ChecklistDao
-
-    abstract val taskDao: TaskDao
 
     abstract val reminderDao: ReminderDao
 

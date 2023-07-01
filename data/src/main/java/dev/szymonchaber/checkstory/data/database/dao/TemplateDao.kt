@@ -39,6 +39,9 @@ interface TemplateDao {
     suspend fun insert(template: ChecklistTemplateEntity): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllTasks(templateCheckboxes: List<TemplateCheckboxEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(
         templates: List<ChecklistTemplateEntity>,
         templateTasks: List<TemplateCheckboxEntity>,

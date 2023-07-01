@@ -4,7 +4,6 @@ import dev.szymonchaber.checkstory.data.database.dao.DeepChecklistEntity
 import dev.szymonchaber.checkstory.data.database.dao.DeepTemplateEntity
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
-import dev.szymonchaber.checkstory.data.database.dao.TemplateTaskDao
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
@@ -26,7 +25,6 @@ import javax.inject.Singleton
 @Singleton
 internal class TemplateRepositoryImpl @Inject constructor(
     private val templateDao: TemplateDao,
-    private val templateTaskDao: TemplateTaskDao,
     private val reminderDao: ReminderDao,
     private val commandRepository: CommandRepository
 ) : TemplateRepository {
@@ -66,7 +64,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
             )
             awaitAll(
                 async {
-                    templateTaskDao.insertAll(
+                    templateDao.insertAllTasks(
                         template.flattenedTasks
                             .map(TemplateCheckboxEntity::fromDomainTemplateTask)
                     )
@@ -147,22 +145,6 @@ internal class TemplateRepositoryImpl @Inject constructor(
 
     private suspend fun deleteTemplateReminders(template: Template) {
         reminderDao.deleteAllFromTemplate(template.id.id)
-    }
-
-    suspend fun deleteTasksFromTemplate(template: Template) {
-        templateTaskDao.deleteAllFromTemplate(template.id.id)
-    }
-
-    suspend fun deleteTemplateTask(templateTask: TemplateTask) {
-        templateTaskDao.deleteCascading(templateTask.id.id)
-    }
-
-    suspend fun deleteTemplateTasks(templateTasks: List<TemplateTask>) {
-        templateTasks.forEach {
-            withContext(Dispatchers.IO) {
-                templateTaskDao.deleteCascading(it.id.id)
-            }
-        }
     }
 
     override suspend fun replaceData(with: List<Template>) {

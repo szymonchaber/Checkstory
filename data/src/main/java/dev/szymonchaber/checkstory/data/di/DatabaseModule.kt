@@ -13,13 +13,10 @@ import dev.szymonchaber.checkstory.data.database.Migration5to6
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
-import dev.szymonchaber.checkstory.data.database.dao.TaskDao
 import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
-import dev.szymonchaber.checkstory.data.database.dao.TemplateTaskDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
-import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
@@ -31,8 +28,6 @@ import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.Executors
 import javax.inject.Singleton
-
-private const val i = 1
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -69,10 +64,10 @@ object DatabaseModule {
                         LocalDateTime.now().minusDays(2)
                     )
                 )
-                templateTaskDao.insertAll(
-                    TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item", null, 0),
-                    TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item 2", null, 0)
-                )
+//                templateTaskDao.insertAll(
+//                    TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item", null, 0),
+//                    TemplateCheckboxEntity(UUID.randomUUID(), templateId, "Checkbox item 2", null, 0)
+//                )
                 insert {
                     checklist(UUID.randomUUID(), templateId, "This was an awesome session") {
                         task("Clean the table", true)
@@ -101,18 +96,8 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideTemplateCheckboxDao(database: AppDatabase): TemplateTaskDao {
-        return database.templateTaskDao
-    }
-
-    @Provides
     fun provideChecklistDao(database: AppDatabase): ChecklistDao {
         return database.checklistDao
-    }
-
-    @Provides
-    fun provideTaskDao(database: AppDatabase): TaskDao {
-        return database.taskDao
     }
 
     @Provides
@@ -169,7 +154,7 @@ class InsertDsl {
 
                     checklist.checklistId to checkboxes
                 }.forEach { (checklistId, checkboxes) ->
-                    appDatabase.taskDao.insertAll(
+                    appDatabase.checklistDao.insertAll(
                         checkboxes.map {
                             CheckboxEntity(
                                 it.id.id,
