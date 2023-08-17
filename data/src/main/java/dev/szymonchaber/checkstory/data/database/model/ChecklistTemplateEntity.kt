@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.data.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
@@ -12,7 +13,9 @@ data class ChecklistTemplateEntity(
     val id: UUID,
     val title: String,
     val description: String,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+    @ColumnInfo(defaultValue = "false")
+    val isRemoved: Boolean
 ) {
 
     companion object {
@@ -20,10 +23,11 @@ data class ChecklistTemplateEntity(
         fun fromDomainTemplate(template: Template): ChecklistTemplateEntity {
             return with(template) {
                 ChecklistTemplateEntity(
-                    id = template.id.id,
+                    id = id.id,
                     title = title,
                     description = description,
-                    createdAt = createdAt
+                    createdAt = createdAt,
+                    isRemoved = isRemoved
                 )
             }
         }

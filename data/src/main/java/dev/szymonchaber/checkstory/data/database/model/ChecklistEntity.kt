@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.data.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
@@ -15,12 +16,15 @@ data class ChecklistEntity(
     val checklistId: UUID,
     val templateId: UUID,
     val notes: String,
-    val createdAt: LocalDateTime
+    val createdAt: LocalDateTime,
+    @ColumnInfo(defaultValue = "false")
+    val isRemoved: Boolean
 ) {
 
     fun toDomainChecklist(
         templateTitle: String,
         templateDescription: String,
+        isTemplateRemoved: Boolean,
         tasks: List<Task>
     ): Checklist {
         return Checklist(
@@ -30,7 +34,8 @@ data class ChecklistEntity(
             templateDescription,
             tasks,
             notes,
-            createdAt
+            createdAt,
+            isTemplateRemoved || isRemoved
         )
     }
 
@@ -42,7 +47,8 @@ data class ChecklistEntity(
                     checklistId = checklist.id.id,
                     templateId = templateId.id,
                     notes = notes,
-                    checklist.createdAt
+                    checklist.createdAt,
+                    checklist.isRemoved
                 )
             }
         }

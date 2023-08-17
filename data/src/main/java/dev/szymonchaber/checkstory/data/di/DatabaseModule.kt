@@ -61,7 +61,8 @@ object DatabaseModule {
                         templateId,
                         "Cleaning something",
                         "It's good to do",
-                        LocalDateTime.now().minusDays(2)
+                        LocalDateTime.now().minusDays(2),
+                        false
                     )
                 )
 //                templateTaskDao.insertAll(
@@ -148,7 +149,8 @@ class InsertDsl {
                             checklist.checklistId,
                             checklist.templateId,
                             checklist.notes,
-                            LocalDateTime.now().minusDays(2)
+                            LocalDateTime.now().minusDays(2),
+                            false
                         )
                     )
 

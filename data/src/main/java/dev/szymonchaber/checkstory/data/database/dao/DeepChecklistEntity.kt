@@ -27,6 +27,7 @@ data class DeepChecklistEntity(
         return checklist.toDomainChecklist(
             template.title,
             template.description,
+            template.isRemoved,
             convertToNestedTasks(tasks)
         )
     }
