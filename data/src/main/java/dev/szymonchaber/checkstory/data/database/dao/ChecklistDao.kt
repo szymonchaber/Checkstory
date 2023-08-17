@@ -46,6 +46,12 @@ interface ChecklistDao {
     suspend fun deleteAllTasks()
 
     @Transaction
+    suspend fun insert(checklist: ChecklistEntity, checkboxes: List<CheckboxEntity>) {
+        insert(checklist)
+        insertAll(checkboxes)
+    }
+
+    @Transaction
     suspend fun replaceData(checklists: List<ChecklistEntity>, tasks: List<CheckboxEntity>) {
         deleteAllData()
         insertAll(checklists, tasks)

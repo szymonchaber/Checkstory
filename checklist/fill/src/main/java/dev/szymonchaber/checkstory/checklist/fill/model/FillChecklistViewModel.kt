@@ -5,12 +5,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task.Companion.checkedCount
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import dev.szymonchaber.checkstory.domain.usecase.CreateChecklistFromTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetChecklistToFillUseCase
-import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
+import dev.szymonchaber.checkstory.domain.usecase.StoreCommandsUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
@@ -28,7 +26,7 @@ class FillChecklistViewModel @Inject constructor(
     private val getChecklistToFillUseCase: GetChecklistToFillUseCase,
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
     private val tracker: Tracker,
-    private val commandsUseCase: SynchronizeCommandsUseCase
+    private val commandsUseCase: StoreCommandsUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
         FillChecklistState.initial
@@ -142,7 +140,7 @@ class FillChecklistViewModel @Inject constructor(
                 val trackingParams =
                     bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
                 tracker.logEvent("save_checklist_clicked", trackingParams)
-                commandsUseCase.synchronizeCommands(success.consolidatedCommands())
+                commandsUseCase.storeCommands(success.consolidatedCommands())
                 null to FillChecklistEffect.CloseScreen
             }
     }
@@ -161,7 +159,7 @@ class FillChecklistViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, _) ->
                 tracker.logEvent("delete_checklist_confirmation_clicked")
-                commandsUseCase.synchronizeCommands(
+                commandsUseCase.storeCommands(
                     success.consolidatedCommands().plus(
                         ChecklistCommand.DeleteChecklistCommand(
                             checklistId = success.originalChecklist.id,
@@ -204,13 +202,4 @@ class FillChecklistViewModel @Inject constructor(
                 .take(1)
         }
     }
-}
-
-private fun Task.setUuidsRecursive(): Task {
-    return copy(
-        id = TaskId(UUID.randomUUID()),
-        children = children.map {
-            it.setUuidsRecursive()
-        }
-    )
 }

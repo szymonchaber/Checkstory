@@ -10,7 +10,7 @@ interface TemplateRepository {
 
     suspend fun get(templateId: TemplateId): Template?
 
-    suspend fun update(template: Template)
+    suspend fun save(template: Template)
 
     suspend fun delete(template: Template)
 

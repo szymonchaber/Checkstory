@@ -4,11 +4,11 @@ import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import javax.inject.Inject
 
-class SynchronizeCommandsUseCase @Inject constructor(
+class StoreCommandsUseCase @Inject constructor(
     private val synchronizer: Synchronizer,
 ) {
 
-    suspend fun synchronizeCommands(commands: List<Command>) {
-        synchronizer.synchronizeCommands(commands)
+    suspend fun storeCommands(commands: List<Command>) {
+        synchronizer.storeCommands(commands)
     }
 }

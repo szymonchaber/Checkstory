@@ -8,7 +8,7 @@ interface Synchronizer {
 
     suspend fun scheduleCommandsSynchronization()
 
-    suspend fun synchronizeCommands(commands: List<Command>)
+    suspend fun storeCommands(commands: List<Command>)
 
     suspend fun deleteCommands()
 

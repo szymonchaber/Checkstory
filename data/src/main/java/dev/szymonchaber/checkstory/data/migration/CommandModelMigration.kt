@@ -45,7 +45,7 @@ class CommandModelMigration @Inject internal constructor(
                 }
                 .ifEmpty { null }
                 ?.let {
-                    synchronizer.synchronizeCommands(it)
+                    synchronizer.storeCommands(it)
                 }
             migrationPreferences.markDidRunCommandModelMigration()
         }

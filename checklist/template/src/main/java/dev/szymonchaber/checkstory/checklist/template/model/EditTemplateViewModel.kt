@@ -13,7 +13,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Inte
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Reminder
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetTemplateUseCase
-import dev.szymonchaber.checkstory.domain.usecase.SynchronizeCommandsUseCase
+import dev.szymonchaber.checkstory.domain.usecase.StoreCommandsUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -34,7 +34,7 @@ class EditTemplateViewModel @Inject constructor(
     private val application: Application,
     private val getTemplateUseCase: GetTemplateUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    private val synchronizeCommandsUseCase: SynchronizeCommandsUseCase,
+    private val storeCommandsUseCase: StoreCommandsUseCase,
     private val tracker: Tracker
 ) : BaseViewModel<
         EditTemplateEvent,
@@ -284,7 +284,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .mapLatest { (loadingState, _) ->
                 val template = loadingState.template
-                synchronizeCommandsUseCase.synchronizeCommands(consolidateCommands(loadingState.finalizedCommands()))
+                storeCommandsUseCase.storeCommands(consolidateCommands(loadingState.finalizedCommands()))
                 tracker.logEvent(
                     "save_template_clicked", bundleOf(
                         "title_length" to template.title.length,
@@ -341,7 +341,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("delete_template_confirmation_clicked")
-                synchronizeCommandsUseCase.synchronizeCommands(
+                storeCommandsUseCase.storeCommands(
                     consolidateCommands(loadingState.markDeleted().finalizedCommands())
                 )
                 if (loadingState.onboardingPlaceholders != null) {

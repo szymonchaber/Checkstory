@@ -10,6 +10,8 @@ interface ChecklistRepository {
 
     suspend fun save(checklist: Checklist)
 
+    suspend fun get(checklistId: ChecklistId): Checklist?
+
     fun getChecklist(checklistId: ChecklistId): Flow<Checklist>
 
     fun getAllChecklists(): Flow<List<Checklist>>

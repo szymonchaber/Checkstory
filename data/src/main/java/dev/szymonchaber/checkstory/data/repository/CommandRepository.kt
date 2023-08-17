@@ -1,17 +1,10 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
-import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.Command
-import dev.szymonchaber.checkstory.domain.model.TemplateCommand
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
-import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
-import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
-import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.util.*
 import javax.inject.Inject
@@ -23,13 +16,10 @@ internal class CommandRepository @Inject constructor(
     private val commandMapper: CommandMapper
 ) {
 
-    fun getUnappliedCommandsFlow(): Flow<List<Command>> {
-        return dao.getAll()
-            .map { commands ->
-                withContext(Dispatchers.Default) {
-                    commands.map(commandMapper::toDomainCommand)
-                }
-            }
+    suspend fun getUnsynchronizedCommands(): List<Command> {
+        return withContext(Dispatchers.Default) {
+            dao.getAll().map(commandMapper::toDomainCommand)
+        }
     }
 
     suspend fun storeCommands(commands: List<Command>) {
@@ -39,70 +29,16 @@ internal class CommandRepository @Inject constructor(
     }
 
     suspend fun commandCount(): Int {
-        return dao.getAllSuspend().size
-    }
-
-    suspend fun commandOnlyTemplates(): List<Template> {
-        return getUnappliedCommandsFlow().first()
-            .filterIsInstance<TemplateCommand>()
-            .groupBy { it.templateId }
-            .filterValues {
-                it.any { command ->
-                    command is TemplateCommand.CreateNewTemplate
-                }
-            }
-            .map { (id, commands) ->
-                commands.fold(Template.empty(id)) { acc, command ->
-                    command.applyTo(acc)
-                }
-            }
-    }
-
-    suspend fun commandOnlyChecklists(): List<Checklist> {
-        return getUnappliedCommandsFlow().first()
-            .filterIsInstance<ChecklistCommand>()
-            .groupBy { it.checklistId }
-            .filterValues {
-                it.any { command ->
-                    command is ChecklistCommand.CreateChecklistCommand
-                }
-            }
-            .map { (id, commands) ->
-                commands.fold(Checklist.empty(id)) { acc, command ->
-                    command.applyTo(acc)
-                }
-            }
-    }
-
-    suspend fun hydrate(template: Template): Template {
-        return commandsForTemplate(template.id)
-            .fold(template) { acc, command ->
-                command.applyTo(acc)
-            }
-    }
-
-    suspend fun hydrate(checklist: Checklist): Checklist {
-        return commandsForChecklist(checklist.id)
-            .fold(checklist) { acc, command ->
-                command.applyTo(acc)
-            }
-    }
-
-    private suspend fun commandsForTemplate(templateId: TemplateId): List<TemplateCommand> {
-        return getUnappliedCommandsFlow().first()
-            .filterIsInstance<TemplateCommand>()
-            .filter { command -> command.templateId == templateId }
-    }
-
-    private suspend fun commandsForChecklist(checklistId: ChecklistId): List<ChecklistCommand> {
-        return getUnappliedCommandsFlow().first()
-            .filterIsInstance<ChecklistCommand>()
-            .filter { command -> command.checklistId == checklistId }
+        return dao.getAll().size
     }
 
     suspend fun deleteCommands(ids: List<UUID>) {
-        ids.forEach {
-            dao.deleteById(it)
+        withContext(Dispatchers.IO) {
+            ids.map {
+                async {
+                    dao.deleteById(it)
+                }
+            }.awaitAll()
         }
     }
 

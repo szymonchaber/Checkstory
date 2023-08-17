@@ -13,10 +13,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTask
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -25,17 +22,12 @@ import javax.inject.Singleton
 @Singleton
 internal class TemplateRepositoryImpl @Inject constructor(
     private val templateDao: TemplateDao,
-    private val reminderDao: ReminderDao,
-    private val commandRepository: CommandRepository
+    private val reminderDao: ReminderDao
 ) : TemplateRepository {
 
     override suspend fun get(templateId: TemplateId): Template? {
         return templateDao.getByIdOrNull(templateId.id)
             ?.let { toDomain(it) }
-            ?.let {
-                commandRepository.hydrate(it)
-            }
-            ?: commandRepository.commandOnlyTemplates().find { it.id == templateId }
     }
 
     override fun getAll(): Flow<List<Template>> {
@@ -43,37 +35,20 @@ internal class TemplateRepositoryImpl @Inject constructor(
             .mapLatest {
                 withContext(Dispatchers.Default) {
                     it.map { toDomain(it) }
+                        .sortedBy { it.createdAt }
+                        .filterNot { it.isRemoved }
                 }
-            }
-            .combine(commandRepository.getUnappliedCommandsFlow()) { templates, _ ->
-                templates.map {
-                    commandRepository.hydrate(it.copy(checklists = it.checklists.map { commandRepository.hydrate(it) }))
-                }
-                    .plus(commandRepository.commandOnlyTemplates())
-                    .distinctBy { it.id }
-                    .sortedBy { it.createdAt }
-                    .filterNot { it.isRemoved }
             }
     }
 
-    override suspend fun update(template: Template) {
+    override suspend fun save(template: Template) {
         withContext(Dispatchers.Default) {
-            val templateId = template.id.id
             templateDao.insert(
-                ChecklistTemplateEntity.fromDomainTemplate(template)
+                ChecklistTemplateEntity.fromDomainTemplate(template),
+                template.flattenedTasks
+                    .map(TemplateCheckboxEntity::fromDomainTemplateTask),
+                template.reminders.map(ReminderEntity::fromDomainReminder)
             )
-            awaitAll(
-                async {
-                    templateDao.insertAllTasks(
-                        template.flattenedTasks
-                            .map(TemplateCheckboxEntity::fromDomainTemplateTask)
-                    )
-                },
-                async {
-                    reminderDao.insertAll(template.reminders.map(ReminderEntity::fromDomainReminder))
-                }
-            )
-            templateId
         }
     }
 
@@ -82,7 +57,6 @@ internal class TemplateRepositoryImpl @Inject constructor(
             val (entity, reminders, tasks, checklists) = deepTemplate
             val checklistsIncludingCommandOnly = checklists
                 .map(DeepChecklistEntity::toDomain)
-                .plus(commandRepository.commandOnlyChecklists())
                 .distinctBy { it.id }
                 .sortedByDescending(Checklist::createdAt)
                 .filterNot(Checklist::isRemoved)

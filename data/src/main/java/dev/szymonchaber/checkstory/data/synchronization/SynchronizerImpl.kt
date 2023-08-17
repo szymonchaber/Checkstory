@@ -12,7 +12,6 @@ import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,11 +25,13 @@ class SynchronizerImpl @Inject internal constructor(
     private val checklistsApi: ChecklistsApi,
     private val checklistRepository: ChecklistRepositoryImpl,
     private val workManager: WorkManager,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val commandApplier: CommandApplier
 ) : Synchronizer {
 
-    override suspend fun synchronizeCommands(commands: List<Command>) {
+    override suspend fun storeCommands(commands: List<Command>) {
         commandRepository.storeCommands(commands)
+        commandApplier.applyCommandsToLocalData(commands)
         scheduleCommandsSynchronization()
     }
 
@@ -57,7 +58,7 @@ class SynchronizerImpl @Inject internal constructor(
             return SynchronizationResult.Success
         }
         return try {
-            val commands = commandRepository.getUnappliedCommandsFlow().first()
+            val commands = commandRepository.getUnsynchronizedCommands()
             commandsApi.pushCommands(commands)
             delay(5000)
             commandRepository.deleteCommands(commands.map(Command::commandId))

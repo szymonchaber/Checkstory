@@ -113,7 +113,7 @@ internal class CommandModelMigrationTest {
             migration.run()
 
             // then
-            verify(synchronizer).synchronizeCommands(check {
+            verify(synchronizer).storeCommands(check {
                 assertThat(it[0]).isEqualTo(
                     TemplateCommand.CreateNewTemplate(
                         templates.first().id,

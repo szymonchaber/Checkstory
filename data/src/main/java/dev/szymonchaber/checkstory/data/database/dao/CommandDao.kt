@@ -6,17 +6,13 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import dev.szymonchaber.checkstory.data.database.model.command.CommandEntity
-import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 @Dao
 interface CommandDao {
 
     @Query("SELECT * FROM commandEntity")
-    fun getAll(): Flow<List<CommandEntity>>
-
-    @Query("SELECT * FROM commandEntity")
-    suspend fun getAllSuspend(): List<CommandEntity>
+    suspend fun getAll(): List<CommandEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(commandEntity: CommandEntity)

@@ -42,6 +42,9 @@ interface TemplateDao {
     suspend fun insertAllTasks(templateCheckboxes: List<TemplateCheckboxEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertReminders(reminders: List<ReminderEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(
         templates: List<ChecklistTemplateEntity>,
         templateTasks: List<TemplateCheckboxEntity>,
@@ -75,5 +78,16 @@ interface TemplateDao {
         deleteAllTemplates()
         deleteAllTemplateTasks()
         deleteAllReminders()
+    }
+
+    @Transaction
+    suspend fun insert(
+        template: ChecklistTemplateEntity,
+        checkboxes: List<TemplateCheckboxEntity>,
+        reminders: List<ReminderEntity>
+    ) {
+        insert(template)
+        insertAllTasks(checkboxes)
+        insertReminders(reminders)
     }
 }
