@@ -11,7 +11,6 @@ import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
-import kotlinx.coroutines.delay
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -60,7 +59,6 @@ class SynchronizerImpl @Inject internal constructor(
         return try {
             val commands = commandRepository.getUnsynchronizedCommands()
             commandsApi.pushCommands(commands)
-            delay(5000)
             commandRepository.deleteCommands(commands.map(Command::commandId))
             SynchronizationResult.Success
         } catch (exception: Exception) {
