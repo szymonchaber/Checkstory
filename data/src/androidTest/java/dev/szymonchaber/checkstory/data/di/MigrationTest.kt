@@ -56,7 +56,7 @@ class MigrationTest {
     }
 
     private fun verify(database: SupportSQLiteDatabase) {
-        val cursor = database.query("SELECT * FROM ReminderEntity", null)
+        val cursor = database.query("SELECT * FROM ReminderEntity", emptyArray())
         var index = 0
         if (cursor.moveToFirst()) {
             do {

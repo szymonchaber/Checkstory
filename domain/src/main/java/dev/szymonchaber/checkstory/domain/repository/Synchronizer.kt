@@ -13,6 +13,8 @@ interface Synchronizer {
     suspend fun deleteCommands()
 
     suspend fun scheduleDataFetch()
+
+    suspend fun synchronizeManually()
 }
 
 sealed interface SynchronizationResult {

@@ -7,7 +7,7 @@ class SynchronizeDataUseCase @Inject constructor(
     private val synchronizer: Synchronizer
 ) {
 
-    suspend fun fetchData() {
-        synchronizer.scheduleDataFetch()
+    suspend fun synchronizeData() {
+        synchronizer.synchronizeManually()
     }
 }

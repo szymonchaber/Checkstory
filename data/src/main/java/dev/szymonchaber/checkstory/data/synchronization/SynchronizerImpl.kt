@@ -11,6 +11,7 @@ import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
+import kotlinx.coroutines.sync.Mutex
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,6 +28,8 @@ class SynchronizerImpl @Inject internal constructor(
     private val userRepository: UserRepository,
     private val commandApplier: CommandApplier
 ) : Synchronizer {
+
+    private val mutex = Mutex()
 
     override suspend fun storeCommands(commands: List<Command>) {
         commandRepository.storeCommands(commands)
@@ -50,38 +53,59 @@ class SynchronizerImpl @Inject internal constructor(
         FetchDataWorker.forceScheduleExpedited(workManager)
     }
 
+    override suspend fun synchronizeManually() {
+        pushCommands()
+        fetchData()
+    }
+
     suspend fun pushCommands(): SynchronizationResult {
-        val currentUser = userRepository.getCurrentUser()
-        val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
-        if (!isLoggedInPayingUser) {
+        if (!mutex.tryLock()) {
+            println("Another synchronization is in progress, cancelling this command push attempt.")
             return SynchronizationResult.Success
         }
-        return try {
-            val commands = commandRepository.getUnsynchronizedCommands()
-            commandsApi.pushCommands(commands)
-            commandRepository.deleteCommands(commands.map(Command::commandId))
-            SynchronizationResult.Success
-        } catch (exception: Exception) {
-            Timber.e(exception, "API error - skipping synchronization for now")
-            SynchronizationResult.Error
+        try {
+            val currentUser = userRepository.getCurrentUser()
+            val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
+            if (!isLoggedInPayingUser) {
+                return SynchronizationResult.Success
+            }
+            return try {
+                val commands = commandRepository.getUnsynchronizedCommands()
+                commandsApi.pushCommands(commands)
+                commandRepository.deleteCommands(commands.map(Command::commandId))
+                SynchronizationResult.Success
+            } catch (exception: Exception) {
+                Timber.e(exception, "API error - skipping synchronization for now")
+                SynchronizationResult.Error
+            }
+        } finally {
+            mutex.unlock()
         }
     }
 
     suspend fun fetchData(): SynchronizationResult {
-        val currentUser = userRepository.getCurrentUser()
-        val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
-        if (!isLoggedInPayingUser) {
+        if (!mutex.tryLock()) {
+            println("Another synchronization is in progress, cancelling this data fetch attempt.")
             return SynchronizationResult.Success
         }
-        return try {
-            val templates = templatesApi.getTemplates()
-            val checklists = checklistsApi.getChecklists()
-            templateRepository.replaceData(templates)
-            checklistRepository.replaceData(checklists)
-            SynchronizationResult.Success
-        } catch (exception: Exception) {
-            Timber.e(exception, "API error - skipping synchronization for now")
-            SynchronizationResult.Error
+        try {
+            val currentUser = userRepository.getCurrentUser()
+            val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
+            if (!isLoggedInPayingUser) {
+                return SynchronizationResult.Success
+            }
+            return try {
+                val templates = templatesApi.getTemplates()
+                val checklists = checklistsApi.getChecklists()
+                templateRepository.replaceData(templates)
+                checklistRepository.replaceData(checklists)
+                SynchronizationResult.Success
+            } catch (exception: Exception) {
+                Timber.e(exception, "API error - skipping synchronization for now")
+                SynchronizationResult.Error
+            }
+        } finally {
+            mutex.unlock()
         }
     }
 }
