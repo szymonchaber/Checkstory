@@ -62,12 +62,6 @@ internal class ChecklistRepositoryImpl @Inject constructor(
         _checklistSavedEvents.tryEmit(ChecklistSaved)
     }
 
-    suspend fun replaceData(with: List<Checklist>) {
-        val checklists = with.map(ChecklistEntity::fromDomainChecklist)
-        val flatTasks = with.flatMap(Checklist::flattenedItems).map(CheckboxEntity::fromDomainTask)
-        checklistDao.replaceData(checklists, flatTasks)
-    }
-
     override suspend fun deleteAllData() {
         checklistDao.deleteAllData()
     }

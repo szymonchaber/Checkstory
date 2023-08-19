@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -89,6 +90,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleAboutClicked(),
             eventFlow.handleRefreshCatalog(),
         ).catch {
+            Timber.e(it)
             FirebaseCrashlytics.getInstance().recordException(it)
         }
     }

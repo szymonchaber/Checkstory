@@ -54,6 +54,13 @@ interface TemplateDao {
     @Delete
     suspend fun delete(template: ChecklistTemplateEntity)
 
+    @Transaction
+    suspend fun deleteAll() {
+        deleteAllTemplates()
+        deleteAllTemplateTasks()
+        deleteAllReminders()
+    }
+
     @Query("DELETE from checklistTemplateEntity")
     suspend fun deleteAllTemplates()
 
@@ -62,23 +69,6 @@ interface TemplateDao {
 
     @Query("DELETE from reminderEntity")
     suspend fun deleteAllReminders()
-
-    @Transaction
-    suspend fun replaceData(
-        templates: List<ChecklistTemplateEntity>,
-        templateTasks: List<TemplateCheckboxEntity>,
-        reminders: List<ReminderEntity>
-    ) {
-        deleteAll()
-        insertAll(templates, templateTasks, reminders)
-    }
-
-    @Transaction
-    suspend fun deleteAll() {
-        deleteAllTemplates()
-        deleteAllTemplateTasks()
-        deleteAllReminders()
-    }
 
     @Transaction
     suspend fun insert(

@@ -15,6 +15,4 @@ interface TemplateRepository {
     suspend fun delete(template: Template)
 
     suspend fun deleteAllData()
-
-    suspend fun replaceData(with: List<Template>)
 }

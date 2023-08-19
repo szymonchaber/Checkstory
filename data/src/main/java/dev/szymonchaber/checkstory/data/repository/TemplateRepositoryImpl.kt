@@ -122,14 +122,6 @@ internal class TemplateRepositoryImpl @Inject constructor(
         reminderDao.deleteAllFromTemplate(template.id.id)
     }
 
-    override suspend fun replaceData(with: List<Template>) {
-        val templates = with.map(ChecklistTemplateEntity::fromDomainTemplate)
-        val flatItems =
-            with.flatMap(Template::flattenedTasks).map(TemplateCheckboxEntity::fromDomainTemplateTask)
-        val flatReminders = with.flatMap(Template::reminders).map(ReminderEntity::fromDomainReminder)
-        templateDao.replaceData(templates, flatItems, flatReminders)
-    }
-
     override suspend fun deleteAllData() {
         templateDao.deleteAll()
     }

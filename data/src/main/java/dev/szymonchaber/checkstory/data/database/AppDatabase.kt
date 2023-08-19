@@ -14,6 +14,7 @@ import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.command.CommandEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
+import dev.szymonchaber.checkstory.data.synchronization.SynchronizationDao
 
 @Database(
     entities = [
@@ -43,4 +44,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract val reminderDao: ReminderDao
 
     abstract val commandDao: CommandDao
+
+    abstract val synchronizationDao: SynchronizationDao
 }

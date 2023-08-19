@@ -17,6 +17,7 @@ import dev.szymonchaber.checkstory.data.database.dao.TemplateDao
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
+import dev.szymonchaber.checkstory.data.synchronization.SynchronizationDao
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
@@ -109,6 +110,11 @@ object DatabaseModule {
     @Provides
     fun provideCommandDao(database: AppDatabase): CommandDao {
         return database.commandDao
+    }
+
+    @Provides
+    fun provideSynchronizationDao(database: AppDatabase): SynchronizationDao {
+        return database.synchronizationDao
     }
 }
 
