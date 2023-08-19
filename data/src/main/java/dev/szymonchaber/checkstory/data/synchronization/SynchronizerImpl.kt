@@ -60,7 +60,7 @@ class SynchronizerImpl @Inject internal constructor(
 
     suspend fun pushCommands(): SynchronizationResult {
         if (!mutex.tryLock()) {
-            println("Another synchronization is in progress, cancelling this command push attempt.")
+            Timber.d("Another synchronization is in progress, cancelling this command push attempt.")
             return SynchronizationResult.Success
         }
         try {
@@ -85,7 +85,7 @@ class SynchronizerImpl @Inject internal constructor(
 
     suspend fun fetchData(): SynchronizationResult {
         if (!mutex.tryLock()) {
-            println("Another synchronization is in progress, cancelling this data fetch attempt.")
+            Timber.d("Another synchronization is in progress, cancelling this data fetch attempt.")
             return SynchronizationResult.Success
         }
         try {
