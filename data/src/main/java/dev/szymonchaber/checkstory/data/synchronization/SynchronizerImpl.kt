@@ -9,8 +9,11 @@ import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -83,9 +86,15 @@ class SynchronizerImpl @Inject internal constructor(
                 return SynchronizationResult.Success
             }
             return try {
-                val templates = templatesApi.getTemplates()
-                val checklists = checklistsApi.getChecklists()
-                synchronizationDao.replaceData(templates, checklists)
+                withContext(Dispatchers.IO) {
+                    val templates = async {
+                        templatesApi.getTemplates()
+                    }
+                    val checklists = async {
+                        checklistsApi.getChecklists()
+                    }
+                    synchronizationDao.replaceData(templates.await(), checklists.await())
+                }
                 SynchronizationResult.Success
             } catch (exception: Exception) {
                 Timber.e(exception, "API error - skipping synchronization for now")
