@@ -35,8 +35,8 @@ class CheckstoryMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         Timber.e("Got message! ${message.notification}")
         scope.launch {
-            FetchDataWorker.scheduleExpedited(WorkManager.getInstance(application))
             loginUseCase.login()
+            FetchDataWorker.scheduleExpedited(WorkManager.getInstance(application))
         }
     }
 
