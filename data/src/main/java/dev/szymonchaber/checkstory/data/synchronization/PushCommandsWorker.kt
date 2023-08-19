@@ -82,14 +82,10 @@ class PushCommandsWorker @AssistedInject constructor(
 
         private const val WORK_NAME_SYNCHRONIZATION = "commands_push"
 
-        suspend fun forceScheduleExpedited(workManager: WorkManager) {
-            scheduleExpeditedActual(workManager, ExistingWorkPolicy.REPLACE)
-        }
-
-        private suspend fun scheduleExpeditedActual(workManager: WorkManager, existingWorkPolicy: ExistingWorkPolicy) {
+        suspend fun scheduleExpedited(workManager: WorkManager) {
             workManager.enqueueUniqueWork(
                 WORK_NAME_SYNCHRONIZATION,
-                existingWorkPolicy,
+                ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequest.Builder(PushCommandsWorker::class.java)
                     .setConstraints(
                         Constraints.Builder()

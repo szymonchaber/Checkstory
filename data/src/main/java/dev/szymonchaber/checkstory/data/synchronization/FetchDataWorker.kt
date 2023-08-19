@@ -83,20 +83,13 @@ class FetchDataWorker @AssistedInject constructor(
         private const val SYNCHRONIZATION_CHANNEL_ID = "synchronization"
         private const val SYNCHRONIZATION_NOTIFICATION_ID = 1000
 
-        private const val WORK_NAME_SYNCHRONIZATION = "data_fetch"
+        private const val WORK_NAME_FETCH = "data_fetch"
+        private const val WORK_NAME_FETCH_EXPEDITED = "data_fetch_expedited"
 
-        suspend fun forceScheduleExpedited(workManager: WorkManager) {
-            scheduleExpeditedActual(workManager, ExistingWorkPolicy.REPLACE)
-        }
-
-        suspend fun scheduleExpeditedUnlessOngoing(workManager: WorkManager) {
-            scheduleExpeditedActual(workManager, ExistingWorkPolicy.KEEP)
-        }
-
-        private suspend fun scheduleExpeditedActual(workManager: WorkManager, existingWorkPolicy: ExistingWorkPolicy) {
+        suspend fun scheduleExpedited(workManager: WorkManager) {
             workManager.enqueueUniqueWork(
-                WORK_NAME_SYNCHRONIZATION,
-                existingWorkPolicy,
+                WORK_NAME_FETCH_EXPEDITED,
+                ExistingWorkPolicy.KEEP,
                 OneTimeWorkRequest.Builder(FetchDataWorker::class.java)
                     .setConstraints(
                         Constraints.Builder()
@@ -110,7 +103,7 @@ class FetchDataWorker @AssistedInject constructor(
 
         suspend fun scheduleRepeating(workManager: WorkManager) {
             workManager.enqueueUniquePeriodicWork(
-                WORK_NAME_SYNCHRONIZATION,
+                WORK_NAME_FETCH,
                 ExistingPeriodicWorkPolicy.KEEP,
                 PeriodicWorkRequest.Builder(FetchDataWorker::class.java, Duration.ofMinutes(15))
                     .setConstraints(

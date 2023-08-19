@@ -12,6 +12,7 @@ import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,11 +47,11 @@ class SynchronizerImpl @Inject internal constructor(
     }
 
     override suspend fun scheduleCommandsSynchronization() {
-        PushCommandsWorker.forceScheduleExpedited(workManager)
+        PushCommandsWorker.scheduleExpedited(workManager)
     }
 
     override suspend fun scheduleDataFetch() {
-        FetchDataWorker.forceScheduleExpedited(workManager)
+        FetchDataWorker.scheduleExpedited(workManager)
     }
 
     override suspend fun synchronizeManually() {
@@ -59,11 +60,7 @@ class SynchronizerImpl @Inject internal constructor(
     }
 
     suspend fun pushCommands(): SynchronizationResult {
-        if (!mutex.tryLock()) {
-            Timber.d("Another synchronization is in progress, cancelling this command push attempt.")
-            return SynchronizationResult.Success
-        }
-        try {
+        mutex.withLock {
             val currentUser = userRepository.getCurrentUser()
             val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
             if (!isLoggedInPayingUser) {
@@ -78,17 +75,11 @@ class SynchronizerImpl @Inject internal constructor(
                 Timber.e(exception, "API error - skipping synchronization for now")
                 SynchronizationResult.Error
             }
-        } finally {
-            mutex.unlock()
         }
     }
 
     suspend fun fetchData(): SynchronizationResult {
-        if (!mutex.tryLock()) {
-            Timber.d("Another synchronization is in progress, cancelling this data fetch attempt.")
-            return SynchronizationResult.Success
-        }
-        try {
+        mutex.withLock {
             val currentUser = userRepository.getCurrentUser()
             val isLoggedInPayingUser = currentUser.isLoggedIn && currentUser.isPaidUser
             if (!isLoggedInPayingUser) {
@@ -104,8 +95,6 @@ class SynchronizerImpl @Inject internal constructor(
                 Timber.e(exception, "API error - skipping synchronization for now")
                 SynchronizationResult.Error
             }
-        } finally {
-            mutex.unlock()
         }
     }
 }
