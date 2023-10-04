@@ -38,7 +38,7 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
                 description,
                 tasks.map {
                     toTask(it, checklistId)
-                },
+                }.sortedBy(Task::sortPosition),
                 "",
                 LocalDateTime.now()
             )
@@ -59,7 +59,8 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
             isChecked = false,
             children = basedOn.children.map { child ->
                 toTask(child, checklistId, id)
-            }
+            }.sortedBy(Task::sortPosition),
+            sortPosition = basedOn.sortPosition
         )
     }
 }

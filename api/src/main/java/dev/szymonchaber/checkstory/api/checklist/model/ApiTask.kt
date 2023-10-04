@@ -24,7 +24,8 @@ internal data class ApiTask(
             title = title,
             children = children.sortedBy(ApiTask::sortPosition).map { it.toTask(id) },
             checklistId = ChecklistId(checklistId),
-            isChecked = isChecked
+            isChecked = isChecked,
+            sortPosition = sortPosition
         )
     }
 }

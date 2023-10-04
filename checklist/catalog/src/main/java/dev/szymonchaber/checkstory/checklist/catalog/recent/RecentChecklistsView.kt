@@ -121,14 +121,15 @@ fun RecentChecklistsLoadingPreview() {
 fun RecentChecklistsSuccessPreview() {
     Column {
         val items = listOf(
-            Task(TaskId(UUID.randomUUID()), null, ChecklistId.new(), "Check this", true, listOf()),
+            Task(TaskId(UUID.randomUUID()), null, ChecklistId.new(), "Check this", true, listOf(), 0),
             Task(
                 TaskId(UUID.randomUUID()),
                 null,
                 ChecklistId.new(),
                 "Do not check that",
                 false,
-                listOf()
+                listOf(),
+                0
             )
         )
         val checklists = listOf(

@@ -170,7 +170,8 @@ data class TaskEntity(
             ChecklistId(checklistId),
             title,
             isChecked,
-            children.map { it.toTask(id) }
+            children.map { it.toTask(id) },
+            sortPosition
         )
     }
 }

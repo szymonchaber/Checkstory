@@ -24,7 +24,8 @@ data class CheckboxEntity(
             ChecklistId(checklistId),
             checkboxTitle,
             isChecked,
-            children
+            children,
+            0 // TODO add a field to database
         )
     }
 

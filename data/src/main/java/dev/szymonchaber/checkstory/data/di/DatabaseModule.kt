@@ -136,7 +136,8 @@ class InsertDsl {
                     ChecklistId(checklistId),
                     title,
                     isChecked,
-                    listOf()
+                    listOf(),
+                    0
                 )
             )
         }

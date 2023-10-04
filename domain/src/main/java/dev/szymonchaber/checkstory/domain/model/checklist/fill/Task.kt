@@ -6,7 +6,8 @@ data class Task(
     val checklistId: ChecklistId,
     val title: String,
     val isChecked: Boolean,
-    val children: List<Task>
+    val children: List<Task>,
+    val sortPosition: Long,
 ) {
 
     fun withUpdatedIsCheckedRecursive(id: TaskId, isChecked: Boolean): Task {

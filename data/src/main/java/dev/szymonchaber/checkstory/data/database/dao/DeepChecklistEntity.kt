@@ -48,12 +48,13 @@ data class DeepChecklistEntity(
             }
         }
         return tasks.filter { it.task.parentId == null }
-            .map {
-                toDomain(it)
-            }
+            .map(::toDomain)
+            .sortedBy(Task::sortPosition)
     }
 
     private fun toDomain(taskToChildren: ChecklistRepositoryImpl.TaskToChildren): Task {
-        return taskToChildren.task.toDomainTask(taskToChildren.children.map { toDomain(it) })
+        return taskToChildren.task
+            .toDomainTask(taskToChildren.children.map { toDomain(it) }
+                .sortedBy(Task::sortPosition))
     }
 }
