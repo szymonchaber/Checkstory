@@ -80,7 +80,9 @@ internal interface ApiModule {
                 install(Logging) {
                     logger = object : Logger {
                         override fun log(message: String) {
-                            Timber.v(message)
+                            Timber
+                                .tag("HttpClient")
+                                .v(message)
                         }
                     }
                     level = LogLevel.ALL

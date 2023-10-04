@@ -5,16 +5,16 @@ import com.google.firebase.ktx.Firebase
 import dev.szymonchaber.checkstory.api.command.dto.ChecklistApiCommand
 import dev.szymonchaber.checkstory.api.command.dto.TemplateApiCommand
 import dev.szymonchaber.checkstory.api.command.mapper.toCommandDto
+import dev.szymonchaber.checkstory.api.di.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.domain.model.ChecklistCommand
 import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
-import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-class CommandsApi @Inject constructor(private val httpClient: HttpClient) {
+class CommandsApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
 
     suspend fun pushCommands(commands: List<Command>) {
         Firebase.auth.currentUser ?: return

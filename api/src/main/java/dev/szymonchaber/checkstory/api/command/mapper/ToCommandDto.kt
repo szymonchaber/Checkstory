@@ -117,7 +117,7 @@ internal fun Task.toTaskDto(): ApiChecklistCommandTask {
         id = id.id,
         checklistId = checklistId.id,
         title = title,
-        sortPosition = 0,
+        sortPosition = sortPosition,
         isChecked = isChecked,
         children = children.map { it.toTaskDto() }
     )

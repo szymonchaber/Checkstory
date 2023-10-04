@@ -146,7 +146,7 @@ private fun Task.toTaskEntity(): TaskEntity {
         id = id.id,
         checklistId = checklistId.id,
         title = title,
-        sortPosition = 0,
+        sortPosition = sortPosition,
         isChecked = isChecked,
         children = children.map { it.toTaskEntity() }
     )
