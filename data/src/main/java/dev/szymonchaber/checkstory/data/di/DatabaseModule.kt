@@ -170,7 +170,8 @@ class InsertDsl {
                                 checklistId,
                                 it.title,
                                 it.isChecked,
-                                it.parentId?.id
+                                it.parentId?.id,
+                                0
                             )
                         }
                     )

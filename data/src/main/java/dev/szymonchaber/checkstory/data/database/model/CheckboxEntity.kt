@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.data.database.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
@@ -14,7 +15,9 @@ data class CheckboxEntity(
     val checklistId: UUID,
     val checkboxTitle: String,
     val isChecked: Boolean,
-    val parentId: UUID?
+    val parentId: UUID?,
+    @ColumnInfo(defaultValue = "0")
+    val sortPosition: Long
 ) {
 
     fun toDomainTask(children: List<Task>): Task {
@@ -25,7 +28,7 @@ data class CheckboxEntity(
             checkboxTitle,
             isChecked,
             children,
-            0 // TODO add a field to database
+            sortPosition
         )
     }
 
@@ -38,7 +41,8 @@ data class CheckboxEntity(
                     checklistId = checklistId.id,
                     checkboxTitle = title,
                     isChecked = isChecked,
-                    parentId = parentId?.id
+                    parentId = parentId?.id,
+                    sortPosition = sortPosition
                 )
             }
         }
