@@ -1,9 +1,9 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("library-config")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -27,7 +27,7 @@ dependencies {
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
 
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     debugImplementation(libs.compose.debugUiTooling)
     testImplementation(libs.bundles.unitTest)

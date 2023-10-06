@@ -1,7 +1,6 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("com.google.devtools.ksp")
     id("library-config")
@@ -43,7 +42,7 @@ dependencies {
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
 
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     implementation(libs.bundles.room)
     ksp(libs.room.compiler)
@@ -59,7 +58,7 @@ dependencies {
 
     implementation(libs.work)
     implementation(libs.hilt.work)
-    kapt(libs.hilt.work.compiler)
+    ksp(libs.hilt.work.compiler)
 
     implementation("androidx.test:monitor:1.5.0")
     testImplementation(libs.bundles.unitTest)

@@ -15,7 +15,7 @@ class LibraryConfig : Plugin<Project> {
         target.apply(plugin = "com.android.library")
         target.apply(plugin = "org.jetbrains.kotlin.android")
         target.extensions.configure(LibraryExtension::class.java) {
-            compileSdk = 33
+            compileSdk = 34
 
             defaultConfig {
                 minSdk = 24
@@ -40,7 +40,7 @@ class LibraryConfig : Plugin<Project> {
                 compose = true
             }
             composeOptions {
-                kotlinCompilerExtensionVersion = "1.4.6"
+                kotlinCompilerExtensionVersion = "1.5.3"
             }
             kotlinOptions {
                 jvmTarget = "17"

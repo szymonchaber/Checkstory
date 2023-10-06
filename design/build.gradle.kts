@@ -1,9 +1,9 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
     id("library-config")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -14,7 +14,7 @@ android {
             buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
         }
         release {
-            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-4513755475495145/3074118228\"")
         }
     }
 
@@ -37,7 +37,7 @@ dependencies {
     implementation(libs.bundles.ui)
 
 
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
 
     implementation(libs.ads)
 
