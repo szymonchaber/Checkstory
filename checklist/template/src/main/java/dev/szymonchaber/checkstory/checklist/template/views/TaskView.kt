@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,7 +49,7 @@ fun TaskView(
         mutableStateOf(false)
     }
     var placeholderCharactersDisplayed by remember(placeholder) {
-        mutableStateOf(placeholder?.count() ?: 0)
+        mutableIntStateOf(placeholder?.count() ?: 0)
     }
     val animatedCharacterCount by animateIntAsState(
         targetValue = placeholderCharactersDisplayed,
