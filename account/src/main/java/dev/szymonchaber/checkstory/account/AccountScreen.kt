@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.account
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -21,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -112,15 +114,22 @@ fun AccountView(accountState: AccountLoadingState.Success, onEvent: (AccountEven
         when (accountState.user) {
             is User.Guest -> {
                 var email by remember { mutableStateOf("") }
-                TextField(value = email, onValueChange = { email = it })
+                var password by remember { mutableStateOf("") }
+                TextField(
+                    value = email,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    onValueChange = { email = it })
+                TextField(
+                    value = password,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    onValueChange = { password = it })
                 RegisterButton {
-                    onEvent(AccountEvent.RegisterClicked(email))
+                    onEvent(AccountEvent.RegisterClicked(email, password))
                 }
                 LoginButton {
-                    onEvent(AccountEvent.LoginClicked(email))
+                    onEvent(AccountEvent.LoginClicked(email, password))
                 }
             }
-
             is User.LoggedIn -> {
                 LogoutButton(onEvent)
             }

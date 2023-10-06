@@ -83,7 +83,7 @@ class AccountViewModel @Inject constructor(
                     emit(AccountState(AccountLoadingState.Loading) to null)
                     emit(
                         try {
-                            auth.signInWithEmailAndPassword("", "").await()
+                            auth.signInWithEmailAndPassword(it.email, it.password).await()
                             loginUseCase.login()
                                 .fold(
                                     mapError = {
@@ -110,7 +110,7 @@ class AccountViewModel @Inject constructor(
                     emit(
                         try {
                             auth.signOut()
-                            auth.createUserWithEmailAndPassword(it.email, "password").await()
+                            auth.createUserWithEmailAndPassword(it.email, it.password).await()
                             registerUseCase.register()
                                 .fold(
                                     mapError = {

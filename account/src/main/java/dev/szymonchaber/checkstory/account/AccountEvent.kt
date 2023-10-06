@@ -4,9 +4,9 @@ sealed class AccountEvent {
 
     object LoadAccount : AccountEvent()
 
-    data class LoginClicked(val email: String) : AccountEvent()
+    data class LoginClicked(val email: String, val password: String) : AccountEvent()
 
-    data class RegisterClicked(val email: String) : AccountEvent()
+    data class RegisterClicked(val email: String, val password: String) : AccountEvent()
 
     object LogoutClicked : AccountEvent()
 
