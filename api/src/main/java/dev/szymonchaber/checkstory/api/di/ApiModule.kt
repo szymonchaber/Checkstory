@@ -49,8 +49,7 @@ internal interface ApiModule {
 
         private const val TIME_OUT = 15_000
 
-        private const val API_ENDPOINT = "http://10.0.2.2:8080"
-//        private const val API_ENDPOINT = "http://159.203.187.86"
+        private const val API_ENDPOINT = "https://api.checkstory.tech"
 
         @Provides
         fun provideHttpClient(): ConfiguredHttpClient {
