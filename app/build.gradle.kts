@@ -12,8 +12,7 @@ plugins {
 android {
 
     namespace = "dev.szymonchaber.checkstory"
-
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "dev.szymonchaber.checkstory"
