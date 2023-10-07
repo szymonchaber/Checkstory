@@ -41,7 +41,8 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleLoginClicked(),
             eventFlow.handleRegisterClicked(),
             eventFlow.handleLogoutClicked(),
-            eventFlow.handleLogoutDespiteUnsynchronizedDataClicked()
+            eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
+            eventFlow.handleFirebaseResultReceived()
         )
     }
 
@@ -111,16 +112,7 @@ class AccountViewModel @Inject constructor(
                         try {
                             auth.signOut()
                             auth.createUserWithEmailAndPassword(it.email, it.password).await()
-                            registerUseCase.register()
-                                .fold(
-                                    mapError = {
-                                        Timber.e(it.toString())
-                                        AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
-                                    },
-                                    mapSuccess = {
-                                        AccountState(AccountLoadingState.Success(it)) to null
-                                    }
-                                )
+                            register()
                         } catch (exception: Exception) {
                             Timber.e(exception)
                             AccountState(AccountLoadingState.Success(User.Guest())) to AccountEffect.ShowLoginNetworkError()
@@ -128,5 +120,56 @@ class AccountViewModel @Inject constructor(
                     )
                 }
             }
+    }
+
+    private fun Flow<AccountEvent>.handleFirebaseResultReceived(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.FirebaseResultReceived>()
+            .flatMapLatest {
+                flow {
+                    try {
+                        val response = it.response
+                        if (response.error != null) {
+                            Timber.e(response.error)
+                            emit(AccountState.initial to null)
+                        } else {
+                            emit(AccountState(accountLoadingState = AccountLoadingState.Loading) to null)
+                            if (response.isNewUser) {
+                                emit(register())
+                            } else {
+                                emit(login())
+                            }
+                        }
+                    } catch (exception: Exception) {
+                        Timber.e(exception)
+                        AccountState(AccountLoadingState.Success(User.Guest())) to AccountEffect.ShowLoginNetworkError()
+                    }
+                }
+            }
+    }
+
+    private suspend fun login(): Pair<AccountState, AccountEffect?> {
+        return loginUseCase.login()
+            .fold(
+                mapError = {
+                    Timber.e(it.toString())
+                    AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                },
+                mapSuccess = {
+                    AccountState(AccountLoadingState.Success(it)) to null
+                }
+            )
+    }
+
+    private suspend fun register(): Pair<AccountState, AccountEffect?> {
+        return registerUseCase.register()
+            .fold(
+                mapError = {
+                    Timber.e(it.toString())
+                    AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                },
+                mapSuccess = {
+                    AccountState(AccountLoadingState.Success(it)) to null
+                }
+            )
     }
 }

@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.account
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,6 +26,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.firebase.ui.auth.AuthUI
+import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
@@ -113,6 +116,20 @@ fun AccountView(accountState: AccountLoadingState.Success, onEvent: (AccountEven
         )
         when (accountState.user) {
             is User.Guest -> {
+                val launcher = rememberLauncherForActivityResult(FirebaseAuthUIActivityResultContract()) {
+                    it.idpResponse?.let { identityProviderResponse ->
+                        onEvent(AccountEvent.FirebaseResultReceived(identityProviderResponse))
+                    }
+                }
+                Button(onClick = {
+                    val signInIntent = AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
+                        .build()
+                    launcher.launch(signInIntent)
+                }) {
+                    Text(text = "Login")
+                }
                 var email by remember { mutableStateOf("") }
                 var password by remember { mutableStateOf("") }
                 TextField(

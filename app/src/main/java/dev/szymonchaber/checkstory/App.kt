@@ -52,10 +52,11 @@ class App : Application(), Configuration.Provider {
 
     private val alarmManager by lazy { getSystemService(Context.ALARM_SERVICE) as AlarmManager }
 
-    override fun getWorkManagerConfiguration() =
-        Configuration.Builder()
+    override fun getWorkManagerConfiguration(): Configuration {
+        return Configuration.Builder()
             .setWorkerFactory(workerFactory)
             .build()
+    }
 
     override fun onCreate() {
         super.onCreate()

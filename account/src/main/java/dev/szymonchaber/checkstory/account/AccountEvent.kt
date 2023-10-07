@@ -1,5 +1,7 @@
 package dev.szymonchaber.checkstory.account
 
+import com.firebase.ui.auth.IdpResponse
+
 sealed class AccountEvent {
 
     object LoadAccount : AccountEvent()
@@ -11,4 +13,6 @@ sealed class AccountEvent {
     object LogoutClicked : AccountEvent()
 
     object LogoutDespiteUnsynchronizedDataClicked : AccountEvent()
+
+    data class FirebaseResultReceived(val response: IdpResponse) : AccountEvent()
 }

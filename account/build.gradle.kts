@@ -40,6 +40,8 @@ dependencies {
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
 
+    implementation(libs.firebase.ui.auth)
+
     debugImplementation(libs.compose.debugUiTooling)
     testImplementation(libs.bundles.unitTest)
     androidTestImplementation(libs.bundles.uiTest)

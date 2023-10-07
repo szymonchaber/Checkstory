@@ -29,7 +29,7 @@ class LogoutUseCase @Inject constructor(
     private suspend fun performLogout() {
         synchronizer.deleteCommands()
         userRepository.removeCurrentUser()
-        templateRepository.deleteAllData()
         checklistRepository.deleteAllData()
+        templateRepository.deleteAllData()
     }
 }
