@@ -1,6 +1,6 @@
-package dev.szymonchaber.checkstory.payments
+package dev.szymonchaber.checkstory.payments.billing
 
-sealed interface BillingError {
+internal sealed interface BillingError {
 
     object BillingNotSupported : BillingError
 

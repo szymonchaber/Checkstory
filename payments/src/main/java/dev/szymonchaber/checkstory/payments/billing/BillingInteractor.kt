@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.payments
+package dev.szymonchaber.checkstory.payments.billing
 
 import android.app.Activity
 import arrow.core.Either
@@ -7,7 +7,7 @@ import com.android.billingclient.api.Purchase
 import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
 import kotlinx.coroutines.flow.Flow
 
-interface BillingInteractor : PlayPaymentRepository {
+internal interface BillingInteractor : PlayPaymentRepository {
 
     val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
 

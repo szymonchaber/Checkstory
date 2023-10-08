@@ -10,11 +10,13 @@ import com.android.billingclient.api.Purchase
 import dev.szymonchaber.checkstory.domain.model.fold
 import dev.szymonchaber.checkstory.domain.model.payment.PurchaseToken
 import dev.szymonchaber.checkstory.domain.usecase.AssignPaymentToUserUseCase
+import dev.szymonchaber.checkstory.payments.billing.BillingInteractor
+import dev.szymonchaber.checkstory.payments.billing.PurchaseError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class PurchaseSubscriptionUseCase @Inject constructor(
+internal class PurchaseSubscriptionUseCase @Inject constructor(
     private val billingInteractor: BillingInteractor,
     private val assignPaymentToUserUseCase: AssignPaymentToUserUseCase
 ) {

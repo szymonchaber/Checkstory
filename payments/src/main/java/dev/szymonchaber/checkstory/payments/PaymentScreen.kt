@@ -3,19 +3,11 @@ package dev.szymonchaber.checkstory.payments
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -34,23 +26,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.android.billingclient.api.ProductDetails
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.LoadingView
+import dev.szymonchaber.checkstory.payments.billing.PlanDuration
+import dev.szymonchaber.checkstory.payments.components.Features
+import dev.szymonchaber.checkstory.payments.components.MainPaymentButton
+import dev.szymonchaber.checkstory.payments.components.PaymentsPlans
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
@@ -155,29 +144,14 @@ private fun ColumnScope.SubscribeBottomSection(
 }
 
 @Composable
-fun ColumnScope.PaidBottomSection(viewModel: PaymentViewModel) {
+internal fun ColumnScope.PaidBottomSection(viewModel: PaymentViewModel) {
     MainPaymentButton({ viewModel.onEvent(PaymentEvent.ContinueClicked) }) {
         Text(text = stringResource(id = R.string.payment_continue))
     }
 }
 
 @Composable
-private fun ColumnScope.MainPaymentButton(
-    onClick: () -> Unit,
-    content: @Composable (RowScope.() -> Unit)
-) {
-    Button(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 8.dp)
-            .align(Alignment.CenterHorizontally),
-        onClick = onClick, content = content
-    )
-}
-
-@Composable
-fun PaymentView(viewModel: PaymentViewModel) {
+internal fun PaymentView(viewModel: PaymentViewModel) {
     val state by viewModel.state.collectAsState(initial = PaymentState.initial)
     Column {
         Text(
@@ -227,116 +201,8 @@ fun PaymentView(viewModel: PaymentViewModel) {
     }
 }
 
-@Composable
-private fun Features() {
-    Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        FeatureLine(stringResource(R.string.ads_free_experience))
-        FeatureLine(stringResource(R.string.unlimited_templates))
-        FeatureLine(stringResource(R.string.unlimited_history))
-        FeatureLine(stringResource(R.string.unlimited_reminders))
-    }
-}
-
-@Composable
-fun PaymentsPlans(
-    subscriptionPlans: SubscriptionPlans,
-    selectedPlan: SubscriptionPlan?,
-    onPlanSelected: (SubscriptionPlan) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .padding(horizontal = 20.dp)
-            .padding(top = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        with(subscriptionPlans) {
-            SubscriptionPlanView(monthly, monthly == selectedPlan, onPlanSelected)
-            SubscriptionPlanView(yearly, yearly == selectedPlan, onPlanSelected)
-            SubscriptionPlanView(quarterly, quarterly == selectedPlan, onPlanSelected)
-        }
-    }
-}
-
 fun Context.getActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.getActivity()
     else -> null
-}
-
-@Composable
-fun FeatureLine(text: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-    ) {
-        Image(
-            modifier = Modifier.align(Alignment.CenterVertically),
-            painter = painterResource(id = R.drawable.ic_check),
-            contentDescription = null
-        )
-        Text(
-            modifier = Modifier
-                .padding(start = 16.dp)
-                .fillMaxWidth()
-                .align(Alignment.CenterVertically),
-            text = text,
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun FeatureLinePreview() {
-    FeatureLine("Unlimited checklists per template - start filling a checklist with a single click")
-}
-
-enum class PlanDuration {
-
-    MONTHLY, QUARTERLY, YEARLY
-}
-
-data class SubscriptionPlans(
-    val monthly: SubscriptionPlan,
-    val quarterly: SubscriptionPlan,
-    val yearly: SubscriptionPlan
-)
-
-data class SubscriptionPlan(
-    val productDetails: ProductDetails,
-    val offerToken: String,
-    val planDuration: PlanDuration,
-    val price: String
-)
-
-@Preview
-@Composable
-fun SubscriptionSuccessfulView() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 48.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .clip(RoundedCornerShape(12.dp))
-                .background(
-                    brush = Brush
-                        .verticalGradient(
-                            colors = listOf(
-                                Color(0xFFD6CFFC),
-                                Color(0xFFFDF9D8)
-                            ),
-                        )
-                )
-                .padding(30.dp)
-        ) {
-            Text(
-                color = MaterialTheme.colors.onSecondary,
-                fontWeight = FontWeight.Medium,
-                text = stringResource(id = R.string.subscription_successful_thanks_for_support)
-            )
-        }
-    }
 }

@@ -1,8 +1,8 @@
-package dev.szymonchaber.checkstory.payments
+package dev.szymonchaber.checkstory.payments.billing
 
 import dev.szymonchaber.checkstory.domain.interactor.AssignPaymentError
 
-sealed interface PurchaseError {
+internal sealed interface PurchaseError {
 
     object UserCancelled : PurchaseError
 

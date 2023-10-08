@@ -28,7 +28,7 @@ import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.usecase.FetchUserDataUseCase
 import dev.szymonchaber.checkstory.navigation.Navigation
-import dev.szymonchaber.checkstory.payments.BillingInteractorImpl
+import dev.szymonchaber.checkstory.payments.billing.BillingInteractorImpl
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject

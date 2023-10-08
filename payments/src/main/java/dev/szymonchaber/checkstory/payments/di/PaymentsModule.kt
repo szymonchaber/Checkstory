@@ -5,8 +5,8 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
-import dev.szymonchaber.checkstory.payments.BillingInteractor
-import dev.szymonchaber.checkstory.payments.BillingInteractorImpl
+import dev.szymonchaber.checkstory.payments.billing.BillingInteractor
+import dev.szymonchaber.checkstory.payments.billing.BillingInteractorImpl
 
 @Module
 @InstallIn(SingletonComponent::class)

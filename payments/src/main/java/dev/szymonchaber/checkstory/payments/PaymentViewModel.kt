@@ -9,6 +9,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
+import dev.szymonchaber.checkstory.payments.billing.PlanDuration
+import dev.szymonchaber.checkstory.payments.billing.PurchaseError
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
@@ -26,7 +28,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class PaymentViewModel @Inject constructor(
+internal class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
     private val getUserUseCase: GetCurrentUserUseCase,
     private val getPaymentPlansUseCase: GetPaymentPlansUseCase,

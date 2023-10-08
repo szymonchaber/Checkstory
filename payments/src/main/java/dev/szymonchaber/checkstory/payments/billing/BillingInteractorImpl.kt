@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.payments
+package dev.szymonchaber.checkstory.payments.billing
 
 import android.app.Activity
 import android.content.Context
@@ -38,8 +38,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
-class BillingInteractorImpl @Inject constructor(@ApplicationContext private val context: Context) : BillingInteractor,
-    DefaultLifecycleObserver {
+internal class BillingInteractorImpl @Inject constructor(@ApplicationContext private val context: Context) :
+    BillingInteractor, DefaultLifecycleObserver {
 
     private lateinit var billingClient: BillingClient
 

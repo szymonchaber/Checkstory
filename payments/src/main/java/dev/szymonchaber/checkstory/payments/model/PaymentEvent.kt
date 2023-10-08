@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.payments.model
 
 import android.app.Activity
-import dev.szymonchaber.checkstory.payments.SubscriptionPlan
+import dev.szymonchaber.checkstory.payments.billing.SubscriptionPlan
 
 sealed interface PaymentEvent {
 

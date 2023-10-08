@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.payments
+package dev.szymonchaber.checkstory.payments.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,10 +21,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.design.R
+import dev.szymonchaber.checkstory.payments.billing.PlanDuration
+import dev.szymonchaber.checkstory.payments.billing.SubscriptionPlan
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun RowScope.SubscriptionPlanView(
+internal fun RowScope.SubscriptionPlanView(
     subscriptionPlan: SubscriptionPlan,
     isSelected: Boolean,
     onClick: (SubscriptionPlan) -> Unit
