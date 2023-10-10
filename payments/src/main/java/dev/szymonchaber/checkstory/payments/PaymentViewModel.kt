@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
@@ -50,6 +51,8 @@ internal class PaymentViewModel @Inject constructor(
             eventFlow.handleLoadSubscriptionPlans(),
             eventFlow.handlePlanSelected(),
             eventFlow.handleBuyClicked(),
+            eventFlow.handleRegistrationSuccess(),
+            eventFlow.handleRegistrationCancelled()
         )
     }
 
@@ -109,24 +112,40 @@ internal class PaymentViewModel @Inject constructor(
             .onEach {
             }
             .withSuccessState()
+            .mapLatest { (state, _) ->
+                val loadingState = state.paymentLoadingState
+                tracker.logEvent(
+                    "buy_button_clicked",
+                    getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
+                )
+                state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to PaymentEffect.NavigateToRegistration()
+            }
+    }
+
+    private fun Flow<PaymentEvent>.handleRegistrationSuccess(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
+        return filterIsInstance<PaymentEvent.RegistrationSuccess>()
+            .withSuccessState()
             .flatMapLatest { (state, event) ->
                 flow {
                     val loadingState = state.paymentLoadingState
-                    emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to PaymentEffect.NavigateToRegistration())
-                    // TODO move this to after registration success
-//                    tracker.logEvent(
-//                        "buy_button_clicked",
-//                        getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
-//                    )
-//                    emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null)
-//                    emitAll(
-//                        purchaseSubscriptionUseCase.startPurchaseFlow(
-//                            event.activity,
-//                            loadingState.selectedPlan.productDetails,
-//                            loadingState.selectedPlan.offerToken
-//                        ).handlePurchaseEvents()
-//                    )
+                    tracker.logEvent("payment_flow_registration_success")
+                    emitAll(
+                        purchaseSubscriptionUseCase.startPurchaseFlow(
+                            event.activity,
+                            loadingState.selectedPlan.productDetails,
+                            loadingState.selectedPlan.offerToken
+                        ).handlePurchaseEvents()
+                    )
                 }
+            }
+    }
+
+    private fun Flow<PaymentEvent>.handleRegistrationCancelled(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
+        return filterIsInstance<PaymentEvent.RegistrationCancelled>()
+            .withSuccessState()
+            .mapLatest { (state, _) ->
+                tracker.logEvent("payment_flow_registration_cancelled")
+                state.copy(paymentLoadingState = state.paymentLoadingState.copy(paymentInProgress = false)) to null
             }
     }
 

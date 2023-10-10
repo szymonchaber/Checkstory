@@ -33,6 +33,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.NavResult
+import com.ramcosta.composedestinations.result.OpenResultRecipient
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.LoadingView
@@ -58,13 +60,33 @@ import kotlinx.coroutines.launch
         ),
     ]
 )
-fun PaymentScreen(navigator: DestinationsNavigator) {
+fun PaymentScreen(
+    navigator: DestinationsNavigator,
+    registrationResultRecipient: OpenResultRecipient<Boolean>
+) {
     trackScreenName("upgrade_to_pro")
     val viewModel = hiltViewModel<PaymentViewModel>()
     val state by viewModel.state.collectAsState(initial = PaymentState.initial)
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
     val effect by viewModel.effect.collectAsState(initial = null)
+    val context = LocalContext.current
+
+    registrationResultRecipient.onNavResult { registeredResult ->
+        when (registeredResult) {
+            is NavResult.Canceled -> {
+                viewModel.onEvent(PaymentEvent.RegistrationCancelled)
+            }
+
+            is NavResult.Value -> {
+                if (registeredResult.value) {
+                    viewModel.onEvent(PaymentEvent.RegistrationSuccess(context.getActivity()!!))
+                } else {
+                    viewModel.onEvent(PaymentEvent.RegistrationCancelled)
+                }
+            }
+        }
+    }
 
     val somethingWentWrongText = stringResource(id = R.string.something_went_wrong)
     LaunchedEffect(effect) {

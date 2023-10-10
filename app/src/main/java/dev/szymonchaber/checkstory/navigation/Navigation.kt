@@ -9,6 +9,11 @@ import com.google.accompanist.navigation.material.ExperimentalMaterialNavigation
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.defaults.RootNavGraphDefaultAnimations
 import com.ramcosta.composedestinations.animations.rememberAnimatedNavHostEngine
+import com.ramcosta.composedestinations.manualcomposablecalls.composable
+import com.ramcosta.composedestinations.scope.resultRecipient
+import dev.szymonchaber.checkstory.account.destinations.AccountScreenDestination
+import dev.szymonchaber.checkstory.payments.PaymentScreen
+import dev.szymonchaber.checkstory.payments.destinations.PaymentScreenDestination
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialNavigationApi::class)
 @Composable
@@ -44,5 +49,12 @@ fun Navigation() {
     DestinationsNavHost(
         navGraph = NavGraph,
         engine = navHostEngine
-    )
+    ) {
+        composable(PaymentScreenDestination) {
+            PaymentScreen(
+                navigator = this.destinationsNavigator,
+                registrationResultRecipient = resultRecipient<AccountScreenDestination, Boolean>()
+            )
+        }
+    }
 }

@@ -15,7 +15,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
@@ -41,13 +40,13 @@ import dev.szymonchaber.checkstory.domain.model.User
 )
 @Composable
 fun AccountScreen(
-    navigator: DestinationsNavigator,
+    navigator: ResultBackNavigator<Boolean>
 ) {
     trackScreenName("account")
     val viewModel = hiltViewModel<AccountViewModel>()
     viewModel.onEvent(AccountEvent.LoadAccount)
 
-    val state = viewModel.state.collectAsState(initial = AccountState.initial)
+    val state by viewModel.state.collectAsState(initial = AccountState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
     val context = LocalContext.current
@@ -72,9 +71,21 @@ fun AccountScreen(
 @Composable
 private fun FillChecklistScaffold(
     viewModel: AccountViewModel,
-    state: State<AccountState>,
-    navigator: DestinationsNavigator
+    state: AccountState,
+    navigator: ResultBackNavigator<Boolean>
 ) {
+    val isLoggedIn = remember(state) {
+        when (val loadingState = state.accountLoadingState) {
+            is AccountLoadingState.Success -> {
+                loadingState.user.isLoggedIn
+            }
+
+            else -> false
+        }
+    }
+    LaunchedEffect(isLoggedIn) {
+        navigator.setResult(isLoggedIn)
+    }
     AdvertScaffold(
         topBar = {
             TopAppBar(
@@ -83,7 +94,7 @@ private fun FillChecklistScaffold(
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        navigator.navigateUp()
+                        navigator.navigateBack()
                     }) {
                         Icon(Icons.Filled.ArrowBack, "")
                     }
@@ -92,7 +103,7 @@ private fun FillChecklistScaffold(
             )
         },
         content = {
-            when (val loadingState = state.value.accountLoadingState) {
+            when (val loadingState = state.accountLoadingState) {
                 AccountLoadingState.Loading -> {
                     FullSizeLoadingView()
                 }
