@@ -11,7 +11,7 @@ import dev.szymonchaber.checkstory.checklist.history.destinations.ChecklistHisto
 import dev.szymonchaber.checkstory.checklist.template.destinations.EditTemplateScreenDestination
 import dev.szymonchaber.checkstory.onboarding.destinations.OnboardingScreenDestination
 import dev.szymonchaber.checkstory.payments.destinations.PaymentScreenDestination
-import dev.szymonchaber.checkstory.payments.destinations.SubscriptionSuccessScreenDestination
+import dev.szymonchaber.checkstory.payments.destinations.PaymentSuccessScreenDestination
 
 object NavGraph : NavGraphSpec {
 
@@ -29,6 +29,6 @@ object NavGraph : NavGraphSpec {
         AboutScreenDestination,
         DebugScreenDestination,
         AccountScreenDestination,
-        SubscriptionSuccessScreenDestination
+        PaymentSuccessScreenDestination
     ).associateBy { it.route }
 }

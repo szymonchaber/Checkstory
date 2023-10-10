@@ -40,6 +40,8 @@ import dev.szymonchaber.checkstory.payments.billing.PlanDuration
 import dev.szymonchaber.checkstory.payments.components.Features
 import dev.szymonchaber.checkstory.payments.components.MainPaymentButton
 import dev.szymonchaber.checkstory.payments.components.PaymentsPlans
+import dev.szymonchaber.checkstory.payments.destinations.PaymentScreenDestination
+import dev.szymonchaber.checkstory.payments.destinations.PaymentSuccessScreenDestination
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
@@ -77,7 +79,9 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
             }
 
             is PaymentEffect.NavigateToPaymentSuccess -> {
-                navigator.navigate("payment_success_screen")
+                navigator.navigate(PaymentSuccessScreenDestination.route) {
+                    popUpTo(PaymentScreenDestination.route) { inclusive = true }
+                }
             }
 
             null -> Unit
@@ -108,7 +112,6 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
             Column(Modifier.fillMaxWidth()) {
                 when (val loadingState = state.paymentLoadingState) {
                     is PaymentState.PaymentLoadingState.Success -> SubscribeBottomSection(loadingState, viewModel)
-                    is PaymentState.PaymentLoadingState.Paid -> PaidBottomSection(viewModel)
                     else -> Unit
                 }
             }
@@ -144,13 +147,6 @@ private fun ColumnScope.SubscribeBottomSection(
         } else {
             Text(text = stringResource(id = R.string.upgrade))
         }
-    }
-}
-
-@Composable
-internal fun ColumnScope.PaidBottomSection(viewModel: PaymentViewModel) {
-    MainPaymentButton({ viewModel.onEvent(PaymentEvent.ContinueClicked) }) {
-        Text(text = stringResource(id = R.string.payment_continue))
     }
 }
 

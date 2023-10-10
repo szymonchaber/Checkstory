@@ -28,6 +28,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
+import dev.szymonchaber.checkstory.payments.components.MainPaymentButton
 import nl.dionsegijn.konfetti.compose.KonfettiView
 import nl.dionsegijn.konfetti.core.Party
 import nl.dionsegijn.konfetti.core.Position
@@ -36,7 +37,7 @@ import nl.dionsegijn.konfetti.core.models.Shape
 
 @Composable
 @Destination(route = "payment_success_screen")
-fun SubscriptionSuccessScreen(
+fun PaymentSuccessScreen(
     navigator: DestinationsNavigator
 ) {
     trackScreenName("payment_success")
@@ -64,7 +65,9 @@ fun SubscriptionSuccessScreen(
         },
         bottomBar = {
             Column(Modifier.fillMaxWidth()) {
-//                    PaidBottomSection(viewModel)
+                MainPaymentButton({ navigator.navigateUp() }) {
+                    Text(text = stringResource(id = R.string.payment_continue))
+                }
             }
         }
     )
