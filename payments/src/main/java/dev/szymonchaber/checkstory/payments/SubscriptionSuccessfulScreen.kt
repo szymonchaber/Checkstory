@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.payments
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +28,11 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
+import nl.dionsegijn.konfetti.compose.KonfettiView
+import nl.dionsegijn.konfetti.core.Party
+import nl.dionsegijn.konfetti.core.Position
+import nl.dionsegijn.konfetti.core.emitter.Emitter
+import nl.dionsegijn.konfetti.core.models.Shape
 
 @Composable
 @Destination(route = "payment_success_screen")
@@ -52,7 +58,9 @@ fun SubscriptionSuccessScreen(
                 elevation = 12.dp
             )
         }, content = {
-            SubscriptionSuccessView()
+            Box(modifier = Modifier.padding(it)) {
+                SubscriptionSuccessView()
+            }
         },
         bottomBar = {
             Column(Modifier.fillMaxWidth()) {
@@ -66,8 +74,7 @@ fun SubscriptionSuccessScreen(
 private fun SubscriptionSuccessView() {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 48.dp)
+            .fillMaxSize()
     ) {
         Box(
             modifier = Modifier
@@ -89,5 +96,23 @@ private fun SubscriptionSuccessView() {
                 text = stringResource(id = R.string.subscription_successful_thanks_for_support)
             )
         }
+        KonfettiView(
+            modifier = Modifier.fillMaxSize(),
+            parties = listOf(
+                party(0.0, 300),
+                party(1.0, 240),
+            ),
+        )
     }
 }
+
+@Composable
+private fun party(xRelative: Double, angle: Int) = Party(
+    emitter = Emitter(duration = 200).perSecond(300),
+    position = Position.Relative(xRelative, 0.7),
+    spread = 40,
+    angle = angle,
+    delay = 500,
+    speed = 60f,
+    shapes = listOf(Shape.Square, Shape.Circle)
+)

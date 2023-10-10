@@ -115,7 +115,7 @@ internal class PaymentViewModel @Inject constructor(
                 flow {
                     val loadingState = state.paymentLoadingState
                     emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null)
-                    delay(3000)
+                    delay(500)
                     emit(PaymentState(PaymentState.PaymentLoadingState.Paid) to PaymentEffect.NavigateToPaymentSuccess())
 //                    tracker.logEvent(
 //                        "buy_button_clicked",

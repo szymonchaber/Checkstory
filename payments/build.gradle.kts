@@ -37,6 +37,7 @@ dependencies {
 
     implementation(libs.billing)
     implementation(libs.arrow)
+    implementation(libs.konfetti)
 
     implementation(libs.firebase.crashlytics)
 

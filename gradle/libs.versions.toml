@@ -64,6 +64,8 @@ work = "androidx.work:work-runtime-ktx:2.8.1"
 
 rrule = "com.github.PhilJay:RRule:1.0.3"
 
+konfetti = "nl.dionsegijn:konfetti-compose:2.0.3"
+
 composeDialogsDateTime = "io.github.vanpra.compose-material-dialogs:datetime:0.9.0"
 
 dataStore = "androidx.datastore:datastore-preferences:1.0.0"
