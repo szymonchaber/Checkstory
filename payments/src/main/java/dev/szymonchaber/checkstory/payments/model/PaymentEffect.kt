@@ -6,4 +6,5 @@ internal sealed interface PaymentEffect {
     class PaymentError : PaymentEffect
     class NavigateToPaymentSuccess : PaymentEffect
     class ExitPaymentScreen : PaymentEffect
+    class NavigateToRegistration : PaymentEffect
 }

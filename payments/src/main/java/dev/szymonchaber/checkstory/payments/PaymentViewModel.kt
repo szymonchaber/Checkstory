@@ -14,7 +14,6 @@ import dev.szymonchaber.checkstory.payments.billing.PurchaseError
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterIsInstance
@@ -113,9 +112,8 @@ internal class PaymentViewModel @Inject constructor(
             .flatMapLatest { (state, event) ->
                 flow {
                     val loadingState = state.paymentLoadingState
-                    emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null)
-                    delay(500)
-                    emit(PaymentState(PaymentState.PaymentLoadingState.Paid) to PaymentEffect.NavigateToPaymentSuccess())
+                    emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to PaymentEffect.NavigateToRegistration())
+                    // TODO move this to after registration success
 //                    tracker.logEvent(
 //                        "buy_button_clicked",
 //                        getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)

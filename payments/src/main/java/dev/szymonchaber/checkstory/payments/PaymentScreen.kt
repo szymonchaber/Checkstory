@@ -36,6 +36,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.LoadingView
+import dev.szymonchaber.checkstory.navigation.Routes
 import dev.szymonchaber.checkstory.payments.billing.PlanDuration
 import dev.szymonchaber.checkstory.payments.components.Features
 import dev.szymonchaber.checkstory.payments.components.MainPaymentButton
@@ -76,6 +77,10 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
 
             is PaymentEffect.ExitPaymentScreen -> {
                 navigator.popBackStack()
+            }
+
+            is PaymentEffect.NavigateToRegistration -> {
+                navigator.navigate(Routes.accountScreen())
             }
 
             is PaymentEffect.NavigateToPaymentSuccess -> {
