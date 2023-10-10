@@ -3,7 +3,7 @@ package dev.szymonchaber.checkstory.payments.model
 import dev.szymonchaber.checkstory.payments.billing.SubscriptionPlan
 import dev.szymonchaber.checkstory.payments.billing.SubscriptionPlans
 
-data class PaymentState<LoadingState : PaymentState.PaymentLoadingState>(
+internal data class PaymentState<LoadingState : PaymentState.PaymentLoadingState>(
     val paymentLoadingState: LoadingState
 ) {
 

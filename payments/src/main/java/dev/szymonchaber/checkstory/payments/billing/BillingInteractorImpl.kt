@@ -22,6 +22,7 @@ import com.android.billingclient.api.queryProductDetails
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.szymonchaber.checkstory.domain.model.payment.ActiveSubscription
 import dev.szymonchaber.checkstory.domain.model.payment.PurchaseToken
+import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
 import dev.szymonchaber.checkstory.domain.repository.SubscriptionStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -38,13 +39,13 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
-internal class BillingInteractorImpl @Inject constructor(@ApplicationContext private val context: Context) :
-    BillingInteractor, DefaultLifecycleObserver {
+class BillingInteractorImpl @Inject constructor(@ApplicationContext private val context: Context) :
+    PlayPaymentRepository, DefaultLifecycleObserver {
 
     private lateinit var billingClient: BillingClient
 
     private val _subscriptionPlans = MutableStateFlow<Either<BillingError, SubscriptionPlans>?>(null)
-    override val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
+    internal val subscriptionPlans: Flow<Either<BillingError, SubscriptionPlans>?>
         get() = _subscriptionPlans
 
     private val _subscriptionStatusFlow = MutableStateFlow<SubscriptionStatus?>(null)
@@ -189,7 +190,7 @@ internal class BillingInteractorImpl @Inject constructor(@ApplicationContext pri
         }
     }
 
-    override suspend fun getProductDetails(productId: String): Either<BillingError, ProductDetails> {
+    internal suspend fun getProductDetails(productId: String): Either<BillingError, ProductDetails> {
         return withContext(Dispatchers.Default) {
             connectBillingClient().flatMap {
                 fetchProductDetails(it, productId)
@@ -197,7 +198,7 @@ internal class BillingInteractorImpl @Inject constructor(@ApplicationContext pri
         }
     }
 
-    override fun startPurchaseFlow(
+    internal fun startPurchaseFlow(
         activity: Activity,
         productDetails: ProductDetails,
         offerToken: String

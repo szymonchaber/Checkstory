@@ -14,6 +14,7 @@ import dev.szymonchaber.checkstory.payments.billing.PurchaseError
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.filterIsInstance
@@ -113,18 +114,21 @@ internal class PaymentViewModel @Inject constructor(
             .flatMapLatest { (state, event) ->
                 flow {
                     val loadingState = state.paymentLoadingState
-                    tracker.logEvent(
-                        "buy_button_clicked",
-                        getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
-                    )
                     emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null)
-                    emitAll(
-                        purchaseSubscriptionUseCase.startPurchaseFlow(
-                            event.activity,
-                            loadingState.selectedPlan.productDetails,
-                            loadingState.selectedPlan.offerToken
-                        ).handlePurchaseEvents()
-                    )
+                    delay(3000)
+                    emit(PaymentState(PaymentState.PaymentLoadingState.Paid) to PaymentEffect.NavigateToPaymentSuccess())
+//                    tracker.logEvent(
+//                        "buy_button_clicked",
+//                        getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
+//                    )
+//                    emit(state.copy(paymentLoadingState = loadingState.copy(paymentInProgress = true)) to null)
+//                    emitAll(
+//                        purchaseSubscriptionUseCase.startPurchaseFlow(
+//                            event.activity,
+//                            loadingState.selectedPlan.productDetails,
+//                            loadingState.selectedPlan.offerToken
+//                        ).handlePurchaseEvents()
+//                    )
                 }
             }
     }
@@ -147,7 +151,7 @@ internal class PaymentViewModel @Inject constructor(
                             "subscription_success",
                             getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
                         )
-                        PaymentState(PaymentState.PaymentLoadingState.Paid) to null
+                        PaymentState(PaymentState.PaymentLoadingState.Paid) to PaymentEffect.NavigateToPaymentSuccess()
                     })
             }
     }

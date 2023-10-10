@@ -76,6 +76,10 @@ fun PaymentScreen(navigator: DestinationsNavigator) {
                 navigator.popBackStack()
             }
 
+            is PaymentEffect.NavigateToPaymentSuccess -> {
+                navigator.navigate("payment_success_screen")
+            }
+
             null -> Unit
         }
     }
@@ -195,7 +199,7 @@ internal fun PaymentView(viewModel: PaymentViewModel) {
             }
 
             PaymentState.PaymentLoadingState.Paid -> {
-                SubscriptionSuccessfulView()
+//                SubscriptionSuccessScreen()
             }
         }
     }
