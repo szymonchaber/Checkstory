@@ -28,7 +28,7 @@ import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.usecase.FetchUserDataUseCase
 import dev.szymonchaber.checkstory.navigation.Navigation
-import dev.szymonchaber.checkstory.payments.billing.BillingInteractorImpl
+import dev.szymonchaber.checkstory.payments.billing.BillingInteractor
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
     private val manager by lazy { ReviewManagerFactory.create(this) }
 
     @Inject
-    lateinit var paymentInteractorImpl: BillingInteractorImpl
+    lateinit var paymentInteractorImpl: BillingInteractor
 
     @Inject
     lateinit var fetchUserDataUseCase: FetchUserDataUseCase
