@@ -51,7 +51,6 @@ internal class PaymentViewModel @Inject constructor(
             eventFlow.handleLoadSubscriptionPlans(),
             eventFlow.handlePlanSelected(),
             eventFlow.handleBuyClicked(),
-            eventFlow.handleContinueClicked()
         )
     }
 
@@ -153,13 +152,6 @@ internal class PaymentViewModel @Inject constructor(
                         )
                         PaymentState(PaymentState.PaymentLoadingState.Paid) to PaymentEffect.NavigateToPaymentSuccess()
                     })
-            }
-    }
-
-    private fun Flow<PaymentEvent>.handleContinueClicked(): Flow<Pair<PaymentState<*>, PaymentEffect?>> {
-        return filterIsInstance<PaymentEvent.ContinueClicked>()
-            .map {
-                _state.value to PaymentEffect.ExitPaymentScreen()
             }
     }
 

@@ -10,6 +10,4 @@ internal sealed interface PaymentEvent {
     data class BuyClicked(val activity: Activity) : PaymentEvent // passing activity is cringe
 
     data class PlanSelected(val subscriptionPlan: SubscriptionPlan) : PaymentEvent
-
-    object ContinueClicked : PaymentEvent
 }
