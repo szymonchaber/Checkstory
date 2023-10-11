@@ -102,7 +102,7 @@ fun PaymentScreen(
             }
 
             is PaymentEffect.NavigateToRegistration -> {
-                navigator.navigate(Routes.accountScreen())
+                navigator.navigate(Routes.accountScreen(triggerRegistration = true))
             }
 
             is PaymentEffect.NavigateToPaymentSuccess -> {

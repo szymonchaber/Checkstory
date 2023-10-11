@@ -41,5 +41,5 @@ object Routes {
 
     fun onboardingScreen() = "onboarding_screen"
 
-    fun accountScreen() = "account_screen"
+    fun accountScreen(triggerRegistration: Boolean = false) = "account_screen?triggerRegistration=$triggerRegistration"
 }

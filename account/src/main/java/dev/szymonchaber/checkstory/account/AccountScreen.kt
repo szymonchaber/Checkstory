@@ -40,7 +40,8 @@ import dev.szymonchaber.checkstory.domain.model.User
 )
 @Composable
 fun AccountScreen(
-    navigator: ResultBackNavigator<Boolean>
+    navigator: ResultBackNavigator<Boolean>,
+    triggerRegistration: Boolean = false
 ) {
     trackScreenName("account")
     val viewModel = hiltViewModel<AccountViewModel>()
@@ -65,14 +66,15 @@ fun AccountScreen(
         }
     }
 
-    FillChecklistScaffold(viewModel, state, navigator)
+    FillChecklistScaffold(viewModel, state, navigator, triggerRegistration)
 }
 
 @Composable
 private fun FillChecklistScaffold(
     viewModel: AccountViewModel,
     state: AccountState,
-    navigator: ResultBackNavigator<Boolean>
+    navigator: ResultBackNavigator<Boolean>,
+    triggerRegistration: Boolean
 ) {
     val isLoggedIn = remember(state) {
         when (val loadingState = state.accountLoadingState) {
@@ -84,7 +86,30 @@ private fun FillChecklistScaffold(
         }
     }
     LaunchedEffect(isLoggedIn) {
-        navigator.setResult(isLoggedIn)
+        if (triggerRegistration && isLoggedIn) { // TODO react to "Firebase login finished" in some other place
+            navigator.navigateBack(result = isLoggedIn)
+        } else {
+            navigator.setResult(isLoggedIn)
+        }
+    }
+    val firebaseAuthLauncher = rememberLauncherForActivityResult(
+        FirebaseAuthUIActivityResultContract()
+    ) {
+        it.idpResponse?.let { identityProviderResponse ->
+            (viewModel::onEvent)(AccountEvent.FirebaseResultReceived(identityProviderResponse))
+        }
+    }
+    val launchSignInIntent = {
+        val signInIntent = AuthUI.getInstance()
+            .createSignInIntentBuilder()
+            .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
+            .build()
+        firebaseAuthLauncher.launch(signInIntent)
+    }
+    LaunchedEffect(key1 = triggerRegistration) {
+        if (triggerRegistration) {
+            launchSignInIntent()
+        }
     }
     AdvertScaffold(
         topBar = {
@@ -109,7 +134,7 @@ private fun FillChecklistScaffold(
                 }
 
                 is AccountLoadingState.Success -> {
-                    AccountView(loadingState, viewModel::onEvent)
+                    AccountView(loadingState, viewModel::onEvent, launchSignInIntent)
                 }
             }
         },
@@ -117,7 +142,11 @@ private fun FillChecklistScaffold(
 }
 
 @Composable
-fun AccountView(accountState: AccountLoadingState.Success, onEvent: (AccountEvent) -> Unit) {
+fun AccountView(
+    accountState: AccountLoadingState.Success,
+    onEvent: (AccountEvent) -> Unit,
+    onAuthButtonClicked: () -> Unit
+) {
     Column(Modifier.padding(16.dp)) {
         Text(
             when (accountState.user) {
@@ -127,18 +156,7 @@ fun AccountView(accountState: AccountLoadingState.Success, onEvent: (AccountEven
         )
         when (accountState.user) {
             is User.Guest -> {
-                val launcher = rememberLauncherForActivityResult(FirebaseAuthUIActivityResultContract()) {
-                    it.idpResponse?.let { identityProviderResponse ->
-                        onEvent(AccountEvent.FirebaseResultReceived(identityProviderResponse))
-                    }
-                }
-                Button(onClick = {
-                    val signInIntent = AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
-                        .build()
-                    launcher.launch(signInIntent)
-                }) {
+                Button(onClick = onAuthButtonClicked) {
                     Text(text = "Login")
                 }
                 var email by remember { mutableStateOf("") }
