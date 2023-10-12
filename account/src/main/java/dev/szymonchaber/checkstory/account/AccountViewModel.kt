@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.account
 
+import com.firebase.ui.auth.IdpResponse
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
@@ -33,11 +35,13 @@ class AccountViewModel @Inject constructor(
     AccountState.initial
 ) {
 
-    private val auth by lazy { Firebase.auth }
+    private val firebaseAuth by lazy { Firebase.auth }
 
     override fun buildMviFlow(eventFlow: Flow<AccountEvent>): Flow<Pair<AccountState?, AccountEffect?>> {
-        return merge(
+        return merge( // TODO this could be made into a dsl like on<AccountEvent.LoadAccount>.flatMap... etc. maybe?
             eventFlow.handleLoadAccount(),
+            eventFlow.handleTriggerPartialRegistration(),
+            eventFlow.handleFirebaseLoginClicked(),
             eventFlow.handleLoginClicked(),
             eventFlow.handleRegisterClicked(),
             eventFlow.handleLogoutClicked(),
@@ -47,19 +51,33 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun Flow<AccountEvent>.handleLoadAccount(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.LoadAccount>()
+        return filterIsInstance<AccountEvent.LoadAccount>() // TODO this could be combined with a map & a flatMap
             .map {
-                AccountState(AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+                AccountState(AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser()), false) to null
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleTriggerPartialRegistration(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.TriggerPartialRegistration>()
+            .map {
+                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi()
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.FirebaseLoginClicked>()
+            .mapWithState { state, _ ->
+                state to AccountEffect.StartAuthUi()
             }
     }
 
     private fun Flow<AccountEvent>.handleLogoutClicked(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LogoutClicked>()
-            .map {
+            .mapWithState { state, _ ->
                 when (logoutUseCase.logoutSafely()) {
                     LogoutResult.Done -> {
-                        auth.signOut()
-                        AccountState(AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+                        firebaseAuth.signOut()
+                        state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
                     }
 
                     LogoutResult.UnsynchronizedCommandsPresent -> {
@@ -71,32 +89,38 @@ class AccountViewModel @Inject constructor(
 
     private fun Flow<AccountEvent>.handleLogoutDespiteUnsynchronizedDataClicked(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LogoutDespiteUnsynchronizedDataClicked>()
-            .map {
+            .mapWithState { state, _ ->
                 logoutUseCase.logoutIgnoringUnsynchronizedData()
-                AccountState(AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+                state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
             }
     }
 
     private fun Flow<AccountEvent>.handleLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoginClicked>()
-            .flatMapLatest {
+            .withState()
+            .flatMapLatest { (state, it) ->
                 flow {
-                    emit(AccountState(AccountLoadingState.Loading) to null)
+                    emit(state.copy(accountLoadingState = AccountLoadingState.Loading) to null)
                     emit(
                         try {
-                            auth.signInWithEmailAndPassword(it.email, it.password).await()
-                            loginUseCase.login()
-                                .fold(
-                                    mapError = {
-                                        Timber.e(it.toString())
-                                        AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
-                                    },
-                                    mapSuccess = {
-                                        AccountState(AccountLoadingState.Success(it)) to null
-                                    }
-                                )
+                            firebaseAuth.signInWithEmailAndPassword(it.email, it.password).await()
+                            if (state.partialAuthRequested) {
+                                state to AccountEffect.ExitWithAuthResult(true)
+                            } else {
+                                loginUseCase.login()
+                                    .fold(
+                                        mapError = {
+                                            Timber.e(it.toString())
+                                            state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                                        },
+                                        mapSuccess = {
+                                            state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
+                                        }
+                                    )
+                            }
                         } catch (exception: Exception) {
-                            AccountState(AccountLoadingState.Success(User.Guest())) to AccountEffect.ShowLoginNetworkError()
+                            val event = selectAuthErrorEvent(state)
+                            state.copy(accountLoadingState = AccountLoadingState.Success(User.Guest())) to event
                         }
                     )
                 }
@@ -105,17 +129,24 @@ class AccountViewModel @Inject constructor(
 
     private fun Flow<AccountEvent>.handleRegisterClicked(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.RegisterClicked>()
-            .flatMapLatest {
+            .withState()
+            .flatMapLatest { (state, event) ->
                 flow {
-                    emit(AccountState(AccountLoadingState.Loading) to null)
+                    emit(state.copy(accountLoadingState = AccountLoadingState.Loading) to null)
                     emit(
                         try {
-                            auth.signOut()
-                            auth.createUserWithEmailAndPassword(it.email, it.password).await()
-                            register()
+                            firebaseAuth.signOut()
+                            firebaseAuth.createUserWithEmailAndPassword(event.email, event.password).await()
+                            if (state.partialAuthRequested) {
+                                state to AccountEffect.ExitWithAuthResult(true)
+                            } else {
+                                register(state)
+                            }
                         } catch (exception: Exception) {
                             Timber.e(exception)
-                            AccountState(AccountLoadingState.Success(User.Guest())) to AccountEffect.ShowLoginNetworkError()
+                            state.copy(accountLoadingState = AccountLoadingState.Success(User.Guest())) to selectAuthErrorEvent(
+                                state
+                            )
                         }
                     )
                 }
@@ -124,52 +155,90 @@ class AccountViewModel @Inject constructor(
 
     private fun Flow<AccountEvent>.handleFirebaseResultReceived(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.FirebaseResultReceived>()
-            .flatMapLatest {
+            .withState()
+            .flatMapLatest { (state, event) ->
                 flow {
                     try {
-                        val response = it.response
+                        val response = event.response
                         if (response.error != null) {
                             Timber.e(response.error)
-                            emit(AccountState.initial to null)
+                            emit(state to selectAuthErrorEvent(state))
                         } else {
-                            emit(AccountState(accountLoadingState = AccountLoadingState.Loading) to null)
-                            if (response.isNewUser) {
-                                emit(register())
-                            } else {
-                                emit(login())
-                            }
+                            emit(state.copy(accountLoadingState = AccountLoadingState.Loading) to null)
+                            emit(handleFirebaseUiSuccess(state, response))
                         }
                     } catch (exception: Exception) {
                         Timber.e(exception)
-                        AccountState(AccountLoadingState.Success(User.Guest())) to AccountEffect.ShowLoginNetworkError()
+                        state.copy(accountLoadingState = AccountLoadingState.Success(User.Guest())) to selectAuthErrorEvent(
+                            state
+                        )
                     }
                 }
             }
     }
 
-    private suspend fun login(): Pair<AccountState, AccountEffect?> {
+    private suspend fun handleFirebaseUiSuccess(
+        state: AccountState,
+        response: IdpResponse
+    ): Pair<AccountState, AccountEffect?> {
+        return if (state.partialAuthRequested) {
+            state to AccountEffect.ExitWithAuthResult(true)
+        } else {
+            if (response.isNewUser) {
+                register(state)
+            } else {
+                login(state)
+            }
+        }
+    }
+
+    private fun selectAuthErrorEvent(state: AccountState): AccountEffect {
+        return if (state.partialAuthRequested) {
+            AccountEffect.ExitWithAuthResult(false)
+        } else {
+            AccountEffect.ShowLoginNetworkError()
+        }
+    }
+
+    private suspend fun login(state: AccountState): Pair<AccountState, AccountEffect?> {
         return loginUseCase.login()
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
                 },
                 mapSuccess = {
-                    AccountState(AccountLoadingState.Success(it)) to null
+                    state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
                 }
             )
     }
 
-    private suspend fun register(): Pair<AccountState, AccountEffect?> {
+    private suspend fun register(state: AccountState): Pair<AccountState, AccountEffect?> {
         return registerUseCase.register()
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    AccountState(AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
                 },
                 mapSuccess = {
-                    AccountState(AccountLoadingState.Success(it)) to null
+                    state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
                 }
             )
+    }
+
+    private fun <T> Flow<T>.mapWithState(
+        block: suspend (AccountState, T) -> Pair<AccountState, AccountEffect?>
+    ): Flow<Pair<AccountState, AccountEffect?>> {
+        return withState().map { (state, event) ->
+            block(state, event)
+        }
+    }
+
+    private fun <T> Flow<T>.withState(): Flow<Pair<AccountState, T>> {
+        return flatMapLatest { event ->
+            state
+                .map { it to event }
+                .take(1)
+        }
     }
 }

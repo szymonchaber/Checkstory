@@ -41,15 +41,30 @@ import dev.szymonchaber.checkstory.domain.model.User
 @Composable
 fun AccountScreen(
     navigator: ResultBackNavigator<Boolean>,
-    triggerRegistration: Boolean = false
+    triggerPartialRegistration: Boolean = false
 ) {
     trackScreenName("account")
     val viewModel = hiltViewModel<AccountViewModel>()
-    viewModel.onEvent(AccountEvent.LoadAccount)
+    LaunchedEffect(triggerPartialRegistration) {
+        if (triggerPartialRegistration) {
+            viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
+        } else {
+            viewModel.onEvent(AccountEvent.LoadAccount)
+        }
+    }
 
     val state by viewModel.state.collectAsState(initial = AccountState.initial)
 
     val effect by viewModel.effect.collectAsState(initial = null)
+
+    val firebaseAuthLauncher = rememberLauncherForActivityResult(
+        FirebaseAuthUIActivityResultContract()
+    ) {
+        it.idpResponse?.let { identityProviderResponse ->
+            (viewModel::onEvent)(AccountEvent.FirebaseResultReceived(identityProviderResponse))
+        }
+    }
+
     val context = LocalContext.current
     LaunchedEffect(effect) {
         when (val value = effect) {
@@ -62,55 +77,31 @@ fun AccountScreen(
                     .show()
             }
 
+            is AccountEffect.StartAuthUi -> {
+                val signInIntent = AuthUI.getInstance()
+                    .createSignInIntentBuilder()
+                    .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
+                    .build()
+                firebaseAuthLauncher.launch(signInIntent)
+            }
+
+            is AccountEffect.ExitWithAuthResult -> {
+                navigator.navigateBack(result = value.isSuccess)
+            }
+
             null -> Unit
         }
     }
 
-    FillChecklistScaffold(viewModel, state, navigator, triggerRegistration)
+    FillChecklistScaffold(viewModel, state, navigator)
 }
 
 @Composable
 private fun FillChecklistScaffold(
     viewModel: AccountViewModel,
     state: AccountState,
-    navigator: ResultBackNavigator<Boolean>,
-    triggerRegistration: Boolean
+    navigator: ResultBackNavigator<Boolean>
 ) {
-    val isLoggedIn = remember(state) {
-        when (val loadingState = state.accountLoadingState) {
-            is AccountLoadingState.Success -> {
-                loadingState.user.isLoggedIn
-            }
-
-            else -> false
-        }
-    }
-    LaunchedEffect(isLoggedIn) {
-        if (triggerRegistration && isLoggedIn) { // TODO react to "Firebase login finished" in some other place
-            navigator.navigateBack(result = isLoggedIn)
-        } else {
-            navigator.setResult(isLoggedIn)
-        }
-    }
-    val firebaseAuthLauncher = rememberLauncherForActivityResult(
-        FirebaseAuthUIActivityResultContract()
-    ) {
-        it.idpResponse?.let { identityProviderResponse ->
-            (viewModel::onEvent)(AccountEvent.FirebaseResultReceived(identityProviderResponse))
-        }
-    }
-    val launchSignInIntent = {
-        val signInIntent = AuthUI.getInstance()
-            .createSignInIntentBuilder()
-            .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
-            .build()
-        firebaseAuthLauncher.launch(signInIntent)
-    }
-    LaunchedEffect(key1 = triggerRegistration) {
-        if (triggerRegistration) {
-            launchSignInIntent()
-        }
-    }
     AdvertScaffold(
         topBar = {
             TopAppBar(
@@ -134,7 +125,7 @@ private fun FillChecklistScaffold(
                 }
 
                 is AccountLoadingState.Success -> {
-                    AccountView(loadingState, viewModel::onEvent, launchSignInIntent)
+                    AccountView(loadingState, viewModel::onEvent)
                 }
             }
         },
@@ -144,8 +135,7 @@ private fun FillChecklistScaffold(
 @Composable
 fun AccountView(
     accountState: AccountLoadingState.Success,
-    onEvent: (AccountEvent) -> Unit,
-    onAuthButtonClicked: () -> Unit
+    onEvent: (AccountEvent) -> Unit
 ) {
     Column(Modifier.padding(16.dp)) {
         Text(
@@ -156,7 +146,7 @@ fun AccountView(
         )
         when (accountState.user) {
             is User.Guest -> {
-                Button(onClick = onAuthButtonClicked) {
+                Button(onClick = { onEvent(AccountEvent.FirebaseLoginClicked) }) {
                     Text(text = "Login")
                 }
                 var email by remember { mutableStateOf("") }
@@ -176,6 +166,7 @@ fun AccountView(
                     onEvent(AccountEvent.LoginClicked(email, password))
                 }
             }
+
             is User.LoggedIn -> {
                 LogoutButton(onEvent)
             }
