@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,6 +34,7 @@ import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.User
+import dev.szymonchaber.checkstory.design.R as DesignR
 
 @Destination(
     route = "account_screen",
@@ -63,6 +65,8 @@ fun AccountScreen(
 
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val termsOfServiceUrl = stringResource(DesignR.string.terms_of_service_url)
+    val privacyPolicyUrl = stringResource(DesignR.string.privacy_policy_url)
     LaunchedEffect(Unit) {
         viewModel.effect
             .collect { effect ->
@@ -86,6 +90,10 @@ fun AccountScreen(
                             .setIsSmartLockEnabled(false)
                             .setIsSmartLockEnabled(false, false)
                             .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
+                            .setTosAndPrivacyPolicyUrls(
+                                termsOfServiceUrl,
+                                privacyPolicyUrl,
+                            )
                             .build()
                         firebaseAuthLauncher.launch(signInIntent)
                     }

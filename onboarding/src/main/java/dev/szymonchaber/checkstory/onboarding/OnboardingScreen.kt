@@ -142,6 +142,8 @@ fun OnboardingScreen(
 @Composable
 private fun LegalLinks() {
     val uriHandler = LocalUriHandler.current
+    val termsOfServiceUrl = stringResource(R.string.terms_of_service_url)
+    val privacyPolicyUrl = stringResource(R.string.privacy_policy_url)
     Row(
         modifier = Modifier
             .height(IntrinsicSize.Min)
@@ -164,7 +166,7 @@ private fun LegalLinks() {
                     }
                 }
                 .clickable {
-                    uriHandler.openUri("https://checkstory.tech/privacy")
+                    uriHandler.openUri(privacyPolicyUrl)
                 },
             style = MaterialTheme.typography.caption.copy(color = Color.DarkGray),
             text = "Privacy",
@@ -185,7 +187,7 @@ private fun LegalLinks() {
                     }
                 }
                 .clickable {
-                    uriHandler.openUri("https://checkstory.tech/terms-of-service")
+                    uriHandler.openUri(termsOfServiceUrl)
                 },
             style = MaterialTheme.typography.caption.copy(color = Color.DarkGray),
             text = "Terms",
