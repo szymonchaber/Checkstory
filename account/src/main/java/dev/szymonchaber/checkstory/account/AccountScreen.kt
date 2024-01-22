@@ -53,10 +53,6 @@ fun AccountScreen(
         }
     }
 
-    val state by viewModel.state.collectAsState(initial = AccountState.initial)
-
-    val effect by viewModel.effect.collectAsState(initial = null)
-
     val firebaseAuthLauncher = rememberLauncherForActivityResult(
         FirebaseAuthUIActivityResultContract()
     ) {
@@ -65,32 +61,40 @@ fun AccountScreen(
         }
     }
 
+    val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    LaunchedEffect(effect) {
-        when (val value = effect) {
-            is AccountEffect.ShowLoginNetworkError -> {
-                Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
-            }
+    LaunchedEffect(Unit) {
+        viewModel.effect
+            .collect { effect ->
+                when (val value = effect) {
+                    is AccountEffect.ShowLoginNetworkError -> {
+                        Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                    }
 
-            is AccountEffect.ShowDataNotSynchronized -> {
-                Toast.makeText(context, "There are some unsynchronized changes. Logout anyway?", Toast.LENGTH_SHORT)
-                    .show()
-            }
+                    is AccountEffect.ShowDataNotSynchronized -> {
+                        Toast.makeText(
+                            context,
+                            "There are some unsynchronized changes. Logout anyway?",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
 
-            is AccountEffect.StartAuthUi -> {
-                val signInIntent = AuthUI.getInstance()
-                    .createSignInIntentBuilder()
-                    .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
-                    .build()
-                firebaseAuthLauncher.launch(signInIntent)
-            }
+                    is AccountEffect.StartAuthUi -> {
+                        val signInIntent = AuthUI.getInstance()
+                            .createSignInIntentBuilder()
+                            .setIsSmartLockEnabled(false)
+                            .setIsSmartLockEnabled(false, false)
+                            .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
+                            .build()
+                        firebaseAuthLauncher.launch(signInIntent)
+                    }
 
-            is AccountEffect.ExitWithAuthResult -> {
-                navigator.navigateBack(result = value.isSuccess)
+                    is AccountEffect.ExitWithAuthResult -> {
+                        navigator.navigateBack(result = value.isSuccess)
+                    }
+                }
             }
-
-            null -> Unit
-        }
     }
 
     FillChecklistScaffold(viewModel, state, navigator)

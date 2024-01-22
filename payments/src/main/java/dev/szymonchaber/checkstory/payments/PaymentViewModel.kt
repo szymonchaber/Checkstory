@@ -3,12 +3,22 @@ package dev.szymonchaber.checkstory.payments
 import android.os.Bundle
 import androidx.core.os.bundleOf
 import arrow.core.Either
+import arrow.core.flatMap
+import arrow.core.left
+import arrow.core.right
 import com.android.billingclient.api.Purchase
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.model.fold
+import dev.szymonchaber.checkstory.domain.model.payment.PurchaseToken
+import dev.szymonchaber.checkstory.domain.usecase.AssignPaymentToUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
+import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
+import dev.szymonchaber.checkstory.domain.usecase.RegisterUseCase
 import dev.szymonchaber.checkstory.payments.billing.PlanDuration
 import dev.szymonchaber.checkstory.payments.billing.PurchaseError
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
@@ -25,6 +35,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -33,7 +44,10 @@ internal class PaymentViewModel @Inject constructor(
     private val tracker: Tracker,
     private val getUserUseCase: GetCurrentUserUseCase,
     private val getPaymentPlansUseCase: GetPaymentPlansUseCase,
-    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase
+    private val purchaseSubscriptionUseCase: PurchaseSubscriptionUseCase,
+    private val assignPaymentToUserUseCase: AssignPaymentToUserUseCase,
+    private val registerUseCase: RegisterUseCase,
+    private val loginUseCase: LoginUseCase
 ) : BaseViewModel<
         PaymentEvent,
         PaymentState<out PaymentState.PaymentLoadingState>,
@@ -134,7 +148,26 @@ internal class PaymentViewModel @Inject constructor(
                             event.activity,
                             loadingState.selectedPlan.productDetails,
                             loadingState.selectedPlan.offerToken
-                        ).handlePurchaseEvents()
+                        ).map {
+                            it.flatMap { purchase ->
+                                registerUseCase.register()
+                                    .fold(
+                                        { PurchaseError.CheckstoryAuthenticationError(it).left() },
+                                        { it.right() }
+                                    ).flatMap {
+                                        assignPaymentToUserUseCase.assignPurchaseTokenToUser(PurchaseToken(purchase.purchaseToken))
+                                            .fold(
+                                                mapError = {
+                                                    PurchaseError.CheckstoryBackendConnectionError(it).left()
+                                                },
+                                                mapSuccess = {
+                                                    purchase.right()
+                                                }
+                                            )
+                                    }
+                            }
+                        }
+                            .handlePurchaseEvents()
                     )
                 }
             }
@@ -153,22 +186,29 @@ internal class PaymentViewModel @Inject constructor(
         return withSuccessState()
             .map { (state, event) ->
                 event
-                    .fold({
-                        Timber.e(it.toString())
-                        FirebaseCrashlytics.getInstance().recordException(Exception("Purchase attempt failed!\n$it"))
-                        val effect = if (it == PurchaseError.UserCancelled) {
-                            null
-                        } else {
-                            PaymentEffect.PaymentError()
+                    .fold(
+                        ifLeft = {
+                            if (it is PurchaseError.CheckstoryAuthenticationError) {
+                                Firebase.auth.currentUser?.delete()?.await()
+                            }
+                            Timber.e(it.toString())
+                            FirebaseCrashlytics.getInstance()
+                                .recordException(Exception("Purchase attempt failed!\n$it"))
+                            val effect = if (it == PurchaseError.UserCancelled) {
+                                null
+                            } else {
+                                PaymentEffect.PaymentError()
+                            }
+                            state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to effect
+                        },
+                        ifRight = {
+                            tracker.logEvent(
+                                "subscription_success",
+                                getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
+                            )
+                            PaymentState(PaymentState.PaymentLoadingState.Paid) to PaymentEffect.NavigateToPaymentSuccess()
                         }
-                        state.copy(state.paymentLoadingState.copy(paymentInProgress = false)) to effect
-                    }, {
-                        tracker.logEvent(
-                            "subscription_success",
-                            getSelectedPlanMetadata(state.paymentLoadingState.selectedPlan.planDuration)
-                        )
-                        PaymentState(PaymentState.PaymentLoadingState.Paid) to PaymentEffect.NavigateToPaymentSuccess()
-                    })
+                    )
             }
     }
 

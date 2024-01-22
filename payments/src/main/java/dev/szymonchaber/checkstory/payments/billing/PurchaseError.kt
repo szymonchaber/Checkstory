@@ -1,10 +1,11 @@
 package dev.szymonchaber.checkstory.payments.billing
 
 import dev.szymonchaber.checkstory.domain.interactor.AssignPaymentError
+import dev.szymonchaber.checkstory.domain.usecase.RegisterError
 
 internal sealed interface PurchaseError {
 
-    object UserCancelled : PurchaseError
+    data object UserCancelled : PurchaseError
 
     data class Unhandled(val billingResultResponseCode: Int, val billingResultDebugMessage: String) : PurchaseError
 
@@ -16,5 +17,7 @@ internal sealed interface PurchaseError {
 
     data class CheckstoryBackendConnectionError(val exception: AssignPaymentError) : PurchaseError
 
-    object AlreadySubscribed : PurchaseError
+    data class CheckstoryAuthenticationError(val exception: RegisterError) : PurchaseError
+
+    data object AlreadySubscribed : PurchaseError
 }
