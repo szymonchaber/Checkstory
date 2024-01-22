@@ -83,7 +83,7 @@ private fun ChecklistHistoryView(
     viewModel: ChecklistHistoryViewModel,
     navigator: DestinationsNavigator
 ) {
-    val state by viewModel.state.collectAsState(initial = ChecklistHistoryState.initial)
+    val state by viewModel.state.collectAsState()
 
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {

@@ -99,8 +99,6 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
-import java.time.Duration.*
-import java.util.*
 
 @OptIn(ExperimentalMaterialApi::class)
 @Destination("edit_template_screen", start = true)
@@ -158,8 +156,7 @@ fun EditTemplateScreen(
 
     val scaffoldState: ScaffoldState = rememberScaffoldState()
 
-    val state by viewModel.state.collectAsState(initial = EditTemplateState.initial)
-
+    val state by viewModel.state.collectAsState()
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {
         when (val value = effect) {

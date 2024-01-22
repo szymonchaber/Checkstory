@@ -126,7 +126,7 @@ private fun ChecklistCatalogView(
     viewModel: ChecklistCatalogViewModel,
     navigator: DestinationsNavigator
 ) {
-    val state by viewModel.state.collectAsState(initial = ChecklistCatalogState.initial)
+    val state by viewModel.state.collectAsState()
 
     val effect by viewModel.effect.collectAsState(initial = null)
 

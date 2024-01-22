@@ -66,7 +66,7 @@ fun PaymentScreen(
 ) {
     trackScreenName("upgrade_to_pro")
     val viewModel = hiltViewModel<PaymentViewModel>()
-    val state by viewModel.state.collectAsState(initial = PaymentState.initial)
+    val state by viewModel.state.collectAsState()
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
     val effect by viewModel.effect.collectAsState(initial = null)
@@ -179,7 +179,7 @@ private fun ColumnScope.SubscribeBottomSection(
 
 @Composable
 internal fun PaymentView(viewModel: PaymentViewModel) {
-    val state by viewModel.state.collectAsState(initial = PaymentState.initial)
+    val state by viewModel.state.collectAsState()
     Column {
         Text(
             modifier = Modifier

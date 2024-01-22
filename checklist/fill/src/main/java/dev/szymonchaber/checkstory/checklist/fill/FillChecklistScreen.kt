@@ -151,7 +151,7 @@ fun FillChecklistScreen(
         }
     }
 
-    val state = viewModel.state.collectAsState(initial = FillChecklistState.initial)
+    val state = viewModel.state.collectAsState()
 
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {

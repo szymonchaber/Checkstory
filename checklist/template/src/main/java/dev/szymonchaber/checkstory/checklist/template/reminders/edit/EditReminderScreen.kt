@@ -39,7 +39,6 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEffect
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEvent
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderLoadingState
-import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderState
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Interval
@@ -57,7 +56,7 @@ fun EditReminderScreen(
     viewModel: EditReminderViewModel,
     onReminderSaved: (Reminder) -> Unit = {}
 ) {
-    val state by viewModel.state.collectAsState(initial = EditReminderState.initial)
+    val state by viewModel.state.collectAsState()
 
     val effect by viewModel.effect.collectAsState(initial = null)
     LaunchedEffect(effect) {
