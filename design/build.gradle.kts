@@ -17,6 +17,9 @@ android {
             buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-4513755475495145/3074118228\"")
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
 
     hilt {
         enableAggregatingTask = true

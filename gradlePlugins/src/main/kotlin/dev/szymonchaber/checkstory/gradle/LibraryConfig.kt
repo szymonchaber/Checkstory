@@ -19,7 +19,6 @@ class LibraryConfig : Plugin<Project> {
 
             defaultConfig {
                 minSdk = 24
-                targetSdk = 31
 
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
                 consumerProguardFiles("consumer-rules.pro")

@@ -39,7 +39,9 @@ dependencies {
     implementation(libs.arrow)
     implementation(libs.konfetti)
 
+    implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.auth)
 
     testImplementation(libs.bundles.unitTest)
     androidTestImplementation(libs.bundles.uiTest)
