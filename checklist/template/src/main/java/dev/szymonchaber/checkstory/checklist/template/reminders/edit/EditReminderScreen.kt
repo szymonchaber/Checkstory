@@ -58,11 +58,11 @@ fun EditReminderScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
-    val effect by viewModel.effect.collectAsState(initial = null)
-    LaunchedEffect(effect) {
-        when (val value = effect) {
-            is EditReminderEffect.RelayReminderToSave -> onReminderSaved(value.reminder)
-            null -> Unit
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
+            when (it) {
+                is EditReminderEffect.RelayReminderToSave -> onReminderSaved(it.reminder)
+            }
         }
     }
     Column(
@@ -76,6 +76,7 @@ fun EditReminderScreen(
             EditReminderLoadingState.Loading -> {
                 // TODO
             }
+
             is EditReminderLoadingState.Success -> {
                 EditReminderView(loadingState.reminder) { viewModel.onEvent(it) }
             }
@@ -138,6 +139,7 @@ fun IntervalSpecificSection(reminder: Recurring, onEvent: (EditReminderEvent) ->
                 onSelectionChange = { onEvent(EditReminderEvent.DaysOfWeekSelected(it)) }
             )
         }
+
         is Interval.Monthly -> {
             var textInput by remember { mutableStateOf(interval.dayOfMonth.toString()) }
             DayOfUnitInput(stringResource(R.string.day_of_month), textInput) {
@@ -148,6 +150,7 @@ fun IntervalSpecificSection(reminder: Recurring, onEvent: (EditReminderEvent) ->
                 }
             }
         }
+
         is Interval.Yearly -> {
             var textInput by remember { mutableStateOf(interval.dayOfYear.toString()) }
             DayOfUnitInput(stringResource(R.string.day_of_year), textInput) {

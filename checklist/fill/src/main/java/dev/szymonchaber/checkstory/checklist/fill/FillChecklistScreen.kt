@@ -153,30 +153,34 @@ fun FillChecklistScreen(
 
     val state = viewModel.state.collectAsState()
 
-    val effect by viewModel.effect.collectAsState(initial = null)
-    LaunchedEffect(effect) {
-        when (val value = effect) {
-            is FillChecklistEffect.NavigateToEditTemplate -> {
-                navigator.navigate(Routes.editTemplateScreen(value.templateId))
-            }
-            FillChecklistEffect.CloseScreen -> {
-                navigator.navigateUp()
-            }
-            is FillChecklistEffect.ShowNotesEditShelf -> {
-                scope.launch {
-                    modalBottomSheetState.show()
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
+            when (it) {
+                is FillChecklistEffect.NavigateToEditTemplate -> {
+                    navigator.navigate(Routes.editTemplateScreen(it.templateId))
                 }
-                scope.launch {
-                    notesInputFocusRequester.requestFocus()
+
+                FillChecklistEffect.CloseScreen -> {
+                    navigator.navigateUp()
+                }
+
+                is FillChecklistEffect.ShowNotesEditShelf -> {
+                    scope.launch {
+                        modalBottomSheetState.show()
+                    }
+                    scope.launch {
+                        notesInputFocusRequester.requestFocus()
+                    }
+                }
+
+                is FillChecklistEffect.ShowConfirmDeleteDialog -> {
+                    openConfirmDeleteDialog.value = true
+                }
+
+                is FillChecklistEffect.ShowConfirmExitDialog -> {
+                    openConfirmExitDialog.value = true
                 }
             }
-            is FillChecklistEffect.ShowConfirmDeleteDialog -> {
-                openConfirmDeleteDialog.value = true
-            }
-            is FillChecklistEffect.ShowConfirmExitDialog -> {
-                openConfirmExitDialog.value = true
-            }
-            null -> Unit
         }
     }
 
@@ -245,19 +249,13 @@ private fun FillChecklistScaffold(
                     }
                 },
                 elevation = 12.dp,
-//                actions = {
-//                    IconButton(onClick = {
-//                        viewModel.onEvent(FillChecklistEvent.EditTemplateClicked)
-//                    }) {
-//                        Icon(Icons.Filled.Edit, "", tint = Color.White)
-//                    }
-//                }
             )
         }, content = {
             when (val loadingState = state.value.checklistLoadingState) {
                 ChecklistLoadingState.Loading -> {
                     FullSizeLoadingView()
                 }
+
                 is ChecklistLoadingState.Success -> {
                     FillChecklistView(loadingState.checklist, viewModel::onEvent)
                 }

@@ -69,7 +69,6 @@ fun PaymentScreen(
     val state by viewModel.state.collectAsState()
     val scaffoldState = rememberScaffoldState()
     val coroutineScope = rememberCoroutineScope()
-    val effect by viewModel.effect.collectAsState(initial = null)
     val context = LocalContext.current
 
     registrationResultRecipient.onNavResult { registeredResult ->
@@ -89,29 +88,30 @@ fun PaymentScreen(
     }
 
     val somethingWentWrongText = stringResource(id = R.string.something_went_wrong)
-    LaunchedEffect(effect) {
-        when (val value = effect) {
-            is PaymentEffect.PaymentError -> {
-                coroutineScope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(message = somethingWentWrongText) // TODO add "you were not charged" to the message
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
+            when (it) {
+                is PaymentEffect.PaymentError -> {
+                    coroutineScope.launch {
+                        scaffoldState.snackbarHostState.showSnackbar(message = somethingWentWrongText)
+                        // TODO add "you were not charged" to the message
+                    }
+                }
+
+                is PaymentEffect.ExitPaymentScreen -> {
+                    navigator.popBackStack()
+                }
+
+                is PaymentEffect.NavigateToRegistration -> {
+                    navigator.navigate(Routes.accountScreen(triggerPartialRegistration = true))
+                }
+
+                is PaymentEffect.NavigateToPaymentSuccess -> {
+                    navigator.navigate(PaymentSuccessScreenDestination.route) {
+                        popUpTo(PaymentScreenDestination.route) { inclusive = true }
+                    }
                 }
             }
-
-            is PaymentEffect.ExitPaymentScreen -> {
-                navigator.popBackStack()
-            }
-
-            is PaymentEffect.NavigateToRegistration -> {
-                navigator.navigate(Routes.accountScreen(triggerPartialRegistration = true))
-            }
-
-            is PaymentEffect.NavigateToPaymentSuccess -> {
-                navigator.navigate(PaymentSuccessScreenDestination.route) {
-                    popUpTo(PaymentScreenDestination.route) { inclusive = true }
-                }
-            }
-
-            null -> Unit
         }
     }
     Scaffold(

@@ -25,7 +25,7 @@ abstract class BaseViewModel<EVENT, STATE, EFFECT>(initialState: STATE) : ViewMo
     private val event: MutableSharedFlow<EVENT> = MutableSharedFlow(extraBufferCapacity = Int.MAX_VALUE)
 
     init {
-        // TODO This could be done with a function init for "StateDelegate" instead of getting hung up on not having this fielt
+        // TODO This could be done with a function init for "StateDelegate" instead of getting hung up on not having this field
         viewModelScope.launch {
             buildMviFlow(event)
                 .collect { (state, effect) ->

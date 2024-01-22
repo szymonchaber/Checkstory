@@ -154,47 +154,54 @@ fun EditTemplateScreen(
         }
     }
 
-    val scaffoldState: ScaffoldState = rememberScaffoldState()
+    val scaffoldState = rememberScaffoldState()
 
     val state by viewModel.state.collectAsState()
-    val effect by viewModel.effect.collectAsState(initial = null)
-    LaunchedEffect(effect) {
-        when (val value = effect) {
-            is EditTemplateEffect.CloseScreen -> {
-                navigator.navigateUp()
-            }
-            is EditTemplateEffect.ShowAddReminderSheet -> {
-                editReminderViewModel.onEvent(EditReminderEvent.CreateReminder(value.templateId))
-                scope.launch {
-                    modalBottomSheetState.show()
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
+            when (it) {
+                is EditTemplateEffect.CloseScreen -> {
+                    navigator.navigateUp()
+                }
+
+                is EditTemplateEffect.ShowAddReminderSheet -> {
+                    editReminderViewModel.onEvent(EditReminderEvent.CreateReminder(it.templateId))
+                    scope.launch {
+                        modalBottomSheetState.show()
+                    }
+                }
+
+                is EditTemplateEffect.ShowEditReminderSheet -> {
+                    editReminderViewModel.onEvent(EditReminderEvent.EditReminder(it.reminder))
+                    scope.launch {
+                        modalBottomSheetState.show()
+                    }
+                }
+
+                is EditTemplateEffect.ShowConfirmDeleteDialog -> {
+                    openConfirmDeleteDialog.value = true
+                }
+
+                is EditTemplateEffect.ShowConfirmExitDialog -> {
+                    openConfirmExitDialog.value = true
+                }
+
+                is EditTemplateEffect.ShowFreeRemindersUsed -> {
+                    navigator.navigate(Routes.paymentScreen())
+                }
+
+                is EditTemplateEffect.OpenTemplateHistory -> {
+                    navigator.navigate(Routes.checklistHistoryScreen(it.templateId))
+                }
+
+                is EditTemplateEffect.ShowTryDraggingSnackbar -> {
+                    scope.launch {
+                        scaffoldState.snackbarHostState.showSnackbar(
+                            message = "Drag me to where you want a new task 🎯"
+                        )
+                    }
                 }
             }
-            is EditTemplateEffect.ShowEditReminderSheet -> {
-                editReminderViewModel.onEvent(EditReminderEvent.EditReminder(value.reminder))
-                scope.launch {
-                    modalBottomSheetState.show()
-                }
-            }
-            is EditTemplateEffect.ShowConfirmDeleteDialog -> {
-                openConfirmDeleteDialog.value = true
-            }
-            is EditTemplateEffect.ShowConfirmExitDialog -> {
-                openConfirmExitDialog.value = true
-            }
-            is EditTemplateEffect.ShowFreeRemindersUsed -> {
-                navigator.navigate(Routes.paymentScreen())
-            }
-            is EditTemplateEffect.OpenTemplateHistory -> {
-                navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
-            }
-            is EditTemplateEffect.ShowTryDraggingSnackbar -> {
-                scope.launch {
-                    scaffoldState.snackbarHostState.showSnackbar(
-                        message = "Drag me to where you want a new task 🎯"
-                    )
-                }
-            }
-            null -> Unit
         }
     }
     ModalBottomSheetLayout(
@@ -246,9 +253,11 @@ private fun EditTemplateScaffold(
                 isOnboarding -> {
                     R.string.create_your_first_checklist
                 }
+
                 isNewTemplate -> {
                     R.string.add_template
                 }
+
                 else -> {
                     R.string.edit_template
                 }
@@ -286,6 +295,7 @@ private fun EditTemplateScaffold(
                     TemplateLoadingState.Loading -> {
                         FullSizeLoadingView()
                     }
+
                     is TemplateLoadingState.Success -> {
                         val recentlyAddedUnconsumedItem = remember {
                             RecentlyAddedUnconsumedItem()
@@ -445,9 +455,7 @@ fun BottomActionBar(eventCollector: (EditTemplateEvent) -> Unit) {
             }
         }
     }
-
 }
-
 
 @Composable
 private fun DebugFloatingPoint(offset: Offset, color: Color) {
@@ -545,7 +553,6 @@ private fun TitleTextField(
             }
         )
     )
-
 }
 
 @Composable
