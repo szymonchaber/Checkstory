@@ -128,8 +128,6 @@ private fun ChecklistCatalogView(
 ) {
     val state by viewModel.state.collectAsState()
 
-    val effect by viewModel.effect.collectAsState(initial = null)
-
     var showUnassignedPaymentDialog by remember { mutableStateOf(false) }
     if (showUnassignedPaymentDialog) {
         UnassignedPaymentDialog(onDismiss = { showUnassignedPaymentDialog = false }) {
@@ -137,49 +135,49 @@ private fun ChecklistCatalogView(
             showUnassignedPaymentDialog = false
         }
     }
-    LaunchedEffect(effect) {
-        when (val value = effect) {
-            is ChecklistCatalogEffect.NavigateToOnboarding -> {
-                navigator.navigate(Routes.onboardingScreen())
-            }
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
+            when (it) {
+                is ChecklistCatalogEffect.NavigateToOnboarding -> {
+                    navigator.navigate(Routes.onboardingScreen())
+                }
 
-            is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
-                navigator.navigate(Routes.newChecklistScreen(value.basedOn))
-            }
+                is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
+                    navigator.navigate(Routes.newChecklistScreen(it.basedOn))
+                }
 
-            is ChecklistCatalogEffect.NavigateToChecklist -> {
-                navigator.navigate(Routes.editChecklistScreen(value.checklistId))
-            }
+                is ChecklistCatalogEffect.NavigateToChecklist -> {
+                    navigator.navigate(Routes.editChecklistScreen(it.checklistId))
+                }
 
-            is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
-                navigator.navigate(Routes.editTemplateScreen(value.templateId))
-            }
+                is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
+                    navigator.navigate(Routes.editTemplateScreen(it.templateId))
+                }
 
-            is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
-                navigator.navigate(Routes.checklistHistoryScreen(value.templateId))
-            }
+                is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
+                    navigator.navigate(Routes.checklistHistoryScreen(it.templateId))
+                }
 
-            is ChecklistCatalogEffect.NavigateToNewTemplate -> {
-                navigator.navigate(Routes.newTemplateScreen())
-            }
+                is ChecklistCatalogEffect.NavigateToNewTemplate -> {
+                    navigator.navigate(Routes.newTemplateScreen())
+                }
 
-            is ChecklistCatalogEffect.NavigateToPaymentScreen -> {
-                navigator.navigate(Routes.paymentScreen())
-            }
+                is ChecklistCatalogEffect.NavigateToPaymentScreen -> {
+                    navigator.navigate(Routes.paymentScreen())
+                }
 
-            is ChecklistCatalogEffect.NavigateToAboutScreen -> {
-                navigator.navigate(Routes.aboutScreen())
-            }
+                is ChecklistCatalogEffect.NavigateToAboutScreen -> {
+                    navigator.navigate(Routes.aboutScreen())
+                }
 
-            is ChecklistCatalogEffect.ShowUnassignedPaymentDialog -> {
-                showUnassignedPaymentDialog = true
-            }
+                is ChecklistCatalogEffect.ShowUnassignedPaymentDialog -> {
+                    showUnassignedPaymentDialog = true
+                }
 
-            is ChecklistCatalogEffect.NavigateToAccountScreen -> {
-                navigator.navigate(Routes.accountScreen())
+                is ChecklistCatalogEffect.NavigateToAccountScreen -> {
+                    navigator.navigate(Routes.accountScreen())
+                }
             }
-
-            null -> Unit
         }
     }
 

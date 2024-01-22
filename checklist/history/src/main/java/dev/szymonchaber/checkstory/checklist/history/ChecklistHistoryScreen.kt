@@ -85,13 +85,13 @@ private fun ChecklistHistoryView(
 ) {
     val state by viewModel.state.collectAsState()
 
-    val effect by viewModel.effect.collectAsState(initial = null)
-    LaunchedEffect(effect) {
-        when (val value = effect) {
-            is ChecklistHistoryEffect.NavigateToFillChecklistScreen -> {
-                navigator.navigate(Routes.editChecklistScreen(value.checklistId))
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
+            when (it) {
+                is ChecklistHistoryEffect.NavigateToFillChecklistScreen -> {
+                    navigator.navigate(Routes.editChecklistScreen(it.checklistId))
+                }
             }
-            null -> Unit
         }
     }
     when (val loadingState = state.loadingState) {
