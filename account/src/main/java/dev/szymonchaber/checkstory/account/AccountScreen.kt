@@ -96,6 +96,7 @@ fun AccountScreen(
                                         .build()
                                 )
                             )
+                            .setTheme(DesignR.style.Theme_Checkstory)
                             .setTosAndPrivacyPolicyUrls(
                                 termsOfServiceUrl,
                                 privacyPolicyUrl,
