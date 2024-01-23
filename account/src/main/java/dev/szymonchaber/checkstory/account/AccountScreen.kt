@@ -87,9 +87,15 @@ fun AccountScreen(
                     is AccountEffect.StartAuthUi -> {
                         val signInIntent = AuthUI.getInstance()
                             .createSignInIntentBuilder()
-                            .setIsSmartLockEnabled(false)
-                            .setIsSmartLockEnabled(false, false)
-                            .setAvailableProviders(listOf(AuthUI.IdpConfig.EmailBuilder().build()))
+                            .setAvailableProviders(
+                                listOf(
+                                    AuthUI.IdpConfig.EmailBuilder()
+                                        .setRequireName(false)
+                                        // TODO disallow for login / split login & registration and force a purchase?
+                                        .setAllowNewAccounts(true)
+                                        .build()
+                                )
+                            )
                             .setTosAndPrivacyPolicyUrls(
                                 termsOfServiceUrl,
                                 privacyPolicyUrl,
