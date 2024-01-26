@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -38,12 +37,10 @@ class AccountViewModel @Inject constructor(
     private val firebaseAuth by lazy { Firebase.auth }
 
     override fun buildMviFlow(eventFlow: Flow<AccountEvent>): Flow<Pair<AccountState?, AccountEffect?>> {
-        return merge( // TODO this could be made into a dsl like on<AccountEvent.LoadAccount>.flatMap... etc. maybe?
+        return merge(
             eventFlow.handleLoadAccount(),
             eventFlow.handleTriggerPartialRegistration(),
             eventFlow.handleFirebaseLoginClicked(),
-            eventFlow.handleLoginClicked(),
-            eventFlow.handleRegisterClicked(),
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
             eventFlow.handleFirebaseResultReceived()
@@ -92,64 +89,6 @@ class AccountViewModel @Inject constructor(
             .mapWithState { state, _ ->
                 logoutUseCase.logoutIgnoringUnsynchronizedData()
                 state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
-            }
-    }
-
-    private fun Flow<AccountEvent>.handleLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.LoginClicked>()
-            .withState()
-            .flatMapLatest { (state, it) ->
-                flow {
-                    emit(state.copy(accountLoadingState = AccountLoadingState.Loading) to null)
-                    emit(
-                        try {
-                            firebaseAuth.signInWithEmailAndPassword(it.email, it.password).await()
-                            if (state.partialAuthRequested) {
-                                state to AccountEffect.ExitWithAuthResult(true)
-                            } else {
-                                loginUseCase.login()
-                                    .fold(
-                                        mapError = {
-                                            Timber.e(it.toString())
-                                            state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
-                                        },
-                                        mapSuccess = {
-                                            state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
-                                        }
-                                    )
-                            }
-                        } catch (exception: Exception) {
-                            val event = selectAuthErrorEvent(state)
-                            state.copy(accountLoadingState = AccountLoadingState.Success(User.Guest())) to event
-                        }
-                    )
-                }
-            }
-    }
-
-    private fun Flow<AccountEvent>.handleRegisterClicked(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.RegisterClicked>()
-            .withState()
-            .flatMapLatest { (state, event) ->
-                flow {
-                    emit(state.copy(accountLoadingState = AccountLoadingState.Loading) to null)
-                    emit(
-                        try {
-                            firebaseAuth.signOut()
-                            firebaseAuth.createUserWithEmailAndPassword(event.email, event.password).await()
-                            if (state.partialAuthRequested) {
-                                state to AccountEffect.ExitWithAuthResult(true)
-                            } else {
-                                register(state)
-                            }
-                        } catch (exception: Exception) {
-                            Timber.e(exception)
-                            state.copy(accountLoadingState = AccountLoadingState.Success(User.Guest())) to selectAuthErrorEvent(
-                                state
-                            )
-                        }
-                    )
-                }
             }
     }
 

@@ -4,12 +4,10 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -17,13 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.AuthUI
@@ -168,22 +162,6 @@ fun AccountView(
                 Button(onClick = { onEvent(AccountEvent.FirebaseLoginClicked) }) {
                     Text(text = "Login")
                 }
-                var email by remember { mutableStateOf("") }
-                var password by remember { mutableStateOf("") }
-                TextField(
-                    value = email,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    onValueChange = { email = it })
-                TextField(
-                    value = password,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    onValueChange = { password = it })
-                RegisterButton {
-                    onEvent(AccountEvent.RegisterClicked(email, password))
-                }
-                LoginButton {
-                    onEvent(AccountEvent.LoginClicked(email, password))
-                }
             }
 
             is User.LoggedIn -> {
@@ -199,19 +177,5 @@ fun LogoutButton(onEvent: (AccountEvent) -> Unit) {
         onEvent(AccountEvent.LogoutClicked)
     }) {
         Text("Logout")
-    }
-}
-
-@Composable
-private fun LoginButton(onClick: () -> Unit) {
-    Button(onClick = onClick) {
-        Text("Login with Firebase")
-    }
-}
-
-@Composable
-private fun RegisterButton(onClick: () -> Unit) {
-    Button(onClick = onClick) {
-        Text("Register with Firebase")
     }
 }
