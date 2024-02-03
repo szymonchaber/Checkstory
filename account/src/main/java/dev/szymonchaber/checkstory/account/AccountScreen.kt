@@ -12,12 +12,16 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.AuthUI
@@ -25,8 +29,11 @@ import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
+import dev.szymonchaber.checkstory.design.ActiveUser
+import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
+import dev.szymonchaber.checkstory.domain.model.Tier
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.design.R as DesignR
 
@@ -106,14 +113,16 @@ fun AccountScreen(
             }
     }
 
-    FillChecklistScaffold(viewModel, state, navigator)
+    AccountScaffold(state, viewModel::onEvent) {
+        navigator.navigateBack()
+    }
 }
 
 @Composable
-private fun FillChecklistScaffold(
-    viewModel: AccountViewModel,
+private fun AccountScaffold(
     state: AccountState,
-    navigator: ResultBackNavigator<Boolean>
+    onEvent: (AccountEvent) -> Unit,
+    onBackClicked: () -> Unit
 ) {
     AdvertScaffold(
         topBar = {
@@ -122,9 +131,7 @@ private fun FillChecklistScaffold(
                     Text(text = "Account")
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        navigator.navigateBack()
-                    }) {
+                    IconButton(onClick = onBackClicked) {
                         Icon(Icons.Filled.ArrowBack, "")
                     }
                 },
@@ -138,7 +145,7 @@ private fun FillChecklistScaffold(
                 }
 
                 is AccountLoadingState.Success -> {
-                    AccountView(loadingState, viewModel::onEvent)
+                    AccountView(loadingState, onEvent)
                 }
             }
         },
@@ -179,3 +186,42 @@ fun LogoutButton(onEvent: (AccountEvent) -> Unit) {
         Text("Logout")
     }
 }
+
+@Preview
+@Composable
+fun AgeEstimationPreview(
+    @PreviewParameter(AccountStateProvider::class) state: AccountState,
+) {
+    CheckstoryTheme {
+        CompositionLocalProvider(
+            ActiveUser provides User.Guest(false)
+        ) {
+            AccountScaffold(state = state, onEvent = {}, onBackClicked = {})
+        }
+    }
+}
+
+private class AccountStateProvider : CollectionPreviewParameterProvider<AccountState>(
+    listOf(
+        AccountState(
+            accountLoadingState = AccountLoadingState.Loading,
+            partialAuthRequested = false
+        ),
+        AccountState(
+            accountLoadingState = AccountLoadingState.Success(User.Guest(false)),
+            partialAuthRequested = false
+        ),
+//        AccountState(
+//            accountLoadingState = AccountLoadingState.Success(User.Guest(true)),
+//            partialAuthRequested = false
+//        ),
+        AccountState(
+            accountLoadingState = AccountLoadingState.Success(User.LoggedIn(Tier.FREE)),
+            partialAuthRequested = false
+        ),
+        AccountState(
+            accountLoadingState = AccountLoadingState.Success(User.LoggedIn(Tier.PAID)),
+            partialAuthRequested = false
+        ),
+    ),
+)
