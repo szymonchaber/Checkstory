@@ -14,5 +14,5 @@ sealed class AccountEvent {
 
     data class FirebaseResultReceived(val response: IdpResponse) : AccountEvent()
 
-    data object FirebaseLoginClicked : AccountEvent()
+    data object LoginClicked : AccountEvent()
 }

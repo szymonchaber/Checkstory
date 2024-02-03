@@ -62,7 +62,7 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.FirebaseLoginClicked>()
+        return filterIsInstance<AccountEvent.LoginClicked>()
             .mapWithState { state, _ ->
                 state to AccountEffect.StartAuthUi()
             }

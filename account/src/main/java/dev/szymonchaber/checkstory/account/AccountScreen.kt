@@ -2,11 +2,18 @@ package dev.szymonchaber.checkstory.account
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -17,8 +24,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
@@ -157,34 +167,99 @@ fun AccountView(
     accountState: AccountLoadingState.Success,
     onEvent: (AccountEvent) -> Unit
 ) {
-    Column(Modifier.padding(16.dp)) {
-        Text(
-            when (accountState.user) {
-                is User.Guest -> "Not logged in"
-                is User.LoggedIn -> "Logged in"
-            }
-        )
-        when (accountState.user) {
-            is User.Guest -> {
-                Button(onClick = { onEvent(AccountEvent.FirebaseLoginClicked) }) {
-                    Text(text = "Login")
-                }
-            }
+    when (accountState.user) {
+        is User.Guest -> {
+            GuestContent(onEvent)
+        }
 
-            is User.LoggedIn -> {
-                LogoutButton(onEvent)
+        is User.LoggedIn -> {
+            LoggedInContent(accountState.user, onEvent)
+        }
+    }
+}
+
+@Composable
+private fun GuestContent(onEvent: (AccountEvent) -> Unit) {
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .padding(16.dp)
+        ) {
+            SectionHeader("Account")
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Just starting out?")
+            Spacer(modifier = Modifier.height(4.dp))
+            Button(onClick = { onEvent(AccountEvent.LoginClicked) }) {
+                Text(text = "Sign up for Checkstory SERIOUS")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row {
+                Text("Continue ")
+                Text("right", fontStyle = FontStyle.Italic)
+                Text(" where you left off")
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedButton(onClick = { onEvent(AccountEvent.LoginClicked) }) {
+                Text(text = "Login")
             }
         }
     }
 }
 
 @Composable
-fun LogoutButton(onEvent: (AccountEvent) -> Unit) {
-    Button(onClick = {
-        onEvent(AccountEvent.LogoutClicked)
-    }) {
-        Text("Logout")
+private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit) {
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .padding(16.dp),
+        ) {
+            SectionHeader("Account")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Logged in")
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedButton(onClick = {
+                onEvent(AccountEvent.LogoutClicked)
+            }) {
+                Text("Logout")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionHeader(text = "Subscription")
+            Spacer(modifier = Modifier.height(8.dp))
+
+            when (user.tier) {
+                Tier.FREE -> {
+                    Text("You are a Checkstory Begin user")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Button(onClick = { /*TODO*/ }) {
+                        Text("Get SERIOUS")
+                    }
+                }
+
+                Tier.PAID -> {
+                    Text("You are a SERIOUS user. Thank you!")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedButton(onClick = { /*TODO*/ }) {
+                        Text("Manage subscription")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(64.dp))
+            SectionHeader(text = "Eternal consequences")
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedButton(
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                onClick = {
+                    onEvent(AccountEvent.LogoutClicked)
+                }) {
+                Text("Delete account (forever)")
+            }
+        }
     }
+}
+
+@Composable
+private fun SectionHeader(text: String) {
+    Text(text = text, fontWeight = FontWeight.Bold)
 }
 
 @Preview
