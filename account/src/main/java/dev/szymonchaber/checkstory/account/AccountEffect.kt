@@ -10,4 +10,6 @@ sealed interface AccountEffect {
     data class ExitWithAuthResult(val isSuccess: Boolean) : AccountEffect
 
     class StartAuthUi : AccountEffect
+
+    data object NavigateToSubscriptionManagement : AccountEffect
 }

@@ -43,7 +43,8 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleFirebaseLoginClicked(),
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
-            eventFlow.handleFirebaseResultReceived()
+            eventFlow.handleFirebaseResultReceived(),
+            eventFlow.handleManageSubscriptionsClicked()
         )
     }
 
@@ -51,6 +52,13 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.LoadAccount>() // TODO this could be combined with a map & a flatMap
             .map {
                 AccountState(AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser()), false) to null
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleManageSubscriptionsClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.ManageSubscriptionsClicked>()
+            .map {
+                _state.value to AccountEffect.NavigateToSubscriptionManagement
             }
     }
 

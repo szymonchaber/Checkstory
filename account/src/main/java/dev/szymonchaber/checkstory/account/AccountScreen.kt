@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.account
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
@@ -118,6 +120,12 @@ fun AccountScreen(
 
                     is AccountEffect.ExitWithAuthResult -> {
                         navigator.navigateBack(result = value.isSuccess)
+                    }
+
+                    AccountEffect.NavigateToSubscriptionManagement -> {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, "https://play.google.com/store/account/subscriptions".toUri())
+                        )
                     }
                 }
             }
@@ -238,8 +246,10 @@ private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit
                 Tier.PAID -> {
                     Text("You are a SERIOUS user. Thank you!")
                     Spacer(modifier = Modifier.height(4.dp))
-                    OutlinedButton(onClick = { /*TODO*/ }) {
-                        Text("Manage subscription")
+                    OutlinedButton(onClick = {
+                        onEvent(AccountEvent.ManageSubscriptionsClicked)
+                    }) {
+                        Text("Manage subscriptions")
                     }
                 }
             }
