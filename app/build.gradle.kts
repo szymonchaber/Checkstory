@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "dev.szymonchaber.checkstory"
         minSdk = 24
-        targetSdk = 31
+        targetSdk = 33
         versionCode = 46
         versionName = "1.6.0"
 
