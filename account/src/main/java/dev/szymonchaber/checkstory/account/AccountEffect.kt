@@ -1,15 +1,16 @@
 package dev.szymonchaber.checkstory.account
 
-@Suppress("CanSealedSubClassBeObject")
 sealed interface AccountEffect {
 
-    class ShowLoginNetworkError : AccountEffect
+    data object ShowLoginNetworkError : AccountEffect
 
-    class ShowDataNotSynchronized : AccountEffect
+    data object ShowDataNotSynchronized : AccountEffect
 
     data class ExitWithAuthResult(val isSuccess: Boolean) : AccountEffect
 
-    class StartAuthUi : AccountEffect
+    data object StartAuthUi : AccountEffect
+
+    data object NavigateToPurchaseScreen : AccountEffect
 
     data object NavigateToSubscriptionManagement : AccountEffect
 }

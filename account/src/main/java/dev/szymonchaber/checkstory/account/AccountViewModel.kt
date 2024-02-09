@@ -44,7 +44,8 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
             eventFlow.handleFirebaseResultReceived(),
-            eventFlow.handleManageSubscriptionsClicked()
+            eventFlow.handleManageSubscriptionsClicked(),
+            eventFlow.handleSignUpClicked()
         )
     }
 
@@ -62,17 +63,24 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleTriggerPartialRegistration(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleTriggerPartialRegistration(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.TriggerPartialRegistration>()
             .map {
-                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi()
+                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi
             }
     }
 
     private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoginClicked>()
             .mapWithState { state, _ ->
-                state to AccountEffect.StartAuthUi()
+                state to AccountEffect.StartAuthUi
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleSignUpClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.SignUpClicked>()
+            .mapWithState { state, _ ->
+                state to AccountEffect.NavigateToPurchaseScreen
             }
     }
 
@@ -86,7 +94,7 @@ class AccountViewModel @Inject constructor(
                     }
 
                     LogoutResult.UnsynchronizedCommandsPresent -> {
-                        _state.value to AccountEffect.ShowDataNotSynchronized()
+                        _state.value to AccountEffect.ShowDataNotSynchronized
                     }
                 }
             }
@@ -143,7 +151,7 @@ class AccountViewModel @Inject constructor(
         return if (state.partialAuthRequested) {
             AccountEffect.ExitWithAuthResult(false)
         } else {
-            AccountEffect.ShowLoginNetworkError()
+            AccountEffect.ShowLoginNetworkError
         }
     }
 
@@ -152,7 +160,7 @@ class AccountViewModel @Inject constructor(
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
                     state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
@@ -165,7 +173,7 @@ class AccountViewModel @Inject constructor(
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
                     state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null

@@ -39,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.ActiveUser
@@ -47,6 +48,7 @@ import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.Tier
 import dev.szymonchaber.checkstory.domain.model.User
+import dev.szymonchaber.checkstory.navigation.Routes
 import dev.szymonchaber.checkstory.design.R as DesignR
 
 @Destination(
@@ -56,17 +58,11 @@ import dev.szymonchaber.checkstory.design.R as DesignR
 @Composable
 fun AccountScreen(
     navigator: ResultBackNavigator<Boolean>,
+    destinationsNavigator: DestinationsNavigator,
     triggerPartialRegistration: Boolean = false
 ) {
     trackScreenName("account")
     val viewModel = hiltViewModel<AccountViewModel>()
-    LaunchedEffect(triggerPartialRegistration) {
-        if (triggerPartialRegistration) {
-            viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
-        } else {
-            viewModel.onEvent(AccountEvent.LoadAccount)
-        }
-    }
 
     val firebaseAuthLauncher = rememberLauncherForActivityResult(
         FirebaseAuthUIActivityResultContract()
@@ -97,7 +93,7 @@ fun AccountScreen(
                             .show()
                     }
 
-                    is AccountEffect.StartAuthUi -> {
+                    AccountEffect.StartAuthUi -> {
                         val signInIntent = AuthUI.getInstance()
                             .createSignInIntentBuilder()
                             .setAvailableProviders(
@@ -122,6 +118,10 @@ fun AccountScreen(
                         navigator.navigateBack(result = value.isSuccess)
                     }
 
+                    AccountEffect.NavigateToPurchaseScreen -> {
+                        destinationsNavigator.navigate(Routes.paymentScreen())
+                    }
+
                     AccountEffect.NavigateToSubscriptionManagement -> {
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW, "https://play.google.com/store/account/subscriptions".toUri())
@@ -129,6 +129,14 @@ fun AccountScreen(
                     }
                 }
             }
+    }
+
+    LaunchedEffect(triggerPartialRegistration) {
+        if (triggerPartialRegistration) {
+            viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
+        } else {
+            viewModel.onEvent(AccountEvent.LoadAccount)
+        }
     }
 
     AccountScaffold(state, viewModel::onEvent) {
@@ -197,7 +205,11 @@ private fun GuestContent(onEvent: (AccountEvent) -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
             Text("Just starting out?")
             Spacer(modifier = Modifier.height(4.dp))
-            Button(onClick = { onEvent(AccountEvent.LoginClicked) }) {
+            Button(
+                onClick = {
+                    onEvent(AccountEvent.SignUpClicked)
+                }
+            ) {
                 Text(text = "Sign up for Checkstory SERIOUS")
             }
             Spacer(modifier = Modifier.height(16.dp))
