@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.fold
+import dev.szymonchaber.checkstory.domain.usecase.DeleteAccountUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LogoutResult
@@ -29,7 +30,8 @@ class AccountViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val registerUseCase: RegisterUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    private val logoutUseCase: LogoutUseCase
+    private val logoutUseCase: LogoutUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase
 ) : BaseViewModel<AccountEvent, AccountState, AccountEffect>(
     AccountState.initial
 ) {
@@ -45,7 +47,8 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
             eventFlow.handleFirebaseResultReceived(),
             eventFlow.handleManageSubscriptionsClicked(),
-            eventFlow.handleSignUpClicked()
+            eventFlow.handleSignUpClicked(),
+            eventFlow.handleDeleteAccountClicked()
         )
     }
 
@@ -104,6 +107,15 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.LogoutDespiteUnsynchronizedDataClicked>()
             .mapWithState { state, _ ->
                 logoutUseCase.logoutIgnoringUnsynchronizedData()
+                state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleDeleteAccountClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.DeleteAccountClicked>()
+            .mapWithState { state, _ ->
+                deleteAccountUseCase.deleteAccount()
+                firebaseAuth.signOut()
                 state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
             }
     }

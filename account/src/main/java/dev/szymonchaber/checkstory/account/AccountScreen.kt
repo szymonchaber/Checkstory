@@ -271,7 +271,7 @@ private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit
             OutlinedButton(
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
                 onClick = {
-                    onEvent(AccountEvent.LogoutClicked)
+                    onEvent(AccountEvent.DeleteAccountClicked)
                 }) {
                 Text("Delete account (forever)")
             }

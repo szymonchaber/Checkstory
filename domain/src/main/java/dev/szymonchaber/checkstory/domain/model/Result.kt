@@ -5,7 +5,7 @@ sealed class Result<Error, Data> {
     data class Success<Error, Data>(val data: Data) : Result<Error, Data>()
     data class Error<Error, Data>(val error: Error) : Result<Error, Data>()
 
-    fun <T> mapSuccess(function: (Data) -> T): Result<Error, T> {
+    inline fun <T> mapSuccess(function: (Data) -> T): Result<Error, T> {
         return when (this) {
             is Success -> {
                 success(function(this.data))
