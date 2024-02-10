@@ -59,7 +59,8 @@ import dev.szymonchaber.checkstory.design.R as DesignR
 fun AccountScreen(
     navigator: ResultBackNavigator<Boolean>,
     destinationsNavigator: DestinationsNavigator,
-    triggerPartialRegistration: Boolean = false
+    triggerPartialRegistration: Boolean = false,
+    triggerSignIn: Boolean = false,
 ) {
     trackScreenName("account")
     val viewModel = hiltViewModel<AccountViewModel>()
@@ -79,7 +80,7 @@ fun AccountScreen(
     LaunchedEffect(Unit) {
         viewModel.effect
             .collect { effect ->
-                when (val value = effect) {
+                when (effect) {
                     is AccountEffect.ShowLoginNetworkError -> {
                         Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
                     }
@@ -93,7 +94,7 @@ fun AccountScreen(
                             .show()
                     }
 
-                    AccountEffect.StartAuthUi -> {
+                    is AccountEffect.StartAuthUi -> {
                         val signInIntent = AuthUI.getInstance()
                             .createSignInIntentBuilder()
                             .setAvailableProviders(
@@ -101,9 +102,13 @@ fun AccountScreen(
                                     AuthUI.IdpConfig.EmailBuilder()
                                         .setRequireName(false)
                                         // TODO disallow for login / split login & registration and force a purchase?
-                                        .setAllowNewAccounts(true)
+                                        .setAllowNewAccounts(effect.allowNewAccounts)
                                         .build()
                                 )
+                            )
+                            .setIsSmartLockEnabled(
+                                /* enableCredentials = */ false,
+                                /* enableHints = */ true
                             )
                             .setTheme(DesignR.style.Theme_Checkstory)
                             .setTosAndPrivacyPolicyUrls(
@@ -115,7 +120,7 @@ fun AccountScreen(
                     }
 
                     is AccountEffect.ExitWithAuthResult -> {
-                        navigator.navigateBack(result = value.isSuccess)
+                        navigator.navigateBack(result = effect.isSuccess)
                     }
 
                     AccountEffect.NavigateToPurchaseScreen -> {
@@ -131,11 +136,19 @@ fun AccountScreen(
             }
     }
 
-    LaunchedEffect(triggerPartialRegistration) {
-        if (triggerPartialRegistration) {
-            viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
-        } else {
-            viewModel.onEvent(AccountEvent.LoadAccount)
+    LaunchedEffect(triggerPartialRegistration, triggerSignIn) {
+        when {
+            triggerPartialRegistration -> {
+                viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
+            }
+
+            triggerSignIn -> {
+                viewModel.onEvent(AccountEvent.TriggerSignIn)
+            }
+
+            else -> {
+                viewModel.onEvent(AccountEvent.LoadAccount)
+            }
         }
     }
 

@@ -8,7 +8,7 @@ sealed interface AccountEffect {
 
     data class ExitWithAuthResult(val isSuccess: Boolean) : AccountEffect
 
-    data object StartAuthUi : AccountEffect
+    data class StartAuthUi(val allowNewAccounts: Boolean) : AccountEffect
 
     data object NavigateToPurchaseScreen : AccountEffect
 

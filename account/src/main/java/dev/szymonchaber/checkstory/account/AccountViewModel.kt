@@ -48,7 +48,8 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleFirebaseResultReceived(),
             eventFlow.handleManageSubscriptionsClicked(),
             eventFlow.handleSignUpClicked(),
-            eventFlow.handleDeleteAccountClicked()
+            eventFlow.handleDeleteAccountClicked(),
+            eventFlow.handleTriggerSignIn()
         )
     }
 
@@ -69,14 +70,21 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleTriggerPartialRegistration(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.TriggerPartialRegistration>()
             .map {
-                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi
+                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi(true)
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleTriggerSignIn(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.TriggerSignIn>()
+            .map {
+                _state.value to AccountEffect.StartAuthUi(true)
             }
     }
 
     private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoginClicked>()
             .mapWithState { state, _ ->
-                state to AccountEffect.StartAuthUi
+                state to AccountEffect.StartAuthUi(false)
             }
     }
 

@@ -175,7 +175,11 @@ private fun ChecklistCatalogView(
                 }
 
                 is ChecklistCatalogEffect.NavigateToAccountScreen -> {
-                    navigator.navigate(Routes.accountScreen())
+                    navigator.navigate(
+                        Routes.accountScreen(
+                            triggerSignIn = it.triggerRegistration
+                        )
+                    )
                 }
             }
         }
