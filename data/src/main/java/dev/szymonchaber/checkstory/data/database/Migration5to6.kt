@@ -28,7 +28,7 @@ class Migration5to6(
             name = "ChecklistTemplateEntity",
             columnsToCreate = "`id` BLOB NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`id`)",
             columnsToInsert = "id, title, description, createdAt",
-            dataSourceColumns = "uuid, title, description, createdAt"
+            dataSourceColumns = "$checklisTemplateUuidColumn, title, description, createdAt"
         )
     }
 
@@ -129,7 +129,7 @@ class Migration5to6(
             name = "ChecklistEntity",
             columnsToCreate = "`checklistId` BLOB NOT NULL, `templateId` BLOB NOT NULL, notes TEXT NOT NULL, createdAt INTEGER NOT NULL, PRIMARY KEY(`checklistId`)",
             columnsToInsert = "checklistId, templateId, notes, createdAt",
-            dataSourceColumns = "uuid, template_uuid, notes, createdAt"
+            dataSourceColumns = "$checklistUuidColumn, template_uuid, notes, createdAt"
         )
     }
 
