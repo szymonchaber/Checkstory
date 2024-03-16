@@ -7,6 +7,7 @@ import dev.szymonchaber.checkstory.api.auth.model.RegisterPayload
 import dev.szymonchaber.checkstory.api.di.ConfiguredHttpClient
 import dev.szymonchaber.checkstory.domain.model.Result
 import dev.szymonchaber.checkstory.domain.model.User
+import dev.szymonchaber.checkstory.domain.usecase.DeleteAccountError
 import dev.szymonchaber.checkstory.domain.usecase.LoginError
 import dev.szymonchaber.checkstory.domain.usecase.RegisterError
 import io.ktor.client.call.body
@@ -45,6 +46,15 @@ internal class AuthApi @Inject constructor(private val client: ConfiguredHttpCli
             )
         } catch (exception: Exception) {
             Result.error(RegisterError.NetworkError(exception))
+        }
+    }
+
+    suspend fun deleteAccount(): Result<DeleteAccountError, Unit> {
+        return try {
+            client.post("/auth/delete")
+            Result.success(Unit)
+        } catch (exception: Exception) {
+            Result.error(DeleteAccountError.NetworkError(exception))
         }
     }
 }

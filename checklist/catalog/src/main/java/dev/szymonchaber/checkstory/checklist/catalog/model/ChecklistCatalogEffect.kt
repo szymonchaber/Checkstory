@@ -3,7 +3,6 @@ package dev.szymonchaber.checkstory.checklist.catalog.model
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 
-@Suppress("CanSealedSubClassBeObject")
 sealed interface ChecklistCatalogEffect {
 
     data class CreateAndNavigateToChecklist(val basedOn: TemplateId) :
@@ -15,15 +14,15 @@ sealed interface ChecklistCatalogEffect {
 
     data class NavigateToTemplateHistory(val templateId: TemplateId) : ChecklistCatalogEffect
 
-    class NavigateToNewTemplate : ChecklistCatalogEffect
+    data object NavigateToNewTemplate : ChecklistCatalogEffect
 
-    class NavigateToPaymentScreen : ChecklistCatalogEffect
+    data object NavigateToPaymentScreen : ChecklistCatalogEffect
 
-    class NavigateToAboutScreen : ChecklistCatalogEffect
+    data object NavigateToAboutScreen : ChecklistCatalogEffect
 
-    class NavigateToOnboarding : ChecklistCatalogEffect
+    data object NavigateToOnboarding : ChecklistCatalogEffect
 
-    class ShowUnassignedPaymentDialog : ChecklistCatalogEffect
+    data object ShowUnassignedPaymentDialog : ChecklistCatalogEffect
 
-    class NavigateToAccountScreen : ChecklistCatalogEffect
+    data class NavigateToAccountScreen(val triggerRegistration: Boolean) : ChecklistCatalogEffect
 }

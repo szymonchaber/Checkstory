@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.fold
+import dev.szymonchaber.checkstory.domain.usecase.DeleteAccountUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LogoutResult
@@ -29,7 +30,8 @@ class AccountViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val registerUseCase: RegisterUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
-    private val logoutUseCase: LogoutUseCase
+    private val logoutUseCase: LogoutUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase
 ) : BaseViewModel<AccountEvent, AccountState, AccountEffect>(
     AccountState.initial
 ) {
@@ -43,7 +45,11 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleFirebaseLoginClicked(),
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
-            eventFlow.handleFirebaseResultReceived()
+            eventFlow.handleFirebaseResultReceived(),
+            eventFlow.handleManageSubscriptionsClicked(),
+            eventFlow.handleSignUpClicked(),
+            eventFlow.handleDeleteAccountClicked(),
+            eventFlow.handleTriggerSignIn()
         )
     }
 
@@ -54,17 +60,38 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleTriggerPartialRegistration(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleManageSubscriptionsClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.ManageSubscriptionsClicked>()
+            .map {
+                _state.value to AccountEffect.NavigateToSubscriptionManagement
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleTriggerPartialRegistration(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.TriggerPartialRegistration>()
             .map {
-                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi()
+                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi(true)
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleTriggerSignIn(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.TriggerSignIn>()
+            .map {
+                _state.value to AccountEffect.StartAuthUi(true)
             }
     }
 
     private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.FirebaseLoginClicked>()
+        return filterIsInstance<AccountEvent.LoginClicked>()
             .mapWithState { state, _ ->
-                state to AccountEffect.StartAuthUi()
+                state to AccountEffect.StartAuthUi(false)
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleSignUpClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.SignUpClicked>()
+            .mapWithState { state, _ ->
+                state to AccountEffect.NavigateToPurchaseScreen
             }
     }
 
@@ -78,7 +105,7 @@ class AccountViewModel @Inject constructor(
                     }
 
                     LogoutResult.UnsynchronizedCommandsPresent -> {
-                        _state.value to AccountEffect.ShowDataNotSynchronized()
+                        _state.value to AccountEffect.ShowDataNotSynchronized
                     }
                 }
             }
@@ -88,6 +115,15 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.LogoutDespiteUnsynchronizedDataClicked>()
             .mapWithState { state, _ ->
                 logoutUseCase.logoutIgnoringUnsynchronizedData()
+                state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleDeleteAccountClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.DeleteAccountClicked>()
+            .mapWithState { state, _ ->
+                deleteAccountUseCase.deleteAccount()
+                firebaseAuth.signOut()
                 state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
             }
     }
@@ -135,7 +171,7 @@ class AccountViewModel @Inject constructor(
         return if (state.partialAuthRequested) {
             AccountEffect.ExitWithAuthResult(false)
         } else {
-            AccountEffect.ShowLoginNetworkError()
+            AccountEffect.ShowLoginNetworkError
         }
     }
 
@@ -144,7 +180,7 @@ class AccountViewModel @Inject constructor(
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
                     state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
@@ -157,7 +193,7 @@ class AccountViewModel @Inject constructor(
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError()
+                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
                     state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null

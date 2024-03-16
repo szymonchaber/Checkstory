@@ -1,12 +1,20 @@
 package dev.szymonchaber.checkstory.account
 
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -17,16 +25,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.ActiveUser
@@ -35,6 +48,7 @@ import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.domain.model.Tier
 import dev.szymonchaber.checkstory.domain.model.User
+import dev.szymonchaber.checkstory.navigation.Routes
 import dev.szymonchaber.checkstory.design.R as DesignR
 
 @Destination(
@@ -44,17 +58,12 @@ import dev.szymonchaber.checkstory.design.R as DesignR
 @Composable
 fun AccountScreen(
     navigator: ResultBackNavigator<Boolean>,
-    triggerPartialRegistration: Boolean = false
+    destinationsNavigator: DestinationsNavigator,
+    triggerPartialRegistration: Boolean = false,
+    triggerSignIn: Boolean = false,
 ) {
     trackScreenName("account")
     val viewModel = hiltViewModel<AccountViewModel>()
-    LaunchedEffect(triggerPartialRegistration) {
-        if (triggerPartialRegistration) {
-            viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
-        } else {
-            viewModel.onEvent(AccountEvent.LoadAccount)
-        }
-    }
 
     val firebaseAuthLauncher = rememberLauncherForActivityResult(
         FirebaseAuthUIActivityResultContract()
@@ -71,7 +80,7 @@ fun AccountScreen(
     LaunchedEffect(Unit) {
         viewModel.effect
             .collect { effect ->
-                when (val value = effect) {
+                when (effect) {
                     is AccountEffect.ShowLoginNetworkError -> {
                         Toast.makeText(context, "Authentication failed.", Toast.LENGTH_SHORT).show()
                     }
@@ -93,9 +102,13 @@ fun AccountScreen(
                                     AuthUI.IdpConfig.EmailBuilder()
                                         .setRequireName(false)
                                         // TODO disallow for login / split login & registration and force a purchase?
-                                        .setAllowNewAccounts(true)
+                                        .setAllowNewAccounts(effect.allowNewAccounts)
                                         .build()
                                 )
+                            )
+                            .setIsSmartLockEnabled(
+                                /* enableCredentials = */ false,
+                                /* enableHints = */ true
                             )
                             .setTheme(DesignR.style.Theme_Checkstory)
                             .setTosAndPrivacyPolicyUrls(
@@ -107,10 +120,36 @@ fun AccountScreen(
                     }
 
                     is AccountEffect.ExitWithAuthResult -> {
-                        navigator.navigateBack(result = value.isSuccess)
+                        navigator.navigateBack(result = effect.isSuccess)
+                    }
+
+                    AccountEffect.NavigateToPurchaseScreen -> {
+                        destinationsNavigator.navigate(Routes.paymentScreen())
+                    }
+
+                    AccountEffect.NavigateToSubscriptionManagement -> {
+                        context.startActivity(
+                            Intent(Intent.ACTION_VIEW, "https://play.google.com/store/account/subscriptions".toUri())
+                        )
                     }
                 }
             }
+    }
+
+    LaunchedEffect(triggerPartialRegistration, triggerSignIn) {
+        when {
+            triggerPartialRegistration -> {
+                viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
+            }
+
+            triggerSignIn -> {
+                viewModel.onEvent(AccountEvent.TriggerSignIn)
+            }
+
+            else -> {
+                viewModel.onEvent(AccountEvent.LoadAccount)
+            }
+        }
     }
 
     AccountScaffold(state, viewModel::onEvent) {
@@ -157,34 +196,105 @@ fun AccountView(
     accountState: AccountLoadingState.Success,
     onEvent: (AccountEvent) -> Unit
 ) {
-    Column(Modifier.padding(16.dp)) {
-        Text(
-            when (accountState.user) {
-                is User.Guest -> "Not logged in"
-                is User.LoggedIn -> "Logged in"
-            }
-        )
-        when (accountState.user) {
-            is User.Guest -> {
-                Button(onClick = { onEvent(AccountEvent.FirebaseLoginClicked) }) {
-                    Text(text = "Login")
-                }
-            }
+    when (accountState.user) {
+        is User.Guest -> {
+            GuestContent(onEvent)
+        }
 
-            is User.LoggedIn -> {
-                LogoutButton(onEvent)
+        is User.LoggedIn -> {
+            LoggedInContent(accountState.user, onEvent)
+        }
+    }
+}
+
+@Composable
+private fun GuestContent(onEvent: (AccountEvent) -> Unit) {
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .padding(16.dp)
+        ) {
+            SectionHeader("Account")
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Just starting out?")
+            Spacer(modifier = Modifier.height(4.dp))
+            Button(
+                onClick = {
+                    onEvent(AccountEvent.SignUpClicked)
+                }
+            ) {
+                Text(text = "Sign up for Checkstory SERIOUS")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row {
+                Text("Continue ")
+                Text("right", fontStyle = FontStyle.Italic)
+                Text(" where you left off")
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedButton(onClick = { onEvent(AccountEvent.LoginClicked) }) {
+                Text(text = "Login")
             }
         }
     }
 }
 
 @Composable
-fun LogoutButton(onEvent: (AccountEvent) -> Unit) {
-    Button(onClick = {
-        onEvent(AccountEvent.LogoutClicked)
-    }) {
-        Text("Logout")
+private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit) {
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            Modifier
+                .padding(16.dp),
+        ) {
+            SectionHeader("Account")
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Logged in")
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedButton(onClick = {
+                onEvent(AccountEvent.LogoutClicked)
+            }) {
+                Text("Logout")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            SectionHeader(text = "Subscription")
+            Spacer(modifier = Modifier.height(8.dp))
+
+            when (user.tier) {
+                Tier.FREE -> {
+                    Text("You are a Checkstory Begin user")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Button(onClick = { /*TODO*/ }) {
+                        Text("Get SERIOUS")
+                    }
+                }
+
+                Tier.PAID -> {
+                    Text("You are a SERIOUS user. Thank you!")
+                    Spacer(modifier = Modifier.height(4.dp))
+                    OutlinedButton(onClick = {
+                        onEvent(AccountEvent.ManageSubscriptionsClicked)
+                    }) {
+                        Text("Manage subscriptions")
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(64.dp))
+            SectionHeader(text = "Eternal consequences")
+            Spacer(modifier = Modifier.height(4.dp))
+            OutlinedButton(
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                onClick = {
+                    onEvent(AccountEvent.DeleteAccountClicked)
+                }) {
+                Text("Delete account (forever)")
+            }
+        }
     }
+}
+
+@Composable
+private fun SectionHeader(text: String) {
+    Text(text = text, fontWeight = FontWeight.Bold)
 }
 
 @Preview

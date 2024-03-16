@@ -132,28 +132,28 @@ class ChecklistCatalogViewModel @Inject constructor(
     private fun Flow<ChecklistCatalogEvent>.handleGoToOnboarding(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.GoToOnboarding>()
             .map {
-                state.first() to ChecklistCatalogEffect.NavigateToOnboarding()
+                state.first() to ChecklistCatalogEffect.NavigateToOnboarding
             }
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleUnassignedPaymentPresent(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.UnassignedPaymentPresent>()
             .map {
-                state.first() to ChecklistCatalogEffect.ShowUnassignedPaymentDialog()
+                state.first() to ChecklistCatalogEffect.ShowUnassignedPaymentDialog
             }
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleCreateAccountForPaymentClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.CreateAccountForPaymentClicked>()
             .mapLatest {
-                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen()
+                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen(true)
             }
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleAccountClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.AccountClicked>()
             .mapLatest {
-                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen()
+                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen(false)
             }
     }
 
@@ -168,7 +168,7 @@ class ChecklistCatalogViewModel @Inject constructor(
                 val effect = if (canAddChecklistToTemplate(user, event.template)) {
                     ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
                 } else {
-                    ChecklistCatalogEffect.NavigateToPaymentScreen()
+                    ChecklistCatalogEffect.NavigateToPaymentScreen
                 }
                 _state.first() to effect
             }
@@ -213,9 +213,9 @@ class ChecklistCatalogViewModel @Inject constructor(
             .mapLatest { (state, _) ->
                 val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (canAddTemplate(user, state.templates)) {
-                    ChecklistCatalogEffect.NavigateToNewTemplate()
+                    ChecklistCatalogEffect.NavigateToNewTemplate
                 } else {
-                    ChecklistCatalogEffect.NavigateToPaymentScreen()
+                    ChecklistCatalogEffect.NavigateToPaymentScreen
                 }
                 _state.first() to effect
             }
@@ -227,7 +227,7 @@ class ChecklistCatalogViewModel @Inject constructor(
                 tracker.logEvent("catalog_get_pro_option_clicked")
             }
             .mapLatest {
-                _state.first() to ChecklistCatalogEffect.NavigateToPaymentScreen()
+                _state.first() to ChecklistCatalogEffect.NavigateToPaymentScreen
             }
     }
 
@@ -237,7 +237,7 @@ class ChecklistCatalogViewModel @Inject constructor(
                 tracker.logEvent("about_clicked")
             }
             .mapLatest {
-                _state.first() to ChecklistCatalogEffect.NavigateToAboutScreen()
+                _state.first() to ChecklistCatalogEffect.NavigateToAboutScreen
             }
     }
 

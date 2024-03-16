@@ -41,7 +41,10 @@ object Routes {
 
     fun onboardingScreen() = "onboarding_screen"
 
-    fun accountScreen(triggerPartialRegistration: Boolean = false): String {
-        return "account_screen?triggerPartialRegistration=$triggerPartialRegistration"
+    fun accountScreen(
+        triggerPartialRegistration: Boolean = false,
+        triggerSignIn: Boolean = false
+    ): String {
+        return "account_screen?triggerPartialRegistration=$triggerPartialRegistration&triggerSignIn=$triggerSignIn"
     }
 }
