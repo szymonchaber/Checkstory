@@ -20,5 +20,9 @@ gradlePlugin {
             id = "library-config"
             implementationClass = "dev.szymonchaber.checkstory.gradle.LibraryConfig"
         }
+        create("secrets-injection") {
+            id = "secrets-injection"
+            implementationClass = "dev.szymonchaber.checkstory.gradle.SecretsInjection"
+        }
     }
 }

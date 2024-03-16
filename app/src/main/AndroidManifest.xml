@@ -55,7 +55,7 @@
 
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="" />
+            android:value="@string/ads_application_id" />
 
         <receiver android:name=".notifications.ReminderReceiver" />
 

@@ -1,3 +1,5 @@
+import dev.szymonchaber.checkstory.gradle.Secrets.getSecret
+
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
@@ -14,7 +16,7 @@ android {
             buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
         }
         release {
-            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-4513755475495145/3074118228\"")
+            buildConfigField("String", "BANNER_AD_UNIT_ID", getSecret("RELEASE_BANNER_AD_UNIT_ID"))
         }
     }
     buildFeatures {

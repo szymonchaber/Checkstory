@@ -1,3 +1,5 @@
+import dev.szymonchaber.checkstory.gradle.Secrets.getSecret
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,6 +8,7 @@ plugins {
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("com.google.firebase.firebase-perf")
+    id("secrets-injection")
 }
 
 android {
@@ -18,7 +21,7 @@ android {
         minSdk = 24
         targetSdk = 33
         versionCode = 46
-        versionName = "1.6.0"
+        versionName = "2.0.0-alpha01"
 
         resourceConfigurations.add("en")
 
@@ -26,6 +29,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+    }
+
+    defaultConfig {
+        resValue("string", "ads_application_id", getSecret("ADS_APPLICATION_ID"))
     }
 
     buildTypes {
