@@ -266,14 +266,10 @@ private fun EditTemplateScaffold(
                 title = {
                     Text(text = stringResource(titleText))
                 },
-                navigationIcon = if (!isOnboarding) {
-                    {
-                        BackIcon {
-                            viewModel.onEvent(EditTemplateEvent.BackClicked)
-                        }
+                navigationIcon = {
+                    BackIcon {
+                        viewModel.onEvent(EditTemplateEvent.BackClicked)
                     }
-                } else {
-                    null
                 },
                 elevation = 12.dp,
                 actions = {

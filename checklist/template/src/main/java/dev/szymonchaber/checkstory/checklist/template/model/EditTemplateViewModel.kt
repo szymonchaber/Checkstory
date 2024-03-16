@@ -355,7 +355,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.BackClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                val event = if (success.isChanged()) {
+                val event = if (!success.isOnboarding && success.isChanged()) {
                     EditTemplateEffect.ShowConfirmExitDialog()
                 } else {
                     EditTemplateEffect.CloseScreen

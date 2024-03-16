@@ -28,6 +28,8 @@ sealed interface TemplateLoadingState {
                 templateCommand.applyTo(template)
             }
 
+        val isOnboarding = onboardingPlaceholders != null
+
         fun finalizedCommands(): List<TemplateCommand> {
             val indexedTasks = tasks
                 .mapIndexed { index, task ->
