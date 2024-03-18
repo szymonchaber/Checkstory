@@ -18,7 +18,7 @@ sealed interface TemplateLoadingState {
         },
         val mostRecentlyAddedItem: TemplateTaskId? = null,
         val onboardingPlaceholders: OnboardingPlaceholders? = null,
-        private val commands: List<TemplateCommand> = listOf()
+        val commands: List<TemplateCommand> = listOf()
     ) : TemplateLoadingState {
 
         val unwrappedTasks = flattenWithNestedLevel()
@@ -66,8 +66,6 @@ sealed interface TemplateLoadingState {
             tasks.forEach { task -> visit(task, 0) }
             return result
         }
-
-        fun isChanged() = commands.isNotEmpty()
 
         fun withNewTitle(newTitle: String): Success {
             return plusCommand(

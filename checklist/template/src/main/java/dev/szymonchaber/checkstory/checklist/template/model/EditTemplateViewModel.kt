@@ -354,13 +354,21 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.BackClicked>()
             .withSuccessState()
             .map { (success, _) ->
-                val event = if (!success.isOnboarding && success.isChanged()) {
-                    EditTemplateEffect.ShowConfirmExitDialog()
-                } else {
+                val effect = if (canSafelyExit(success)) {
                     EditTemplateEffect.CloseScreen
+                } else {
+                    EditTemplateEffect.ShowConfirmExitDialog
                 }
-                null to event
+                null to effect
             }
+    }
+
+    private fun canSafelyExit(success: TemplateLoadingState.Success): Boolean {
+        return success.commands.isEmpty() || hasCreateCommandOnly(success)
+    }
+
+    private fun hasCreateCommandOnly(success: TemplateLoadingState.Success): Boolean {
+        return success.commands.size == 1 && success.commands.first() is TemplateCommand.CreateNewTemplate
     }
 
     private fun Flow<EditTemplateEvent>.handleConfirmExitClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
