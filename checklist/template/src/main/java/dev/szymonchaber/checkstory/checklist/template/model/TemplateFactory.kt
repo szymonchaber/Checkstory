@@ -1,6 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import android.content.res.Resources
+import android.app.Application
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.domain.model.TemplateCommand
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
@@ -9,27 +9,31 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskI
 import kotlinx.datetime.Clock
 import java.time.LocalDateTime
 import java.util.*
+import javax.inject.Inject
 
-fun generateOnboardingTemplate(resources: Resources): TemplateLoadingState.Success {
-    val template = emptyTemplate()
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(template)
-        .copy(
-            commands = listOf(
-                TemplateCommand.CreateNewTemplate(
-                    template.id,
-                    Clock.System.now()
+class OnboardingTemplateFactory @Inject constructor(private val application: Application) {
+
+    fun generateOnboardingTemplate(): TemplateLoadingState.Success {
+        val template = emptyTemplate()
+        val templateLoadingState = TemplateLoadingState.Success.fromTemplate(template)
+            .copy(
+                commands = listOf(
+                    TemplateCommand.CreateNewTemplate(
+                        template.id,
+                        Clock.System.now()
+                    )
                 )
             )
-        )
 
-    return generateOnboardingTasks()
-        .foldInto(templateLoadingState)
-        .copy(
-            onboardingPlaceholders = OnboardingPlaceholders(
-                title = resources.getString(R.string.onboarding_template_title),
-                description = resources.getString(R.string.onboarding_template_description)
-            ),
-        )
+        return generateOnboardingTasks()
+            .foldInto(templateLoadingState)
+            .copy(
+                onboardingPlaceholders = OnboardingPlaceholders(
+                    title = application.resources.getString(R.string.onboarding_template_title),
+                    description = application.resources.getString(R.string.onboarding_template_description)
+                ),
+            )
+    }
 }
 
 class OnboardingTasks {

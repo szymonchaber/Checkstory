@@ -1,6 +1,5 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
-import android.app.Application
 import androidx.core.os.bundleOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
@@ -31,7 +30,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
-    private val application: Application,
+    private val templateFactory: OnboardingTemplateFactory,
     private val getTemplateUseCase: GetTemplateUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val storeCommandsUseCase: StoreCommandsUseCase,
@@ -109,7 +108,7 @@ class EditTemplateViewModel @Inject constructor(
                     state.first() to null
                 } else {
                     tracker.logEvent("onboarding_template_generated")
-                    EditTemplateState(generateOnboardingTemplate(application.resources)) to null
+                    EditTemplateState(templateFactory.generateOnboardingTemplate()) to null
                 }
             }
     }
