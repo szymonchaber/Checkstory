@@ -15,11 +15,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import dev.szymonchaber.checkstory.checklist.template.NewTask
-import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.views.TaskView
 
 @Composable
-fun FloatingDraggable(success: TemplateLoadingState.Success) {
+fun FloatingDraggable(success: EditTemplateState.Success) {
     val dragDropState = LocalDragDropState.current
     if (dragDropState.isDragging) {
         var targetSize by remember {

@@ -13,9 +13,9 @@ import javax.inject.Inject
 
 class OnboardingTemplateFactory @Inject constructor(private val application: Application) {
 
-    fun generateOnboardingTemplate(): TemplateLoadingState.Success {
+    fun generateOnboardingTemplate(): EditTemplateState.Success {
         val template = emptyTemplate()
-        val templateLoadingState = TemplateLoadingState.Success.fromTemplate(template)
+        val templateLoadingState = EditTemplateState.Success.fromTemplate(template)
             .copy(
                 commands = listOf(
                     TemplateCommand.CreateNewTemplate(
@@ -85,8 +85,8 @@ fun generateOnboardingTasks(): MutableList<Triple<TemplateTaskId, TemplateTaskId
     }
 }
 
-fun generateWriteOfferTemplate(): TemplateLoadingState.Success {
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
+fun generateWriteOfferTemplate(): EditTemplateState.Success {
+    val templateLoadingState = EditTemplateState.Success.fromTemplate(emptyTemplate())
         .withNewTitle("Write an offer to a prospect")
         .withNewDescription("Find prospects here: drive.link/prospects")
     return generateWriteOfferTasks().foldInto(templateLoadingState)
@@ -107,8 +107,8 @@ fun generateWriteOfferTasks(): List<Triple<TemplateTaskId, TemplateTaskId?, Stri
     }
 }
 
-fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
+fun generateOnboardAnEmployeeTemplate(): EditTemplateState.Success {
+    val templateLoadingState = EditTemplateState.Success.fromTemplate(emptyTemplate())
         .withNewTitle("Onboard a new employee")
     return placeholderTasks {
         repeat(18) {
@@ -118,8 +118,8 @@ fun generateOnboardAnEmployeeTemplate(): TemplateLoadingState.Success {
         .foldInto(templateLoadingState)
 }
 
-fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
-    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(emptyTemplate())
+fun generateDailyRoutineTemplate(): EditTemplateState.Success {
+    val templateLoadingState = EditTemplateState.Success.fromTemplate(emptyTemplate())
         .withNewDescription("Daily routine")
 
     return placeholderTasks {
@@ -130,7 +130,7 @@ fun generateDailyRoutineTemplate(): TemplateLoadingState.Success {
         .foldInto(templateLoadingState)
 }
 
-fun List<Triple<TemplateTaskId, TemplateTaskId?, String>>.foldInto(success: TemplateLoadingState.Success): TemplateLoadingState.Success {
+fun List<Triple<TemplateTaskId, TemplateTaskId?, String>>.foldInto(success: EditTemplateState.Success): EditTemplateState.Success {
     return fold(success) { state, (id, parentId, placeholder) ->
         if (parentId != null) {
             state.plusChildTask(parentId, id, placeholder)

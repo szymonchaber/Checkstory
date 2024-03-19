@@ -40,7 +40,7 @@ class EditTemplateViewModel @Inject constructor(
         EditTemplateState,
         EditTemplateEffect
         >(
-    EditTemplateState.initial
+    EditTemplateState.Loading
 ) {
 
     override fun buildMviFlow(eventFlow: Flow<EditTemplateEvent>): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
@@ -87,7 +87,7 @@ class EditTemplateViewModel @Inject constructor(
                     state.first() to null
                 } else {
                     val template = emptyTemplate()
-                    val templateLoadingState = TemplateLoadingState.Success.fromTemplate(template)
+                    val templateLoadingState = EditTemplateState.Success.fromTemplate(template)
                         .copy(
                             commands = listOf(
                                 TemplateCommand.CreateNewTemplate(
@@ -96,7 +96,7 @@ class EditTemplateViewModel @Inject constructor(
                                 )
                             )
                         )
-                    EditTemplateState(templateLoadingState) to null
+                    templateLoadingState to null
                 }
             }
     }
@@ -108,7 +108,7 @@ class EditTemplateViewModel @Inject constructor(
                     state.first() to null
                 } else {
                     tracker.logEvent("onboarding_template_generated")
-                    EditTemplateState(templateFactory.generateOnboardingTemplate()) to null
+                    templateFactory.generateOnboardingTemplate() to null
                 }
             }
     }
@@ -122,33 +122,33 @@ class EditTemplateViewModel @Inject constructor(
                     flowOf(
                         getTemplateUseCase.getTemplate(event.templateId)?.let {
                             withContext(Dispatchers.Default) {
-                                TemplateLoadingState.Success.fromTemplate(it)
+                                EditTemplateState.Success.fromTemplate(it)
                             }
-                        } ?: TemplateLoadingState.Loading // TODO this should be error, template not found
+                        } ?: EditTemplateState.Loading // TODO this should be error, template not found
                     )
                         .onStart {
-                            emit(TemplateLoadingState.Loading)
+                            emit(EditTemplateState.Loading)
                         }
                         .map {
-                            EditTemplateState(it) to null
+                            it to null
                         }
                 }
             }
     }
 
     private suspend fun isTemplateAlreadyLoaded(event: EditTemplateEvent.EditTemplate): Boolean {
-        return (state.first().templateLoadingState as? TemplateLoadingState.Success)?.template?.id == event.templateId
+        return (state.first() as? EditTemplateState.Success)?.template?.id == event.templateId
     }
 
     private suspend fun isTemplateAlreadyCreated(): Boolean {
-        return state.first().templateLoadingState is TemplateLoadingState.Success
+        return state.first() is EditTemplateState.Success
     }
 
     private fun Flow<EditTemplateEvent>.handleTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
         return filterIsInstance<EditTemplateEvent.TitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                EditTemplateState(loadingState.withNewTitle(event.newTitle)) to null
+                loadingState.withNewTitle(event.newTitle) to null
             }
     }
 
@@ -156,7 +156,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.DescriptionChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                EditTemplateState(loadingState.withNewDescription(event.newDescription)) to null
+                loadingState.withNewDescription(event.newDescription) to null
             }
     }
 
@@ -165,7 +165,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("delete_checkbox_clicked")
-                EditTemplateState(loadingState.minusTask(event.task)) to null
+                loadingState.minusTask(event.task) to null
             }
     }
 
@@ -174,7 +174,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_sibling")
-                EditTemplateState(loadingState.withSiblingMovedBelow(event.target, event.newSibling)) to null
+                loadingState.withSiblingMovedBelow(event.target, event.newSibling) to null
             }
     }
 
@@ -183,7 +183,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("new_checkbox_dragged_to_sibling")
-                EditTemplateState(loadingState.withNewSiblingMovedBelow(event.target)) to null
+                loadingState.withNewSiblingMovedBelow(event.target) to null
             }
     }
 
@@ -192,7 +192,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_child")
-                EditTemplateState(loadingState.withChildMovedBelow(event.target, event.newChild)) to null
+                loadingState.withChildMovedBelow(event.target, event.newChild) to null
             }
     }
 
@@ -201,7 +201,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("new_checkbox_dragged_to_child")
-                EditTemplateState(loadingState.withNewChildMovedBelow(event.target)) to null
+                loadingState.withNewChildMovedBelow(event.target) to null
             }
     }
 
@@ -210,7 +210,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_top")
-                EditTemplateState(loadingState.withTaskMovedToTop(event.taskId)) to null
+                loadingState.withTaskMovedToTop(event.taskId) to null
             }
     }
 
@@ -219,7 +219,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_dragged_to_top")
-                EditTemplateState(loadingState.withNewTaskAtTop()) to null
+                loadingState.withNewTaskAtTop() to null
             }
     }
 
@@ -228,7 +228,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_bottom")
-                EditTemplateState(loadingState.withTaskMovedToBottom(event.taskId)) to null
+                loadingState.withTaskMovedToBottom(event.taskId) to null
             }
     }
 
@@ -237,7 +237,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_draggable_clicked")
-                EditTemplateState(loadingState) to EditTemplateEffect.ShowTryDraggingSnackbar()
+                loadingState to EditTemplateEffect.ShowTryDraggingSnackbar()
             }
     }
 
@@ -246,7 +246,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_dragged_to_bottom")
-                EditTemplateState(loadingState.withNewTaskAtBottom()) to null
+                loadingState.withNewTaskAtBottom() to null
             }
     }
 
@@ -256,7 +256,7 @@ class EditTemplateViewModel @Inject constructor(
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
                     tracker.logEvent("add_child_checkbox_clicked")
-                    EditTemplateState(loadingState.plusChildTask(TemplateTaskId(event.parentId.id))) to null
+                    loadingState.plusChildTask(TemplateTaskId(event.parentId.id)) to null
                 }
             }
     }
@@ -265,7 +265,7 @@ class EditTemplateViewModel @Inject constructor(
         return filterIsInstance<EditTemplateEvent.TaskTitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
-                EditTemplateState(loadingState.changeTaskTitle(event.task, event.newTitle)) to null
+                loadingState.changeTaskTitle(event.task, event.newTitle) to null
             }
     }
 
@@ -274,7 +274,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("add_checkbox_clicked")
-                EditTemplateState(loadingState.plusNewTask("")) to null
+                loadingState.plusNewTask("") to null
             }
     }
 
@@ -363,11 +363,11 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun canSafelyExit(success: TemplateLoadingState.Success): Boolean {
+    private fun canSafelyExit(success: EditTemplateState.Success): Boolean {
         return success.commands.isEmpty() || hasCreateCommandOnly(success)
     }
 
-    private fun hasCreateCommandOnly(success: TemplateLoadingState.Success): Boolean {
+    private fun hasCreateCommandOnly(success: EditTemplateState.Success): Boolean {
         return success.commands.size == 1 && success.commands.first() is TemplateCommand.CreateNewTemplate
     }
 
@@ -409,7 +409,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 trackReminderSaved(event)
-                EditTemplateState(success.withUpdatedReminder(event.reminder)) to null
+                success.withUpdatedReminder(event.reminder) to null
             }
     }
 
@@ -440,7 +440,7 @@ class EditTemplateViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 tracker.logEvent("delete_reminder_clicked")
-                EditTemplateState(success.minusReminder(event.reminder)) to null
+                success.minusReminder(event.reminder) to null
             }
     }
 
@@ -453,17 +453,17 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<TemplateLoadingState.Success, T>> {
+    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<EditTemplateState.Success, T>> {
         return flatMapLatest { event ->
-            state.map { it.templateLoadingState }
-                .filterIsInstance<TemplateLoadingState.Success>()
+            state.map { it }
+                .filterIsInstance<EditTemplateState.Success>()
                 .map { it to event }
                 .take(1)
         }
     }
 
     fun isReorderValid(subject: TemplateTaskId, target: TemplateTaskId): Boolean {
-        return (_state.value.templateLoadingState as? TemplateLoadingState.Success)?.let {
+        return (_state.value as? EditTemplateState.Success)?.let {
             !it.getAllAncestorsOf(target).contains(subject)
         } ?: false
     }

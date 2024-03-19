@@ -76,7 +76,6 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
 import dev.szymonchaber.checkstory.checklist.template.model.OnboardingPlaceholders
-import dev.szymonchaber.checkstory.checklist.template.model.TemplateLoadingState
 import dev.szymonchaber.checkstory.checklist.template.reminders.EditReminderViewModel
 import dev.szymonchaber.checkstory.checklist.template.reminders.RemindersSection
 import dev.szymonchaber.checkstory.checklist.template.reminders.edit.EditReminderScreen
@@ -287,12 +286,12 @@ private fun EditTemplateScaffold(
             Box(
                 Modifier.padding(it)
             ) {
-                when (val loadingState = state.templateLoadingState) {
-                    TemplateLoadingState.Loading -> {
+                when (val loadingState = state) {
+                    EditTemplateState.Loading -> {
                         FullSizeLoadingView()
                     }
 
-                    is TemplateLoadingState.Success -> {
+                    is EditTemplateState.Success -> {
                         val recentlyAddedUnconsumedItem = remember {
                             RecentlyAddedUnconsumedItem()
                         }
@@ -327,7 +326,7 @@ val nestedPaddingStart = 32.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
-    success: TemplateLoadingState.Success,
+    success: EditTemplateState.Success,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val dragDropState = LocalDragDropState.current
