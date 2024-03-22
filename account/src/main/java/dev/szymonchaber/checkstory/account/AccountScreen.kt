@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.account
 
+import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -68,8 +69,11 @@ fun AccountScreen(
     val firebaseAuthLauncher = rememberLauncherForActivityResult(
         FirebaseAuthUIActivityResultContract()
     ) {
-        it.idpResponse?.let { identityProviderResponse ->
-            (viewModel::onEvent)(AccountEvent.FirebaseResultReceived(identityProviderResponse))
+        val idpResponse = it.idpResponse
+        if (it.resultCode == Activity.RESULT_OK && idpResponse != null) {
+            viewModel.onEvent(AccountEvent.FirebaseAuthResultReceived(idpResponse))
+        } else {
+            viewModel.onEvent(AccountEvent.FirebaseAuthFlowCancelled)
         }
     }
 

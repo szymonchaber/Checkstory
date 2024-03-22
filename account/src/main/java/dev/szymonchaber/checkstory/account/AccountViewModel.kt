@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.take
 import timber.log.Timber
@@ -46,6 +47,7 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
             eventFlow.handleFirebaseResultReceived(),
+            eventFlow.handleFirebaseAuthFlowCancelled(),
             eventFlow.handleManageSubscriptionsClicked(),
             eventFlow.handleSignUpClicked(),
             eventFlow.handleDeleteAccountClicked(),
@@ -129,7 +131,7 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun Flow<AccountEvent>.handleFirebaseResultReceived(): Flow<Pair<AccountState, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.FirebaseResultReceived>()
+        return filterIsInstance<AccountEvent.FirebaseAuthResultReceived>()
             .withState()
             .flatMapLatest { (state, event) ->
                 flow {
@@ -149,6 +151,13 @@ class AccountViewModel @Inject constructor(
                         )
                     }
                 }
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleFirebaseAuthFlowCancelled(): Flow<Pair<AccountState?, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.FirebaseAuthFlowCancelled>()
+            .mapLatest {
+                null to AccountEffect.ExitWithAuthResult(false)
             }
     }
 

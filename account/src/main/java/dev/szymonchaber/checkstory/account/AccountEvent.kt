@@ -14,7 +14,9 @@ sealed interface AccountEvent {
 
     data object LogoutDespiteUnsynchronizedDataClicked : AccountEvent
 
-    data class FirebaseResultReceived(val response: IdpResponse) : AccountEvent
+    data class FirebaseAuthResultReceived(val response: IdpResponse) : AccountEvent
+
+    data object FirebaseAuthFlowCancelled : AccountEvent
 
     data object LoginClicked : AccountEvent
 
