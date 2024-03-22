@@ -187,7 +187,7 @@ fun FillChecklistScreen(
         sheetContent = {
             val fillChecklistState = state.value
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (fillChecklistState is FillChecklistState.Success) {
+                if (fillChecklistState is FillChecklistState.Ready) {
                     var textFieldValue by remember {
                         val notes = fillChecklistState.checklist.notes
                         mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
@@ -255,7 +255,7 @@ private fun FillChecklistScaffold(
                     FullSizeLoadingView()
                 }
 
-                is FillChecklistState.Success -> {
+                is FillChecklistState.Ready -> {
                     FillChecklistView(loadingState.checklist, viewModel::onEvent)
                 }
             }

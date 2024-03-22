@@ -11,7 +11,7 @@ sealed interface FillChecklistState {
 
     data object Loading : FillChecklistState
 
-    data class Success(
+    data class Ready(
         val originalChecklist: Checklist,
         private val commands: List<ChecklistCommand> = listOf()
     ) : FillChecklistState {
@@ -20,7 +20,7 @@ sealed interface FillChecklistState {
             command.applyTo(checklist)
         }
 
-        fun withUpdatedItemChecked(taskId: TaskId, isChecked: Boolean): Success {
+        fun withUpdatedItemChecked(taskId: TaskId, isChecked: Boolean): Ready {
             return plusCommand(
                 ChecklistCommand.ChangeTaskCheckedCommand(
                     originalChecklist.id,
@@ -45,7 +45,7 @@ sealed interface FillChecklistState {
             )
         }
 
-        private fun plusCommand(command: ChecklistCommand): Success {
+        private fun plusCommand(command: ChecklistCommand): Ready {
             return copy(commands = commands.plus(command))
         }
 
