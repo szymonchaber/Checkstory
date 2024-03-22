@@ -156,8 +156,14 @@ class AccountViewModel @Inject constructor(
 
     private fun Flow<AccountEvent>.handleFirebaseAuthFlowCancelled(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.FirebaseAuthFlowCancelled>()
-            .mapLatest {
-                null to AccountEffect.ExitWithAuthResult(false)
+            .withState()
+            .mapLatest { (state, _) ->
+                val effect = if (state.partialAuthRequested) {
+                    AccountEffect.ExitWithAuthResult(false)
+                } else {
+                    null
+                }
+                null to effect
             }
     }
 
