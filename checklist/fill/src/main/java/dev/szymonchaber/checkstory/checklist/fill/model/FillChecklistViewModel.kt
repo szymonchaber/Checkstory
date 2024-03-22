@@ -29,7 +29,7 @@ class FillChecklistViewModel @Inject constructor(
     private val commandsUseCase: StoreCommandsUseCase
 ) :
     BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
-        FillChecklistState.initial
+        FillChecklistState.Loading
     ) {
 
     override fun buildMviFlow(eventFlow: Flow<FillChecklistEvent>): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
@@ -55,7 +55,10 @@ class FillChecklistViewModel @Inject constructor(
             .mapLatest { (success, event) ->
                 tracker.logEvent("check_changed", bundleOf("checked" to event.newCheck))
                 val updated = success.withUpdatedItemChecked(event.item.id, event.newCheck)
-                state.first().copy(checklistLoadingState = updated) to null
+                run {
+                    state.first()
+                    updated
+                } to null
             }
     }
 
@@ -66,7 +69,10 @@ class FillChecklistViewModel @Inject constructor(
                 tracker.logEvent("child_check_changed", bundleOf("checked" to event.newCheck))
                 val (_, child, newCheck) = event
                 val updated = success.withUpdatedItemChecked(child.id, newCheck)
-                state.first().copy(checklistLoadingState = updated) to null
+                run {
+                    state.first()
+                    updated
+                } to null
             }
     }
 
@@ -74,7 +80,7 @@ class FillChecklistViewModel @Inject constructor(
         return filterIsInstance<FillChecklistEvent.LoadChecklist>()
             .flatMapLatest { loadEvent ->
                 getChecklistToFillUseCase.getChecklist(loadEvent.checklistId).map {
-                    FillChecklistState(ChecklistLoadingState.Success(it)) to null
+                    FillChecklistState.Success(it) to null
                 }
             }
     }
@@ -84,7 +90,7 @@ class FillChecklistViewModel @Inject constructor(
             .flatMapLatest { loadEvent ->
                 createChecklistFromTemplateUseCase.createChecklistFromTemplate(loadEvent.templateId)
                     .map {
-                        val checklistLoadingState = ChecklistLoadingState.Success(it)
+                        val checklistLoadingState = FillChecklistState.Success(it)
                             .copy(
                                 commands = listOf(
                                     ChecklistCommand.CreateChecklistCommand(
@@ -98,7 +104,7 @@ class FillChecklistViewModel @Inject constructor(
                                     )
                                 )
                             )
-                        FillChecklistState(checklistLoadingState) to null
+                        checklistLoadingState to null
                     }
             }
     }
@@ -116,15 +122,17 @@ class FillChecklistViewModel @Inject constructor(
             .withSuccessState()
             .map { (success, event) ->
                 val updatedLoadingState = success.withUpdatedNotes(event.notes)
-                state.first().copy(checklistLoadingState = updatedLoadingState) to null
+                run {
+                    state.first()
+                    updatedLoadingState
+                } to null
             }
     }
 
     private fun Flow<FillChecklistEvent>.handleEditClicked(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
         return filterIsInstance<FillChecklistEvent.EditTemplateClicked>()
             .flatMapLatest {
-                state.map { it.checklistLoadingState }
-                    .filterIsInstance<ChecklistLoadingState.Success>().take(1)
+                state.filterIsInstance<FillChecklistState.Success>().take(1)
             }
             .map {
                 tracker.logEvent("checklist_edit_template_clicked")
@@ -194,10 +202,10 @@ class FillChecklistViewModel @Inject constructor(
             }
     }
 
-    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<ChecklistLoadingState.Success, T>> {
+    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<FillChecklistState.Success, T>> {
         return flatMapLatest { event ->
-            state.map { it.checklistLoadingState }
-                .filterIsInstance<ChecklistLoadingState.Success>()
+            state
+                .filterIsInstance<FillChecklistState.Success>()
                 .map { it to event }
                 .take(1)
         }

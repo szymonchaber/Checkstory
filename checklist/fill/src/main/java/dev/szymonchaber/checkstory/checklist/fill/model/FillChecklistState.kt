@@ -7,20 +7,14 @@ import dev.szymonchaber.checkstory.domain.model.checklist.fill.TaskId
 import kotlinx.datetime.Clock
 import java.util.*
 
-data class FillChecklistState(val checklistLoadingState: ChecklistLoadingState) {
+sealed interface FillChecklistState {
 
-    companion object {
-
-        val initial: FillChecklistState = FillChecklistState(ChecklistLoadingState.Loading)
-    }
-}
-
-sealed interface ChecklistLoadingState {
+    data object Loading : FillChecklistState
 
     data class Success(
         val originalChecklist: Checklist,
         private val commands: List<ChecklistCommand> = listOf()
-    ) : ChecklistLoadingState {
+    ) : FillChecklistState {
 
         val checklist = commands.fold(originalChecklist) { checklist, command ->
             command.applyTo(checklist)
@@ -40,7 +34,7 @@ sealed interface ChecklistLoadingState {
 
         fun isChanged() = commands.isNotEmpty()
 
-        fun withUpdatedNotes(notes: String): ChecklistLoadingState {
+        fun withUpdatedNotes(notes: String): FillChecklistState {
             return plusCommand(
                 ChecklistCommand.EditChecklistNotesCommand(
                     originalChecklist.id,
@@ -83,6 +77,4 @@ sealed interface ChecklistLoadingState {
             return commandsWithoutConsolidatedCommand.plus(consolidatedCommand)
         }
     }
-
-    object Loading : ChecklistLoadingState
 }

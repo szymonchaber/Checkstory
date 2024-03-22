@@ -68,7 +68,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import dev.szymonchaber.checkstory.checklist.fill.model.ChecklistLoadingState
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEffect
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState
@@ -186,11 +185,11 @@ fun FillChecklistScreen(
 
     ModalBottomSheetLayout(
         sheetContent = {
-            val loadingState = state.value.checklistLoadingState
+            val fillChecklistState = state.value
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (loadingState is ChecklistLoadingState.Success) {
+                if (fillChecklistState is FillChecklistState.Success) {
                     var textFieldValue by remember {
-                        val notes = loadingState.checklist.notes
+                        val notes = fillChecklistState.checklist.notes
                         mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
                     }
                     OutlinedTextField(
@@ -251,12 +250,12 @@ private fun FillChecklistScaffold(
                 elevation = 12.dp,
             )
         }, content = {
-            when (val loadingState = state.value.checklistLoadingState) {
-                ChecklistLoadingState.Loading -> {
+            when (val loadingState = state.value) {
+                FillChecklistState.Loading -> {
                     FullSizeLoadingView()
                 }
 
-                is ChecklistLoadingState.Success -> {
+                is FillChecklistState.Success -> {
                     FillChecklistView(loadingState.checklist, viewModel::onEvent)
                 }
             }
