@@ -50,6 +50,7 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.common.trackScreenName
+import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
@@ -77,10 +78,17 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
+                        if (!ActiveUser.current.isPaidUser) {
+                            DropdownMenuItem(onClick = {
+                                viewModel.onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+                            }) {
+                                Text(text = stringResource(id = R.string.upgrade))
+                            }
+                        }
                         DropdownMenuItem(onClick = {
-                            viewModel.onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+                            viewModel.onEvent(ChecklistCatalogEvent.AccountClicked)
                         }) {
-                            Text(text = stringResource(id = R.string.upgrade))
+                            Text(text = "Account")
                         }
                         DropdownMenuItem(onClick = {
                             viewModel.onEvent(ChecklistCatalogEvent.AboutClicked)
@@ -92,11 +100,6 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
 //                        }) {
 //                            Text(text = "Debug menu")
 //                        }
-                        DropdownMenuItem(onClick = {
-                            viewModel.onEvent(ChecklistCatalogEvent.AccountClicked)
-                        }) {
-                            Text(text = "Account")
-                        }
                     }
                 }
             )
