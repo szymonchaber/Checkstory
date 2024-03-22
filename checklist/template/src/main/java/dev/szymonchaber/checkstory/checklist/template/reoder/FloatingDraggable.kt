@@ -19,7 +19,7 @@ import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.views.TaskView
 
 @Composable
-fun FloatingDraggable(success: EditTemplateState.Success) {
+fun FloatingDraggable(ready: EditTemplateState.Ready) {
     val dragDropState = LocalDragDropState.current
     if (dragDropState.isDragging) {
         var targetSize by remember {
@@ -41,9 +41,9 @@ fun FloatingDraggable(success: EditTemplateState.Success) {
                     targetSize = it.size
                 }
         ) {
-            val task by remember(success.unwrappedTasks, dragDropState.taskViewId) {
+            val task by remember(ready.unwrappedTasks, dragDropState.taskViewId) {
                 derivedStateOf {
-                    success.unwrappedTasks
+                    ready.unwrappedTasks
                         .find {
                             it.first.id == dragDropState.taskViewId
                         }

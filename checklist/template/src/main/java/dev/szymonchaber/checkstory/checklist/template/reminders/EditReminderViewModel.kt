@@ -71,9 +71,9 @@ class EditReminderViewModel @Inject constructor(
 
     private fun Flow<EditReminderEvent>.handleTypeSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.ReminderTypeSelected>()
-            .withSuccessState()
-            .map { (success, _) ->
-                val newState = success.updateReminder {
+            .withReadyState()
+            .map { (ready, _) ->
+                val newState = ready.updateReminder {
                     when (this) {
                         is Reminder.Exact -> {
                             Reminder.Recurring(id, forTemplate, startDateTime, Interval.Daily)
@@ -90,9 +90,9 @@ class EditReminderViewModel @Inject constructor(
 
     private fun Flow<EditReminderEvent>.handleTimeSet(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.ReminderTimeSet>()
-            .withSuccessState()
-            .map { (success, event) ->
-                val newState = success.updateReminder {
+            .withReadyState()
+            .map { (ready, event) ->
+                val newState = ready.updateReminder {
                     updateTime(event.time.withSecond(0))
                 }
                 tracker.logEvent("reminder_time_set", bundleOf("time" to event.time))
@@ -102,9 +102,9 @@ class EditReminderViewModel @Inject constructor(
 
     private fun Flow<EditReminderEvent>.handleDateSet(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.ReminderDateSet>()
-            .withSuccessState()
-            .map { (success, event) ->
-                val newState = success.updateReminder {
+            .withReadyState()
+            .map { (ready, event) ->
+                val newState = ready.updateReminder {
                     updateDate(event.date)
                 }
                 tracker.logEvent("reminder_date_set", bundleOf("date" to event.date))
@@ -114,11 +114,11 @@ class EditReminderViewModel @Inject constructor(
 
     private fun Flow<EditReminderEvent>.handleIntervalSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.IntervalSelected>()
-            .withSuccessState()
+            .withReadyState()
             .filter {
                 it.first.reminder is Reminder.Recurring
             }
-            .map { (success, event) ->
+            .map { (ready, event) ->
                 val newInterval = when (event.intervalType) {
                     IntervalType.DAILY -> Interval.Daily
                     IntervalType.WEEKLY -> Interval.Weekly(LocalDateTime.now().dayOfWeek)
@@ -126,8 +126,8 @@ class EditReminderViewModel @Inject constructor(
                     IntervalType.YEARLY -> Interval.Yearly(1)
                 }
                 tracker.logEvent("reminder_interval_selected", bundleOf("interval" to toTrackingName(newInterval)))
-                val newReminder = (success.reminder as Reminder.Recurring).copy(interval = newInterval)
-                EditReminderState(success.copy(reminder = newReminder)) to null
+                val newReminder = (ready.reminder as Reminder.Recurring).copy(interval = newInterval)
+                EditReminderState(ready.copy(reminder = newReminder)) to null
             }
     }
 
@@ -142,12 +142,12 @@ class EditReminderViewModel @Inject constructor(
 
     private fun Flow<EditReminderEvent>.handleDaysOfWeekSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.DaysOfWeekSelected>()
-            .withSuccessState()
+            .withReadyState()
             .filter {
                 (it.first.reminder is Reminder.Recurring)
             }
-            .map { (success, event) ->
-                val newInterval = when (val interval = (success.reminder as Reminder.Recurring).interval) {
+            .map { (ready, event) ->
+                val newInterval = when (val interval = (ready.reminder as Reminder.Recurring).interval) {
                     is Interval.Weekly -> interval.copy(dayOfWeek = event.daysOfWeek.last()) // TODO some unwrapping is needed
                     else -> interval
                 }
@@ -155,54 +155,54 @@ class EditReminderViewModel @Inject constructor(
                     "reminder_days_of_week_selected",
                     bundleOf("days_of_week" to event.daysOfWeek.joinToString())
                 )
-                val newReminder = success.reminder.copy(interval = newInterval)
-                EditReminderState(success.copy(reminder = newReminder)) to null
+                val newReminder = ready.reminder.copy(interval = newInterval)
+                EditReminderState(ready.copy(reminder = newReminder)) to null
             }
     }
 
     private fun Flow<EditReminderEvent>.handleDayOfMonthSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.DayOfMonthSelected>()
-            .withSuccessState()
+            .withReadyState()
             .filter {
                 (it.first.reminder is Reminder.Recurring)
             }
-            .map { (success, event) ->
-                val newInterval = when (val interval = (success.reminder as Reminder.Recurring).interval) {
+            .map { (ready, event) ->
+                val newInterval = when (val interval = (ready.reminder as Reminder.Recurring).interval) {
                     is Interval.Monthly -> interval.copy(dayOfMonth = event.dayOfMonth)
                     else -> interval
                 }
                 tracker.logEvent("reminder_day_of_month_selected", bundleOf("day_of_month" to event.dayOfMonth))
-                val newReminder = success.reminder.copy(interval = newInterval)
-                EditReminderState(success.copy(reminder = newReminder)) to null
+                val newReminder = ready.reminder.copy(interval = newInterval)
+                EditReminderState(ready.copy(reminder = newReminder)) to null
             }
     }
 
     private fun Flow<EditReminderEvent>.handleDayOfYearSelected(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.DayOfYearSelected>()
-            .withSuccessState()
+            .withReadyState()
             .filter {
                 (it.first.reminder is Reminder.Recurring)
             }
-            .map { (success, event) ->
-                val newInterval = when (val interval = (success.reminder as Reminder.Recurring).interval) {
+            .map { (ready, event) ->
+                val newInterval = when (val interval = (ready.reminder as Reminder.Recurring).interval) {
                     is Interval.Yearly -> interval.copy(dayOfYear = event.dayOfYear)
                     else -> interval
                 }
                 tracker.logEvent("reminder_day_of_year_selected", bundleOf("day_of_year" to event.dayOfYear))
-                val newReminder = success.reminder.copy(interval = newInterval)
-                EditReminderState(success.copy(reminder = newReminder)) to null
+                val newReminder = ready.reminder.copy(interval = newInterval)
+                EditReminderState(ready.copy(reminder = newReminder)) to null
             }
     }
 
     private fun Flow<EditReminderEvent>.handleSaveClicked(): Flow<Pair<EditReminderState?, EditReminderEffect?>> {
         return filterIsInstance<EditReminderEvent.SaveReminderClicked>()
-            .withSuccessState()
-            .map { (success, _) ->
-                null to EditReminderEffect.RelayReminderToSave(success.reminder)
+            .withReadyState()
+            .map { (ready, _) ->
+                null to EditReminderEffect.RelayReminderToSave(ready.reminder)
             }
     }
 
-    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<EditReminderLoadingState.Success, T>> {
+    private fun <T> Flow<T>.withReadyState(): Flow<Pair<EditReminderLoadingState.Success, T>> {
         return flatMapLatest { event ->
             state.map { it.reminderLoadingState }
                 .filterIsInstance<EditReminderLoadingState.Success>()

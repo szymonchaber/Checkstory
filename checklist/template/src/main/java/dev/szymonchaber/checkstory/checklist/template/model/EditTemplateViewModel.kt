@@ -87,7 +87,7 @@ class EditTemplateViewModel @Inject constructor(
                     state.first() to null
                 } else {
                     val template = emptyTemplate()
-                    val templateLoadingState = EditTemplateState.Success.fromTemplate(template)
+                    val templateLoadingState = EditTemplateState.Ready.fromTemplate(template)
                         .copy(
                             commands = listOf(
                                 TemplateCommand.CreateNewTemplate(
@@ -122,7 +122,7 @@ class EditTemplateViewModel @Inject constructor(
                     flowOf(
                         getTemplateUseCase.getTemplate(event.templateId)?.let {
                             withContext(Dispatchers.Default) {
-                                EditTemplateState.Success.fromTemplate(it)
+                                EditTemplateState.Ready.fromTemplate(it)
                             }
                         } ?: EditTemplateState.Loading // TODO this should be error, template not found
                     )
@@ -137,11 +137,11 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private suspend fun isTemplateAlreadyLoaded(event: EditTemplateEvent.EditTemplate): Boolean {
-        return (state.first() as? EditTemplateState.Success)?.template?.id == event.templateId
+        return (state.first() as? EditTemplateState.Ready)?.template?.id == event.templateId
     }
 
     private suspend fun isTemplateAlreadyCreated(): Boolean {
-        return state.first() is EditTemplateState.Success
+        return state.first() is EditTemplateState.Ready
     }
 
     private fun Flow<EditTemplateEvent>.handleTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
@@ -363,12 +363,12 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun canSafelyExit(success: EditTemplateState.Success): Boolean {
-        return success.commands.isEmpty() || hasCreateCommandOnly(success)
+    private fun canSafelyExit(ready: EditTemplateState.Ready): Boolean {
+        return ready.commands.isEmpty() || hasCreateCommandOnly(ready)
     }
 
-    private fun hasCreateCommandOnly(success: EditTemplateState.Success): Boolean {
-        return success.commands.size == 1 && success.commands.first() is TemplateCommand.CreateNewTemplate
+    private fun hasCreateCommandOnly(ready: EditTemplateState.Ready): Boolean {
+        return ready.commands.size == 1 && ready.commands.first() is TemplateCommand.CreateNewTemplate
     }
 
     private fun Flow<EditTemplateEvent>.handleConfirmExitClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
@@ -453,17 +453,17 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<EditTemplateState.Success, T>> {
+    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<EditTemplateState.Ready, T>> {
         return flatMapLatest { event ->
             state.map { it }
-                .filterIsInstance<EditTemplateState.Success>()
+                .filterIsInstance<EditTemplateState.Ready>()
                 .map { it to event }
                 .take(1)
         }
     }
 
     fun isReorderValid(subject: TemplateTaskId, target: TemplateTaskId): Boolean {
-        return (_state.value as? EditTemplateState.Success)?.let {
+        return (_state.value as? EditTemplateState.Ready)?.let {
             !it.getAllAncestorsOf(target).contains(subject)
         } ?: false
     }

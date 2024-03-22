@@ -291,7 +291,7 @@ private fun EditTemplateScaffold(
                         FullSizeLoadingView()
                     }
 
-                    is EditTemplateState.Success -> {
+                    is EditTemplateState.Ready -> {
                         val recentlyAddedUnconsumedItem = remember {
                             RecentlyAddedUnconsumedItem()
                         }
@@ -326,7 +326,7 @@ val nestedPaddingStart = 32.dp
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditTemplateView(
-    success: EditTemplateState.Success,
+    ready: EditTemplateState.Ready,
     eventCollector: (EditTemplateEvent) -> Unit
 ) {
     val dragDropState = LocalDragDropState.current
@@ -336,7 +336,7 @@ fun EditTemplateView(
             val isNewItemNotVisible =
                 dragDropState.lazyListState.layoutInfo.visibleItemsInfo.none { it.key as? TemplateTaskId == newItem }
             if (isNewItemNotVisible) {
-                dragDropState.lazyListState.animateScrollToItem(success.unwrappedTasks.indexOfFirst { it.first.id == newItem } + 1)
+                dragDropState.lazyListState.animateScrollToItem(ready.unwrappedTasks.indexOfFirst { it.first.id == newItem } + 1)
             }
         }
     }
@@ -347,7 +347,7 @@ fun EditTemplateView(
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                val template = success.template
+                val template = ready.template
                 LazyColumn(
                     Modifier
                         .detectLazyListReorder()
@@ -355,10 +355,10 @@ fun EditTemplateView(
                     state = dragDropState.lazyListState,
                 ) {
                     item {
-                        TemplateDetails(template, success.onboardingPlaceholders, eventCollector)
+                        TemplateDetails(template, ready.onboardingPlaceholders, eventCollector)
                     }
                     items(
-                        items = success.unwrappedTasks,
+                        items = ready.unwrappedTasks,
                         key = { (item, _) ->
                             item.id
                         }
@@ -405,7 +405,7 @@ fun EditTemplateView(
             }
             BottomActionBar(eventCollector = eventCollector)
         }
-        FloatingDraggable(success)
+        FloatingDraggable(ready)
         dragDropState.scrollComparisonDebugPoints?.let { (top, bottom) ->
 //            DebugFloatingPoint(top, Color.Blue)
 //            DebugFloatingPoint(bottom, Color.Red)

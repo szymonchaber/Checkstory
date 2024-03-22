@@ -11,7 +11,7 @@ import java.util.*
 
 sealed interface EditTemplateState {
 
-    data class Success(
+    data class Ready(
         val originalTemplate: Template,
         val tasks: List<ViewTemplateTask> = originalTemplate.tasks.map {
             ViewTemplateTask.fromDomainModel(it)
@@ -67,7 +67,7 @@ sealed interface EditTemplateState {
             return result
         }
 
-        fun withNewTitle(newTitle: String): Success {
+        fun withNewTitle(newTitle: String): Ready {
             return plusCommand(
                 TemplateCommand.RenameTemplate(
                     template.id, newTitle, Clock.System.now()
@@ -75,7 +75,7 @@ sealed interface EditTemplateState {
             )
         }
 
-        fun withNewDescription(newDescription: String): Success {
+        fun withNewDescription(newDescription: String): Ready {
             return plusCommand(
                 TemplateCommand.ChangeTemplateDescription(
                     template.id,
@@ -89,7 +89,7 @@ sealed interface EditTemplateState {
             title: String,
             placeholderTitle: String? = null,
             id: TemplateTaskId = TemplateTaskId(UUID.randomUUID())
-        ): Success {
+        ): Ready {
             val newTask = newTask(title, placeholderTitle, id)
             return copy(
                 tasks = tasks.plus(newTask),
@@ -105,7 +105,7 @@ sealed interface EditTemplateState {
                 )
         }
 
-        fun minusTask(task: ViewTemplateTask): Success {
+        fun minusTask(task: ViewTemplateTask): Ready {
             val filteredTasks =
                 tasks
                     .filterNot { it.id == task.id }
@@ -128,7 +128,7 @@ sealed interface EditTemplateState {
             parentId: TemplateTaskId,
             newId: TemplateTaskId = TemplateTaskId(UUID.randomUUID()),
             placeholderTitle: String? = null
-        ): Success {
+        ): Ready {
             return copy(
                 tasks = tasks.map {
                     it.plusChildCheckboxRecursive(parentId, newId, placeholderTitle)
@@ -145,7 +145,7 @@ sealed interface EditTemplateState {
                 )
         }
 
-        fun changeTaskTitle(task: ViewTemplateTask, title: String): Success {
+        fun changeTaskTitle(task: ViewTemplateTask, title: String): Ready {
             return copy(
                 tasks = tasks.map {
                     it.withUpdatedTitleRecursive(task, title)
@@ -161,7 +161,7 @@ sealed interface EditTemplateState {
                 )
         }
 
-        fun withUpdatedReminder(reminder: Reminder): Success {
+        fun withUpdatedReminder(reminder: Reminder): Ready {
             return plusCommand(
                 TemplateCommand.AddOrReplaceTemplateReminder(
                     template.id,
@@ -378,7 +378,7 @@ sealed interface EditTemplateState {
             )
         }
 
-        private fun plusCommand(event: TemplateCommand): Success {
+        private fun plusCommand(event: TemplateCommand): Ready {
             return copy(commands = commands.plus(event))
         }
 
@@ -394,7 +394,7 @@ sealed interface EditTemplateState {
             return ancestors
         }
 
-        fun markDeleted(): Success {
+        fun markDeleted(): Ready {
             return plusCommand(
                 TemplateCommand.DeleteTemplate(template.id, Clock.System.now())
             )
@@ -402,8 +402,8 @@ sealed interface EditTemplateState {
 
         companion object {
 
-            fun fromTemplate(template: Template): Success {
-                return Success(originalTemplate = template)
+            fun fromTemplate(template: Template): Ready {
+                return Ready(originalTemplate = template)
             }
         }
     }
