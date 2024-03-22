@@ -27,6 +27,9 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import javax.inject.Inject
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEffect as Effect
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent as Event
+import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState as State
 
 @HiltViewModel
 class EditTemplateViewModel @Inject constructor(
@@ -35,19 +38,13 @@ class EditTemplateViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val storeCommandsUseCase: StoreCommandsUseCase,
     private val tracker: Tracker
-) : BaseViewModel<
-        EditTemplateEvent,
-        EditTemplateState,
-        EditTemplateEffect
-        >(
-    EditTemplateState.Loading
-) {
+) : BaseViewModel<Event, State, Effect>(State.Loading) {
 
-    override fun buildMviFlow(eventFlow: Flow<EditTemplateEvent>): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+    override fun buildMviFlow(eventFlow: Flow<Event>): Flow<Pair<State?, Effect?>> {
         return eventFlow.buildMviFlowActual()
     }
 
-    private fun Flow<EditTemplateEvent>.buildMviFlowActual(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
+    private fun Flow<Event>.buildMviFlowActual(): Flow<Pair<State?, Effect?>> {
         return merge(
             handleCreateChecklist(),
             handleGenerateOnboardingTemplate(),
@@ -80,14 +77,14 @@ class EditTemplateViewModel @Inject constructor(
         )
     }
 
-    private fun Flow<EditTemplateEvent>.handleCreateChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.CreateTemplate>()
+    private fun Flow<Event>.handleCreateChecklist(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.CreateTemplate>()
             .map {
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
                 } else {
                     val template = emptyTemplate()
-                    val templateLoadingState = EditTemplateState.Ready.fromTemplate(template)
+                    val templateLoadingState = State.Ready.fromTemplate(template)
                         .copy(
                             commands = listOf(
                                 TemplateCommand.CreateNewTemplate(
@@ -101,8 +98,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleGenerateOnboardingTemplate(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.GenerateOnboardingTemplate>()
+    private fun Flow<Event>.handleGenerateOnboardingTemplate(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.GenerateOnboardingTemplate>()
             .map {
                 if (isTemplateAlreadyCreated()) {
                     state.first() to null
@@ -113,8 +110,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleEditChecklist(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.EditTemplate>()
+    private fun Flow<Event>.handleEditChecklist(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.EditTemplate>()
             .flatMapLatest { event ->
                 if (isTemplateAlreadyLoaded(event)) {
                     flowOf(state.first() to null)
@@ -122,12 +119,12 @@ class EditTemplateViewModel @Inject constructor(
                     flowOf(
                         getTemplateUseCase.getTemplate(event.templateId)?.let {
                             withContext(Dispatchers.Default) {
-                                EditTemplateState.Ready.fromTemplate(it)
+                                State.Ready.fromTemplate(it)
                             }
-                        } ?: EditTemplateState.Loading // TODO this should be error, template not found
+                        } ?: State.Loading // TODO this should be error, template not found
                     )
                         .onStart {
-                            emit(EditTemplateState.Loading)
+                            emit(State.Loading)
                         }
                         .map {
                             it to null
@@ -136,32 +133,32 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private suspend fun isTemplateAlreadyLoaded(event: EditTemplateEvent.EditTemplate): Boolean {
-        return (state.first() as? EditTemplateState.Ready)?.template?.id == event.templateId
+    private suspend fun isTemplateAlreadyLoaded(event: Event.EditTemplate): Boolean {
+        return (state.first() as? State.Ready)?.template?.id == event.templateId
     }
 
     private suspend fun isTemplateAlreadyCreated(): Boolean {
-        return state.first() is EditTemplateState.Ready
+        return state.first() is State.Ready
     }
 
-    private fun Flow<EditTemplateEvent>.handleTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.TitleChanged>()
+    private fun Flow<Event>.handleTitleChanged(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.TitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 loadingState.withNewTitle(event.newTitle) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleDescriptionChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.DescriptionChanged>()
+    private fun Flow<Event>.handleDescriptionChanged(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.DescriptionChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 loadingState.withNewDescription(event.newDescription) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleTaskRemoved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.TaskRemoved>()
+    private fun Flow<Event>.handleTaskRemoved(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.TaskRemoved>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("delete_checkbox_clicked")
@@ -169,8 +166,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleSiblingMoved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.SiblingMovedBelow>()
+    private fun Flow<Event>.handleSiblingMoved(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.SiblingMovedBelow>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_sibling")
@@ -178,8 +175,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewSiblingDragged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.NewSiblingDraggedBelow>()
+    private fun Flow<Event>.handleNewSiblingDragged(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.NewSiblingDraggedBelow>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("new_checkbox_dragged_to_sibling")
@@ -187,8 +184,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleChildMoved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ChildMovedBelow>()
+    private fun Flow<Event>.handleChildMoved(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ChildMovedBelow>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_child")
@@ -196,8 +193,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewChildDragged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.NewChildDraggedBelow>()
+    private fun Flow<Event>.handleNewChildDragged(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.NewChildDraggedBelow>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("new_checkbox_dragged_to_child")
@@ -205,8 +202,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleTaskMovedToTop(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.TaskMovedToTop>()
+    private fun Flow<Event>.handleTaskMovedToTop(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.TaskMovedToTop>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_top")
@@ -214,8 +211,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewTaskDraggedToTop(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.NewTaskDraggedToTop>()
+    private fun Flow<Event>.handleNewTaskDraggedToTop(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.NewTaskDraggedToTop>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_dragged_to_top")
@@ -223,8 +220,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleTaskMovedToBottom(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.TaskMovedToBottom>()
+    private fun Flow<Event>.handleTaskMovedToBottom(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.TaskMovedToBottom>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_bottom")
@@ -232,17 +229,17 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewTaskDraggableClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.NewTaskDraggableClicked>()
+    private fun Flow<Event>.handleNewTaskDraggableClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.NewTaskDraggableClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_draggable_clicked")
-                loadingState to EditTemplateEffect.ShowTryDraggingSnackbar()
+                loadingState to Effect.ShowTryDraggingSnackbar()
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleNewTaskDraggedToBottom(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.NewTaskDraggedToBottom>()
+    private fun Flow<Event>.handleNewTaskDraggedToBottom(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.NewTaskDraggedToBottom>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("new_checkbox_dragged_to_bottom")
@@ -250,8 +247,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleChildTaskAdded(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ChildTaskAdded>()
+    private fun Flow<Event>.handleChildTaskAdded(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ChildTaskAdded>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 withContext(Dispatchers.Default) {
@@ -261,16 +258,16 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleItemTitleChanged(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.TaskTitleChanged>()
+    private fun Flow<Event>.handleItemTitleChanged(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.TaskTitleChanged>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 loadingState.changeTaskTitle(event.task, event.newTitle) to null
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleAddTaskClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.AddTaskClicked>()
+    private fun Flow<Event>.handleAddTaskClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.AddTaskClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("add_checkbox_clicked")
@@ -278,8 +275,8 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleSaveTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.SaveTemplateClicked>()
+    private fun Flow<Event>.handleSaveTemplateClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.SaveTemplateClicked>()
             .withSuccessState()
             .mapLatest { (loadingState, _) ->
                 val template = loadingState.template
@@ -295,7 +292,7 @@ class EditTemplateViewModel @Inject constructor(
                 if (loadingState.onboardingPlaceholders != null) {
                     tracker.logEvent("template_saved_during_onboarding")
                 }
-                null to EditTemplateEffect.CloseScreen
+                null to Effect.CloseScreen
             }
     }
 
@@ -326,17 +323,17 @@ class EditTemplateViewModel @Inject constructor(
         return commandsWithoutConsolidatedCommand.plus(consolidatedCommand)
     }
 
-    private fun Flow<EditTemplateEvent>.handleDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.DeleteTemplateClicked>()
+    private fun Flow<Event>.handleDeleteTemplateClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.DeleteTemplateClicked>()
             .withSuccessState()
             .map { (_, _) ->
                 tracker.logEvent("delete_template_clicked")
-                null to EditTemplateEffect.ShowConfirmDeleteDialog()
+                null to Effect.ShowConfirmDeleteDialog()
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleConfirmDeleteTemplateClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ConfirmDeleteTemplateClicked>()
+    private fun Flow<Event>.handleConfirmDeleteTemplateClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ConfirmDeleteTemplateClicked>()
             .withSuccessState()
             .map { (loadingState, _) ->
                 tracker.logEvent("delete_template_confirmation_clicked")
@@ -346,66 +343,66 @@ class EditTemplateViewModel @Inject constructor(
                 if (loadingState.onboardingPlaceholders != null) {
                     tracker.logEvent("template_creation_cancelled_during_onboarding")
                 }
-                null to EditTemplateEffect.CloseScreen
+                null to Effect.CloseScreen
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleBackClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.BackClicked>()
+    private fun Flow<Event>.handleBackClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.BackClicked>()
             .withSuccessState()
             .map { (success, _) ->
                 val effect = if (canSafelyExit(success)) {
-                    EditTemplateEffect.CloseScreen
+                    Effect.CloseScreen
                 } else {
-                    EditTemplateEffect.ShowConfirmExitDialog
+                    Effect.ShowConfirmExitDialog
                 }
                 null to effect
             }
     }
 
-    private fun canSafelyExit(ready: EditTemplateState.Ready): Boolean {
+    private fun canSafelyExit(ready: State.Ready): Boolean {
         return ready.commands.isEmpty() || hasCreateCommandOnly(ready)
     }
 
-    private fun hasCreateCommandOnly(ready: EditTemplateState.Ready): Boolean {
+    private fun hasCreateCommandOnly(ready: State.Ready): Boolean {
         return ready.commands.size == 1 && ready.commands.first() is TemplateCommand.CreateNewTemplate
     }
 
-    private fun Flow<EditTemplateEvent>.handleConfirmExitClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ConfirmExitClicked>()
+    private fun Flow<Event>.handleConfirmExitClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ConfirmExitClicked>()
             .withSuccessState()
             .map {
                 tracker.logEvent("exit_without_saving_confirmation_clicked")
-                null to EditTemplateEffect.CloseScreen
+                null to Effect.CloseScreen
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleAddReminderClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.AddReminderClicked>()
+    private fun Flow<Event>.handleAddReminderClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.AddReminderClicked>()
             .withSuccessState()
             .map { (state, _) ->
                 tracker.logEvent("add_reminder_clicked")
                 val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (user.isPaidUser) {
-                    EditTemplateEffect.ShowAddReminderSheet(state.template.id)
+                    Effect.ShowAddReminderSheet(state.template.id)
                 } else {
-                    EditTemplateEffect.ShowFreeRemindersUsed()
+                    Effect.ShowFreeRemindersUsed()
                 }
                 null to effect
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleReminderClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ReminderClicked>()
+    private fun Flow<Event>.handleReminderClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ReminderClicked>()
             .withSuccessState()
             .map { (_, event) ->
                 tracker.logEvent("reminder_clicked")
-                null to EditTemplateEffect.ShowEditReminderSheet(event.reminder)
+                null to Effect.ShowEditReminderSheet(event.reminder)
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleReminderSaved(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.ReminderSaved>()
+    private fun Flow<Event>.handleReminderSaved(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ReminderSaved>()
             .withSuccessState()
             .map { (success, event) ->
                 trackReminderSaved(event)
@@ -413,7 +410,7 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun trackReminderSaved(event: EditTemplateEvent.ReminderSaved) {
+    private fun trackReminderSaved(event: Event.ReminderSaved) {
         val reminderDetails = when (event.reminder) {
             is Reminder.Exact -> {
                 bundleOf("type" to "exact")
@@ -435,8 +432,8 @@ class EditTemplateViewModel @Inject constructor(
         tracker.logEvent("reminder_added", reminderDetails)
     }
 
-    private fun Flow<EditTemplateEvent>.handleReminderDeleted(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.DeleteReminderClicked>()
+    private fun Flow<Event>.handleReminderDeleted(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.DeleteReminderClicked>()
             .withSuccessState()
             .map { (success, event) ->
                 tracker.logEvent("delete_reminder_clicked")
@@ -444,26 +441,26 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<EditTemplateEvent>.handleTemplateHistoryClicked(): Flow<Pair<EditTemplateState?, EditTemplateEffect?>> {
-        return filterIsInstance<EditTemplateEvent.TemplateHistoryClicked>()
+    private fun Flow<Event>.handleTemplateHistoryClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.TemplateHistoryClicked>()
             .withSuccessState()
             .map { (success, _) ->
                 tracker.logEvent("edit_template_history_clicked")
-                state.first() to EditTemplateEffect.OpenTemplateHistory(success.template.id)
+                state.first() to Effect.OpenTemplateHistory(success.template.id)
             }
     }
 
-    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<EditTemplateState.Ready, T>> {
+    private fun <T> Flow<T>.withSuccessState(): Flow<Pair<State.Ready, T>> {
         return flatMapLatest { event ->
             state.map { it }
-                .filterIsInstance<EditTemplateState.Ready>()
+                .filterIsInstance<State.Ready>()
                 .map { it to event }
                 .take(1)
         }
     }
 
     fun isReorderValid(subject: TemplateTaskId, target: TemplateTaskId): Boolean {
-        return (_state.value as? EditTemplateState.Ready)?.let {
+        return (_state.value as? State.Ready)?.let {
             !it.getAllAncestorsOf(target).contains(subject)
         } ?: false
     }
