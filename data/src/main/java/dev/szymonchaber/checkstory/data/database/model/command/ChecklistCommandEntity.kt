@@ -20,8 +20,6 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
     data class CreateChecklistEntity(
         override val checklistId: DtoUUID,
         val templateId: DtoUUID,
-        val title: String,
-        val description: String,
         val tasks: List<TaskEntity>,
         override val commandId: DtoUUID,
         override val timestamp: Instant,
@@ -61,8 +59,6 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
                 ChecklistCommand.CreateChecklistCommand(
                     ChecklistId(checklistId),
                     TemplateId(templateId),
-                    title,
-                    description,
                     tasks.map(TaskEntity::toTask),
                     commandId,
                     timestamp,
@@ -107,8 +103,6 @@ sealed interface ChecklistCommandEntity : CommandDataEntity {
                     is ChecklistCommand.CreateChecklistCommand -> CreateChecklistEntity(
                         checklistId = checklistId.id,
                         templateId = templateId.id,
-                        title = title,
-                        description = description,
                         tasks = tasks.map { it.toTaskEntity() },
                         commandId = commandId,
                         timestamp = timestamp,

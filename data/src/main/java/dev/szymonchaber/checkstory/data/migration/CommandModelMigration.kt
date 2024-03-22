@@ -67,8 +67,6 @@ class CommandModelMigration @Inject internal constructor(
             ChecklistCommand.CreateChecklistCommand(
                 checklist.id,
                 checklist.templateId,
-                checklist.title,
-                checklist.description,
                 checklist.items,
                 UUID.randomUUID(),
                 checklist.createdAt.toKotlinLocalDateTime().toInstant(TimeZone.currentSystemDefault()),

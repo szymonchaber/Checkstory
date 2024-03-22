@@ -18,8 +18,6 @@ sealed interface ChecklistCommand : Command {
     data class CreateChecklistCommand(
         override val checklistId: ChecklistId,
         val templateId: TemplateId,
-        val title: String,
-        val description: String,
         val tasks: List<Task>,
         override val commandId: UUID,
         override val timestamp: Instant,
@@ -31,8 +29,6 @@ sealed interface ChecklistCommand : Command {
             return checklist.copy(
                 id = checklistId,
                 templateId = templateId,
-                title = title,
-                description = description,
                 items = tasks,
                 createdAt = localDateTime
             )

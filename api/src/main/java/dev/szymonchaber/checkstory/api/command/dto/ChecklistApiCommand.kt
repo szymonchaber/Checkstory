@@ -17,8 +17,6 @@ internal sealed interface ChecklistApiCommand : ApiCommand {
     data class CreateChecklistApiCommand(
         override val checklistId: DtoUUID,
         val templateId: DtoUUID,
-        val title: String,
-        val description: String,
         val tasks: List<ApiChecklistCommandTask>,
         val notes: String?,
         override val commandId: DtoUUID,
@@ -59,8 +57,6 @@ internal sealed interface ChecklistApiCommand : ApiCommand {
                 is ChecklistCommand.CreateChecklistCommand -> CreateChecklistApiCommand(
                     checklistCommand.checklistId.id,
                     checklistCommand.templateId.id,
-                    checklistCommand.title,
-                    checklistCommand.description,
                     checklistCommand.tasks.map {
                         it.toTaskDto()
                     },

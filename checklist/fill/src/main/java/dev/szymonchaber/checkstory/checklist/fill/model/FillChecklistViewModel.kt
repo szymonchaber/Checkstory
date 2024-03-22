@@ -96,8 +96,6 @@ class FillChecklistViewModel @Inject constructor(
                                     ChecklistCommand.CreateChecklistCommand(
                                         it.id,
                                         it.templateId,
-                                        it.title,
-                                        it.description,
                                         it.items,
                                         UUID.randomUUID(),
                                         Clock.System.now()
