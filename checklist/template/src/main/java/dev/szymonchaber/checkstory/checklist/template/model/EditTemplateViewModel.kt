@@ -361,10 +361,10 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private fun canSafelyExit(ready: State.Ready): Boolean {
-        return ready.commands.isEmpty() || hasCreateCommandOnly(ready)
+        return ready.commands.isEmpty() || isFreshTemplate(ready)
     }
 
-    private fun hasCreateCommandOnly(ready: State.Ready): Boolean {
+    private fun isFreshTemplate(ready: State.Ready): Boolean {
         return ready.commands.size == 1 && ready.commands.first() is TemplateCommand.CreateNewTemplate
     }
 

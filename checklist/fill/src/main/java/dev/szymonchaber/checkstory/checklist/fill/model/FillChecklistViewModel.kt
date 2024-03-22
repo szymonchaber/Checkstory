@@ -52,9 +52,9 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<Event>.handleCheckChanged(): Flow<Pair<State, Nothing?>> {
         return filterIsInstance<Event.CheckChanged>()
             .withReadyState()
-            .mapLatest { (success, event) ->
+            .mapLatest { (ready, event) ->
                 tracker.logEvent("check_changed", bundleOf("checked" to event.newCheck))
-                val updated = success.withUpdatedItemChecked(event.item.id, event.newCheck)
+                val updated = ready.withUpdatedItemChecked(event.item.id, event.newCheck)
                 run {
                     state.first()
                     updated
@@ -65,10 +65,10 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<Event>.handleChildCheckChanged(): Flow<Pair<State, Nothing?>> {
         return filterIsInstance<Event.ChildCheckChanged>()
             .withReadyState()
-            .mapLatest { (success, event) ->
+            .mapLatest { (ready, event) ->
                 tracker.logEvent("child_check_changed", bundleOf("checked" to event.newCheck))
                 val (_, child, newCheck) = event
-                val updated = success.withUpdatedItemChecked(child.id, newCheck)
+                val updated = ready.withUpdatedItemChecked(child.id, newCheck)
                 run {
                     state.first()
                     updated
@@ -120,12 +120,8 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<Event>.handleNotesChanged(): Flow<Pair<State, Nothing?>> {
         return filterIsInstance<Event.NotesChanged>()
             .withReadyState()
-            .map { (success, event) ->
-                val updatedLoadingState = success.withUpdatedNotes(event.notes)
-                run {
-                    state.first()
-                    updatedLoadingState
-                } to null
+            .map { (ready, event) ->
+                ready.withUpdatedNotes(event.notes) to null
             }
     }
 
@@ -143,12 +139,12 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<Event>.handleSaveClicked(): Flow<Pair<State?, Effect?>> {
         return filterIsInstance<Event.SaveChecklistClicked>()
             .withReadyState()
-            .map { (success, _) ->
-                val flattenedItems = success.checklist.flattenedItems
+            .map { (ready, _) ->
+                val flattenedItems = ready.checklist.flattenedItems
                 val trackingParams =
                     bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
                 tracker.logEvent("save_checklist_clicked", trackingParams)
-                commandsUseCase.storeCommands(success.consolidatedCommands())
+                commandsUseCase.storeCommands(ready.consolidatedCommands())
                 null to Effect.CloseScreen
             }
     }
@@ -165,12 +161,12 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<Event>.handleDeleteConfirmed(): Flow<Pair<State?, Effect?>> {
         return filterIsInstance<Event.ConfirmDeleteChecklistClicked>()
             .withReadyState()
-            .map { (success, _) ->
+            .map { (ready, _) ->
                 tracker.logEvent("delete_checklist_confirmation_clicked")
                 commandsUseCase.storeCommands(
-                    success.consolidatedCommands().plus(
+                    ready.consolidatedCommands().plus(
                         ChecklistCommand.DeleteChecklistCommand(
-                            checklistId = success.originalChecklist.id,
+                            checklistId = ready.originalChecklist.id,
                             commandId = UUID.randomUUID(),
                             Clock.System.now()
                         )
@@ -183,14 +179,22 @@ class FillChecklistViewModel @Inject constructor(
     private fun Flow<Event>.handleBackClicked(): Flow<Pair<State?, Effect?>> {
         return filterIsInstance<Event.BackClicked>()
             .withReadyState()
-            .map { (success, _) ->
-                val event = if (success.isChanged()) {
-                    Effect.ShowConfirmExitDialog()
-                } else {
+            .map { (ready, _) ->
+                val event = if (canSafelyExit(ready)) {
                     Effect.CloseScreen
+                } else {
+                    Effect.ShowConfirmExitDialog()
                 }
                 null to event
             }
+    }
+
+    private fun canSafelyExit(ready: State.Ready): Boolean {
+        return ready.commands.isEmpty() || isFreshChecklist(ready.commands)
+    }
+
+    private fun isFreshChecklist(commands: List<ChecklistCommand>): Boolean {
+        return commands.size == 1 && commands.first() is ChecklistCommand.CreateChecklistCommand
     }
 
     private fun Flow<Event>.confirmExitClicked(): Flow<Pair<State?, Effect?>> {

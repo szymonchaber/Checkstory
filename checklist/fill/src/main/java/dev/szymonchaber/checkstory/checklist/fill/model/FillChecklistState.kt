@@ -13,7 +13,7 @@ sealed interface FillChecklistState {
 
     data class Ready(
         val originalChecklist: Checklist,
-        private val commands: List<ChecklistCommand> = listOf()
+        val commands: List<ChecklistCommand> = listOf()
     ) : FillChecklistState {
 
         val checklist = commands.fold(originalChecklist) { checklist, command ->
