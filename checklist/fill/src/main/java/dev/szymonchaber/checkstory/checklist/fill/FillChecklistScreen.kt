@@ -363,7 +363,7 @@ fun TaskSection(
     paddingStart: Dp,
     nestingLevel: Int = 1,
     isLastChild: Boolean = true,
-    collapsedByDefault: Boolean = true,
+    collapsedByDefault: Boolean = false,
     eventCollector: (FillChecklistEvent) -> Unit,
 ) {
     Column {
@@ -438,7 +438,7 @@ fun TaskSection(
                             paddingStart = nestedPaddingStart,
                             nestingLevel = nestingLevel + 1,
                             isLastChild = task.children.lastIndex == index,
-                            collapsedByDefault = true,
+                            collapsedByDefault = false,
                             eventCollector
                         )
                     }
