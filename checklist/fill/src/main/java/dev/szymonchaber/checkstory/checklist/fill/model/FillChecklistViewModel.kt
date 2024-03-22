@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.take
 import kotlinx.datetime.Clock
 import java.util.*
 import javax.inject.Inject
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEffect as Effect
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent as Event
+import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistState as State
 
 @HiltViewModel
 class FillChecklistViewModel @Inject constructor(
@@ -27,12 +30,9 @@ class FillChecklistViewModel @Inject constructor(
     private val createChecklistFromTemplateUseCase: CreateChecklistFromTemplateUseCase,
     private val tracker: Tracker,
     private val commandsUseCase: StoreCommandsUseCase
-) :
-    BaseViewModel<FillChecklistEvent, FillChecklistState, FillChecklistEffect>(
-        FillChecklistState.Loading
-    ) {
+) : BaseViewModel<Event, State, Effect>(State.Loading) {
 
-    override fun buildMviFlow(eventFlow: Flow<FillChecklistEvent>): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
+    override fun buildMviFlow(eventFlow: Flow<Event>): Flow<Pair<State?, Effect?>> {
         return merge(
             eventFlow.handleCreateChecklist(),
             eventFlow.handleLoadChecklist(),
@@ -49,8 +49,8 @@ class FillChecklistViewModel @Inject constructor(
         )
     }
 
-    private fun Flow<FillChecklistEvent>.handleCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
-        return filterIsInstance<FillChecklistEvent.CheckChanged>()
+    private fun Flow<Event>.handleCheckChanged(): Flow<Pair<State, Nothing?>> {
+        return filterIsInstance<Event.CheckChanged>()
             .withReadyState()
             .mapLatest { (success, event) ->
                 tracker.logEvent("check_changed", bundleOf("checked" to event.newCheck))
@@ -62,8 +62,8 @@ class FillChecklistViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleChildCheckChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
-        return filterIsInstance<FillChecklistEvent.ChildCheckChanged>()
+    private fun Flow<Event>.handleChildCheckChanged(): Flow<Pair<State, Nothing?>> {
+        return filterIsInstance<Event.ChildCheckChanged>()
             .withReadyState()
             .mapLatest { (success, event) ->
                 tracker.logEvent("child_check_changed", bundleOf("checked" to event.newCheck))
@@ -76,21 +76,21 @@ class FillChecklistViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleLoadChecklist(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.LoadChecklist>()
+    private fun Flow<Event>.handleLoadChecklist(): Flow<Pair<State, Effect?>> {
+        return filterIsInstance<Event.LoadChecklist>()
             .flatMapLatest { loadEvent ->
                 getChecklistToFillUseCase.getChecklist(loadEvent.checklistId).map {
-                    FillChecklistState.Ready(it) to null
+                    State.Ready(it) to null
                 }
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleCreateChecklist(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.CreateChecklistFromTemplate>()
+    private fun Flow<Event>.handleCreateChecklist(): Flow<Pair<State, Effect?>> {
+        return filterIsInstance<Event.CreateChecklistFromTemplate>()
             .flatMapLatest { loadEvent ->
                 createChecklistFromTemplateUseCase.createChecklistFromTemplate(loadEvent.templateId)
                     .map {
-                        val checklistLoadingState = FillChecklistState.Ready(it)
+                        val checklistLoadingState = State.Ready(it)
                             .copy(
                                 commands = listOf(
                                     ChecklistCommand.CreateChecklistCommand(
@@ -109,16 +109,16 @@ class FillChecklistViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleNotesClicked(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.NotesClicked>()
+    private fun Flow<Event>.handleNotesClicked(): Flow<Pair<State, Effect?>> {
+        return filterIsInstance<Event.NotesClicked>()
             .withReadyState()
             .map {
-                state.first() to FillChecklistEffect.ShowNotesEditShelf()
+                state.first() to Effect.ShowNotesEditShelf()
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleNotesChanged(): Flow<Pair<FillChecklistState, Nothing?>> {
-        return filterIsInstance<FillChecklistEvent.NotesChanged>()
+    private fun Flow<Event>.handleNotesChanged(): Flow<Pair<State, Nothing?>> {
+        return filterIsInstance<Event.NotesChanged>()
             .withReadyState()
             .map { (success, event) ->
                 val updatedLoadingState = success.withUpdatedNotes(event.notes)
@@ -129,19 +129,19 @@ class FillChecklistViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleEditClicked(): Flow<Pair<FillChecklistState, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.EditTemplateClicked>()
+    private fun Flow<Event>.handleEditClicked(): Flow<Pair<State, Effect?>> {
+        return filterIsInstance<Event.EditTemplateClicked>()
             .flatMapLatest {
-                state.filterIsInstance<FillChecklistState.Ready>().take(1)
+                state.filterIsInstance<State.Ready>().take(1)
             }
             .map {
                 tracker.logEvent("checklist_edit_template_clicked")
-                state.first() to FillChecklistEffect.NavigateToEditTemplate(it.checklist.templateId)
+                state.first() to Effect.NavigateToEditTemplate(it.checklist.templateId)
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleSaveClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.SaveChecklistClicked>()
+    private fun Flow<Event>.handleSaveClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.SaveChecklistClicked>()
             .withReadyState()
             .map { (success, _) ->
                 val flattenedItems = success.checklist.flattenedItems
@@ -149,21 +149,21 @@ class FillChecklistViewModel @Inject constructor(
                     bundleOf("checked_count" to flattenedItems.checkedCount(), "total_count" to flattenedItems.count())
                 tracker.logEvent("save_checklist_clicked", trackingParams)
                 commandsUseCase.storeCommands(success.consolidatedCommands())
-                null to FillChecklistEffect.CloseScreen
+                null to Effect.CloseScreen
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleDeleteClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.DeleteChecklistClicked>()
+    private fun Flow<Event>.handleDeleteClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.DeleteChecklistClicked>()
             .withReadyState()
             .map {
                 tracker.logEvent("delete_checklist_clicked")
-                null to FillChecklistEffect.ShowConfirmDeleteDialog()
+                null to Effect.ShowConfirmDeleteDialog()
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleDeleteConfirmed(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.ConfirmDeleteChecklistClicked>()
+    private fun Flow<Event>.handleDeleteConfirmed(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ConfirmDeleteChecklistClicked>()
             .withReadyState()
             .map { (success, _) ->
                 tracker.logEvent("delete_checklist_confirmation_clicked")
@@ -176,36 +176,36 @@ class FillChecklistViewModel @Inject constructor(
                         )
                     )
                 )
-                null to FillChecklistEffect.CloseScreen
+                null to Effect.CloseScreen
             }
     }
 
-    private fun Flow<FillChecklistEvent>.handleBackClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.BackClicked>()
+    private fun Flow<Event>.handleBackClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.BackClicked>()
             .withReadyState()
             .map { (success, _) ->
                 val event = if (success.isChanged()) {
-                    FillChecklistEffect.ShowConfirmExitDialog()
+                    Effect.ShowConfirmExitDialog()
                 } else {
-                    FillChecklistEffect.CloseScreen
+                    Effect.CloseScreen
                 }
                 null to event
             }
     }
 
-    private fun Flow<FillChecklistEvent>.confirmExitClicked(): Flow<Pair<FillChecklistState?, FillChecklistEffect?>> {
-        return filterIsInstance<FillChecklistEvent.ConfirmExitClicked>()
+    private fun Flow<Event>.confirmExitClicked(): Flow<Pair<State?, Effect?>> {
+        return filterIsInstance<Event.ConfirmExitClicked>()
             .withReadyState()
             .map {
                 tracker.logEvent("exit_without_saving_confirmation_clicked")
-                null to FillChecklistEffect.CloseScreen
+                null to Effect.CloseScreen
             }
     }
 
-    private fun <T> Flow<T>.withReadyState(): Flow<Pair<FillChecklistState.Ready, T>> {
+    private fun <T> Flow<T>.withReadyState(): Flow<Pair<State.Ready, T>> {
         return flatMapLatest { event ->
             state
-                .filterIsInstance<FillChecklistState.Ready>()
+                .filterIsInstance<State.Ready>()
                 .map { it to event }
                 .take(1)
         }
