@@ -40,6 +40,7 @@ dependencies {
     implementation(project(":design"))
     implementation(project(":data"))
     implementation(project(":navigation"))
+    testImplementation(project(":test"))
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.common)

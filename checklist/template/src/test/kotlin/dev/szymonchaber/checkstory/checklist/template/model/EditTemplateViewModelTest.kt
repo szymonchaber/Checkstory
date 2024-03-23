@@ -1,26 +1,16 @@
-package checkstory.checklist.template.model
+package dev.szymonchaber.checkstory.checklist.template.model
 
 import app.cash.turbine.turbineScope
-import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEffect
-import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEvent
-import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateViewModel
-import dev.szymonchaber.checkstory.checklist.template.model.OnboardingTemplateFactory
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.StoreCommandsUseCase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
+import dev.szymonchaber.checkstory.test.MainDispatcherRule
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import org.junit.Assert.assertEquals
+import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 
@@ -54,7 +44,7 @@ class EditTemplateViewModelTest {
             viewModel.onEvent(EditTemplateEvent.BackClicked)
 
             // then
-            assertEquals(EditTemplateEffect.CloseScreen, effectEvents.awaitItem())
+            Assert.assertEquals(EditTemplateEffect.CloseScreen, effectEvents.awaitItem())
         }
     }
 
@@ -70,21 +60,7 @@ class EditTemplateViewModelTest {
             viewModel.onEvent(EditTemplateEvent.BackClicked)
 
             // then
-            assertEquals(EditTemplateEffect.ShowConfirmExitDialog, effectEvents.awaitItem())
+            Assert.assertEquals(EditTemplateEffect.ShowConfirmExitDialog, effectEvents.awaitItem())
         }
-    }
-}
-
-class MainDispatcherRule(
-    val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
-) : TestWatcher() {
-
-    override fun starting(description: Description) {
-        Dispatchers.setMain(testDispatcher)
-        Dispatchers.setMain(testDispatcher)
-    }
-
-    override fun finished(description: Description) {
-        Dispatchers.resetMain()
     }
 }
