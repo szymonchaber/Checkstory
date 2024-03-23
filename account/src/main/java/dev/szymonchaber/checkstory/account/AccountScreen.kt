@@ -114,7 +114,7 @@ fun AccountScreen(
                                 /* enableCredentials = */ false,
                                 /* enableHints = */ true
                             )
-                            .setTheme(DesignR.style.Theme_Checkstory)
+//                            .setTheme(DesignR.style.Theme_Checkstory)
                             .setTosAndPrivacyPolicyUrls(
                                 termsOfServiceUrl,
                                 privacyPolicyUrl,
