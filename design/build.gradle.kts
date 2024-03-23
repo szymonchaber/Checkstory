@@ -13,7 +13,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "BANNER_AD_UNIT_ID", "\"ca-app-pub-3940256099942544/6300978111\"")
+            buildConfigField("String", "BANNER_AD_UNIT_ID", getSecret("DEBUG_BANNER_AD_UNIT_ID"))
         }
         release {
             buildConfigField("String", "BANNER_AD_UNIT_ID", getSecret("RELEASE_BANNER_AD_UNIT_ID"))
