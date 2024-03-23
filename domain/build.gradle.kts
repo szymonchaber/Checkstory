@@ -21,6 +21,7 @@ android {
 }
 
 dependencies {
+    testImplementation(project(":test"))
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)

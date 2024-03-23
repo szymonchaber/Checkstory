@@ -22,12 +22,12 @@ class AccountViewModelTest {
 
     val viewModel by lazy {
         AccountViewModel(
-            mock(),
-            mock(),
-            mock(),
-            getCurrentUserUseCase,
-            mock(),
-            mock(),
+            tracker = mock(),
+            loginUseCase = mock(),
+            registerUseCase = mock(),
+            getCurrentUserUseCase = getCurrentUserUseCase,
+            logoutUseCase = mock(),
+            deleteAccountUseCase = mock(),
         )
     }
 
