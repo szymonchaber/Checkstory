@@ -305,7 +305,7 @@ private fun SectionHeader(text: String) {
 
 @Preview
 @Composable
-fun AgeEstimationPreview(
+fun AccountStatePreview(
     @PreviewParameter(AccountStateProvider::class) state: AccountState,
 ) {
     CheckstoryTheme {
