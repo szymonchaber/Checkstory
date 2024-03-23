@@ -36,6 +36,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.OpenResultRecipient
 import dev.szymonchaber.checkstory.common.trackScreenName
+import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.navigation.Routes
@@ -88,6 +89,7 @@ fun PaymentScreen(
     }
 
     val somethingWentWrongText = stringResource(id = R.string.something_went_wrong)
+    val user = ActiveUser.current
     LaunchedEffect(Unit) {
         viewModel.effect.collect {
             when (it) {
@@ -103,7 +105,11 @@ fun PaymentScreen(
                 }
 
                 is PaymentEffect.NavigateToRegistration -> {
-                    navigator.navigate(Routes.accountScreen(triggerPartialRegistration = true))
+                    if (user.isLoggedIn) {
+                        viewModel.onEvent(PaymentEvent.RegistrationSuccess(context.getActivity()!!))
+                    } else {
+                        navigator.navigate(Routes.accountScreen(triggerPartialRegistration = true))
+                    }
                 }
 
                 is PaymentEffect.NavigateToPaymentSuccess -> {
