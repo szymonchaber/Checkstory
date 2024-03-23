@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template.model
 
 import app.cash.turbine.turbineScope
+import com.google.common.truth.Truth.assertThat
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
@@ -8,7 +9,6 @@ import dev.szymonchaber.checkstory.domain.usecase.GetTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.StoreCommandsUseCase
 import dev.szymonchaber.checkstory.test.MainDispatcherRule
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.doReturn
@@ -44,7 +44,7 @@ class EditTemplateViewModelTest {
             viewModel.onEvent(EditTemplateEvent.BackClicked)
 
             // then
-            Assert.assertEquals(EditTemplateEffect.CloseScreen, effectEvents.awaitItem())
+            assertThat(effectEvents.awaitItem()).isEqualTo(EditTemplateEffect.CloseScreen)
         }
     }
 
@@ -60,7 +60,7 @@ class EditTemplateViewModelTest {
             viewModel.onEvent(EditTemplateEvent.BackClicked)
 
             // then
-            Assert.assertEquals(EditTemplateEffect.ShowConfirmExitDialog, effectEvents.awaitItem())
+            assertThat(effectEvents.awaitItem()).isEqualTo(EditTemplateEffect.ShowConfirmExitDialog)
         }
     }
 }
