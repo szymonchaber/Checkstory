@@ -267,7 +267,9 @@ private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit
                 Tier.FREE -> {
                     Text("You are a Checkstory Begin user")
                     Spacer(modifier = Modifier.height(4.dp))
-                    Button(onClick = { /*TODO*/ }) {
+                    Button(onClick = {
+                        onEvent(AccountEvent.UpgradeClicked)
+                    }) {
                         Text("Get SERIOUS")
                     }
                 }

@@ -25,4 +25,6 @@ sealed interface AccountEvent {
     data object ManageSubscriptionsClicked : AccountEvent
 
     data object DeleteAccountClicked : AccountEvent
+
+    data object UpgradeClicked : AccountEvent
 }

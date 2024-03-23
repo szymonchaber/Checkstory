@@ -50,19 +50,20 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleFirebaseAuthFlowCancelled(),
             eventFlow.handleManageSubscriptionsClicked(),
             eventFlow.handleSignUpClicked(),
+            eventFlow.handleUpgradeClicked(),
             eventFlow.handleDeleteAccountClicked(),
             eventFlow.handleTriggerSignIn()
         )
     }
 
-    private fun Flow<AccountEvent>.handleLoadAccount(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleLoadAccount(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoadAccount>() // TODO this could be combined with a map & a flatMap
             .map {
                 AccountState(AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser()), false) to null
             }
     }
 
-    private fun Flow<AccountEvent>.handleManageSubscriptionsClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleManageSubscriptionsClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.ManageSubscriptionsClicked>()
             .map {
                 _state.value to AccountEffect.NavigateToSubscriptionManagement
@@ -76,28 +77,28 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleTriggerSignIn(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleTriggerSignIn(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.TriggerSignIn>()
             .map {
                 _state.value to AccountEffect.StartAuthUi(true)
             }
     }
 
-    private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoginClicked>()
             .mapWithState { state, _ ->
                 state to AccountEffect.StartAuthUi(false)
             }
     }
 
-    private fun Flow<AccountEvent>.handleSignUpClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleSignUpClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.SignUpClicked>()
             .mapWithState { state, _ ->
                 state to AccountEffect.NavigateToPurchaseScreen
             }
     }
 
-    private fun Flow<AccountEvent>.handleLogoutClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleLogoutClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LogoutClicked>()
             .mapWithState { state, _ ->
                 when (logoutUseCase.logoutSafely()) {
@@ -113,7 +114,7 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleLogoutDespiteUnsynchronizedDataClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleLogoutDespiteUnsynchronizedDataClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LogoutDespiteUnsynchronizedDataClicked>()
             .mapWithState { state, _ ->
                 logoutUseCase.logoutIgnoringUnsynchronizedData()
@@ -121,7 +122,14 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleDeleteAccountClicked(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleUpgradeClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.UpgradeClicked>()
+            .map {
+                null to AccountEffect.NavigateToPurchaseScreen
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleDeleteAccountClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.DeleteAccountClicked>()
             .mapWithState { state, _ ->
                 deleteAccountUseCase.deleteAccount()
@@ -130,7 +138,7 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleFirebaseResultReceived(): Flow<Pair<AccountState, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleFirebaseResultReceived(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.FirebaseAuthResultReceived>()
             .withState()
             .flatMapLatest { (state, event) ->
@@ -217,8 +225,8 @@ class AccountViewModel @Inject constructor(
     }
 
     private fun <T> Flow<T>.mapWithState(
-        block: suspend (AccountState, T) -> Pair<AccountState, AccountEffect?>
-    ): Flow<Pair<AccountState, AccountEffect?>> {
+        block: suspend (AccountState, T) -> Pair<AccountState?, AccountEffect?>
+    ): Flow<Pair<AccountState?, AccountEffect?>> {
         return withState().map { (state, event) ->
             block(state, event)
         }
