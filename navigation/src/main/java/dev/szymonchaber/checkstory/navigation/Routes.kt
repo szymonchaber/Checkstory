@@ -43,8 +43,10 @@ object Routes {
 
     fun accountScreen(
         triggerPartialRegistration: Boolean = false,
-        triggerSignIn: Boolean = false
+        triggerPurchaseRestoration: Boolean = false
     ): String {
-        return "account_screen?triggerPartialRegistration=$triggerPartialRegistration&triggerSignIn=$triggerSignIn"
+        return "account_screen" +
+                "?triggerPartialRegistration=$triggerPartialRegistration" +
+                "&triggerPurchaseRestoration=$triggerPurchaseRestoration"
     }
 }

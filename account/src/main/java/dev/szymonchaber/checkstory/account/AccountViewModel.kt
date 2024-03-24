@@ -8,6 +8,7 @@ import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.fold
+import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
 import dev.szymonchaber.checkstory.domain.usecase.DeleteAccountUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
@@ -32,7 +33,8 @@ class AccountViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val deleteAccountUseCase: DeleteAccountUseCase
+    private val deleteAccountUseCase: DeleteAccountUseCase,
+    private val localPaymentRepository: PlayPaymentRepository
 ) : BaseViewModel<AccountEvent, AccountState, AccountEffect>(
     AccountState.initial
 ) {
@@ -48,11 +50,11 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
             eventFlow.handleFirebaseResultReceived(),
             eventFlow.handleFirebaseAuthFlowCancelled(),
+            eventFlow.handleRestorePaymentClicked(),
             eventFlow.handleManageSubscriptionsClicked(),
             eventFlow.handleSignUpClicked(),
             eventFlow.handleUpgradeClicked(),
             eventFlow.handleDeleteAccountClicked(),
-            eventFlow.handleTriggerSignIn()
         )
     }
 
@@ -63,10 +65,24 @@ class AccountViewModel @Inject constructor(
             }
     }
 
+    private fun Flow<AccountEvent>.handleRestorePaymentClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.RestorePaymentClicked>()
+            .map {
+                val activeSubscription = localPaymentRepository.getActiveSubscription()
+                if (activeSubscription == null) {
+                    null to AccountEffect.ShowNoPurchasesFound
+                } else {
+                    state.value.copy(purchaseRestorationOngoing = true) to AccountEffect.StartAuthUi(allowNewAccounts = true)
+                }
+            }
+    }
+
+    // TODO extract classes dedicated to handling a given flow? (e.g. RestorePaymentHandler, ManageSubscriptionsHandler, etc.)
+
     private fun Flow<AccountEvent>.handleManageSubscriptionsClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.ManageSubscriptionsClicked>()
             .map {
-                _state.value to AccountEffect.NavigateToSubscriptionManagement
+                null to AccountEffect.NavigateToSubscriptionManagement
             }
     }
 
@@ -74,13 +90,6 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.TriggerPartialRegistration>()
             .map {
                 AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi(true)
-            }
-    }
-
-    private fun Flow<AccountEvent>.handleTriggerSignIn(): Flow<Pair<AccountState?, AccountEffect?>> {
-        return filterIsInstance<AccountEvent.TriggerSignIn>()
-            .map {
-                _state.value to AccountEffect.StartAuthUi(true)
             }
     }
 
@@ -199,14 +208,25 @@ class AccountViewModel @Inject constructor(
     }
 
     private suspend fun login(state: AccountState): Pair<AccountState, AccountEffect?> {
-        return loginUseCase.login()
+        return loginUseCase.login(state.purchaseRestorationOngoing)
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
+                    state.copy(
+                        accountLoadingState = AccountLoadingState.Loading,
+                        purchaseRestorationOngoing = false
+                    ) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
-                    state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
+                    val effect = if (state.purchaseRestorationOngoing) {
+                        AccountEffect.ShowPurchaseRestored
+                    } else {
+                        null
+                    }
+                    state.copy(
+                        accountLoadingState = AccountLoadingState.Success(it),
+                        purchaseRestorationOngoing = false
+                    ) to effect
                 }
             )
     }
@@ -219,7 +239,12 @@ class AccountViewModel @Inject constructor(
                     state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
-                    state.copy(accountLoadingState = AccountLoadingState.Success(it)) to null
+                    val effect = if (state.purchaseRestorationOngoing) {
+                        AccountEffect.ShowPurchaseRestored
+                    } else {
+                        null
+                    }
+                    state.copy(accountLoadingState = AccountLoadingState.Success(it)) to effect
                 }
             )
     }

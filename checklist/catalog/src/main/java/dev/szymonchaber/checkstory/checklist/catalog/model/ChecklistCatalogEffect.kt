@@ -24,5 +24,5 @@ sealed interface ChecklistCatalogEffect {
 
     data object ShowUnassignedPaymentDialog : ChecklistCatalogEffect
 
-    data class NavigateToAccountScreen(val triggerRegistration: Boolean) : ChecklistCatalogEffect
+    data class NavigateToAccountScreen(val triggerPurchaseRestoration: Boolean) : ChecklistCatalogEffect
 }

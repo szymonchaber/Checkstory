@@ -13,4 +13,8 @@ sealed interface AccountEffect {
     data object NavigateToPurchaseScreen : AccountEffect
 
     data object NavigateToSubscriptionManagement : AccountEffect
+
+    data object ShowNoPurchasesFound : AccountEffect
+
+    data object ShowPurchaseRestored : AccountEffect
 }

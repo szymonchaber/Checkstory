@@ -4,11 +4,10 @@ import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
@@ -61,7 +60,7 @@ fun AccountScreen(
     navigator: ResultBackNavigator<Boolean>,
     destinationsNavigator: DestinationsNavigator,
     triggerPartialRegistration: Boolean = false,
-    triggerSignIn: Boolean = false,
+    triggerPurchaseRestoration: Boolean = false
 ) {
     trackScreenName("account")
     val viewModel = hiltViewModel<AccountViewModel>()
@@ -136,18 +135,26 @@ fun AccountScreen(
                             Intent(Intent.ACTION_VIEW, "https://play.google.com/store/account/subscriptions".toUri())
                         )
                     }
+
+                    AccountEffect.ShowNoPurchasesFound -> {
+                        Toast.makeText(context, "No purchases to restore", Toast.LENGTH_LONG).show()
+                    }
+
+                    AccountEffect.ShowPurchaseRestored -> {
+                        Toast.makeText(context, "Purchase restored!", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
     }
 
-    LaunchedEffect(triggerPartialRegistration, triggerSignIn) {
+    LaunchedEffect(triggerPartialRegistration, triggerPurchaseRestoration) {
         when {
             triggerPartialRegistration -> {
                 viewModel.onEvent(AccountEvent.TriggerPartialRegistration)
             }
 
-            triggerSignIn -> {
-                viewModel.onEvent(AccountEvent.TriggerSignIn)
+            triggerPurchaseRestoration -> {
+                viewModel.onEvent(AccountEvent.RestorePaymentClicked)
             }
 
             else -> {
@@ -200,100 +207,118 @@ fun AccountView(
     accountState: AccountLoadingState.Success,
     onEvent: (AccountEvent) -> Unit
 ) {
-    when (accountState.user) {
-        is User.Guest -> {
-            GuestContent(onEvent)
-        }
+    Column {
+        when (accountState.user) {
+            is User.Guest -> {
+                GuestContent(onEvent)
+            }
 
-        is User.LoggedIn -> {
-            LoggedInContent(accountState.user, onEvent)
+            is User.LoggedIn -> {
+                LoggedInContent(accountState.user, onEvent)
+            }
+        }
+        RestorePaymentContent(onEvent)
+    }
+}
+
+@Composable
+fun RestorePaymentContent(onEvent: (AccountEvent) -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        SectionHeader("Payment restoration")
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedButton(onClick = {
+            onEvent(AccountEvent.RestorePaymentClicked)
+        }) {
+            Text("Restore payment")
         }
     }
 }
 
 @Composable
 private fun GuestContent(onEvent: (AccountEvent) -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        Column(
-            Modifier
-                .padding(16.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        SectionHeader("Account")
+        Spacer(modifier = Modifier.height(4.dp))
+        Text("Just starting out?")
+        Spacer(modifier = Modifier.height(4.dp))
+        Button(
+            onClick = {
+                onEvent(AccountEvent.SignUpClicked)
+            }
         ) {
-            SectionHeader("Account")
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("Just starting out?")
-            Spacer(modifier = Modifier.height(4.dp))
-            Button(
-                onClick = {
-                    onEvent(AccountEvent.SignUpClicked)
-                }
-            ) {
-                Text(text = "Sign up for Checkstory SERIOUS")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Row {
-                Text("Continue ")
-                Text("right", fontStyle = FontStyle.Italic)
-                Text(" where you left off")
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            OutlinedButton(onClick = { onEvent(AccountEvent.LoginClicked) }) {
-                Text(text = "Login")
-            }
+            Text(text = "Sign up for Checkstory SERIOUS")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Row {
+            Text("Continue ")
+            Text("right", fontStyle = FontStyle.Italic)
+            Text(" where you left off")
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedButton(onClick = { onEvent(AccountEvent.LoginClicked) }) {
+            Text(text = "Login")
         }
     }
 }
 
 @Composable
 private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit) {
-    Box(Modifier.fillMaxSize()) {
-        Column(
-            Modifier
-                .padding(16.dp),
-        ) {
-            SectionHeader("Account")
-            Spacer(modifier = Modifier.height(8.dp))
-            Text("Logged in")
-            Spacer(modifier = Modifier.height(4.dp))
-            OutlinedButton(onClick = {
-                onEvent(AccountEvent.LogoutClicked)
-            }) {
-                Text("Logout")
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            SectionHeader(text = "Subscription")
-            Spacer(modifier = Modifier.height(8.dp))
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+    ) {
+        SectionHeader("Account")
+        Spacer(modifier = Modifier.height(8.dp))
+        Text("Logged in")
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedButton(onClick = {
+            onEvent(AccountEvent.LogoutClicked)
+        }) {
+            Text("Logout")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        SectionHeader(text = "Subscription")
+        Spacer(modifier = Modifier.height(8.dp))
 
-            when (user.tier) {
-                Tier.FREE -> {
-                    Text("You are a Checkstory Begin user")
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Button(onClick = {
-                        onEvent(AccountEvent.UpgradeClicked)
-                    }) {
-                        Text("Get SERIOUS")
-                    }
-                }
-
-                Tier.PAID -> {
-                    Text("You are a SERIOUS user. Thank you!")
-                    Spacer(modifier = Modifier.height(4.dp))
-                    OutlinedButton(onClick = {
-                        onEvent(AccountEvent.ManageSubscriptionsClicked)
-                    }) {
-                        Text("Manage subscriptions")
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(64.dp))
-            SectionHeader(text = "Eternal consequences")
-            Spacer(modifier = Modifier.height(4.dp))
-            OutlinedButton(
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
-                onClick = {
-                    onEvent(AccountEvent.DeleteAccountClicked)
+        when (user.tier) {
+            Tier.FREE -> {
+                Text("You are a Checkstory Begin user")
+                Spacer(modifier = Modifier.height(4.dp))
+                Button(onClick = {
+                    onEvent(AccountEvent.UpgradeClicked)
                 }) {
-                Text("Delete account (forever)")
+                    Text("Get SERIOUS")
+                }
             }
+
+            Tier.PAID -> {
+                Text("You are a SERIOUS user. Thank you!")
+                Spacer(modifier = Modifier.height(4.dp))
+                OutlinedButton(onClick = {
+                    onEvent(AccountEvent.ManageSubscriptionsClicked)
+                }) {
+                    Text("Manage subscriptions")
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(64.dp))
+        SectionHeader(text = "Eternal consequences")
+        Spacer(modifier = Modifier.height(4.dp))
+        OutlinedButton(
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+            onClick = {
+                onEvent(AccountEvent.DeleteAccountClicked)
+            }) {
+            Text("Delete account (forever)")
         }
     }
 }

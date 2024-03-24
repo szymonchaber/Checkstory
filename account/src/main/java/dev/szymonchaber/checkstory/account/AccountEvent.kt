@@ -8,8 +8,6 @@ sealed interface AccountEvent {
 
     data object TriggerPartialRegistration : AccountEvent
 
-    data object TriggerSignIn : AccountEvent
-
     data object LogoutClicked : AccountEvent
 
     data object LogoutDespiteUnsynchronizedDataClicked : AccountEvent
@@ -27,4 +25,6 @@ sealed interface AccountEvent {
     data object DeleteAccountClicked : AccountEvent
 
     data object UpgradeClicked : AccountEvent
+
+    data object RestorePaymentClicked : AccountEvent
 }
