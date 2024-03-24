@@ -150,11 +150,17 @@ internal class PaymentViewModel @Inject constructor(
                             loadingState.selectedPlan.offerToken
                         ).map {
                             it.flatMap { purchase ->
-                                registerUseCase.register()
-                                    .fold(
-                                        { PurchaseError.CheckstoryAuthenticationError(it).left() },
-                                        { it.right() }
-                                    ).flatMap {
+                                val currentUser = getUserUseCase.getCurrentUser()
+                                if (!currentUser.isLoggedIn) {
+                                    registerUseCase.register()
+                                        .fold(
+                                            { PurchaseError.CheckstoryAuthenticationError(it).left() },
+                                            { it.right() }
+                                        )
+                                } else {
+                                    currentUser.right()
+                                }
+                                    .flatMap {
                                         assignPaymentToUserUseCase.assignPurchaseTokenToUser(PurchaseToken(purchase.purchaseToken))
                                             .fold(
                                                 mapError = {
