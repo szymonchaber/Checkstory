@@ -22,7 +22,7 @@ class RegisterUseCase @Inject constructor(
     private val pushFirebaseTokenUseCase: PushFirebaseMessagingTokenUseCase
 ) {
 
-    suspend fun register(): Result<RegisterError, User> {
+    suspend fun register(): Result<RegisterError, User> { // TODO maybe we should flag payment conflict here
         return authInteractor.register()
             .flatMapSuccess { user ->
                 assignExistingPurchaseToUserOrNull() ?: Result.success(user)

@@ -72,7 +72,7 @@ suspend fun <Error, Data> Result<Error, Data>.tapSuccess(onSuccess: suspend (Dat
     return this
 }
 
-fun <T, Error, Data> Result<Error, Data>.fold(
+inline fun <T, Error, Data> Result<Error, Data>.fold(
     mapError: (Error) -> T,
     mapSuccess: (Data) -> T,
 ): T {

@@ -143,6 +143,14 @@ fun AccountScreen(
                     AccountEffect.ShowPurchaseRestored -> {
                         Toast.makeText(context, "Purchase restored!", Toast.LENGTH_LONG).show()
                     }
+
+                    AccountEffect.ShowPurchaseRestorationFailed -> {
+                        Toast.makeText(context, "Purchase restoration failed", Toast.LENGTH_LONG).show()
+                    }
+
+                    AccountEffect.ShowPurchaseAssignedToAnotherUser -> {
+                        Toast.makeText(context, "Purchase already assigned to another user", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
     }
@@ -217,7 +225,6 @@ fun AccountView(
                 LoggedInContent(accountState.user, onEvent)
             }
         }
-        RestorePaymentContent(onEvent)
     }
 }
 
@@ -226,7 +233,6 @@ fun RestorePaymentContent(onEvent: (AccountEvent) -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
-            .padding(16.dp)
     ) {
         SectionHeader("Payment restoration")
         Spacer(modifier = Modifier.height(4.dp))
@@ -266,6 +272,8 @@ private fun GuestContent(onEvent: (AccountEvent) -> Unit) {
         OutlinedButton(onClick = { onEvent(AccountEvent.LoginClicked) }) {
             Text(text = "Login")
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        RestorePaymentContent(onEvent)
     }
 }
 
@@ -310,6 +318,8 @@ private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit
                 }
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        RestorePaymentContent(onEvent)
         Spacer(modifier = Modifier.height(64.dp))
         SectionHeader(text = "Eternal consequences")
         Spacer(modifier = Modifier.height(4.dp))

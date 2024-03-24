@@ -6,9 +6,11 @@ import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.domain.interactor.AssignPaymentError
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.fold
 import dev.szymonchaber.checkstory.domain.repository.PlayPaymentRepository
+import dev.szymonchaber.checkstory.domain.usecase.AssignPaymentToUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteAccountUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.LoginUseCase
@@ -34,7 +36,8 @@ class AccountViewModel @Inject constructor(
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
-    private val localPaymentRepository: PlayPaymentRepository
+    private val localPaymentRepository: PlayPaymentRepository,
+    private val assignPaymentToUserUseCase: AssignPaymentToUserUseCase
 ) : BaseViewModel<AccountEvent, AccountState, AccountEffect>(
     AccountState.initial
 ) {
@@ -69,10 +72,38 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.RestorePaymentClicked>()
             .map {
                 val activeSubscription = localPaymentRepository.getActiveSubscription()
-                if (activeSubscription == null) {
-                    null to AccountEffect.ShowNoPurchasesFound
-                } else {
-                    state.value.copy(purchaseRestorationOngoing = true) to AccountEffect.StartAuthUi(allowNewAccounts = true)
+                when {
+                    activeSubscription == null -> {
+                        null to AccountEffect.ShowNoPurchasesFound
+                    }
+
+                    getCurrentUserUseCase.getCurrentUser().isLoggedIn -> {
+                        assignPaymentToUserUseCase.assignPurchaseTokenToUser(activeSubscription.token).fold(
+                            mapError = {
+                                when (it) {
+                                    AssignPaymentError.NetworkError -> {
+                                        null to AccountEffect.ShowPurchaseRestorationFailed
+                                    }
+
+                                    AssignPaymentError.PurchaseTokenAssignedToAnotherUser -> {
+                                        null to AccountEffect.ShowPurchaseAssignedToAnotherUser
+                                    }
+                                }
+                            },
+                            mapSuccess = {
+                                state.value.copy(
+                                    purchaseRestorationOngoing = false,
+                                    accountLoadingState = AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser())
+                                ) to AccountEffect.ShowPurchaseRestored
+                            }
+                        )
+                    }
+
+                    else -> {
+                        state.value.copy(
+                            purchaseRestorationOngoing = true
+                        ) to AccountEffect.StartAuthUi(allowNewAccounts = true)
+                    }
                 }
             }
     }

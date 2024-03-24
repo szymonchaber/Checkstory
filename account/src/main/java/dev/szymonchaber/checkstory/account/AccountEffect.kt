@@ -17,4 +17,8 @@ sealed interface AccountEffect {
     data object ShowNoPurchasesFound : AccountEffect
 
     data object ShowPurchaseRestored : AccountEffect
+
+    data object ShowPurchaseRestorationFailed : AccountEffect
+
+    data object ShowPurchaseAssignedToAnotherUser : AccountEffect
 }
