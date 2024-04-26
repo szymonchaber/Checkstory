@@ -123,7 +123,7 @@ private fun UseTemplateHeader(
             elevation = 1.dp,
             onClick = {
                 eventListener(
-                    ChecklistCatalogEvent.NewChecklistFromTemplateClicked(template)
+                    ChecklistCatalogEvent.UseTemplateClicked(template)
                 )
             }
         ) {
@@ -182,7 +182,7 @@ private fun TemplateActionButtons(
     Row(Modifier.fillMaxWidth()) {
         TextButton(
             onClick = {
-                eventListener(ChecklistCatalogEvent.NewChecklistFromTemplateClicked(template))
+                eventListener(ChecklistCatalogEvent.UseTemplateClicked(template))
             }
         ) {
             Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)

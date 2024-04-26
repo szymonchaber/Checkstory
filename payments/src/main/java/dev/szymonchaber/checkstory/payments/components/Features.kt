@@ -14,7 +14,6 @@ internal fun Features() {
     Column(Modifier.padding(top = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         FeatureLine(stringResource(R.string.ads_free_experience))
         FeatureLine(stringResource(R.string.unlimited_templates))
-        FeatureLine(stringResource(R.string.unlimited_history))
         FeatureLine(stringResource(R.string.upgrade_reminders))
     }
 }

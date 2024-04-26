@@ -73,14 +73,14 @@ class ChecklistCatalogViewModel @Inject constructor(
         }
     }
 
-    override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
+    override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
         return merge(
             eventFlow.handleLoadCatalog(),
             eventFlow.handleGoToOnboarding(),
             eventFlow.handleUnassignedPaymentPresent(),
             eventFlow.handleCreateAccountForPaymentClicked(),
             eventFlow.handleAccountClicked(),
-            eventFlow.handleTemplateClicked(),
+            eventFlow.handleUseTemplateClicked(),
             eventFlow.handleRecentChecklistClicked(),
             eventFlow.handleRecentChecklistInTemplateClicked(),
             eventFlow.handleNewTemplateClicked(),
@@ -157,20 +157,13 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.NewChecklistFromTemplateClicked>()
+    private fun Flow<ChecklistCatalogEvent>.handleUseTemplateClicked(): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.UseTemplateClicked>()
             .onEach {
                 tracker.logEvent("template_clicked")
             }
-            .withSuccessState()
-            .mapLatest { (_, event) ->
-                val user = getCurrentUserUseCase.getCurrentUserFlow().first()
-                val effect = if (canAddChecklistToTemplate(user, event.template)) {
-                    ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
-                } else {
-                    ChecklistCatalogEffect.NavigateToPaymentScreen
-                }
-                _state.first() to effect
+            .map { event ->
+                null to ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
             }
     }
 
@@ -243,10 +236,6 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     private fun canAddTemplate(user: User, list: List<Template>): Boolean {
         return list.count() < MAX_FREE_CHECKLIST_TEMPLATES || user.isPaidUser
-    }
-
-    private fun canAddChecklistToTemplate(user: User, template: Template): Boolean {
-        return template.checklists.count() < MAX_FREE_CHECKLISTS || user.isPaidUser
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleHistoryClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
