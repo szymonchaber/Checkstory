@@ -15,6 +15,6 @@ internal fun Features() {
         FeatureLine(stringResource(R.string.ads_free_experience))
         FeatureLine(stringResource(R.string.unlimited_templates))
         FeatureLine(stringResource(R.string.unlimited_history))
-        FeatureLine(stringResource(R.string.unlimited_reminders))
+        FeatureLine(stringResource(R.string.upgrade_reminders))
     }
 }
