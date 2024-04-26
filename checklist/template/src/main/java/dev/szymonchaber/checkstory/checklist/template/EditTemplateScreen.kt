@@ -375,7 +375,9 @@ fun EditTemplateView(
                             Column {
                                 AddTaskButton(eventCollector)
                                 RemindersSection(template, eventCollector)
-                                DeleteTemplateButton(eventCollector)
+                                if (!ready.isFreshTemplate) {
+                                    DeleteTemplateButton(eventCollector)
+                                }
                             }
                             DropTarget(
                                 modifier = Modifier
