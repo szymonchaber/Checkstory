@@ -499,7 +499,7 @@ private fun TemplateDetails(
                     top = 8.dp,
                     start = 16.dp
                 ),
-                text = stringResource(R.string.items)
+                text = stringResource(R.string.tasks)
             )
         }
         DropTarget(

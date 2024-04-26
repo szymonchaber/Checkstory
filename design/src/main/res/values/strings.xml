@@ -11,7 +11,7 @@
     <string name="template_checklists">Checklists</string>
     <string name="checklist_history_empty">No checklists filled for this template yet</string>
     <string name="fill_checklist">Fill checklist</string>
-    <string name="items">Items</string>
+    <string name="tasks">Tasks</string>
     <string name="notes">Notes</string>
     <string name="create_your_first_checklist">Create your first checklist</string>
     <string name="add_template">Add template</string>

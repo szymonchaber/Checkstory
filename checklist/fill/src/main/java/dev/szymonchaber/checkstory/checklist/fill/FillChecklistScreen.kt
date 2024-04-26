@@ -330,7 +330,7 @@ private fun ChecklistInfo(title: String, description: String) {
     }
     SectionLabel(
         modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-        text = stringResource(R.string.items),
+        text = stringResource(R.string.tasks),
     )
 }
 
