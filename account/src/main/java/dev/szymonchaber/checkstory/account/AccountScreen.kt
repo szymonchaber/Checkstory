@@ -104,8 +104,6 @@ fun AccountScreen(
                                 listOf(
                                     AuthUI.IdpConfig.EmailBuilder()
                                         .setRequireName(false)
-                                        // TODO disallow for login / split login & registration and force a purchase?
-                                        .setAllowNewAccounts(effect.allowNewAccounts)
                                         .build()
                                 )
                             )

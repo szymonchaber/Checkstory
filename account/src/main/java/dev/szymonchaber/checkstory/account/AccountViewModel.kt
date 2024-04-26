@@ -47,7 +47,7 @@ class AccountViewModel @Inject constructor(
     override fun buildMviFlow(eventFlow: Flow<AccountEvent>): Flow<Pair<AccountState?, AccountEffect?>> {
         return merge(
             eventFlow.handleLoadAccount(),
-            eventFlow.handleTriggerPartialRegistration(),
+            eventFlow.handleTriggerRegistration(),
             eventFlow.handleFirebaseLoginClicked(),
             eventFlow.handleLogoutClicked(),
             eventFlow.handleLogoutDespiteUnsynchronizedDataClicked(),
@@ -100,9 +100,7 @@ class AccountViewModel @Inject constructor(
                     }
 
                     else -> {
-                        state.value.copy(
-                            purchaseRestorationOngoing = true
-                        ) to AccountEffect.StartAuthUi(allowNewAccounts = true)
+                        state.value.copy(purchaseRestorationOngoing = true) to AccountEffect.StartAuthUi
                     }
                 }
             }
@@ -117,17 +115,17 @@ class AccountViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<AccountEvent>.handleTriggerPartialRegistration(): Flow<Pair<AccountState?, AccountEffect?>> {
+    private fun Flow<AccountEvent>.handleTriggerRegistration(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.TriggerPartialRegistration>()
             .map {
-                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi(true)
+                AccountState(AccountLoadingState.Loading, true) to AccountEffect.StartAuthUi
             }
     }
 
     private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoginClicked>()
             .mapWithState { state, _ ->
-                state to AccountEffect.StartAuthUi(false)
+                state to AccountEffect.StartAuthUi
             }
     }
 
