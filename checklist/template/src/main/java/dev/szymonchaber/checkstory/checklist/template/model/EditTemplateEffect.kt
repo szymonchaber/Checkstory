@@ -5,22 +5,17 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 
 sealed interface EditTemplateEffect {
 
-    object CloseScreen : EditTemplateEffect
+    data object CloseScreen : EditTemplateEffect
 
-    @Suppress("CanSealedSubClassBeObject")
-    class ShowConfirmDeleteDialog : EditTemplateEffect
+    data object ShowConfirmDeleteDialog : EditTemplateEffect
 
-    class ShowAddReminderSheet(val templateId: TemplateId) : EditTemplateEffect
+    data class ShowAddReminderSheet(val templateId: TemplateId) : EditTemplateEffect
 
-    class ShowEditReminderSheet(val reminder: Reminder) : EditTemplateEffect
+    data class ShowEditReminderSheet(val reminder: Reminder) : EditTemplateEffect
 
     data object ShowConfirmExitDialog : EditTemplateEffect
 
-    @Suppress("CanSealedSubClassBeObject")
-    class ShowFreeRemindersUsed : EditTemplateEffect
+    data object ShowFreeRemindersUsed : EditTemplateEffect
 
     data class OpenTemplateHistory(val templateId: TemplateId) : EditTemplateEffect
-
-    @Suppress("CanSealedSubClassBeObject")
-    class ShowTryDraggingSnackbar : EditTemplateEffect
 }

@@ -1,7 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.template.reoder
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -14,7 +13,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
-import dev.szymonchaber.checkstory.checklist.template.NewTask
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateState
 import dev.szymonchaber.checkstory.checklist.template.views.TaskView
 
@@ -63,8 +61,6 @@ fun FloatingDraggable(ready: EditTemplateState.Ready) {
                     onDeleteClick = {},
                     acceptChildren = false
                 )
-            } ?: run {
-                NewTask(Modifier.fillMaxWidth(0.45f))
             }
         }
     }

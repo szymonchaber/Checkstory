@@ -30,6 +30,10 @@ sealed interface EditTemplateState {
 
         val isOnboarding = onboardingPlaceholders != null
 
+        val isFreshTemplate = commands.size == 1 && commands.first() is TemplateCommand.CreateNewTemplate
+
+        val canBeSaved = isOnboarding || !isFreshTemplate
+
         fun finalizedCommands(): List<TemplateCommand> {
             val updateTaskPositions = updateTaskPositions()
             val finalizingCommands = buildList {

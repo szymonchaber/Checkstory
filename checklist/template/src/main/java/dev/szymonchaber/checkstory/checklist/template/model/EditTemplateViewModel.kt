@@ -61,7 +61,6 @@ class EditTemplateViewModel @Inject constructor(
             handleNewTaskDraggedToBottom(),
             handleTaskMovedToTop(),
             handleTaskMovedToBottom(),
-            handleNewTaskDraggableClicked(),
             handleItemTitleChanged(),
             handleSaveTemplateClicked(),
             handleDeleteTemplateClicked(),
@@ -229,15 +228,6 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<Event>.handleNewTaskDraggableClicked(): Flow<Pair<State?, Effect?>> {
-        return filterIsInstance<Event.NewTaskDraggableClicked>()
-            .withSuccessState()
-            .map { (loadingState, _) ->
-                tracker.logEvent("new_checkbox_draggable_clicked")
-                loadingState to Effect.ShowTryDraggingSnackbar()
-            }
-    }
-
     private fun Flow<Event>.handleNewTaskDraggedToBottom(): Flow<Pair<State?, Effect?>> {
         return filterIsInstance<Event.NewTaskDraggedToBottom>()
             .withSuccessState()
@@ -325,10 +315,9 @@ class EditTemplateViewModel @Inject constructor(
 
     private fun Flow<Event>.handleDeleteTemplateClicked(): Flow<Pair<State?, Effect?>> {
         return filterIsInstance<Event.DeleteTemplateClicked>()
-            .withSuccessState()
-            .map { (_, _) ->
+            .map {
                 tracker.logEvent("delete_template_clicked")
-                null to Effect.ShowConfirmDeleteDialog()
+                null to Effect.ShowConfirmDeleteDialog
             }
     }
 
@@ -361,11 +350,7 @@ class EditTemplateViewModel @Inject constructor(
     }
 
     private fun canSafelyExit(ready: State.Ready): Boolean {
-        return ready.commands.isEmpty() || isFreshTemplate(ready)
-    }
-
-    private fun isFreshTemplate(ready: State.Ready): Boolean {
-        return ready.commands.size == 1 && ready.commands.first() is TemplateCommand.CreateNewTemplate
+        return ready.commands.isEmpty() || ready.isFreshTemplate
     }
 
     private fun Flow<Event>.handleConfirmExitClicked(): Flow<Pair<State?, Effect?>> {
@@ -386,7 +371,7 @@ class EditTemplateViewModel @Inject constructor(
                 val effect = if (user.isPaidUser) {
                     Effect.ShowAddReminderSheet(state.template.id)
                 } else {
-                    Effect.ShowFreeRemindersUsed()
+                    Effect.ShowFreeRemindersUsed
                 }
                 null to effect
             }

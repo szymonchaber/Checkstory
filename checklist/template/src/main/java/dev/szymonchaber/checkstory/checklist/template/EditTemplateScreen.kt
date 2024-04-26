@@ -33,6 +33,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetValue
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.ScaffoldState
@@ -191,14 +192,6 @@ fun EditTemplateScreen(
 
                 is EditTemplateEffect.OpenTemplateHistory -> {
                     navigator.navigate(Routes.checklistHistoryScreen(it.templateId))
-                }
-
-                is EditTemplateEffect.ShowTryDraggingSnackbar -> {
-                    scope.launch {
-                        scaffoldState.snackbarHostState.showSnackbar(
-                            message = "Drag me to where you want a new task 🎯"
-                        )
-                    }
                 }
             }
         }
@@ -403,7 +396,7 @@ fun EditTemplateView(
                 }
                 DropTargetIndicatorLine()
             }
-            BottomActionBar(eventCollector = eventCollector)
+            BottomActionBar(ready.canBeSaved, eventCollector)
         }
         FloatingDraggable(ready)
         dragDropState.scrollComparisonDebugPoints?.let { (top, bottom) ->
@@ -417,7 +410,7 @@ fun EditTemplateView(
 }
 
 @Composable
-fun BottomActionBar(eventCollector: (EditTemplateEvent) -> Unit) {
+fun BottomActionBar(enableSaveButton: Boolean, eventCollector: (EditTemplateEvent) -> Unit) {
     Card(
         elevation = 8.dp,
         modifier = Modifier
@@ -429,23 +422,26 @@ fun BottomActionBar(eventCollector: (EditTemplateEvent) -> Unit) {
                 .padding(vertical = 8.dp, horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Draggable(
+            OutlinedButton(
                 modifier = Modifier
                     .weight(0.5f)
-                    .align(Alignment.CenterVertically)
-            ) {
-                NewTask(it.fillMaxWidth()) {
-                    eventCollector(EditTemplateEvent.NewTaskDraggableClicked)
-                }
+                    .align(Alignment.CenterVertically),
+                shape = MaterialTheme.shapes.medium,
+                onClick = {
+                    eventCollector(EditTemplateEvent.BackClicked)
+                }) {
+                Text(text = stringResource(R.string.cancel))
             }
             Button(
                 modifier = Modifier
                     .weight(0.5f)
                     .align(Alignment.CenterVertically),
                 shape = MaterialTheme.shapes.medium,
+                enabled = enableSaveButton,
                 onClick = {
                     eventCollector(EditTemplateEvent.SaveTemplateClicked)
-                }) {
+                }
+            ) {
                 Text(text = stringResource(R.string.save_template))
             }
         }

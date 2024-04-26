@@ -6,9 +6,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.reminder.Remi
 
 sealed interface EditTemplateEvent {
 
-    object CreateTemplate : EditTemplateEvent
+    data object CreateTemplate : EditTemplateEvent
 
-    object GenerateOnboardingTemplate : EditTemplateEvent
+    data object GenerateOnboardingTemplate : EditTemplateEvent
 
     data class EditTemplate(val templateId: TemplateId) : EditTemplateEvent
 
@@ -22,7 +22,7 @@ sealed interface EditTemplateEvent {
 
     data class ChildTaskAdded(val parentId: TemplateTaskId) : EditTemplateEvent
 
-    object AddReminderClicked : EditTemplateEvent
+    data object AddReminderClicked : EditTemplateEvent
 
     data class ReminderClicked(val reminder: Reminder) : EditTemplateEvent
 
@@ -44,27 +44,25 @@ sealed interface EditTemplateEvent {
 
     data class NewChildDraggedBelow(val target: TemplateTaskId) : EditTemplateEvent
 
-    object NewTaskDraggedToTop : EditTemplateEvent
+    data object NewTaskDraggedToTop : EditTemplateEvent
 
-    object NewTaskDraggedToBottom : EditTemplateEvent
+    data object NewTaskDraggedToBottom : EditTemplateEvent
 
     data class TaskMovedToTop(val taskId: TemplateTaskId) : EditTemplateEvent
 
     data class TaskMovedToBottom(val taskId: TemplateTaskId) : EditTemplateEvent
 
-    object AddTaskClicked : EditTemplateEvent
+    data object AddTaskClicked : EditTemplateEvent
 
-    object SaveTemplateClicked : EditTemplateEvent
+    data object SaveTemplateClicked : EditTemplateEvent
 
-    object DeleteTemplateClicked : EditTemplateEvent
+    data object DeleteTemplateClicked : EditTemplateEvent
 
-    object ConfirmDeleteTemplateClicked : EditTemplateEvent
+    data object ConfirmDeleteTemplateClicked : EditTemplateEvent
 
-    object BackClicked : EditTemplateEvent
+    data object BackClicked : EditTemplateEvent
 
-    object ConfirmExitClicked : EditTemplateEvent
+    data object ConfirmExitClicked : EditTemplateEvent
 
-    object TemplateHistoryClicked : EditTemplateEvent
-
-    object NewTaskDraggableClicked : EditTemplateEvent
+    data object TemplateHistoryClicked : EditTemplateEvent
 }
