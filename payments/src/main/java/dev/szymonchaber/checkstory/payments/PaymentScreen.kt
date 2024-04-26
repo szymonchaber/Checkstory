@@ -3,6 +3,7 @@ package dev.szymonchaber.checkstory.payments
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -138,7 +139,9 @@ fun PaymentScreen(
                 elevation = 12.dp
             )
         }, content = {
-            PaymentView(viewModel)
+            Box(modifier = Modifier.padding(it)) {
+                PaymentView(viewModel)
+            }
         },
         scaffoldState = scaffoldState,
         bottomBar = {
@@ -187,13 +190,6 @@ private fun ColumnScope.SubscribeBottomSection(
 internal fun PaymentView(viewModel: PaymentViewModel) {
     val state by viewModel.state.collectAsState()
     Column {
-        Text(
-            modifier = Modifier
-                .padding(horizontal = 20.dp)
-                .padding(top = 16.dp),
-            text = stringResource(id = R.string.upgrade),
-            style = MaterialTheme.typography.h5
-        )
         Text(
             modifier = Modifier
                 .padding(horizontal = 20.dp)
