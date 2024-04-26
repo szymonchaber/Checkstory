@@ -31,6 +31,49 @@ sealed interface EditTemplateState {
         val isOnboarding = onboardingPlaceholders != null
 
         fun finalizedCommands(): List<TemplateCommand> {
+            val updateTaskPositions = updateTaskPositions()
+            val finalizingCommands = buildList {
+                if (isOnboarding && onboardingPlaceholders != null) {
+                    if (template.title.isEmpty()) {
+                        add(
+                            TemplateCommand.RenameTemplate(
+                                template.id,
+                                onboardingPlaceholders.title,
+                                Clock.System.now()
+                            )
+                        )
+                    }
+                    if (template.description.isEmpty()) {
+                        add(
+                            TemplateCommand.ChangeTemplateDescription(
+                                template.id,
+                                onboardingPlaceholders.description,
+                                Clock.System.now()
+                            )
+                        )
+                    }
+                    addAll(renameTemplateTasks())
+                }
+            }
+            return commands.plus(updateTaskPositions).plus(finalizingCommands)
+        }
+
+        private fun renameTemplateTasks(): List<TemplateCommand.RenameTemplateTask> {
+            return tasks.flattenViewTask()
+                .filter {
+                    it.title.isEmpty()
+                }
+                .map {
+                    TemplateCommand.RenameTemplateTask(
+                        templateId = template.id,
+                        taskId = it.id,
+                        newTitle = it.placeholderTitle ?: "",
+                        timestamp = Clock.System.now()
+                    )
+                }
+        }
+
+        private fun updateTaskPositions(): TemplateCommand.UpdateTaskPositions {
             val indexedTasks = tasks
                 .mapIndexed { index, task ->
                     task.toDomainModel(position = index, templateId = template.id)
@@ -39,19 +82,23 @@ sealed interface EditTemplateState {
                 .associate {
                     it.id to it.sortPosition
                 }
-            return commands.plus(
-                TemplateCommand.UpdateTaskPositions(
-                    localPositions,
-                    Clock.System.now(),
-                    UUID.randomUUID(),
-                    template.id
-                )
+            return TemplateCommand.UpdateTaskPositions(
+                localPositions,
+                Clock.System.now(),
+                UUID.randomUUID(),
+                template.id
             )
         }
 
         private fun List<TemplateTask>.flatten(): List<TemplateTask> {
             return flatMap {
                 listOf(it) + it.children.flatten()
+            }
+        }
+
+        private fun List<ViewTemplateTask>.flattenViewTask(): List<ViewTemplateTask> {
+            return flatMap {
+                listOf(it) + it.children.flattenViewTask()
             }
         }
 
