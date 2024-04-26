@@ -23,7 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -261,11 +261,20 @@ private fun FillChecklistScaffold(
             }
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                viewModel.onEvent(FillChecklistEvent.SaveChecklistClicked)
-            }) {
-                Icon(imageVector = Icons.Filled.Check, contentDescription = null)
-            }
+            ExtendedFloatingActionButton(
+                text = {
+                    Text(
+                        text = stringResource(R.string.save).uppercase(),
+                        style = MaterialTheme.typography.button
+                    )
+                },
+                onClick = {
+                    viewModel.onEvent(FillChecklistEvent.SaveChecklistClicked)
+                },
+                icon = {
+                    Icon(Icons.Filled.Check, null)
+                }
+            )
         }
     )
 }
