@@ -48,12 +48,7 @@ class ReminderScheduler @Inject constructor(
         val toEpochMilli = startDateTime.toInstant(ZoneId.systemDefault().rules.getOffset(Instant.now()))
             .toEpochMilli()
         logReminderScheduling(toEpochMilli, reminder)
-        AlarmManagerCompat.setExactAndAllowWhileIdle(
-            alarmManager,
-            AlarmManager.RTC_WAKEUP,
-            toEpochMilli,
-            createIntent(reminder)
-        )
+        scheduleAlarmSafe(toEpochMilli, reminder)
     }
 
     fun scheduleNextOccurrence(reminder: Reminder.Recurring) {
@@ -68,12 +63,20 @@ class ReminderScheduler @Inject constructor(
 
         // alarmManager.setRepeating() doesn't work when the device is idle.
         // Instead, we re-schedule recurring alarms within ReminderReceiver on each notification sent
-        AlarmManagerCompat.setExactAndAllowWhileIdle(
-            alarmManager,
-            AlarmManager.RTC_WAKEUP,
-            toEpochMilli,
-            createIntent(reminder)
-        )
+        scheduleAlarmSafe(toEpochMilli, reminder)
+    }
+
+    private fun scheduleAlarmSafe(toEpochMilli: Long, reminder: Reminder) {
+        try {
+            AlarmManagerCompat.setExactAndAllowWhileIdle(
+                alarmManager,
+                AlarmManager.RTC_WAKEUP,
+                toEpochMilli,
+                createIntent(reminder)
+            )
+        } catch (securityException: SecurityException) {
+            Timber.e(securityException, "Couldn't schedule a reminder")
+        }
     }
 
     private fun logReminderScheduling(toEpochMilli: Long, reminder: Reminder) {
