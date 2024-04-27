@@ -46,7 +46,7 @@
         </activity>
 
         <service
-            android:name="dev.szymonchaber.checkstory.notifications.CheckstoryMessagingService"
+            android:name="dev.szymonchaber.checkstory.notifications.MessagingService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

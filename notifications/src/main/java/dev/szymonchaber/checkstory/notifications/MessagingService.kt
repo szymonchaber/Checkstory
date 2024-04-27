@@ -15,7 +15,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class CheckstoryMessagingService : FirebaseMessagingService() {
+class MessagingService : FirebaseMessagingService() {
 
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.IO + job)
@@ -33,7 +33,7 @@ class CheckstoryMessagingService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
-        Timber.e("Got message! ${message.notification}")
+        Timber.e("Got message! ${message.data}")
         scope.launch {
             loginUseCase.login()
             FetchDataWorker.scheduleExpedited(WorkManager.getInstance(application))
