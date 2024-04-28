@@ -33,7 +33,6 @@ fun CommonTask(
     nestingLevel: Int,
     eventCollector: (EditTemplateEvent) -> Unit,
 ) {
-    val taskTopPadding = 12.dp
     val focusRequester = remember { FocusRequester() }
     Box {
         val acceptChildren = remember(nestingLevel) {
@@ -48,7 +47,7 @@ fun CommonTask(
                 .onGloballyPositioned {
                     columnHeightDp = with(localDensity) { it.size.height.toDp() }
                 }
-                .padding(top = taskTopPadding, start = paddingStart + 16.dp, end = 16.dp),
+                .padding(top = 12.dp, start = paddingStart + 16.dp, end = 16.dp),
             title = task.title,
             placeholder = task.placeholderTitle,
             focusRequester = focusRequester,
