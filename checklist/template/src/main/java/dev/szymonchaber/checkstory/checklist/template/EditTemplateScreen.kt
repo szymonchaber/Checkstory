@@ -385,11 +385,7 @@ fun EditTemplateView(
 //                            .background(Color.Green.copy(alpha = 0.2f)),
                                 placeTargetLineOnTop = true,
                                 onDataDropped = { taskId ->
-                                    if (taskId.id == NEW_TASK_ID) {
-                                        eventCollector(EditTemplateEvent.NewTaskDraggedToBottom)
-                                    } else {
-                                        eventCollector(EditTemplateEvent.TaskMovedToBottom(taskId))
-                                    }
+                                    eventCollector(EditTemplateEvent.TaskMovedToBottom(taskId))
                                 },
                                 dropTargetOffset = 16.dp
                             )
@@ -507,11 +503,7 @@ private fun TemplateDetails(
                 .fillMaxSize(),
 //                .background(Color.Blue.copy(alpha = 0.2f)),
             onDataDropped = { taskId ->
-                if (taskId.id == NEW_TASK_ID) {
-                    eventCollector(EditTemplateEvent.NewTaskDraggedToTop)
-                } else {
-                    eventCollector(EditTemplateEvent.TaskMovedToTop(taskId))
-                }
+                eventCollector(EditTemplateEvent.TaskMovedToTop(taskId))
             },
             dropTargetOffset = 16.dp
         )

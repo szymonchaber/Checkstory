@@ -156,6 +156,7 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.LogoutDespiteUnsynchronizedDataClicked>()
             .mapWithState { state, _ ->
                 logoutUseCase.logoutIgnoringUnsynchronizedData()
+                firebaseAuth.signOut()
                 state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
             }
     }

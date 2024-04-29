@@ -9,20 +9,25 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -74,6 +79,14 @@ fun AccountScreen(
         }
     }
 
+    val openConfirmLogoutDialog = remember { mutableStateOf(false) }
+    if (openConfirmLogoutDialog.value) {
+        ConfirmLogoutDialog(openConfirmLogoutDialog) {
+            viewModel.onEvent(AccountEvent.LogoutDespiteUnsynchronizedDataClicked)
+            openConfirmLogoutDialog.value = false
+        }
+    }
+
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val termsOfServiceUrl = stringResource(DesignR.string.terms_of_service_url)
@@ -87,12 +100,7 @@ fun AccountScreen(
                     }
 
                     is AccountEffect.ShowDataNotSynchronized -> {
-                        Toast.makeText(
-                            context,
-                            "There are some unsynchronized changes. Logout anyway?",
-                            Toast.LENGTH_SHORT
-                        )
-                            .show()
+                        openConfirmLogoutDialog.value = true
                     }
 
                     is AccountEffect.StartAuthUi -> {
@@ -369,3 +377,33 @@ private class AccountStateProvider : CollectionPreviewParameterProvider<AccountS
         ),
     ),
 )
+
+@Composable
+fun ConfirmLogoutDialog(openDialog: MutableState<Boolean>, onConfirmClicked: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = {
+            openDialog.value = false
+        },
+        title = {
+            Text("Logout")
+        },
+        text = {
+            Text("There are some unsynchronized changes. Logging out will discard them. Continue?")
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirmClicked
+            ) {
+                Text("Logout")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    openDialog.value = false
+                }) {
+                Text("Cancel")
+            }
+        }
+    )
+}
