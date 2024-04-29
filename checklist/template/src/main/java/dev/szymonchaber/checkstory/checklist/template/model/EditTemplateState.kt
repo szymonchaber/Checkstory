@@ -232,22 +232,6 @@ sealed interface EditTemplateState {
             )
         }
 
-        fun withNewSiblingMovedBelow(below: TemplateTaskId): EditTemplateState {
-            val newCheckbox = newTask()
-            val parentId = findParentId(tasks, below)
-            return copy(
-                tasks = tasks.withSiblingBelow(below, newCheckbox),
-                mostRecentlyAddedItem = newCheckbox.id
-            ).plusCommand(
-                TemplateCommand.AddTemplateTask(
-                    template.id,
-                    newCheckbox.id,
-                    parentId,
-                    Clock.System.now()
-                )
-            )
-        }
-
         private fun findParentId(tasks: List<ViewTemplateTask>, id: TemplateTaskId): TemplateTaskId? {
             tasks.forEach { task ->
                 if (task.id == id) {
@@ -291,21 +275,6 @@ sealed interface EditTemplateState {
                     it.withMovedSiblingRecursive(below, movedItem)
                 }
             }
-        }
-
-        fun withNewChildMovedBelow(below: TemplateTaskId): EditTemplateState {
-            val newItem = newTask()
-            return copy(
-                tasks = tasks.withChildBelow(below, newItem),
-                mostRecentlyAddedItem = newItem.id
-            ).plusCommand(
-                TemplateCommand.AddTemplateTask(
-                    template.id,
-                    newItem.id,
-                    TemplateTaskId(below.id),
-                    Clock.System.now()
-                )
-            )
         }
 
         fun withChildMovedBelow(

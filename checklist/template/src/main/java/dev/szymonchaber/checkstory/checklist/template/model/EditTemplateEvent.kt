@@ -35,8 +35,6 @@ sealed interface EditTemplateEvent {
         val newSibling: TemplateTaskId
     ) : EditTemplateEvent
 
-    data class NewSiblingDraggedBelow(val target: TemplateTaskId) : EditTemplateEvent
-
     data class ChildMovedBelow(
         val target: TemplateTaskId,
         val newChild: TemplateTaskId

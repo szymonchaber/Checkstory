@@ -20,7 +20,7 @@ fun Modifier.detectLazyListReorder(): Modifier {
                 if (down != null) {
                     dragDropState.onDragStart(
                         down.position,
-                        DragSource.LazyList(dragStart.handlePosition, dragStart.handleSize)
+                        DragSource(dragStart.handlePosition, dragStart.handleSize)
                     )
                     dragDropState.onDrag(dragStart.offset)
                     detectDrag(

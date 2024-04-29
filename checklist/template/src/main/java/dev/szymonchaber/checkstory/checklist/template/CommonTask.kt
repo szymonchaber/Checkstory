@@ -104,11 +104,7 @@ private fun Receptacles(
             id = forTask,
             dropTargetOffset = dropTargetOffset,
             onDataDropped = { siblingTask ->
-                if (siblingTask.id == NEW_TASK_ID) {
-                    eventCollector(EditTemplateEvent.NewSiblingDraggedBelow(forTask))
-                } else {
-                    eventCollector(EditTemplateEvent.SiblingMovedBelow(forTask, siblingTask))
-                }
+                eventCollector(EditTemplateEvent.SiblingMovedBelow(forTask, siblingTask))
             }
         )
         if (acceptChildren) {
@@ -119,11 +115,7 @@ private fun Receptacles(
 //                    .background(Color.Yellow.copy(alpha = 0.2f)),
                 id = forTask,
                 onDataDropped = { childTask ->
-                    if (childTask.id == NEW_TASK_ID) {
-                        eventCollector(EditTemplateEvent.NewChildDraggedBelow(forTask))
-                    } else {
-                        eventCollector(EditTemplateEvent.ChildMovedBelow(forTask, childTask))
-                    }
+                    eventCollector(EditTemplateEvent.ChildMovedBelow(forTask, childTask))
                 }
             )
         }

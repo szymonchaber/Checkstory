@@ -55,8 +55,6 @@ class EditTemplateViewModel @Inject constructor(
             handleTaskRemoved(),
             handleSiblingMoved(),
             handleChildMoved(),
-            handleNewSiblingDragged(),
-            handleNewChildDragged(),
             handleNewTaskDraggedToTop(),
             handleNewTaskDraggedToBottom(),
             handleTaskMovedToTop(),
@@ -174,30 +172,12 @@ class EditTemplateViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<Event>.handleNewSiblingDragged(): Flow<Pair<State?, Effect?>> {
-        return filterIsInstance<Event.NewSiblingDraggedBelow>()
-            .withSuccessState()
-            .map { (loadingState, event) ->
-                tracker.logEvent("new_checkbox_dragged_to_sibling")
-                loadingState.withNewSiblingMovedBelow(event.target) to null
-            }
-    }
-
     private fun Flow<Event>.handleChildMoved(): Flow<Pair<State?, Effect?>> {
         return filterIsInstance<Event.ChildMovedBelow>()
             .withSuccessState()
             .map { (loadingState, event) ->
                 tracker.logEvent("checkbox_moved_to_child")
                 loadingState.withChildMovedBelow(event.target, event.newChild) to null
-            }
-    }
-
-    private fun Flow<Event>.handleNewChildDragged(): Flow<Pair<State?, Effect?>> {
-        return filterIsInstance<Event.NewChildDraggedBelow>()
-            .withSuccessState()
-            .map { (loadingState, event) ->
-                tracker.logEvent("new_checkbox_dragged_to_child")
-                loadingState.withNewChildMovedBelow(event.target) to null
             }
     }
 

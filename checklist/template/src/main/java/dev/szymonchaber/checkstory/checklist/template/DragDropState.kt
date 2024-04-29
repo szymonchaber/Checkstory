@@ -32,14 +32,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 import kotlin.math.absoluteValue
 import kotlin.math.min
 import kotlin.math.sign
-
-val NEW_TASK_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
 class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope, val maxScroll: Float) {
 
@@ -72,29 +69,18 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
     var overscrollJob by mutableStateOf<Job?>(null)
 
     fun onDragStart(offset: Offset, dragSource: DragSource) {
-        when (dragSource) {
-            is DragSource.LazyList -> {
-                lazyListState.layoutInfo.visibleItemsInfo
-                    .firstOrNull { item ->
-                        offset.y.toInt() in item.offset..(item.offsetEnd)
-                    }
-                    ?.takeUnless { it.key !is TemplateTaskId }
-                    ?.also { itemInfo ->
-                        currentIndexOfDraggedItem = itemInfo.index
-                        initialDragPosition = Offset(dragSource.handlePosition.x, itemInfo.offset.toFloat())
-                        initialDragSize = IntSize(width = dragSource.handleSize.width, height = itemInfo.size)
-                        isDragging = true
-                        taskViewId = itemInfo.key as? TemplateTaskId
-                    }
+        lazyListState.layoutInfo.visibleItemsInfo
+            .firstOrNull { item ->
+                offset.y.toInt() in item.offset..(item.offsetEnd)
             }
-            is DragSource.NewTaskDraggable -> {
-                dataToDrop = TemplateTaskId(NEW_TASK_ID)
-                taskViewId = TemplateTaskId(NEW_TASK_ID)
+            ?.takeUnless { it.key !is TemplateTaskId }
+            ?.also { itemInfo ->
+                currentIndexOfDraggedItem = itemInfo.index
+                initialDragPosition = Offset(dragSource.handlePosition.x, itemInfo.offset.toFloat())
+                initialDragSize = IntSize(width = dragSource.handleSize.width, height = itemInfo.size)
                 isDragging = true
-                initialDragPosition = dragSource.initialPosition
-                initialDragSize = dragSource.initialSize
+                taskViewId = itemInfo.key as? TemplateTaskId
             }
-        }
         pointerDebugPoint = initialDragPosition
     }
 
@@ -166,8 +152,10 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
             when {
                 draggedDistance > 0 -> (endOffset - lazyListState.layoutInfo.viewportEndOffset).takeIf { diff -> diff > 0 }
                     ?: 0f
+
                 draggedDistance < 0 -> (startOffset - lazyListState.layoutInfo.viewportStartOffset).takeIf { diff -> diff < 0 }
                     ?: 0f
+
                 else -> 0f
             }.let {
                 interpolateOutOfBoundsScroll((endOffset - startOffset).toInt(), it, time, maxScroll)
@@ -337,14 +325,6 @@ private val mouseSlop = 0.125.dp
 private val defaultTouchSlop = 18.dp // The default touch slop on Android devices
 private val mouseToTouchSlopRatio = mouseSlop / defaultTouchSlop
 
-sealed interface DragSource {
-
-    data class NewTaskDraggable(
-        val initialPosition: Offset,
-        val initialSize: IntSize
-    ) : DragSource
-
-    data class LazyList(val handlePosition: Offset, val handleSize: IntSize) : DragSource
-}
+data class DragSource(val handlePosition: Offset, val handleSize: IntSize)
 
 data class DropTargetInfo(val offset: Offset, val onDataDropped: (TemplateTaskId) -> Unit)
