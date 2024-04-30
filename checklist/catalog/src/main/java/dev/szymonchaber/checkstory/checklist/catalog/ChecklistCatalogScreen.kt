@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.DropdownMenu
@@ -46,9 +45,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogState
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
-import dev.szymonchaber.checkstory.checklist.catalog.recent.RecentChecklistsView
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.R
@@ -199,43 +196,36 @@ private fun ChecklistCatalogView(
             contentPadding = PaddingValues(top = 16.dp, bottom = 96.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+//            item {
+//                RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
+//            }
             item {
-                RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
+                SectionLabel(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    text = stringResource(R.string.templates),
+                )
             }
-            templates(state, viewModel)
+            when (val loadingState = state.templatesLoadingState) {
+                ChecklistCatalogLoadingState.Loading -> {
+                    item {
+                        LoadingView()
+                    }
+                }
+
+                is ChecklistCatalogLoadingState.Success -> {
+                    if (loadingState.templates.isEmpty()) {
+                        item {
+                            NoTemplatesView()
+                        }
+                    } else {
+                        items(loadingState.templates) {
+                            TemplateView(it, viewModel::onEvent)
+                        }
+                    }
+                }
+            }
         }
         PullRefreshIndicator(state.isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
-    }
-}
-
-private fun LazyListScope.templates(
-    state: ChecklistCatalogState,
-    viewModel: ChecklistCatalogViewModel
-) {
-    item {
-        SectionLabel(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            text = stringResource(R.string.templates),
-        )
-    }
-    when (val loadingState = state.templatesLoadingState) {
-        ChecklistCatalogLoadingState.Loading -> {
-            item {
-                LoadingView()
-            }
-        }
-
-        is ChecklistCatalogLoadingState.Success -> {
-            if (loadingState.templates.isEmpty()) {
-                item {
-                    NoTemplatesView()
-                }
-            } else {
-                items(loadingState.templates) {
-                    TemplateView(it, viewModel::onEvent)
-                }
-            }
-        }
     }
 }
 
