@@ -88,23 +88,21 @@ fun TemplateView(
                     .padding(top = 16.dp)
             )
             TemplateActionButtons(template, interactionSource, eventListener)
-            if (!isCollapsed) {
-                SectionLabel(
-                    modifier = Modifier.padding(start = 16.dp),
-                    text = stringResource(id = R.string.template_checklists)
-                )
-                ChecklistsCarousel(
-                    checklists = template.checklists,
-                    paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
-                    cardElevation = 1.dp,
-                    onChecklistClicked = {
-                        eventListener(
-                            ChecklistCatalogEvent.RecentChecklistClicked(it.id)
-                        )
-                    },
+            SectionLabel(
+                modifier = Modifier.padding(start = 16.dp),
+                text = stringResource(id = R.string.template_checklists)
+            )
+            ChecklistsCarousel(
+                checklists = template.checklists,
+                paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+                cardElevation = 1.dp,
+                onChecklistClicked = {
+                    eventListener(
+                        ChecklistCatalogEvent.RecentChecklistClicked(it.id)
+                    )
+                },
 //                    header = UseTemplateHeader(eventListener, template)
-                )
-            }
+            )
         }
     }
 }
