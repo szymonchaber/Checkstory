@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.checklist.template
+package dev.szymonchaber.checkstory.design.dialogs
 
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text

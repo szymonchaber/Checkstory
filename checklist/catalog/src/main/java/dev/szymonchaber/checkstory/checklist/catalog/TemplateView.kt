@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.recent.ChecklistsCarousel
 import dev.szymonchaber.checkstory.design.R
+import dev.szymonchaber.checkstory.design.dialogs.ConfirmDeleteTemplateDialog
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
@@ -107,6 +108,14 @@ private fun TemplateActions(
     template: Template
 ) {
     var showMenu by remember { mutableStateOf(false) }
+    val showConfirmDeleteDialog = remember { mutableStateOf(false) }
+
+    if (showConfirmDeleteDialog.value) {
+        ConfirmDeleteTemplateDialog(showConfirmDeleteDialog) {
+            eventListener(ChecklistCatalogEvent.DeleteTemplateConfirmed(template.id))
+            showConfirmDeleteDialog.value = false
+        }
+    }
     IconButton(
         onClick = {
             showMenu = !showMenu
@@ -133,7 +142,7 @@ private fun TemplateActions(
             }
             DropdownMenuItem(onClick = {
                 showMenu = false
-                eventListener(ChecklistCatalogEvent.DeleteTemplateConfirmed(template.id)) // TODO Show a dialog first
+                showConfirmDeleteDialog.value = true
             }) {
                 Text(text = stringResource(id = R.string.delete))
             }
