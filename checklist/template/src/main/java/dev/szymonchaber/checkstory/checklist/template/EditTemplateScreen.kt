@@ -50,6 +50,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -241,17 +242,21 @@ private fun EditTemplateScaffold(
             SnackbarHost(it, Modifier.padding(bottom = 48.dp))
         },
         topBar = {
-            val titleText = when {
-                isOnboarding -> {
-                    R.string.create_your_first_checklist
-                }
+            val titleText by remember(isOnboarding, isNewTemplate) {
+                derivedStateOf {
+                    when {
+                        isOnboarding -> {
+                            R.string.create_your_first_checklist
+                        }
 
-                isNewTemplate -> {
-                    R.string.add_template
-                }
+                        isNewTemplate -> {
+                            R.string.add_template
+                        }
 
-                else -> {
-                    R.string.edit_template
+                        else -> {
+                            R.string.edit_template
+                        }
+                    }
                 }
             }
             TopAppBar(
@@ -279,7 +284,7 @@ private fun EditTemplateScaffold(
             Box(
                 Modifier.padding(it)
             ) {
-                when (val loadingState = state) {
+                when (state) {
                     EditTemplateState.Loading -> {
                         FullSizeLoadingView()
                     }
@@ -288,8 +293,8 @@ private fun EditTemplateScaffold(
                         val recentlyAddedUnconsumedItem = remember {
                             RecentlyAddedUnconsumedItem()
                         }
-                        LaunchedEffect(key1 = loadingState.mostRecentlyAddedItem) {
-                            recentlyAddedUnconsumedItem.item = loadingState.mostRecentlyAddedItem
+                        LaunchedEffect(key1 = state.mostRecentlyAddedItem) {
+                            recentlyAddedUnconsumedItem.item = state.mostRecentlyAddedItem
                         }
                         CompositionLocalProvider(
                             LocalRecentlyAddedUnconsumedItem provides recentlyAddedUnconsumedItem,
@@ -298,7 +303,7 @@ private fun EditTemplateScaffold(
                                 viewModel.isReorderValid(subject, target)
                             }
                         ) {
-                            EditTemplateView(loadingState, viewModel::onEvent)
+                            EditTemplateView(state, viewModel::onEvent)
                         }
                     }
                 }
