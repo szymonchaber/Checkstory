@@ -3,10 +3,13 @@ package dev.szymonchaber.checkstory.design.views
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +34,8 @@ import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.BuildConfig
 import timber.log.Timber
 
+private val dividerColor = Color.Black.copy(alpha = 0.5f)
+
 @SuppressLint("MissingPermission")
 @Composable
 fun AdvertView(modifier: Modifier = Modifier) {
@@ -38,52 +43,67 @@ fun AdvertView(modifier: Modifier = Modifier) {
         mutableStateOf(false)
     }
     if (!adLoadingFailed) {
-        Box(
-            modifier = Modifier
-                .height(50.dp)
-        ) {
-            val isInEditMode = LocalInspectionMode.current
-            if (isInEditMode) {
-                Text(
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .background(Color.Red)
-                        .padding(horizontal = 2.dp, vertical = 6.dp),
-                    textAlign = TextAlign.Center,
-                    color = Color.White,
-                    text = "Advert Here",
-                )
-            } else {
-                var shouldShowLoading by remember {
-                    mutableStateOf(true)
-                }
-                if (shouldShowLoading) {
-                    LoadingViewNoPadding()
-                }
-                AndroidView(
-                    modifier = modifier.fillMaxWidth(),
-                    factory = { context ->
-                        AdView(context).apply {
-                            setAdSize(AdSize.BANNER)
-                            adUnitId = BuildConfig.BANNER_AD_UNIT_ID
-                            adListener = object : AdListener() {
-
-                                override fun onAdLoaded() {
-                                    shouldShowLoading = false
-                                }
-
-                                override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                                    Timber.e(loadAdError.toString())
-                                    FirebaseCrashlytics.getInstance()
-                                        .recordException(Exception("Loading an ad failed! $loadAdError"))
-                                    shouldShowLoading = false
-                                    adLoadingFailed = true
-                                }
-                            }
-                            loadAd(AdRequest.Builder().build())
-                        }
+        Column {
+            Text(
+                modifier = Modifier
+                    .background(dividerColor, RoundedCornerShape(topEnd = 4.dp))
+                    .padding(horizontal = 8.dp),
+                color = Color.White,
+                text = "ad"
+            )
+            Spacer(
+                modifier = Modifier
+                    .height(2.dp)
+                    .fillMaxWidth()
+                    .background(dividerColor)
+            )
+            Box(
+                modifier = Modifier
+                    .height(50.dp)
+            ) {
+                val isInEditMode = LocalInspectionMode.current
+                if (isInEditMode) {
+                    Text(
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .background(Color.Red)
+                            .padding(horizontal = 2.dp, vertical = 6.dp),
+                        textAlign = TextAlign.Center,
+                        color = Color.White,
+                        text = "Advert Here",
+                    )
+                } else {
+                    var shouldShowLoading by remember {
+                        mutableStateOf(true)
                     }
-                )
+                    if (shouldShowLoading) {
+                        LoadingViewNoPadding()
+                    }
+                    AndroidView(
+                        modifier = modifier.fillMaxWidth(),
+                        factory = { context ->
+                            AdView(context).apply {
+                                setAdSize(AdSize.BANNER)
+                                adUnitId = BuildConfig.BANNER_AD_UNIT_ID
+                                adListener = object : AdListener() {
+
+                                    override fun onAdLoaded() {
+                                        shouldShowLoading = false
+                                    }
+
+                                    override fun onAdFailedToLoad(loadAdError: LoadAdError) {
+                                        Timber.e(loadAdError.toString())
+                                        FirebaseCrashlytics.getInstance()
+                                            .recordException(Exception("Loading an ad failed! $loadAdError"))
+                                        shouldShowLoading = false
+                                        adLoadingFailed = true
+                                    }
+                                }
+                                loadAd(AdRequest.Builder().build())
+                            }
+                        }
+                    )
+                }
             }
         }
     }
