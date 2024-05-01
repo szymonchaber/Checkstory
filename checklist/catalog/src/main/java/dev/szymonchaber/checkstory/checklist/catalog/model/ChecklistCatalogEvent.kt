@@ -35,4 +35,6 @@ sealed interface ChecklistCatalogEvent {
     data object AccountClicked : ChecklistCatalogEvent
 
     data class DeleteTemplateConfirmed(val templateId: TemplateId) : ChecklistCatalogEvent
+
+    data class DeleteChecklistConfirmed(val checklistId: ChecklistId) : ChecklistCatalogEvent
 }

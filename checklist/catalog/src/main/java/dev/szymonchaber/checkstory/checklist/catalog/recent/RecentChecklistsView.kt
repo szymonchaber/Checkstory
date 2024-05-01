@@ -50,10 +50,13 @@ fun RecentChecklistsView(
                 NoRecentChecklistsView()
             } else {
                 ChecklistsCarousel(
-                    state.checklists,
+                    checklists = state.checklists,
                     paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp),
-                    {
+                    onChecklistClicked = {
                         eventListener(ChecklistCatalogEvent.RecentChecklistClicked(it.id))
+                    },
+                    onDeleteChecklistConfirmed = {
+                        eventListener(ChecklistCatalogEvent.DeleteChecklistConfirmed(it.id))
                     }
                 )
             }
@@ -83,6 +86,7 @@ fun ChecklistsCarousel(
     checklists: List<Checklist>,
     paddingValues: PaddingValues,
     onChecklistClicked: (Checklist) -> Unit,
+    onDeleteChecklistConfirmed: (Checklist) -> Unit,
     header: @Composable() (LazyItemScope.() -> Unit)? = null
 ) {
     LazyRow(
@@ -96,9 +100,10 @@ fun ChecklistsCarousel(
         }
         items(checklists) {
             RecentChecklistItem(
-                checklist = it
+                checklist = it,
+                onClick = { onChecklistClicked(it) }
             ) {
-                onChecklistClicked(it)
+                onDeleteChecklistConfirmed(it)
             }
         }
     }

@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.design.dialogs
+package dev.szymonchaber.checkstory.design.dialog
 
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text

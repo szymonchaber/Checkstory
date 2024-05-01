@@ -9,6 +9,7 @@ import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.usecase.CheckForUnassignedPaymentUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetAllTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
@@ -43,7 +44,8 @@ class ChecklistCatalogViewModel @Inject constructor(
     private val onboardingPreferences: OnboardingPreferences,
     private val synchronizeDataUseCase: SynchronizeDataUseCase,
     private val checkForUnassignedPaymentUseCase: CheckForUnassignedPaymentUseCase,
-    private val deleteTemplateUseCase: DeleteTemplateUseCase
+    private val deleteTemplateUseCase: DeleteTemplateUseCase,
+    private val deleteChecklistUseCase: DeleteChecklistUseCase,
 ) : BaseViewModel<
         ChecklistCatalogEvent,
         ChecklistCatalogState,
@@ -91,7 +93,8 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleGetProClicked(),
             eventFlow.handleAboutClicked(),
             eventFlow.handleRefreshCatalog(),
-            eventFlow.handleDeleteTemplateConfirmed()
+            eventFlow.handleDeleteTemplateConfirmed(),
+            eventFlow.handleDeleteChecklistConfirmed()
         ).catch {
             Timber.e(it)
             FirebaseCrashlytics.getInstance().recordException(it)
@@ -258,6 +261,17 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
             .map {
                 deleteTemplateUseCase.deleteTemplate(it.templateId)
+                null to null // TODO maybe show a toast?
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleDeleteChecklistConfirmed(): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.DeleteChecklistConfirmed>()
+            .onEach {
+                tracker.logEvent("catalog_checklist_deleted")
+            }
+            .map {
+                deleteChecklistUseCase.deleteChecklist(it.checklistId)
                 null to null // TODO maybe show a toast?
             }
     }

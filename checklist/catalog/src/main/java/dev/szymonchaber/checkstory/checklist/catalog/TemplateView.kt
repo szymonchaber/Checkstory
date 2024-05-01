@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.recent.ChecklistsCarousel
 import dev.szymonchaber.checkstory.design.R
-import dev.szymonchaber.checkstory.design.dialogs.ConfirmDeleteTemplateDialog
+import dev.szymonchaber.checkstory.design.dialog.ConfirmDeleteTemplateDialog
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
@@ -97,6 +97,11 @@ fun TemplateView(
                         ChecklistCatalogEvent.RecentChecklistClicked(it.id)
                     )
                 },
+                onDeleteChecklistConfirmed = {
+                    eventListener(
+                        ChecklistCatalogEvent.DeleteChecklistConfirmed(it.id)
+                    )
+                }
             )
         }
     }

@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.checklist.fill
+package dev.szymonchaber.checkstory.design.dialog
 
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
@@ -18,7 +18,7 @@ fun ConfirmDeleteChecklistDialog(openDialog: MutableState<Boolean>, onConfirmCli
             Text(stringResource(id = R.string.delete_checklist_dialog_title))
         },
         text = {
-            Text("Only this checklist will be deleted. The template will remain untouched.")
+            Text("Only this checklist will be deleted.\nThe template will remain untouched.")
         },
         confirmButton = {
             TextButton(
