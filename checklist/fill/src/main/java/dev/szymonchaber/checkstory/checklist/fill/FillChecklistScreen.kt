@@ -202,7 +202,7 @@ fun FillChecklistScreen(
                             .focusRequester(notesInputFocusRequester)
                             .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
                         keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-                        label = { Text(text = stringResource(R.string.notes)) },
+                        label = { Text(text = "Checklist name") },
                         value = textFieldValue,
                         onValueChange = {
                             textFieldValue = it
@@ -289,7 +289,7 @@ private val nestedPaddingStart = 12.dp
 fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent) -> Unit) {
     LazyColumn {
         item {
-            ChecklistInfo(checklist)
+            ChecklistInfo(checklist, eventCollector)
         }
         items(checklist.items, key = { it.id.id }) {
             Box(Modifier.padding(start = 8.dp)) {
@@ -297,7 +297,6 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
             }
         }
         item {
-            NotesSection(checklist, eventCollector)
             Box(Modifier.fillMaxWidth()) {
                 DeleteButton(
                     modifier = Modifier
@@ -312,7 +311,7 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
 }
 
 @Composable
-private fun ChecklistInfo(checklist: Checklist) {
+private fun ChecklistInfo(checklist: Checklist, eventCollector: (FillChecklistEvent) -> Unit) {
     Column {
         Row(
             modifier = Modifier
@@ -350,6 +349,8 @@ private fun ChecklistInfo(checklist: Checklist) {
         Space(8.dp)
         Divider()
         Space(8.dp)
+        ChecklistName(checklist, eventCollector)
+        Space(8.dp)
         SectionLabel(
             modifier = Modifier.padding(start = 16.dp),
             text = stringResource(R.string.tasks),
@@ -358,17 +359,11 @@ private fun ChecklistInfo(checklist: Checklist) {
 }
 
 @Composable
-private fun NotesSection(
+private fun ChecklistName(
     checklist: Checklist,
     eventCollector: (FillChecklistEvent) -> Unit
 ) {
-    SectionLabel(
-        modifier = Modifier
-            .padding(top = 4.dp)
-            .padding(horizontal = 16.dp),
-        text = stringResource(R.string.notes)
-    )
-    Row(
+    Box(
         modifier = Modifier
             .padding(top = 8.dp)
             .padding(horizontal = 16.dp)
@@ -383,8 +378,11 @@ private fun NotesSection(
             .padding(16.dp)
             .fillMaxWidth()
     ) {
-        LinkifyText(
-            text = checklist.notes
+        Text(
+            modifier = Modifier.clickable {
+                eventCollector(FillChecklistEvent.NotesClicked)
+            },
+            text = checklist.notes.takeUnless { it.isEmpty() } ?: "Name this checklist, e.g. 'Client X'"
         )
     }
 }

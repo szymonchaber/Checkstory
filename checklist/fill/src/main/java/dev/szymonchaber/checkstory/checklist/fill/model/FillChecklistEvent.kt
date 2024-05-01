@@ -6,7 +6,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 
 sealed class FillChecklistEvent {
 
-    object EditTemplateClicked : FillChecklistEvent()
+    data object EditTemplateClicked : FillChecklistEvent()
 
     data class CreateChecklistFromTemplate(val templateId: TemplateId) : FillChecklistEvent()
 
@@ -19,15 +19,15 @@ sealed class FillChecklistEvent {
     data class ChildCheckChanged(val task: Task, val child: Task, val newCheck: Boolean) :
         FillChecklistEvent()
 
-    object NotesClicked : FillChecklistEvent()
+    data object NotesClicked : FillChecklistEvent()
 
-    object SaveChecklistClicked : FillChecklistEvent()
+    data object SaveChecklistClicked : FillChecklistEvent()
 
-    object DeleteChecklistClicked : FillChecklistEvent()
+    data object DeleteChecklistClicked : FillChecklistEvent()
 
-    object ConfirmDeleteChecklistClicked : FillChecklistEvent()
+    data object ConfirmDeleteChecklistClicked : FillChecklistEvent()
 
-    object BackClicked : FillChecklistEvent()
+    data object BackClicked : FillChecklistEvent()
 
-    object ConfirmExitClicked : FillChecklistEvent()
+    data object ConfirmExitClicked : FillChecklistEvent()
 }
