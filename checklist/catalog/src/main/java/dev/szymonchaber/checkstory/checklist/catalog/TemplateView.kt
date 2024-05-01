@@ -16,6 +16,7 @@ import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -77,19 +78,26 @@ fun TemplateView(
             }
             TemplateActions(eventListener, template)
         }
-        SectionLabel(
-            modifier = Modifier.padding(start = 16.dp),
-            text = stringResource(id = R.string.template_checklists)
-        )
-        ChecklistsCarousel(
-            checklists = template.checklists,
-            paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp),
-            onChecklistClicked = {
-                eventListener(
-                    ChecklistCatalogEvent.RecentChecklistClicked(it.id)
-                )
-            },
-        )
+        val showChecklistCarousel by remember {
+            derivedStateOf {
+                template.checklists.isNotEmpty()
+            }
+        }
+        if (showChecklistCarousel) {
+            SectionLabel(
+                modifier = Modifier.padding(start = 16.dp),
+                text = stringResource(id = R.string.template_checklists)
+            )
+            ChecklistsCarousel(
+                checklists = template.checklists,
+                paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp),
+                onChecklistClicked = {
+                    eventListener(
+                        ChecklistCatalogEvent.RecentChecklistClicked(it.id)
+                    )
+                },
+            )
+        }
     }
 }
 

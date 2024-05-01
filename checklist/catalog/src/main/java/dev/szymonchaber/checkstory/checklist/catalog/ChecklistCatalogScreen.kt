@@ -14,11 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
@@ -26,7 +26,6 @@ import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -108,23 +107,10 @@ fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
                     }
                 }
             )
-        }, content = {
+        },
+        content = {
             ChecklistCatalogView(viewModel, navigator)
         },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                text = {
-                    Text(
-                        text = stringResource(R.string.new_template).uppercase(),
-                        style = MaterialTheme.typography.button
-                    )
-                },
-                onClick = {
-                    viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
-                },
-                icon = { Icon(Icons.Filled.Add, null) }
-            )
-        }
     )
 }
 
@@ -229,6 +215,19 @@ private fun ChecklistCatalogView(
                                 Divider()
                             }
                         }
+                    }
+                }
+            }
+            item {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        modifier = Modifier.align(Alignment.Center),
+                        onClick = {
+                            viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
+                        }) {
+                        Text(
+                            text = stringResource(R.string.new_checklist).uppercase(),
+                        )
                     }
                 }
             }
