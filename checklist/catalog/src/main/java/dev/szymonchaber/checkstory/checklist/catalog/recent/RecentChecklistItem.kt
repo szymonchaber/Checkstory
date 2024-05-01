@@ -1,24 +1,24 @@
 package dev.szymonchaber.checkstory.checklist.catalog.recent
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
@@ -35,52 +35,49 @@ import java.util.*
 fun RecentChecklistItem(
     modifier: Modifier = Modifier,
     checklist: Checklist,
-    cardElevation: Dp,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier
-            .widthIn(max = 200.dp),
-        elevation = cardElevation,
+            .width(110.dp),
+        elevation = 2.dp,
         onClick = onClick
     ) {
         Column(
-            modifier = Modifier.padding(all = 16.dp)
+            modifier = Modifier.padding(all = 8.dp)
         ) {
-            Text(
-                text = checklist.title,
-                style = MaterialTheme.typography.subtitle1,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            NotesTextView(checklist.notes)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                CheckedItemsRatio(checklist)
-                DateFormatText(checklist.createdAt)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CheckedItemsRatio(
+                    modifier = Modifier.align(Alignment.CenterVertically),
+                    checklist = checklist,
+                )
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            NotesTextView(checklist.notes)
+            Spacer(modifier = Modifier.height(8.dp))
+            DateFormatText(checklist.createdAt)
         }
     }
 }
 
 @Composable
 private fun NotesTextView(notes: String) {
-    val notesFontStyle = if (notes.isBlank()) {
-        FontStyle.Italic
-    } else {
-        FontStyle.Normal
+    val notesFontStyle = remember(notes) {
+        if (notes.isBlank()) {
+            FontStyle.Italic
+        } else {
+            FontStyle.Normal
+        }
     }
-    val notesOrEmptyNotesText = notes.ifBlank {
-        stringResource(id = R.string.no_notes)
+    val blankText = stringResource(id = R.string.no_notes)
+    val notesOrEmptyNotesText = remember(notes, blankText) {
+        notes.ifBlank {
+            blankText
+        }
     }
     Text(
-        modifier = Modifier.padding(top = 8.dp),
         text = notesOrEmptyNotesText,
-        style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle, fontSize = 14.sp),
+        style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis
     )
@@ -111,7 +108,6 @@ fun RecentChecklistItemPreview() {
         LocalDateTime.now()
     )
     RecentChecklistItem(
-        checklist = checklist,
-        cardElevation = 1.dp
+        checklist = checklist
     ) { }
 }
