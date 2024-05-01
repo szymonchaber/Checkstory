@@ -53,12 +53,12 @@ fun TemplateView(
     template: Template,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
-    Column {
+    Column(Modifier.padding(bottom = 24.dp)) {
         val interactionSource = remember { MutableInteractionSource() }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
                 modifier = Modifier
-                    .padding(top = 16.dp)
+                    .align(Alignment.CenterVertically)
                     .padding(start = 16.dp, end = 8.dp),
                 text = template.title,
                 style = MaterialTheme.typography.subtitle1
@@ -90,14 +90,13 @@ fun TemplateView(
         )
         ChecklistsCarousel(
             checklists = template.checklists,
-            paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+            paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp),
             cardElevation = 1.dp,
             onChecklistClicked = {
                 eventListener(
                     ChecklistCatalogEvent.RecentChecklistClicked(it.id)
                 )
             },
-//                    header = UseTemplateHeader(eventListener, template)
         )
     }
 }

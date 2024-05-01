@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -218,8 +219,11 @@ private fun ChecklistCatalogView(
                             NoTemplatesView()
                         }
                     } else {
-                        items(loadingState.templates) {
-                            TemplateView(it, viewModel::onEvent)
+                        itemsIndexed(loadingState.templates, key = { _, item -> item.id }) { index, item ->
+                            TemplateView(item, viewModel::onEvent)
+                            if (index < loadingState.templates.lastIndex) {
+                                Divider()
+                            }
                         }
                     }
                 }
