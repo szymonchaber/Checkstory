@@ -1,7 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -53,57 +53,52 @@ fun TemplateView(
     template: Template,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
-    var isCollapsed by remember { mutableStateOf(true) }
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 8.dp),
-        elevation = 2.dp,
-        onClick = {
-            isCollapsed = !isCollapsed
+    Column {
+        val interactionSource = remember { MutableInteractionSource() }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .padding(start = 16.dp, end = 8.dp),
+                text = template.title,
+                style = MaterialTheme.typography.subtitle1
+            )
+            TemplateActions(interactionSource, eventListener, template)
         }
-    ) {
-        Column(
-            modifier = Modifier
-                .animateContentSize()
+        Row(
+            Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            val interactionSource = remember { MutableInteractionSource() }
-            Row(Modifier.fillMaxWidth()) {
-                Text(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = 16.dp)
-                        .padding(start = 16.dp, end = 8.dp),
-                    text = template.title,
-                    style = MaterialTheme.typography.subtitle1
-                )
-                TemplateActions(interactionSource, eventListener, template)
+            TextButton(
+                onClick = {
+                    eventListener(ChecklistCatalogEvent.UseTemplateClicked(template))
+                }
+            ) {
+                Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
             }
             DateFormatText(
                 localDateTime = template.createdAt,
                 modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 16.dp)
-            )
-            TemplateActionButtons(template, interactionSource, eventListener)
-            SectionLabel(
-                modifier = Modifier.padding(start = 16.dp),
-                text = stringResource(id = R.string.template_checklists)
-            )
-            ChecklistsCarousel(
-                checklists = template.checklists,
-                paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
-                cardElevation = 1.dp,
-                onChecklistClicked = {
-                    eventListener(
-                        ChecklistCatalogEvent.RecentChecklistClicked(it.id)
-                    )
-                },
-//                    header = UseTemplateHeader(eventListener, template)
+                    .align(Alignment.CenterVertically)
+                    .padding(end = 16.dp)
             )
         }
+        SectionLabel(
+            modifier = Modifier.padding(start = 16.dp),
+            text = stringResource(id = R.string.template_checklists)
+        )
+        ChecklistsCarousel(
+            checklists = template.checklists,
+            paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
+            cardElevation = 1.dp,
+            onChecklistClicked = {
+                eventListener(
+                    ChecklistCatalogEvent.RecentChecklistClicked(it.id)
+                )
+            },
+//                    header = UseTemplateHeader(eventListener, template)
+        )
     }
 }
 
@@ -146,7 +141,7 @@ private fun RowScope.TemplateActions(
 ) {
     var showMenu by remember { mutableStateOf(false) }
     IconButton(
-        modifier = Modifier.Companion
+        modifier = Modifier
             .align(Alignment.Top),
         interactionSource = interactionSource,
         onClick = { showMenu = !showMenu }) {
@@ -168,46 +163,6 @@ private fun RowScope.TemplateActions(
                 Text(text = stringResource(id = R.string.template_checklists))
             }
         }
-    }
-}
-
-@Composable
-private fun TemplateActionButtons(
-    template: Template,
-    targetInteractionSource: MutableInteractionSource,
-    eventListener: (ChecklistCatalogEvent) -> Unit
-) {
-    Row(Modifier.fillMaxWidth()) {
-        TextButton(
-            onClick = {
-                eventListener(ChecklistCatalogEvent.UseTemplateClicked(template))
-            }
-        ) {
-            Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
-        }
-//        Row(
-//            Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.End,
-//        ) {
-//            val editInteractionSource = remember {
-//                PassThroughInteractionSource(targetInteractionSource)
-//            }
-//            val historyInteractionSource = remember {
-//                PassThroughInteractionSource(targetInteractionSource)
-//            }
-//            IconButton(
-//                interactionSource = editInteractionSource,
-//                onClick = {}
-//            ) {
-//                Icon(imageVector = Icons.Filled.Edit, contentDescription = "Edit")
-//            }
-//            IconButton(
-//                interactionSource = historyInteractionSource,
-//                onClick = {}
-//            ) {
-//                Icon(imageVector = Icons.Filled.DateRange, contentDescription = "History")
-//            }
-//        }
     }
 }
 
