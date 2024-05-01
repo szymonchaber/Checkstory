@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
@@ -38,6 +37,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
+import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 
 @SuppressLint("MissingPermission")
 @Destination(
@@ -54,7 +54,7 @@ fun AboutScreen(
     navigator: DestinationsNavigator
 ) {
     trackScreenName("about")
-    Scaffold(
+    AdvertScaffold(
         topBar = {
             TopAppBar(
                 title = {
@@ -71,30 +71,28 @@ fun AboutScreen(
             )
         },
         content = {
-            Box(Modifier.padding(it)) {
-                val uriHandler = LocalUriHandler.current
-                val context = LocalContext.current
-                val versionName = remember {
-                    try {
-                        val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-                        packageInfo.versionName
-                    } catch (nameNotFoundException: PackageManager.NameNotFoundException) {
-                        FirebaseCrashlytics.getInstance().recordException(nameNotFoundException)
-                        null
-                    }
+            val uriHandler = LocalUriHandler.current
+            val context = LocalContext.current
+            val versionName = remember {
+                try {
+                    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+                    packageInfo.versionName
+                } catch (nameNotFoundException: PackageManager.NameNotFoundException) {
+                    FirebaseCrashlytics.getInstance().recordException(nameNotFoundException)
+                    null
                 }
-                AboutView("v$versionName",
-                    onEmailClick = {
-                        FirebaseAnalytics.getInstance(context).logEvent("about_email_clicked", null)
-                        composeEmail(
-                            context, "szymon@szymonchaber.dev", "Just reaching out about Checkstory",
-                            "Hello Szymon, I wanted to reach out with a question / feedback / praise / an improvement idea!\n\n\n\n\n\n\nApp version: $versionName"
-                        )
-                    }, onTwitterClick = {
-                        FirebaseAnalytics.getInstance(context).logEvent("about_twitter_clicked", null)
-                        uriHandler.openUri("https://twitter.com/SzymonChaber")
-                    })
             }
+            AboutView("v$versionName",
+                onEmailClick = {
+                    FirebaseAnalytics.getInstance(context).logEvent("about_email_clicked", null)
+                    composeEmail(
+                        context, "szymon@szymonchaber.dev", "Just reaching out about Checkstory",
+                        "Hello Szymon, I wanted to reach out with a question / feedback / praise / an improvement idea!\n\n\n\n\n\n\nApp version: $versionName"
+                    )
+                }, onTwitterClick = {
+                    FirebaseAnalytics.getInstance(context).logEvent("about_twitter_clicked", null)
+                    uriHandler.openUri("https://twitter.com/SzymonChaber")
+                })
         },
     )
 }
