@@ -1,12 +1,10 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -54,7 +52,6 @@ fun TemplateView(
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
     Column(Modifier.padding(bottom = 24.dp)) {
-        val interactionSource = remember { MutableInteractionSource() }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text(
                 modifier = Modifier
@@ -63,7 +60,7 @@ fun TemplateView(
                 text = template.title,
                 style = MaterialTheme.typography.subtitle1
             )
-            TemplateActions(interactionSource, eventListener, template)
+            TemplateActions(eventListener, template)
         }
         Row(
             Modifier
@@ -132,21 +129,22 @@ private fun UseTemplateHeader(
 }
 
 @Composable
-private fun RowScope.TemplateActions(
-    interactionSource: MutableInteractionSource,
+private fun TemplateActions(
     eventListener: (ChecklistCatalogEvent) -> Unit,
     template: Template
 ) {
     var showMenu by remember { mutableStateOf(false) }
     IconButton(
-        modifier = Modifier
-            .align(Alignment.Top),
-        interactionSource = interactionSource,
-        onClick = { showMenu = !showMenu }) {
+        onClick = {
+            showMenu = !showMenu
+        }
+    ) {
         Icon(Icons.Default.MoreVert, null, tint = Color.Black)
         DropdownMenu(
             expanded = showMenu,
-            onDismissRequest = { showMenu = false }
+            onDismissRequest = {
+                showMenu = false
+            }
         ) {
             DropdownMenuItem(onClick = {
                 showMenu = false
