@@ -235,7 +235,7 @@ class ChecklistCatalogViewModel @Inject constructor(
     }
 
     private fun canAddTemplate(user: User, list: List<Template>): Boolean {
-        return list.count() < MAX_FREE_CHECKLIST_TEMPLATES || user.isPaidUser
+        return list.count() < MAX_FREE_TEMPLATES || user.isPaidUser
     }
 
     private fun Flow<ChecklistCatalogEvent>.handleHistoryClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
@@ -259,7 +259,6 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     companion object {
 
-        private const val MAX_FREE_CHECKLIST_TEMPLATES = 2
-        private const val MAX_FREE_CHECKLISTS = 3
+        internal const val MAX_FREE_TEMPLATES = 2
     }
 }

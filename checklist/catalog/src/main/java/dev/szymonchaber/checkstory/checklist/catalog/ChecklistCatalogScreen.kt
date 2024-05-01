@@ -1,8 +1,12 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -50,9 +55,11 @@ import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewM
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.R
+import dev.szymonchaber.checkstory.design.theme.Primary
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
+import dev.szymonchaber.checkstory.design.views.Space
 import dev.szymonchaber.checkstory.navigation.Routes
 
 @Composable
@@ -201,10 +208,7 @@ private fun ChecklistCatalogView(
 //                RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
 //            }
             item {
-                SectionLabel(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    text = stringResource(R.string.templates),
-                )
+                TemplatesHeader(state.templatesLoadingState, viewModel::onEvent)
             }
             when (val loadingState = state.templatesLoadingState) {
                 ChecklistCatalogLoadingState.Loading -> {
@@ -231,6 +235,66 @@ private fun ChecklistCatalogView(
         }
         PullRefreshIndicator(state.isRefreshing, pullRefreshState, Modifier.align(Alignment.TopCenter))
     }
+}
+
+@Composable
+private fun TemplatesHeader(state: ChecklistCatalogLoadingState, onEvent: (ChecklistCatalogEvent) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        SectionLabel(
+            modifier = Modifier.padding(start = 16.dp),
+            text = stringResource(R.string.templates),
+        )
+
+        when (state) {
+            is ChecklistCatalogLoadingState.Success -> {
+                val currentCount = remember(state) {
+                    state.templates.count()
+                }
+                Space(8.dp)
+                if (ActiveUser.current.isPaidUser) {
+                    PaidTemplateCounter(currentCount)
+                } else {
+                    FreeTemplateCounter(currentCount, onEvent)
+                }
+            }
+
+            ChecklistCatalogLoadingState.Loading -> Unit
+        }
+    }
+}
+
+@Composable
+private fun PaidTemplateCounter(currentCount: Int) {
+    Text(
+        style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
+        text = "$currentCount /"
+    )
+    Text(
+        text = "∞"
+    )
+}
+
+@Composable
+private fun RowScope.FreeTemplateCounter(
+    currentCount: Int,
+    onEvent: (ChecklistCatalogEvent) -> Unit
+) {
+    Text(
+        style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
+        text = "$currentCount / ${ChecklistCatalogViewModel.MAX_FREE_TEMPLATES} free"
+    )
+    Space(4.dp)
+    Text(
+        modifier = Modifier
+            .background(Primary)
+            .clickable {
+                onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+            }
+            .padding(4.dp),
+        style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
+        color = Color.White,
+        text = "PRO: unlimited"
+    )
 }
 
 @Composable
