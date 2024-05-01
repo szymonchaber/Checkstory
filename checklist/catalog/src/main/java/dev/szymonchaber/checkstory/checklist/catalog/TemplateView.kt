@@ -1,25 +1,19 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyItemScope
-import androidx.compose.material.Card
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,41 +39,43 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskI
 import java.time.LocalDateTime
 import java.util.*
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun TemplateView(
     template: Template,
     eventListener: (ChecklistCatalogEvent) -> Unit
 ) {
-    Column(Modifier.padding(bottom = 24.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(start = 16.dp, end = 8.dp),
-                text = template.title,
-                style = MaterialTheme.typography.subtitle1
-            )
-            TemplateActions(eventListener, template)
-        }
+    Column(Modifier.padding(top = 8.dp, bottom = 24.dp)) {
         Row(
             Modifier
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextButton(
-                onClick = {
-                    eventListener(ChecklistCatalogEvent.UseTemplateClicked(template))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    modifier = Modifier
+                        .padding(start = 16.dp, end = 8.dp),
+                    text = template.title,
+                    style = MaterialTheme.typography.subtitle1
+                )
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextButton(
+                        onClick = {
+                            eventListener(ChecklistCatalogEvent.UseTemplateClicked(template))
+                        }
+                    ) {
+                        Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
+                    }
+                    DateFormatText(
+                        localDateTime = template.createdAt,
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                    )
                 }
-            ) {
-                Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
             }
-            DateFormatText(
-                localDateTime = template.createdAt,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .padding(end = 16.dp)
-            )
+            TemplateActions(eventListener, template)
         }
         SectionLabel(
             modifier = Modifier.padding(start = 16.dp),
@@ -94,37 +90,6 @@ fun TemplateView(
                 )
             },
         )
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun UseTemplateHeader(
-    eventListener: (ChecklistCatalogEvent) -> Unit,
-    template: Template
-): @Composable() (LazyItemScope.() -> Unit) = {
-    Box {
-        Card(
-            modifier = Modifier
-                .size(width = 90.dp, height = 120.dp)
-                .align(Alignment.Center),
-            elevation = 1.dp,
-            onClick = {
-                eventListener(
-                    ChecklistCatalogEvent.UseTemplateClicked(template)
-                )
-            }
-        ) {
-            Box {
-                Icon(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .align(Alignment.Center),
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add"
-                )
-            }
-        }
     }
 }
 

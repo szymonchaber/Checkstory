@@ -8,7 +8,7 @@
     <string name="templates">Templates</string>
     <string name="recent_checklists_empty">No checklists filled yet.\nPick something below 👇</string>
     <string name="templates_empty">No templates created yet.\nCreate one by clicking \"+\" button</string>
-    <string name="template_checklists">Checklists</string>
+    <string name="template_checklists">Checklist history</string>
     <string name="checklist_history_empty">No checklists filled for this template yet</string>
     <string name="fill_checklist">Fill checklist</string>
     <string name="tasks">Tasks</string>
