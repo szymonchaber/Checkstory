@@ -3,10 +3,9 @@ package dev.szymonchaber.checkstory.checklist.history
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.usecase.LoadChecklistHistoryUseCase
+import dev.szymonchaber.checkstory.domain.usecase.GetTemplateUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.merge
@@ -14,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChecklistHistoryViewModel @Inject constructor(
-    private val loadChecklistHistoryUseCase: LoadChecklistHistoryUseCase,
+    private val getTemplateUseCase: GetTemplateUseCase,
     private val tracker: Tracker
 ) : BaseViewModel<ChecklistHistoryEvent, ChecklistHistoryState, ChecklistHistoryEffect>(
     ChecklistHistoryState.initial
@@ -30,8 +29,11 @@ class ChecklistHistoryViewModel @Inject constructor(
     private fun Flow<ChecklistHistoryEvent>.handleLoadChecklistHistory(): Flow<Pair<ChecklistHistoryState?, ChecklistHistoryEffect?>> {
         return filterIsInstance<ChecklistHistoryEvent.LoadChecklistHistory>()
             .mapLatest { event ->
-                val checklists = loadChecklistHistoryUseCase.loadChecklistHistory(event.templateId).orEmpty()
-                state.first().copy(loadingState = HistoryLoadingState.Success(checklists)) to null
+                val newState = getTemplateUseCase.getTemplate(event.templateId)
+                    ?.let {
+                        state.value.copy(loadingState = HistoryLoadingState.Success(it))
+                    } ?: (ChecklistHistoryState.initial) // TODO handle error
+                newState to null
             }
     }
 

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -30,7 +31,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -40,7 +40,11 @@ import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
+import dev.szymonchaber.checkstory.design.views.LinkifyText
+import dev.szymonchaber.checkstory.design.views.SectionLabel
+import dev.szymonchaber.checkstory.design.views.Space
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
+import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 
@@ -100,10 +104,13 @@ private fun ChecklistHistoryView(
         }
 
         is HistoryLoadingState.Success -> {
-            if (loadingState.checklists.isEmpty()) {
-                NoChecklistsInHistoryView()
-            } else {
-                ChecklistHistoryList(loadingState.checklists, viewModel::onEvent)
+            Column {
+                TemplateInfo(loadingState.template)
+                if (loadingState.template.checklists.isEmpty()) {
+                    NoChecklistsInHistoryView()
+                } else {
+                    ChecklistHistoryList(viewModel::onEvent, loadingState.template.checklists)
+                }
             }
         }
     }
@@ -128,16 +135,52 @@ fun NoChecklistsInHistoryView() {
 
 @Composable
 private fun ChecklistHistoryList(
-    checklists: List<Checklist>,
-    eventListener: (ChecklistHistoryEvent) -> Unit
+    eventListener: (ChecklistHistoryEvent) -> Unit,
+    checklists: List<Checklist>
 ) {
     LazyColumn(
         contentPadding = PaddingValues(all = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        items(checklists) {
+        items(checklists, key = { it.id }) {
             ChecklistHistoryItem(it, eventListener)
         }
+    }
+}
+
+@Composable
+private fun TemplateInfo(checklist: Template) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            DateFormatText(
+                localDateTime = checklist.createdAt
+            )
+        }
+        Space(8.dp)
+        Text(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+            text = checklist.title,
+        )
+        if (checklist.description.isNotEmpty()) {
+            Space(8.dp)
+            SectionLabel(
+                modifier = Modifier.padding(start = 16.dp),
+                text = "Additional instructions",
+            )
+            Space(4.dp)
+            LinkifyText(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                text = checklist.description
+            )
+        }
+        Space(16.dp)
+        Divider()
     }
 }
 
@@ -161,19 +204,14 @@ fun ChecklistHistoryItem(
             FontStyle.Normal
         }
         val notesOrEmptyNotesText = checklist.notes.ifBlank {
-            stringResource(id = R.string.no_notes)
+            "No name provided"
         }
         Column(
             modifier = Modifier.padding(all = 16.dp)
         ) {
             Text(
-                text = checklist.title,
-                style = MaterialTheme.typography.subtitle1
-            )
-            Text(
-                modifier = Modifier.padding(top = 16.dp),
                 text = notesOrEmptyNotesText,
-                style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle, fontSize = 14.sp)
+                style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle)
             )
             Row(
                 modifier = Modifier
