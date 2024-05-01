@@ -17,6 +17,9 @@ fun ConfirmDeleteChecklistDialog(openDialog: MutableState<Boolean>, onConfirmCli
         title = {
             Text(stringResource(id = R.string.delete_checklist_dialog_title))
         },
+        text = {
+            Text("Only this checklist will be deleted. The template will remain untouched.")
+        },
         confirmButton = {
             TextButton(
                 onClick = onConfirmClicked
