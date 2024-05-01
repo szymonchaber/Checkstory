@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -22,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.Icon
@@ -59,7 +61,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
@@ -75,11 +76,14 @@ import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistViewModel
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
+import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
+import dev.szymonchaber.checkstory.design.views.DateFormatText
 import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.LinkifyText
 import dev.szymonchaber.checkstory.design.views.SectionLabel
+import dev.szymonchaber.checkstory.design.views.Space
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Checklist
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.ChecklistId
 import dev.szymonchaber.checkstory.domain.model.checklist.fill.Task
@@ -285,7 +289,7 @@ private val nestedPaddingStart = 12.dp
 fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent) -> Unit) {
     LazyColumn {
         item {
-            ChecklistInfo(checklist.title, checklist.description)
+            ChecklistInfo(checklist)
         }
         items(checklist.items, key = { it.id.id }) {
             Box(Modifier.padding(start = 8.dp)) {
@@ -308,30 +312,49 @@ fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent)
 }
 
 @Composable
-private fun ChecklistInfo(title: String, description: String) {
-    SectionLabel(
-        modifier = Modifier.padding(start = 16.dp, top = 16.dp),
-        text = stringResource(R.string.title),
-    )
-    Text(
-        modifier = Modifier.padding(start = 16.dp, top = 2.dp, end = 16.dp),
-        text = title,
-        style = MaterialTheme.typography.h6.copy(fontWeight = FontWeight.Normal)
-    )
-    if (description.isNotEmpty()) {
-        SectionLabel(
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-            text = stringResource(R.string.description),
+private fun ChecklistInfo(checklist: Checklist) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            DateFormatText(
+                localDateTime = checklist.createdAt
+            )
+            CheckedItemsRatio(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically),
+                checklist = checklist,
+            )
+        }
+        Space(8.dp)
+        Text(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+            text = checklist.title,
         )
-        LinkifyText(
-            modifier = Modifier.padding(start = 16.dp, top = 2.dp, end = 16.dp),
-            text = description
+        if (checklist.description.isNotEmpty()) {
+            Space(8.dp)
+            SectionLabel(
+                modifier = Modifier.padding(start = 16.dp),
+                text = "Additional instructions",
+            )
+            Space(4.dp)
+            LinkifyText(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp),
+                text = checklist.description
+            )
+        }
+        Space(8.dp)
+        Divider()
+        Space(8.dp)
+        SectionLabel(
+            modifier = Modifier.padding(start = 16.dp),
+            text = stringResource(R.string.tasks),
         )
     }
-    SectionLabel(
-        modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-        text = stringResource(R.string.tasks),
-    )
 }
 
 @Composable
