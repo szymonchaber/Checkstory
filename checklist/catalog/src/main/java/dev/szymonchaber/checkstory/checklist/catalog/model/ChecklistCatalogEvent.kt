@@ -6,9 +6,9 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 
 sealed interface ChecklistCatalogEvent {
 
-    object LoadChecklistCatalog : ChecklistCatalogEvent
+    data object LoadChecklistCatalog : ChecklistCatalogEvent
 
-    object GoToOnboarding : ChecklistCatalogEvent
+    data object GoToOnboarding : ChecklistCatalogEvent
 
     data class UseTemplateClicked(val template: Template) : ChecklistCatalogEvent
 
@@ -18,19 +18,21 @@ sealed interface ChecklistCatalogEvent {
 
     data class EditTemplateClicked(val templateId: TemplateId) : ChecklistCatalogEvent
 
-    object NewTemplateClicked : ChecklistCatalogEvent
+    data object NewTemplateClicked : ChecklistCatalogEvent
 
-    object GetCheckstoryProClicked : ChecklistCatalogEvent
+    data object GetCheckstoryProClicked : ChecklistCatalogEvent
 
-    object AboutClicked : ChecklistCatalogEvent
+    data object AboutClicked : ChecklistCatalogEvent
 
-    object PulledToRefresh : ChecklistCatalogEvent
+    data object PulledToRefresh : ChecklistCatalogEvent
 
     data class TemplateHistoryClicked(val templateId: TemplateId) : ChecklistCatalogEvent
 
-    object UnassignedPaymentPresent : ChecklistCatalogEvent
+    data object UnassignedPaymentPresent : ChecklistCatalogEvent
 
-    object CreateAccountForPaymentClicked : ChecklistCatalogEvent
+    data object CreateAccountForPaymentClicked : ChecklistCatalogEvent
 
-    object AccountClicked : ChecklistCatalogEvent
+    data object AccountClicked : ChecklistCatalogEvent
+
+    data class DeleteTemplateConfirmed(val templateId: TemplateId) : ChecklistCatalogEvent
 }

@@ -9,6 +9,7 @@ import dev.szymonchaber.checkstory.data.preferences.OnboardingPreferences
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.usecase.CheckForUnassignedPaymentUseCase
+import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetAllTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
@@ -41,7 +42,8 @@ class ChecklistCatalogViewModel @Inject constructor(
     private val tracker: Tracker,
     private val onboardingPreferences: OnboardingPreferences,
     private val synchronizeDataUseCase: SynchronizeDataUseCase,
-    private val checkForUnassignedPaymentUseCase: CheckForUnassignedPaymentUseCase
+    private val checkForUnassignedPaymentUseCase: CheckForUnassignedPaymentUseCase,
+    private val deleteTemplateUseCase: DeleteTemplateUseCase
 ) : BaseViewModel<
         ChecklistCatalogEvent,
         ChecklistCatalogState,
@@ -89,6 +91,7 @@ class ChecklistCatalogViewModel @Inject constructor(
             eventFlow.handleGetProClicked(),
             eventFlow.handleAboutClicked(),
             eventFlow.handleRefreshCatalog(),
+            eventFlow.handleDeleteTemplateConfirmed()
         ).catch {
             Timber.e(it)
             FirebaseCrashlytics.getInstance().recordException(it)
@@ -245,6 +248,17 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
             .map {
                 state.first() to ChecklistCatalogEffect.NavigateToTemplateHistory(templateId = it.templateId)
+            }
+    }
+
+    private fun Flow<ChecklistCatalogEvent>.handleDeleteTemplateConfirmed(): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
+        return filterIsInstance<ChecklistCatalogEvent.DeleteTemplateConfirmed>()
+            .onEach {
+                tracker.logEvent("catalog_template_deleted")
+            }
+            .map {
+                deleteTemplateUseCase.deleteTemplate(it.templateId)
+                null to null // TODO maybe show a toast?
             }
     }
 

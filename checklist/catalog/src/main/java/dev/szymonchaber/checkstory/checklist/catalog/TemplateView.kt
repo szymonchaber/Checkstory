@@ -131,6 +131,12 @@ private fun TemplateActions(
             }) {
                 Text(text = stringResource(id = R.string.template_checklists))
             }
+            DropdownMenuItem(onClick = {
+                showMenu = false
+                eventListener(ChecklistCatalogEvent.DeleteTemplateConfirmed(template.id)) // TODO Show a dialog first
+            }) {
+                Text(text = stringResource(id = R.string.delete))
+            }
         }
     }
 }
