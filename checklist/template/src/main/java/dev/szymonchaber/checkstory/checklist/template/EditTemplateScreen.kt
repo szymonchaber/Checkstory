@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,7 +43,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
@@ -93,7 +94,6 @@ import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.dialog.ConfirmDeleteTemplateDialog
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
-import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
@@ -271,11 +271,23 @@ private fun EditTemplateScaffold(
                 },
                 elevation = 12.dp,
                 actions = {
-                    if (!isOnboarding && !isNewTemplate) {
-                        IconButton(onClick = {
-                            viewModel.onEvent(EditTemplateEvent.TemplateHistoryClicked)
-                        }) {
-                            Icon(Icons.Filled.DateRange, "", tint = Color.White)
+//                    if (!isOnboarding && !isNewTemplate) {
+//                        IconButton(onClick = {
+//                            viewModel.onEvent(EditTemplateEvent.TemplateHistoryClicked)
+//                        }) {
+//                            Icon(Icons.Filled.DateRange, "", tint = Color.White)
+//                        }
+//                    }
+                    when (state) {
+                        EditTemplateState.Loading -> Unit
+                        is EditTemplateState.Ready -> {
+                            if (!state.isFreshTemplate) {
+                                IconButton(onClick = {
+                                    viewModel.onEvent(EditTemplateEvent.DeleteTemplateClicked)
+                                }) {
+                                    Icon(Icons.Filled.Delete, "", tint = Color.White)
+                                }
+                            }
                         }
                     }
                 }
@@ -352,6 +364,7 @@ fun EditTemplateView(
                         .detectLazyListReorder()
                         .fillMaxWidth(),
                     state = dragDropState.lazyListState,
+                    contentPadding = PaddingValues(bottom = 96.dp),
                 ) {
                     item {
                         TemplateDetails(template, ready.onboardingPlaceholders, eventCollector)
@@ -381,9 +394,6 @@ fun EditTemplateView(
                             Column {
                                 AddTaskButton(eventCollector)
                                 RemindersSection(template, eventCollector)
-                                if (!ready.isFreshTemplate) {
-                                    DeleteTemplateButton(eventCollector)
-                                }
                             }
                             DropTarget(
                                 modifier = Modifier
@@ -471,19 +481,6 @@ private fun AddTaskButton(eventCollector: (EditTemplateEvent) -> Unit) {
         onClick = { eventCollector(EditTemplateEvent.AddTaskClicked) },
         text = stringResource(R.string.new_task)
     )
-}
-
-@Composable
-private fun DeleteTemplateButton(eventCollector: (EditTemplateEvent) -> Unit) {
-    Box(Modifier.fillMaxWidth()) {
-        DeleteButton(
-            modifier = Modifier
-                .padding(top = 20.dp, bottom = 96.dp)
-                .align(Alignment.TopCenter)
-        ) {
-            eventCollector(EditTemplateEvent.DeleteTemplateClicked)
-        }
-    }
 }
 
 @Composable
