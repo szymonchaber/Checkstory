@@ -30,7 +30,9 @@ sealed interface EditTemplateState {
 
         val isOnboarding = onboardingPlaceholders != null
 
-        val isFreshTemplate = commands.size == 1 && commands.first() is TemplateCommand.CreateNewTemplate
+        val isFreshTemplate = commands.size == 1 && commands.firstOrNull() is TemplateCommand.CreateNewTemplate
+
+        val isNew = commands.firstOrNull() is TemplateCommand.CreateNewTemplate
 
         val canBeSaved = isOnboarding || !isFreshTemplate
 

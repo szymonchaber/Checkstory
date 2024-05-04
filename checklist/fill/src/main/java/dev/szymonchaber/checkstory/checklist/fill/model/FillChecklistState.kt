@@ -34,6 +34,8 @@ sealed interface FillChecklistState {
 
         fun isChanged() = commands.isNotEmpty()
 
+        val isNew = commands.firstOrNull() is ChecklistCommand.CreateChecklistCommand
+
         fun withUpdatedNotes(notes: String): FillChecklistState {
             return plusCommand(
                 ChecklistCommand.EditChecklistNotesCommand(

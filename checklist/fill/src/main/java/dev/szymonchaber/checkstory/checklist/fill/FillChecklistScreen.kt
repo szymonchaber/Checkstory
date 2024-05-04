@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -37,12 +38,12 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,7 +81,6 @@ import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.CheckedItemsRatio
 import dev.szymonchaber.checkstory.design.views.ConfirmExitWithoutSavingDialog
 import dev.szymonchaber.checkstory.design.views.DateFormatText
-import dev.szymonchaber.checkstory.design.views.DeleteButton
 import dev.szymonchaber.checkstory.design.views.FullSizeLoadingView
 import dev.szymonchaber.checkstory.design.views.LinkifyText
 import dev.szymonchaber.checkstory.design.views.SectionLabel
@@ -155,7 +155,7 @@ fun FillChecklistScreen(
         }
     }
 
-    val state = viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect {
@@ -190,40 +190,43 @@ fun FillChecklistScreen(
 
     ModalBottomSheetLayout(
         sheetContent = {
-            val fillChecklistState = state.value
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (fillChecklistState is FillChecklistState.Ready) {
-                    var textFieldValue by remember {
-                        val notes = fillChecklistState.checklist.notes
-                        mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
+                when (val loadingState = state) {
+                    is FillChecklistState.Ready -> {
+                        var textFieldValue by remember {
+                            val notes = loadingState.checklist.notes
+                            mutableStateOf(TextFieldValue(notes, selection = TextRange(notes.length)))
+                        }
+                        OutlinedTextField(
+                            modifier = Modifier
+                                .weight(1f)
+                                .focusRequester(notesInputFocusRequester)
+                                .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
+                            keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+                            label = { Text(text = "Checklist name") },
+                            value = textFieldValue,
+                            onValueChange = {
+                                textFieldValue = it
+                                viewModel.onEvent(FillChecklistEvent.NotesChanged(it.text))
+                            },
+                        )
+                        IconButton(
+                            modifier = Modifier.padding(end = 8.dp),
+                            onClick = {
+                                scope.launch {
+                                    focusManager.clearFocus()
+                                }
+                                scope.launch {
+                                    modalBottomSheetState.hide()
+                                }
+                            }) {
+                            Icon(imageVector = Icons.Default.Send, contentDescription = null)
+                        }
                     }
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(notesInputFocusRequester)
-                            .padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
-                        keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
-                        label = { Text(text = "Checklist name") },
-                        value = textFieldValue,
-                        onValueChange = {
-                            textFieldValue = it
-                            viewModel.onEvent(FillChecklistEvent.NotesChanged(it.text))
-                        },
-                    )
-                    IconButton(
-                        modifier = Modifier.padding(end = 8.dp),
-                        onClick = {
-                            scope.launch {
-                                focusManager.clearFocus()
-                            }
-                            scope.launch {
-                                modalBottomSheetState.hide()
-                            }
-                        }) {
-                        Icon(imageVector = Icons.Default.Send, contentDescription = null)
+
+                    else -> {
+                        Box(Modifier.size(1.dp))
                     }
-                } else {
-                    Box(Modifier.size(1.dp))
                 }
             }
         },
@@ -237,7 +240,7 @@ fun FillChecklistScreen(
 @Composable
 private fun FillChecklistScaffold(
     viewModel: FillChecklistViewModel,
-    state: State<FillChecklistState>
+    state: FillChecklistState
 ) {
     AdvertScaffold(
         topBar = {
@@ -253,15 +256,30 @@ private fun FillChecklistScaffold(
                     }
                 },
                 elevation = 12.dp,
+                actions = {
+                    when (state) {
+                        FillChecklistState.Loading -> Unit
+                        is FillChecklistState.Ready -> {
+                            if (!state.isNew) {
+                                IconButton(onClick = {
+                                    viewModel.onEvent(FillChecklistEvent.DeleteChecklistClicked)
+                                }) {
+                                    Icon(Icons.Filled.Delete, "", tint = Color.White)
+                                }
+                            }
+                        }
+                    }
+                }
             )
-        }, content = {
-            when (val loadingState = state.value) {
+        },
+        content = {
+            when (state) {
                 FillChecklistState.Loading -> {
                     FullSizeLoadingView()
                 }
 
                 is FillChecklistState.Ready -> {
-                    FillChecklistView(loadingState.checklist, viewModel::onEvent)
+                    FillChecklistView(state.checklist, viewModel::onEvent)
                 }
             }
         },
@@ -288,24 +306,13 @@ private val nestedPaddingStart = 12.dp
 
 @Composable
 fun FillChecklistView(checklist: Checklist, eventCollector: (FillChecklistEvent) -> Unit) {
-    LazyColumn {
+    LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
         item {
             ChecklistInfo(checklist, eventCollector)
         }
         items(checklist.items, key = { it.id.id }) {
             Box(Modifier.padding(start = 8.dp)) {
                 TaskSection(task = it, paddingStart = nestedPaddingStart, eventCollector = eventCollector)
-            }
-        }
-        item {
-            Box(Modifier.fillMaxWidth()) {
-                DeleteButton(
-                    modifier = Modifier
-                        .align(alignment = Alignment.Center)
-                        .padding(top = 24.dp, bottom = 96.dp)
-                ) {
-                    eventCollector(FillChecklistEvent.DeleteChecklistClicked)
-                }
             }
         }
     }

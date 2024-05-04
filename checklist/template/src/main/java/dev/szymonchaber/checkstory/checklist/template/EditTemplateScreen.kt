@@ -281,7 +281,7 @@ private fun EditTemplateScaffold(
                     when (state) {
                         EditTemplateState.Loading -> Unit
                         is EditTemplateState.Ready -> {
-                            if (!state.isFreshTemplate) {
+                            if (!state.isNew) {
                                 IconButton(onClick = {
                                     viewModel.onEvent(EditTemplateEvent.DeleteTemplateClicked)
                                 }) {
