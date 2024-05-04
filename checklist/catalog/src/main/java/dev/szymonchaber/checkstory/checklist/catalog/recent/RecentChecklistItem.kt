@@ -60,6 +60,7 @@ fun RecentChecklistItem(
         }
         Column(
             modifier = Modifier
+                .width(IntrinsicSize.Min)
                 .padding(bottom = 16.dp)
                 .padding(start = 16.dp)
         ) {
@@ -71,14 +72,14 @@ fun RecentChecklistItem(
                     modifier = Modifier.align(Alignment.CenterVertically),
                     checklist = checklist,
                 )
-                Space(size = 16.dp)
+                Space(size = 24.dp)
                 IconButton(onClick = {
                     openConfirmDeleteDialog.value = true
                 }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = null)
                 }
             }
-            NotesTextView(checklist.notes)
+            NotesTextView(modifier = Modifier.padding(end = 16.dp), notes = checklist.notes)
             Spacer(modifier = Modifier.height(8.dp))
             DateFormatText(checklist.createdAt)
         }
@@ -86,7 +87,7 @@ fun RecentChecklistItem(
 }
 
 @Composable
-private fun NotesTextView(notes: String) {
+private fun NotesTextView(notes: String, modifier: Modifier = Modifier) {
     val notesFontStyle = remember(notes) {
         if (notes.isBlank()) {
             FontStyle.Italic
@@ -101,6 +102,7 @@ private fun NotesTextView(notes: String) {
         }
     }
     Text(
+        modifier = modifier,
         text = notesOrEmptyNotesText,
         style = MaterialTheme.typography.subtitle1.copy(fontStyle = notesFontStyle),
         maxLines = 1,
