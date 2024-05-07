@@ -20,8 +20,8 @@ android {
         applicationId = "dev.szymonchaber.checkstory"
         minSdk = 24
         targetSdk = 33
-        versionCode = 48
-        versionName = "2.0.0-alpha03"
+        versionCode = 49
+        versionName = "2.0.0-alpha04"
 
         resourceConfigurations.add("en")
 
