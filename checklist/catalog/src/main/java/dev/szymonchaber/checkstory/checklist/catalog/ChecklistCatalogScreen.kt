@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -22,6 +23,7 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
@@ -206,7 +208,7 @@ private fun ChecklistCatalogView(
                 is ChecklistCatalogLoadingState.Success -> {
                     if (loadingState.templates.isEmpty()) {
                         item {
-                            NoTemplatesView()
+                            NoTemplatesView(viewModel::onEvent)
                         }
                     } else {
                         itemsIndexed(loadingState.templates, key = { _, item -> item.id }) { index, item ->
@@ -215,19 +217,19 @@ private fun ChecklistCatalogView(
                                 Divider()
                             }
                         }
-                    }
-                }
-            }
-            item {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Button(
-                        modifier = Modifier.align(Alignment.Center),
-                        onClick = {
-                            viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
-                        }) {
-                        Text(
-                            text = stringResource(R.string.new_checklist).uppercase(),
-                        )
+                        item {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                OutlinedButton(
+                                    modifier = Modifier.align(Alignment.Center),
+                                    onClick = {
+                                        viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
+                                    }) {
+                                    Text(
+                                        text = stringResource(R.string.new_checklist).uppercase(),
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -297,19 +299,28 @@ private fun RowScope.FreeTemplateCounter(
 }
 
 @Composable
-fun NoTemplatesView() {
-    Box(
+fun NoTemplatesView(onEvent: (ChecklistCatalogEvent) -> Unit) {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight()
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier
-                .padding(all = 24.dp)
-                .align(alignment = Alignment.Center),
+                .padding(all = 24.dp),
             textAlign = TextAlign.Center,
             text = stringResource(id = R.string.templates_empty)
         )
+        Button(
+            onClick = {
+                onEvent(ChecklistCatalogEvent.NewTemplateClicked)
+            }) {
+            Text(
+                text = stringResource(R.string.new_checklist).uppercase(),
+            )
+        }
     }
 }
 
