@@ -1,6 +1,11 @@
 package dev.szymonchaber.checkstory.data.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import dev.szymonchaber.checkstory.data.database.model.ChecklistTemplateEntity
 import dev.szymonchaber.checkstory.data.database.model.TemplateCheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.reminder.ReminderEntity
@@ -15,6 +20,7 @@ interface TemplateDao {
     )
     fun getAll(): Flow<List<ChecklistTemplateEntity>>
 
+    @Transaction
     @Query(
         "SELECT * FROM checklistTemplateEntity"
     )
@@ -76,8 +82,16 @@ interface TemplateDao {
         checkboxes: List<TemplateCheckboxEntity>,
         reminders: List<ReminderEntity>
     ) {
+        deleteTasksForTemplate(template.id)
+        deleteRemindersForTemplate(template.id)
         insert(template)
         insertAllTasks(checkboxes)
         insertReminders(reminders)
     }
+
+    @Query("DELETE FROM templateCheckboxEntity WHERE templateCheckboxEntity.templateId=:templateId")
+    suspend fun deleteTasksForTemplate(templateId: UUID)
+
+    @Query("DELETE FROM reminderEntity WHERE reminderEntity.templateId=:templateId")
+    suspend fun deleteRemindersForTemplate(templateId: UUID)
 }
