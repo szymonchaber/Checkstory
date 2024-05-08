@@ -78,6 +78,7 @@ internal class TemplateRepositoryImpl @Inject constructor(
                 description,
                 convertToNestedTasks(tasks.sortedBy { it.sortPosition }),
                 template.createdAt,
+                template.updatedAt,
                 checklists,
                 reminders.map(ReminderEntity::toDomainReminder),
                 isRemoved

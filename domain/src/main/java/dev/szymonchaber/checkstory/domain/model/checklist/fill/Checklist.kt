@@ -11,6 +11,7 @@ data class Checklist(
     val items: List<Task>,
     val notes: String,
     val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
     val isRemoved: Boolean = false
 ) {
 
@@ -28,6 +29,7 @@ data class Checklist(
     companion object {
 
         fun empty(id: ChecklistId): Checklist {
+            val now = LocalDateTime.now()
             return Checklist(
                 id = id,
                 templateId = TemplateId.new(),
@@ -35,7 +37,8 @@ data class Checklist(
                 description = "",
                 items = listOf(),
                 notes = "",
-                createdAt = LocalDateTime.now()
+                createdAt = now,
+                updatedAt = now
             )
         }
     }

@@ -10,6 +10,7 @@ data class Template(
     val description: String,
     val tasks: List<TemplateTask>,
     val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
     val checklists: List<Checklist>,
     val reminders: List<Reminder>,
     val isRemoved: Boolean = false
@@ -35,6 +36,7 @@ data class Template(
                 description = "",
                 tasks = listOf(),
                 createdAt = createdAt,
+                updatedAt = createdAt,
                 checklists = listOf(),
                 reminders = listOf()
             )

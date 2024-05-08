@@ -42,7 +42,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
         val description: String,
         val items: List<CommandTemplateTaskEntity>,
         val createdAt: Instant,
-        val reminders: List<CommandReminderEntity>
+        val reminders: List<CommandReminderEntity>,
     ) {
 
         fun toTemplate(): Template {
@@ -51,6 +51,7 @@ internal sealed interface TemplateCommandEntity : CommandDataEntity {
                 title,
                 description,
                 items.map(CommandTemplateTaskEntity::toTask),
+                createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
                 createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
                 listOf(),
                 reminders.map {

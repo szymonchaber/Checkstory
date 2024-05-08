@@ -20,6 +20,7 @@ internal data class ApiChecklist(
     val notes: String,
     val tasks: List<ApiTask> = listOf(),
     val createdAt: Instant,
+    val updatedAt: Instant,
     val isDeleted: Boolean = false
 ) {
 
@@ -31,6 +32,7 @@ internal data class ApiChecklist(
             description = description,
             items = tasks.sortedBy(ApiTask::sortPosition).map(ApiTask::toTask),
             createdAt = createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
+            updatedAt = updatedAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
             isRemoved = isDeleted,
             notes = notes
         )

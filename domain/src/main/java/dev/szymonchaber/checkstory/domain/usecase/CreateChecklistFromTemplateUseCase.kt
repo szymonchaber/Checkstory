@@ -32,15 +32,16 @@ class CreateChecklistFromTemplateUseCase @Inject constructor(
         return with(basedOn) {
             val checklistId = ChecklistId.new()
             Checklist(
-                checklistId,
-                basedOn.id,
-                title,
-                description,
-                tasks.map {
+                id = checklistId,
+                templateId = basedOn.id,
+                title = title,
+                description = description,
+                items = tasks.map {
                     toTask(it, checklistId)
                 }.sortedBy(Task::sortPosition),
-                "",
-                LocalDateTime.now()
+                notes = "",
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now(),
             )
         }
     }

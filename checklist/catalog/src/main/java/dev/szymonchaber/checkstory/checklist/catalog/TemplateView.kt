@@ -73,7 +73,7 @@ fun TemplateView(
                         Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
                     }
                     DateFormatText(
-                        localDateTime = template.createdAt,
+                        localDateTime = template.updatedAt,
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                     )
@@ -175,6 +175,7 @@ fun TemplateViewPreview() {
                     TemplateId.new()
                 )
             ),
+            LocalDateTime.now(),
             LocalDateTime.now(),
             listOf(),
             listOf()

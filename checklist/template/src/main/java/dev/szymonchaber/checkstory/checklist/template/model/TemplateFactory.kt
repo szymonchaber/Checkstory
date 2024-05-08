@@ -147,6 +147,7 @@ fun emptyTemplate(): Template {
         "",
         listOf(),
         LocalDateTime.now(),
+        LocalDateTime.now(),
         listOf(),
         listOf()
     )

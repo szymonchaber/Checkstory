@@ -14,6 +14,7 @@ data class ChecklistTemplateEntity(
     val title: String,
     val description: String,
     val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
     @ColumnInfo(defaultValue = "false")
     val isRemoved: Boolean
 ) {
@@ -27,6 +28,7 @@ data class ChecklistTemplateEntity(
                     title = title,
                     description = description,
                     createdAt = createdAt,
+                    updatedAt = updatedAt,
                     isRemoved = isRemoved
                 )
             }

@@ -9,6 +9,10 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDateTime
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 internal class CommandApplier @Inject constructor(
@@ -70,11 +74,23 @@ internal class CommandApplier @Inject constructor(
         return fold(template) { foldedTemplate, command ->
             command.applyTo(foldedTemplate)
         }
+            .copy(
+                updatedAt = getLatestCommandDateTime(this) ?: template.updatedAt
+            )
     }
 
-    private fun List<ChecklistCommand>.applyAllTo(template: Checklist): Checklist {
-        return fold(template) { foldedChecklist, command ->
+    private fun List<ChecklistCommand>.applyAllTo(checklist: Checklist): Checklist {
+        return fold(checklist) { foldedChecklist, command ->
             command.applyTo(foldedChecklist)
         }
+            .copy(
+                updatedAt = getLatestCommandDateTime(this) ?: checklist.updatedAt
+            )
+    }
+
+    private fun getLatestCommandDateTime(commands: List<Command>): LocalDateTime? {
+        return commands.maxOfOrNull {
+            it.timestamp
+        }?.toLocalDateTime(TimeZone.currentSystemDefault())?.toJavaLocalDateTime()
     }
 }

@@ -159,7 +159,7 @@ private fun TemplateInfo(checklist: Template) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             DateFormatText(
-                localDateTime = checklist.createdAt
+                localDateTime = checklist.updatedAt
             )
         }
         Space(8.dp)

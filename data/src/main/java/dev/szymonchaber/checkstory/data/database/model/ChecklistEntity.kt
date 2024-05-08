@@ -17,6 +17,7 @@ data class ChecklistEntity(
     val templateId: UUID,
     val notes: String,
     val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
     @ColumnInfo(defaultValue = "false")
     val isRemoved: Boolean
 ) {
@@ -28,14 +29,15 @@ data class ChecklistEntity(
         tasks: List<Task>
     ): Checklist {
         return Checklist(
-            ChecklistId(checklistId),
-            TemplateId(templateId),
-            templateTitle,
-            templateDescription,
-            tasks,
-            notes,
-            createdAt,
-            isTemplateRemoved || isRemoved
+            id = ChecklistId(checklistId),
+            templateId = TemplateId(templateId),
+            title = templateTitle,
+            description = templateDescription,
+            items = tasks,
+            notes = notes,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            isRemoved = isTemplateRemoved || isRemoved
         )
     }
 
@@ -47,8 +49,9 @@ data class ChecklistEntity(
                     checklistId = checklist.id.id,
                     templateId = templateId.id,
                     notes = notes,
-                    checklist.createdAt,
-                    checklist.isRemoved
+                    createdAt = checklist.createdAt,
+                    updatedAt = checklist.updatedAt,
+                    isRemoved = checklist.isRemoved
                 )
             }
         }

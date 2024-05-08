@@ -141,7 +141,8 @@ fun RecentChecklistsSuccessPreview() {
                 "Description",
                 items,
                 "Awesome session!",
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                LocalDateTime.now(),
             )
         )
         RecentChecklistsView(loadingState = RecentChecklistsLoadingState.Success(checklists))

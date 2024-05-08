@@ -132,6 +132,7 @@ fun RecentChecklistItemPreview() {
         "Description",
         items,
         "Awesome session!",
+        LocalDateTime.now(),
         LocalDateTime.now()
     )
     RecentChecklistItem(

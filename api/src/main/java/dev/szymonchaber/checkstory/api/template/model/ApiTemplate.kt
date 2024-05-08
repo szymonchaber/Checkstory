@@ -18,6 +18,7 @@ internal data class ApiTemplate(
     val tasks: List<ApiTemplateTask> = listOf(),
     val reminders: List<ApiReminder> = listOf(),
     val createdAt: Instant,
+    val updatedAt: Instant,
     val isDeleted: Boolean = false
 ) {
 
@@ -28,6 +29,7 @@ internal data class ApiTemplate(
             description = description,
             tasks = tasks.map { it.toTask() },
             createdAt = createdAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
+            updatedAt = updatedAt.toLocalDateTime(TimeZone.currentSystemDefault()).toJavaLocalDateTime(),
             checklists = listOf(),
             reminders = reminders.map { it.toReminder() },
             isRemoved = isDeleted,

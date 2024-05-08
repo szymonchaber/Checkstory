@@ -2,7 +2,6 @@ package dev.szymonchaber.checkstory.data.di
 
 import android.content.Context
 import androidx.room.Room
-import androidx.room.RoomDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import dev.szymonchaber.checkstory.data.database.AppDatabase
 import dev.szymonchaber.checkstory.data.database.Migration5to6
+import dev.szymonchaber.checkstory.data.database.Migration8to9
 import dev.szymonchaber.checkstory.data.database.dao.ChecklistDao
 import dev.szymonchaber.checkstory.data.database.dao.CommandDao
 import dev.szymonchaber.checkstory.data.database.dao.ReminderDao
@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.Executors
@@ -41,13 +42,13 @@ object DatabaseModule {
             context,
             AppDatabase::class.java, "checkstory-database"
         )
-            .setQueryCallback(object : RoomDatabase.QueryCallback {
-
-                override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) {
-                    println("SQL Query: $sqlQuery SQL Args: $bindArgs")
-                }
-            }, Executors.newSingleThreadExecutor())
-            .addMigrations(Migration5to6())
+            .setQueryCallback(
+                queryCallback = { sqlQuery, bindArgs ->
+                    Timber.d("SQL Query: $sqlQuery SQL Args: $bindArgs")
+                },
+                executor = Executors.newSingleThreadExecutor()
+            )
+            .addMigrations(Migration5to6(), Migration8to9())
             .build()
 //            .apply { insertDummyData() }
     }
@@ -59,11 +60,12 @@ object DatabaseModule {
                 val templateId = UUID.randomUUID()
                 templateDao.insert(
                     ChecklistTemplateEntity(
-                        templateId,
-                        "Cleaning something",
-                        "It's good to do",
-                        LocalDateTime.now().minusDays(2),
-                        false
+                        id = templateId,
+                        title = "Cleaning something",
+                        description = "It's good to do",
+                        createdAt = LocalDateTime.now().minusDays(2),
+                        updatedAt = LocalDateTime.now().minusDays(2),
+                        isRemoved = false
                     )
                 )
 //                templateTaskDao.insertAll(
@@ -153,11 +155,12 @@ class InsertDsl {
                 items.map { (checklist, checkboxes) ->
                     appDatabase.checklistDao.insert(
                         ChecklistEntity(
-                            checklist.checklistId,
-                            checklist.templateId,
-                            checklist.notes,
-                            LocalDateTime.now().minusDays(2),
-                            false
+                            checklistId = checklist.checklistId,
+                            templateId = checklist.templateId,
+                            notes = checklist.notes,
+                            createdAt = LocalDateTime.now().minusDays(2),
+                            updatedAt = LocalDateTime.now().minusDays(2),
+                            isRemoved = false
                         )
                     )
 
