@@ -2,6 +2,8 @@
 
 package dev.szymonchaber.checkstory.checklist.template
 
+import android.app.Activity
+import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateIntAsState
@@ -48,6 +50,7 @@ import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
@@ -65,6 +68,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -198,6 +202,7 @@ fun EditTemplateScreen(
             }
         }
     }
+    WithAdjustNothing()
     ModalBottomSheetLayout(
         sheetContent = {
             EditReminderScreen(viewModel = editReminderViewModel) {
@@ -624,4 +629,15 @@ val LazyListItemInfo.offsetEnd: Int
 
 fun Modifier.then(modifier: Modifier.() -> Modifier): Modifier {
     return then(modifier(Modifier))
+}
+
+@Composable
+fun WithAdjustNothing() {
+    val activity = LocalContext.current as Activity
+    DisposableEffect(Unit) {
+        activity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
+        onDispose {
+            activity.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+        }
+    }
 }
