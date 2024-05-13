@@ -213,7 +213,7 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.FirebaseAuthFlowCancelled>()
             .withState()
             .mapLatest { (state, _) ->
-                val effect = if (state.partialAuthRequested) {
+                val effect = if (state.authForPaymentRequested) {
                     AccountEffect.ExitWithAuthResult(false)
                 } else {
                     null
@@ -226,19 +226,15 @@ class AccountViewModel @Inject constructor(
         state: AccountState,
         response: IdpResponse
     ): Pair<AccountState, AccountEffect?> {
-        return if (state.partialAuthRequested) {
-            state to AccountEffect.ExitWithAuthResult(true)
+        return if (response.isNewUser) {
+            register(state)
         } else {
-            if (response.isNewUser) {
-                register(state)
-            } else {
-                login(state)
-            }
+            login(state)
         }
     }
 
     private fun selectAuthErrorEvent(state: AccountState): AccountEffect {
-        return if (state.partialAuthRequested) {
+        return if (state.authForPaymentRequested) {
             AccountEffect.ExitWithAuthResult(false)
         } else {
             AccountEffect.ShowLoginNetworkError
@@ -251,7 +247,7 @@ class AccountViewModel @Inject constructor(
                 mapError = {
                     Timber.e(it.toString())
                     state.copy(
-                        accountLoadingState = AccountLoadingState.Loading,
+                        accountLoadingState = AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser()),
                         purchaseRestorationOngoing = false
                     ) to AccountEffect.ShowLoginNetworkError
                 },
@@ -259,7 +255,7 @@ class AccountViewModel @Inject constructor(
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
-                        AccountEffect.NavigateBack
+                        AccountEffect.ExitWithAuthResult(isSuccess = true)
                     }
                     state.copy(
                         accountLoadingState = AccountLoadingState.Success(it),
@@ -274,13 +270,13 @@ class AccountViewModel @Inject constructor(
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    state.copy(accountLoadingState = AccountLoadingState.Loading) to AccountEffect.ShowLoginNetworkError
+                    state.copy(accountLoadingState = AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser())) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
-                        AccountEffect.NavigateBack
+                        AccountEffect.ExitWithAuthResult(true)
                     }
                     state.copy(accountLoadingState = AccountLoadingState.Success(it)) to effect
                 }

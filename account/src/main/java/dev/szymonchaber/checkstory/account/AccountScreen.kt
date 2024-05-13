@@ -165,10 +165,6 @@ fun AccountScreen(
                         Toast.makeText(context, "Purchase already assigned to another user", Toast.LENGTH_LONG).show()
                     }
 
-                    AccountEffect.NavigateBack -> {
-                        navigator.navigateBack()
-                    }
-
                     AccountEffect.ShowConfirmDeleteAccountDialog -> {
                         openConfirmDeleteAccountDialog.value = true
                     }
@@ -385,7 +381,7 @@ private class AccountStateProvider : CollectionPreviewParameterProvider<AccountS
     listOf(
         AccountState(
             accountLoadingState = AccountLoadingState.Success(User.Guest(false)),
-            partialAuthRequested = false
+            authForPaymentRequested = false
         ),
 //        AccountState(
 //            accountLoadingState = AccountLoadingState.Success(User.Guest(true)),
@@ -393,11 +389,11 @@ private class AccountStateProvider : CollectionPreviewParameterProvider<AccountS
 //        ),
         AccountState(
             accountLoadingState = AccountLoadingState.Success(User.LoggedIn("", "szymon@szymonchaber.dev", Tier.FREE)),
-            partialAuthRequested = false
+            authForPaymentRequested = false
         ),
         AccountState(
             accountLoadingState = AccountLoadingState.Success(User.LoggedIn("", "szymon@szymonchaber.dev", Tier.PAID)),
-            partialAuthRequested = false
+            authForPaymentRequested = false
         ),
     ),
 )
