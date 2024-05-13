@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
 
-    suspend fun storeCurrentUser(user: User)
+    suspend fun storeCurrentUser(user: User.LoggedIn)
 
     suspend fun removeCurrentUser()
 

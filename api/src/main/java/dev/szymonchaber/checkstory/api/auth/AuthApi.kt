@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 internal class AuthApi @Inject constructor(private val client: ConfiguredHttpClient) {
 
-    suspend fun login(): Result<LoginError, User> {
+    suspend fun login(): Result<LoginError, User.LoggedIn> {
         return try {
             if (Firebase.auth.currentUser == null) {
                 return Result.error(LoginError.NetworkError(IllegalStateException("Firebase user not logged in")))
@@ -34,12 +34,19 @@ internal class AuthApi @Inject constructor(private val client: ConfiguredHttpCli
         }
     }
 
-    suspend fun register(): Result<RegisterError, User> {
+    suspend fun register(): Result<RegisterError, User.LoggedIn> {
         return try {
+            if (Firebase.auth.currentUser == null) {
+                return Result.error(RegisterError.NetworkError(IllegalStateException("Firebase user not logged in")))
+            }
             Result.success(
                 client
                     .post("/auth/register") {
-                        setBody(RegisterPayload())
+                        setBody(
+                            RegisterPayload(
+                                Firebase.auth.currentUser?.email
+                            )
+                        )
                     }
                     .body<ApiUser>()
                     .toUser()

@@ -32,8 +32,20 @@ class RegisterUseCaseTest {
     private val playPaymentRepository = mock<PlayPaymentRepository>()
 
     private val authInteractor = mock<AuthInteractor> {
-        onBlocking { register() } doReturn Result.success(User.LoggedIn(Tier.FREE))
-        onBlocking { login() } doReturn Result.success(User.LoggedIn(Tier.PAID))
+        onBlocking { register() } doReturn Result.success(
+            User.LoggedIn(
+                id = "id",
+                email = "email@email.com",
+                tier = Tier.FREE
+            )
+        )
+        onBlocking { login() } doReturn Result.success(
+            User.LoggedIn(
+                id = "id",
+                email = "email@email.com",
+                tier = Tier.PAID
+            )
+        )
     }
 
     private val synchronizer = mock<Synchronizer> {
@@ -82,6 +94,6 @@ class RegisterUseCaseTest {
 
             // then
             verify(authInteractor).login()
-            verify(userRepository).storeCurrentUser(User.LoggedIn(Tier.PAID))
+            verify(userRepository).storeCurrentUser(User.LoggedIn(id = "id", email = "email@email.com", Tier.PAID))
         }
 }

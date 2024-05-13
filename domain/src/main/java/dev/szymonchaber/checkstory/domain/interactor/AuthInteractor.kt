@@ -8,9 +8,9 @@ import dev.szymonchaber.checkstory.domain.usecase.RegisterError
 
 interface AuthInteractor {
 
-    suspend fun login(): Result<LoginError, User>
+    suspend fun login(): Result<LoginError, User.LoggedIn>
 
-    suspend fun register(): Result<RegisterError, User>
+    suspend fun register(): Result<RegisterError, User.LoggedIn>
 
     suspend fun deleteAccount(): Result<DeleteAccountError, Unit>
 }

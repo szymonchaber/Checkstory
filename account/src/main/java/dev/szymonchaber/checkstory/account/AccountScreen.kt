@@ -25,6 +25,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -307,7 +308,14 @@ private fun LoggedInContent(user: User.LoggedIn, onEvent: (AccountEvent) -> Unit
     ) {
         SectionHeader("Account")
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Logged in")
+        val emailPart by remember(user) {
+            derivedStateOf {
+                user.email?.let {
+                    ": $it"
+                }.orEmpty()
+            }
+        }
+        Text("Logged in$emailPart")
         Spacer(modifier = Modifier.height(4.dp))
         OutlinedButton(onClick = {
             onEvent(AccountEvent.LogoutClicked)
@@ -376,10 +384,6 @@ fun AccountStatePreview(
 private class AccountStateProvider : CollectionPreviewParameterProvider<AccountState>(
     listOf(
         AccountState(
-            accountLoadingState = AccountLoadingState.Loading,
-            partialAuthRequested = false
-        ),
-        AccountState(
             accountLoadingState = AccountLoadingState.Success(User.Guest(false)),
             partialAuthRequested = false
         ),
@@ -388,11 +392,11 @@ private class AccountStateProvider : CollectionPreviewParameterProvider<AccountS
 //            partialAuthRequested = false
 //        ),
         AccountState(
-            accountLoadingState = AccountLoadingState.Success(User.LoggedIn(Tier.FREE)),
+            accountLoadingState = AccountLoadingState.Success(User.LoggedIn("", "szymon@szymonchaber.dev", Tier.FREE)),
             partialAuthRequested = false
         ),
         AccountState(
-            accountLoadingState = AccountLoadingState.Success(User.LoggedIn(Tier.PAID)),
+            accountLoadingState = AccountLoadingState.Success(User.LoggedIn("", "szymon@szymonchaber.dev", Tier.PAID)),
             partialAuthRequested = false
         ),
     ),

@@ -22,7 +22,7 @@ class LoginUseCase @Inject constructor(
     private val pushFirebaseTokenUseCase: PushFirebaseMessagingTokenUseCase,
 ) {
 
-    suspend fun login(assignCurrentPayment: Boolean = false): Result<LoginError, User> { // TODO maybe we should flag payment conflict here
+    suspend fun login(assignCurrentPayment: Boolean = false): Result<LoginError, User.LoggedIn> { // TODO maybe we should flag payment conflict here
         return authInteractor.login()
             .flatMapSuccess {
                 if (assignCurrentPayment) {
@@ -42,7 +42,7 @@ class LoginUseCase @Inject constructor(
             }
     }
 
-    private suspend fun assignExistingPurchaseToUserOrNull(): Result<LoginError, User>? {
+    private suspend fun assignExistingPurchaseToUserOrNull(): Result<LoginError, User.LoggedIn>? {
         return paymentRepository.getActiveSubscription()
             ?.let {
                 userPaymentInteractor.assignPaymentToCurrentUser(it.token)

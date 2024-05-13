@@ -6,7 +6,11 @@ sealed interface User {
         val deviceHasLocalPayment: Boolean = false // TODO Remove this field & require registration for local payments at some later date
     ) : User
 
-    data class LoggedIn(val tier: Tier) : User
+    data class LoggedIn(
+        val id: String,
+        val email: String?,
+        val tier: Tier
+    ) : User
 
     val isPaidUser: Boolean
         get() {

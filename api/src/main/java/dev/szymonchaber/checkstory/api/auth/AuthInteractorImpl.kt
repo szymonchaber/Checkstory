@@ -12,11 +12,11 @@ internal class AuthInteractorImpl @Inject constructor(
     private val authApi: AuthApi
 ) : AuthInteractor {
 
-    override suspend fun login(): Result<LoginError, User> {
+    override suspend fun login(): Result<LoginError, User.LoggedIn> {
         return authApi.login()
     }
 
-    override suspend fun register(): Result<RegisterError, User> {
+    override suspend fun register(): Result<RegisterError, User.LoggedIn> {
         return authApi.register()
     }
 
