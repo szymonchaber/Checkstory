@@ -58,6 +58,7 @@ class AccountViewModel @Inject constructor(
             eventFlow.handleSignUpClicked(),
             eventFlow.handleUpgradeClicked(),
             eventFlow.handleDeleteAccountClicked(),
+            eventFlow.handleDeleteAccountConfirmed(),
         )
     }
 
@@ -170,10 +171,17 @@ class AccountViewModel @Inject constructor(
 
     private fun Flow<AccountEvent>.handleDeleteAccountClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.DeleteAccountClicked>()
+            .map {
+                null to AccountEffect.ShowConfirmDeleteAccountDialog
+            }
+    }
+
+    private fun Flow<AccountEvent>.handleDeleteAccountConfirmed(): Flow<Pair<AccountState?, AccountEffect?>> {
+        return filterIsInstance<AccountEvent.DeleteAccountConfirmed>()
             .mapWithState { state, _ ->
                 deleteAccountUseCase.deleteAccount()
                 firebaseAuth.signOut()
-                state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
+                state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to AccountEffect.ShowAccountDeleted
             }
     }
 

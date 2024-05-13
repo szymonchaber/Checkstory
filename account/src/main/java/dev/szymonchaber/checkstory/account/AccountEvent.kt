@@ -24,6 +24,8 @@ sealed interface AccountEvent {
 
     data object DeleteAccountClicked : AccountEvent
 
+    data object DeleteAccountConfirmed : AccountEvent
+
     data object UpgradeClicked : AccountEvent
 
     data object RestorePaymentClicked : AccountEvent

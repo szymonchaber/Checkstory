@@ -87,6 +87,14 @@ fun AccountScreen(
         }
     }
 
+    val openConfirmDeleteAccountDialog = remember { mutableStateOf(false) }
+    if (openConfirmDeleteAccountDialog.value) {
+        ConfirmDeleteAccountDialog(openConfirmDeleteAccountDialog) {
+            viewModel.onEvent(AccountEvent.DeleteAccountConfirmed)
+            openConfirmDeleteAccountDialog.value = false
+        }
+    }
+
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val termsOfServiceUrl = stringResource(DesignR.string.terms_of_service_url)
@@ -158,6 +166,14 @@ fun AccountScreen(
 
                     AccountEffect.NavigateBack -> {
                         navigator.navigateBack()
+                    }
+
+                    AccountEffect.ShowConfirmDeleteAccountDialog -> {
+                        openConfirmDeleteAccountDialog.value = true
+                    }
+
+                    AccountEffect.ShowAccountDeleted -> {
+                        Toast.makeText(context, "Account deleted", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -399,6 +415,36 @@ fun ConfirmLogoutDialog(openDialog: MutableState<Boolean>, onConfirmClicked: () 
                 onClick = onConfirmClicked
             ) {
                 Text("Logout")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    openDialog.value = false
+                }) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun ConfirmDeleteAccountDialog(openDialog: MutableState<Boolean>, onConfirmClicked: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = {
+            openDialog.value = false
+        },
+        title = {
+            Text("Delete account")
+        },
+        text = {
+            Text("Deleting your account will remove all your data. Continue?")
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirmClicked
+            ) {
+                Text("Delete account")
             }
         },
         dismissButton = {

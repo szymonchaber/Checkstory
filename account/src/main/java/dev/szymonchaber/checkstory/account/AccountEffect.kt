@@ -12,6 +12,8 @@ sealed interface AccountEffect {
 
     data object NavigateToPurchaseScreen : AccountEffect
 
+    data object ShowConfirmDeleteAccountDialog : AccountEffect
+
     data object NavigateToSubscriptionManagement : AccountEffect
 
     data object ShowNoPurchasesFound : AccountEffect
@@ -23,4 +25,6 @@ sealed interface AccountEffect {
     data object ShowPurchaseRestorationFailed : AccountEffect
 
     data object ShowPurchaseAssignedToAnotherUser : AccountEffect
+
+    data object ShowAccountDeleted : AccountEffect
 }
