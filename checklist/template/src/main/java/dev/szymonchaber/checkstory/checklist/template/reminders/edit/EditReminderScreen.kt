@@ -1,5 +1,8 @@
 package dev.szymonchaber.checkstory.checklist.template.reminders.edit
 
+import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,8 +33,13 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.date.datepicker
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
@@ -70,7 +78,11 @@ fun EditReminderScreen(
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Text(text = stringResource(id = R.string.new_reminder), style = MaterialTheme.typography.subtitle1)
+        Text(
+            text = stringResource(id = R.string.new_reminder),
+            style = MaterialTheme.typography.subtitle1,
+            fontWeight = FontWeight.Bold
+        )
         Spacer(modifier = Modifier.height(16.dp))
         when (val loadingState = state.reminderLoadingState) {
             EditReminderLoadingState.Loading -> {
@@ -78,7 +90,33 @@ fun EditReminderScreen(
             }
 
             is EditReminderLoadingState.Success -> {
-                EditReminderView(loadingState.reminder) { viewModel.onEvent(it) }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    PermissionEnsuringEditReminderView(loadingState.reminder, viewModel::onEvent)
+                } else {
+                    EditReminderView(loadingState.reminder, viewModel::onEvent)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@OptIn(ExperimentalPermissionsApi::class)
+private fun ColumnScope.PermissionEnsuringEditReminderView(reminder: Reminder, onEvent: (EditReminderEvent) -> Unit) {
+    val permissionState = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
+    if (permissionState.status.isGranted) {
+        EditReminderView(reminder, onEvent)
+    } else {
+        Column {
+            val textToShow = if (permissionState.status.shouldShowRationale) {
+                "We need a permission to show notifications to remind you about your tasks."
+            } else {
+                "Notification permission is not granted. Without it, you won't receive reminders."
+            }
+            Text(textToShow)
+            Button(onClick = { permissionState.launchPermissionRequest() }) {
+                Text("Request permission")
             }
         }
     }
@@ -86,7 +124,7 @@ fun EditReminderScreen(
 
 @Composable
 private fun ColumnScope.EditReminderView(reminder: Reminder, onEvent: (EditReminderEvent) -> Unit) {
-    val options = ReminderType.values().map {
+    val options = ReminderType.entries.map {
         when (it) {
             ReminderType.EXACT -> ToggleOption(it, stringResource(R.string.one_time))
             ReminderType.RECURRING -> ToggleOption(it, stringResource(R.string.recurring))
@@ -107,6 +145,7 @@ private fun ColumnScope.EditReminderView(reminder: Reminder, onEvent: (EditRemin
         is Exact -> ExactReminderView(reminder, onEvent)
         is Recurring -> RecurringReminderView(reminder, onEvent)
     }
+
     Button(
         modifier = Modifier
             .align(CenterHorizontally)

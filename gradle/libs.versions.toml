@@ -5,6 +5,7 @@ ktx = "1.12.0"
 hilt = "2.51"
 lifecycle = "2.7.0"
 compose = "1.6.6"
+accompanist = "0.34.0"
 ktor = "2.3.5"
 room = "2.6.1"
 composeDestinations = "1.9.54"
@@ -48,8 +49,9 @@ compose-activity = "androidx.activity:activity-compose:1.9.0"
 compose-navigation = "androidx.navigation:navigation-compose:2.7.6"
 compose-hilt-navigation = "androidx.hilt:hilt-navigation-compose:1.1.0"
 
-accompanist-pager-core = "com.google.accompanist:accompanist-pager:0.29.1-alpha"
-accompanist-pager-indicator = "com.google.accompanist:accompanist-pager-indicators:0.29.1-alpha"
+accompanist-pager-core = { group = "com.google.accompanist", name = "accompanist-pager", version.ref = "accompanist" }
+accompanist-pager-indicator = { group = "com.google.accompanist", name = "accompanist-pager-indicators", version.ref = "accompanist" }
+accompanist-permissions = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "accompanist" }
 
 ktor-client-android = { group = "io.ktor", name = "ktor-client-android", version.ref = "ktor" }
 ktor-client-serialization = { group = "io.ktor", name = "ktor-client-serialization", version.ref = "ktor" }

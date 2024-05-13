@@ -51,6 +51,7 @@ dependencies {
     ksp(libs.compose.destinations.ksp)
 
     implementation(libs.composeDialogsDateTime)
+    implementation(libs.accompanist.permissions)
 
     debugImplementation(libs.compose.debugUiTooling)
     testImplementation(libs.bundles.unitTest)
