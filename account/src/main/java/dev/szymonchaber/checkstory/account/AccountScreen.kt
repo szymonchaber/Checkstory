@@ -155,6 +155,10 @@ fun AccountScreen(
                     AccountEffect.ShowPurchaseAssignedToAnotherUser -> {
                         Toast.makeText(context, "Purchase already assigned to another user", Toast.LENGTH_LONG).show()
                     }
+
+                    AccountEffect.NavigateBack -> {
+                        navigator.navigateBack()
+                    }
                 }
             }
     }

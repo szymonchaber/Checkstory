@@ -251,7 +251,7 @@ class AccountViewModel @Inject constructor(
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
-                        null
+                        AccountEffect.NavigateBack
                     }
                     state.copy(
                         accountLoadingState = AccountLoadingState.Success(it),
@@ -272,7 +272,7 @@ class AccountViewModel @Inject constructor(
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
-                        null
+                        AccountEffect.NavigateBack
                     }
                     state.copy(accountLoadingState = AccountLoadingState.Success(it)) to effect
                 }
