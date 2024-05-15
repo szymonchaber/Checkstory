@@ -67,8 +67,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
+import com.ramcosta.composedestinations.annotation.NavGraph
+import com.ramcosta.composedestinations.annotation.parameters.DeepLink
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEffect
 import dev.szymonchaber.checkstory.checklist.fill.model.FillChecklistEvent
@@ -92,8 +94,11 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 
+@NavGraph<ExternalModuleGraph>
+annotation class FillChecklistGraph
+
 @OptIn(ExperimentalMaterialApi::class)
-@Destination(
+@Destination<FillChecklistGraph>(
     route = "fill_checklist_screen",
     start = true,
     deepLinks = [

@@ -32,15 +32,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
+import com.ramcosta.composedestinations.annotation.NavGraph
+import com.ramcosta.composedestinations.annotation.parameters.DeepLink
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 
+@NavGraph<ExternalModuleGraph>
+annotation class AboutGraph
+
 @SuppressLint("MissingPermission")
-@Destination(
+@Destination<AboutGraph>(
     route = "about_screen",
     start = true,
     deepLinks = [

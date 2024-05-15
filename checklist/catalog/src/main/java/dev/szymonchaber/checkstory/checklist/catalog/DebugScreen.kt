@@ -18,7 +18,7 @@ import dev.szymonchaber.checkstory.common.LogStorage
 import javax.inject.Inject
 
 @Composable
-@Destination(route = "debug_screen", start = false)
+@Destination<HomeGraph>(route = "debug_screen")
 fun DebugScreen() {
     val debugViewModel = hiltViewModel<DebugViewModel>()
     val logLines by debugViewModel.logStorage.logState.collectAsState(initial = "")

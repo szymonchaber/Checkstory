@@ -76,6 +76,8 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
+import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.template.edit.model.EditReminderEvent
 import dev.szymonchaber.checkstory.checklist.template.model.EditTemplateEffect
@@ -106,8 +108,11 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskI
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 
+@NavGraph<ExternalModuleGraph>
+annotation class EditTemplateGraph
+
 @OptIn(ExperimentalMaterialApi::class)
-@Destination("edit_template_screen", start = true)
+@Destination<EditTemplateGraph>("edit_template_screen", start = true)
 @Composable
 fun EditTemplateScreen(
     navigator: DestinationsNavigator,

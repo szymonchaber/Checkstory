@@ -31,11 +31,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ramcosta.composedestinations.annotation.DeepLink
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.parameters.DeepLink
+import com.ramcosta.composedestinations.generated.payments.destinations.PaymentScreenDestination
+import com.ramcosta.composedestinations.generated.payments.destinations.PaymentSuccessScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.NavResult
 import com.ramcosta.composedestinations.result.OpenResultRecipient
+import com.ramcosta.composedestinations.spec.Direction
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.R
@@ -45,15 +48,13 @@ import dev.szymonchaber.checkstory.payments.billing.PlanDuration
 import dev.szymonchaber.checkstory.payments.components.Features
 import dev.szymonchaber.checkstory.payments.components.MainPaymentButton
 import dev.szymonchaber.checkstory.payments.components.PaymentsPlans
-import dev.szymonchaber.checkstory.payments.destinations.PaymentScreenDestination
-import dev.szymonchaber.checkstory.payments.destinations.PaymentSuccessScreenDestination
 import dev.szymonchaber.checkstory.payments.model.PaymentEffect
 import dev.szymonchaber.checkstory.payments.model.PaymentEvent
 import dev.szymonchaber.checkstory.payments.model.PaymentState
 import kotlinx.coroutines.launch
 
 @Composable
-@Destination(
+@Destination<PaymentGraph>(
     route = "payment_screen",
     start = true,
     deepLinks = [
@@ -114,8 +115,8 @@ fun PaymentScreen(
                 }
 
                 is PaymentEffect.NavigateToPaymentSuccess -> {
-                    navigator.navigate(PaymentSuccessScreenDestination.route) {
-                        popUpTo(PaymentScreenDestination.route) { inclusive = true }
+                    navigator.navigate(Direction(PaymentSuccessScreenDestination.route)) {
+                        popUpTo(Direction(PaymentScreenDestination.route)) { inclusive = true }
                     }
                 }
             }

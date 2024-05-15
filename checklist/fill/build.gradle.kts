@@ -13,6 +13,10 @@ android {
     }
 }
 
+ksp {
+    arg("compose-destinations.moduleName", "checklist-fill")
+}
+
 dependencies {
     implementation(project(":common"))
     implementation(project(":domain"))

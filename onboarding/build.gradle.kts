@@ -20,6 +20,10 @@ android {
     }
 }
 
+ksp {
+    arg("compose-destinations.moduleName", "onboarding")
+}
+
 dependencies {
     implementation(project(":common"))
     implementation(project(":domain"))

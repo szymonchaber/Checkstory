@@ -36,7 +36,7 @@ import nl.dionsegijn.konfetti.core.emitter.Emitter
 import nl.dionsegijn.konfetti.core.models.Shape
 
 @Composable
-@Destination(route = "payment_success_screen")
+@Destination<PaymentGraph>(route = "payment_success_screen")
 fun PaymentSuccessScreen(
     navigator: DestinationsNavigator
 ) {

@@ -13,6 +13,10 @@ android {
     }
 }
 
+ksp {
+    arg("compose-destinations.moduleName", "about")
+}
+
 dependencies {
     implementation(project(":common"))
     implementation(project(":domain"))

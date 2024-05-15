@@ -52,14 +52,18 @@ import com.google.accompanist.pager.HorizontalPagerIndicator
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
+import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalPagerApi::class)
-@Destination("onboarding_screen", start = true)
+@NavGraph<ExternalModuleGraph>
+annotation class OnboardingGraph
+
+@Destination<OnboardingGraph>("onboarding_screen", start = true)
 @Composable
 fun OnboardingScreen(
     navigator: DestinationsNavigator

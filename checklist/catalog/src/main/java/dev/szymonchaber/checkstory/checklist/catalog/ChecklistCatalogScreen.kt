@@ -48,6 +48,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
+import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
@@ -63,8 +65,11 @@ import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.design.views.Space
 import dev.szymonchaber.checkstory.navigation.Routes
 
+@NavGraph<ExternalModuleGraph>
+annotation class HomeGraph
+
 @Composable
-@Destination(route = "home_screen", start = true)
+@Destination<HomeGraph>(route = "home_screen", start = true)
 fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
     trackScreenName("checklist_catalog")
     val viewModel = hiltViewModel<ChecklistCatalogViewModel>()

@@ -12,6 +12,9 @@ android {
         enableAggregatingTask = true
     }
 }
+ksp {
+    arg("compose-destinations.moduleName", "payments")
+}
 
 dependencies {
     implementation(project(":common"))

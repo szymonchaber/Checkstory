@@ -44,6 +44,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
+import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
@@ -56,7 +58,10 @@ import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.navigation.Routes
 import dev.szymonchaber.checkstory.design.R as DesignR
 
-@Destination(
+@NavGraph<ExternalModuleGraph>
+annotation class AccountGraph
+
+@Destination<AccountGraph>(
     route = "account_screen",
     start = true,
 )

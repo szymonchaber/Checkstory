@@ -33,6 +33,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
+import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
@@ -48,9 +50,12 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateId
 import dev.szymonchaber.checkstory.navigation.Routes
 
+@NavGraph<ExternalModuleGraph>
+annotation class ChecklistHistoryGraph
+
 @SuppressLint("MissingPermission")
 @Composable
-@Destination(route = "checklist_history", start = true)
+@Destination<ChecklistHistoryGraph>(route = "checklist_history_2", start = true)
 fun ChecklistHistoryScreen(
     navigator: DestinationsNavigator,
     templateId: TemplateId?
