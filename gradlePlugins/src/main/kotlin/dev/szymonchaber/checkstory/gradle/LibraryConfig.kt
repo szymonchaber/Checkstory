@@ -7,7 +7,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
-import org.jetbrains.kotlin.gradle.dsl.kotlinExtension
 
 class LibraryConfig : Plugin<Project> {
 
@@ -43,11 +42,6 @@ class LibraryConfig : Plugin<Project> {
             }
             kotlinOptions {
                 jvmTarget = "17"
-            }
-            libraryVariants.forEach { variant ->
-                target.kotlinExtension.sourceSets.create(variant.name) {
-                    kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
-                }
             }
         }
     }

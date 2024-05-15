@@ -11,26 +11,12 @@ android {
     hilt {
         enableAggregatingTask = true
     }
-    libraryVariants.all {
-        kotlin.sourceSets {
-            getByName(name) {
-                kotlin.srcDir("build/generated/ksp/$name/kotlin")
-            }
-        }
-    }
 }
 
 android {
     namespace = "dev.szymonchaber.checkstory.checklist.template"
     hilt {
         enableAggregatingTask = true
-    }
-    libraryVariants.all {
-        kotlin.sourceSets {
-            getByName(name) {
-                kotlin.srcDir("build/generated/ksp/$name/kotlin")
-            }
-        }
     }
 }
 

@@ -71,13 +71,6 @@ android {
     hilt {
         enableAggregatingTask = true
     }
-    applicationVariants.forEach { variant ->
-        kotlin.sourceSets {
-            getByName(variant.name) {
-                kotlin.srcDir("build/generated/ksp/${variant.name}/kotlin")
-            }
-        }
-    }
 }
 
 dependencies {

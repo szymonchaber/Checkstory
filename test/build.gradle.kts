@@ -27,13 +27,6 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
-    libraryVariants.all {
-        kotlin.sourceSets {
-            getByName(name) {
-                kotlin.srcDir("build/generated/ksp/$name/kotlin")
-            }
-        }
-    }
 }
 
 android {
