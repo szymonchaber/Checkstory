@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.account
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -136,6 +137,9 @@ fun AccountScreen(
                     }
 
                     is AccountEffect.ExitWithAuthResult -> {
+                        if (effect.isSuccess) {
+                            showLoggedInToast(effect.loggedInEmail, context)
+                        }
                         navigator.navigateBack(result = effect.isSuccess)
                     }
 
@@ -194,6 +198,16 @@ fun AccountScreen(
 
     AccountScaffold(state, viewModel::onEvent) {
         navigator.navigateBack()
+    }
+}
+
+private fun showLoggedInToast(email: String?, context: Context) {
+    email?.ifBlank {
+        null
+    }?.let {
+        Toast.makeText(context, "Logged in as $it", Toast.LENGTH_SHORT).show()
+    } ?: run {
+        Toast.makeText(context, "Logged in", Toast.LENGTH_SHORT).show()
     }
 }
 

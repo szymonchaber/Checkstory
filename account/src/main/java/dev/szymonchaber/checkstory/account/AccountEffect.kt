@@ -6,7 +6,7 @@ sealed interface AccountEffect {
 
     data object ShowDataNotSynchronized : AccountEffect
 
-    data class ExitWithAuthResult(val isSuccess: Boolean) : AccountEffect
+    data class ExitWithAuthResult(val isSuccess: Boolean, val loggedInEmail: String?) : AccountEffect
 
     data object StartAuthUi : AccountEffect
 

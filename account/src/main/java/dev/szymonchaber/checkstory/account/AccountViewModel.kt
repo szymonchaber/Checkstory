@@ -214,7 +214,7 @@ class AccountViewModel @Inject constructor(
             .withState()
             .mapLatest { (state, _) ->
                 val effect = if (state.authForPaymentRequested) {
-                    AccountEffect.ExitWithAuthResult(false)
+                    AccountEffect.ExitWithAuthResult(false, null)
                 } else {
                     null
                 }
@@ -235,7 +235,7 @@ class AccountViewModel @Inject constructor(
 
     private fun selectAuthErrorEvent(state: AccountState): AccountEffect {
         return if (state.authForPaymentRequested) {
-            AccountEffect.ExitWithAuthResult(false)
+            AccountEffect.ExitWithAuthResult(false, null)
         } else {
             AccountEffect.ShowLoginNetworkError
         }
@@ -255,7 +255,7 @@ class AccountViewModel @Inject constructor(
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
-                        AccountEffect.ExitWithAuthResult(isSuccess = true)
+                        AccountEffect.ExitWithAuthResult(isSuccess = true, loggedInEmail = it.email)
                     }
                     state.copy(
                         accountLoadingState = AccountLoadingState.Success(it),
@@ -276,7 +276,7 @@ class AccountViewModel @Inject constructor(
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
-                        AccountEffect.ExitWithAuthResult(true)
+                        AccountEffect.ExitWithAuthResult(true, it.email)
                     }
                     state.copy(accountLoadingState = AccountLoadingState.Success(it)) to effect
                 }
