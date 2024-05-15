@@ -330,7 +330,7 @@ fun UnassignedPaymentDialog(
     onConfirmClicked: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { },
         title = {
             Text("Cloud synchronization is now available for PRO users!")
         },
