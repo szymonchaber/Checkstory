@@ -1,4 +1,4 @@
-package dev.szymonchaber.checkstory.account
+package dev.szymonchaber.checkstory.account.session
 
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
@@ -11,13 +11,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @Composable
@@ -40,7 +43,7 @@ private fun SessionExpiredDialog(modifier: Modifier) {
                 Text(text = "Session expired!")
             },
             text = {
-                Text(text = "We need you to login again, otherwise your data will be deleted")
+                Text(text = "We need you to login again, otherwise your local data will be deleted")
             },
             confirmButton = {
                 Button(onClick = {
@@ -54,7 +57,7 @@ private fun SessionExpiredDialog(modifier: Modifier) {
                     // TODO remove this option
                     showDialog = false
                 }) {
-                    Text(text = "Cancel")
+                    Text(text = "Logout")
                 }
             },
             onDismissRequest = {},
@@ -65,15 +68,42 @@ private fun SessionExpiredDialog(modifier: Modifier) {
 @HiltViewModel
 internal class SessionHandlerViewModel @Inject constructor(
     private val userRepository: UserRepository
-) : ViewModel() {
+) : BaseViewModel<
+        SessionHandlerEvent,
+        SessionHandlerState,
+        SessionHandlerEffect
+        >(SessionHandlerState()) {
 
-    val state = userRepository.isFirebaseLoggedInFlow()
-        .map { isFirebaseLoggedIn ->
-            SessionHandlerState(showSessionExpiredDialog = userRepository.getCurrentUser().isLoggedIn && !isFirebaseLoggedIn)
+    init {
+        viewModelScope.launch {
+            userRepository.isFirebaseLoggedInFlow()
+                .collectLatest { isFirebaseLoggedIn ->
+                    onEvent(SessionHandlerEvent.FirebaseLoginStateChanged(isFirebaseLoggedIn))
+                }
         }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SessionHandlerState())
+    }
+
+    override fun buildMviFlow(eventFlow: Flow<SessionHandlerEvent>): Flow<Pair<SessionHandlerState?, SessionHandlerEffect?>> {
+        return merge(
+            eventFlow.handleLoginStateChanged()
+        )
+    }
+
+    private fun Flow<SessionHandlerEvent>.handleLoginStateChanged(): Flow<Pair<SessionHandlerState?, SessionHandlerEffect?>> {
+        return filterIsInstance<SessionHandlerEvent.FirebaseLoginStateChanged>()
+            .map {
+                SessionHandlerState(showSessionExpiredDialog = userRepository.getCurrentUser().isLoggedIn && !it.firebaseLoggedIn) to null
+            }
+    }
 }
 
 internal class SessionHandlerState(
     val showSessionExpiredDialog: Boolean = false
 )
+
+internal sealed interface SessionHandlerEvent {
+
+    data class FirebaseLoginStateChanged(val firebaseLoggedIn: Boolean) : SessionHandlerEvent
+}
+
+internal sealed interface SessionHandlerEffect
