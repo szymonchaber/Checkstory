@@ -22,6 +22,7 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
+import dev.szymonchaber.checkstory.account.SessionHandler
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.AdViewModel
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
@@ -64,6 +65,7 @@ class MainActivity : ComponentActivity() {
                     val user by adViewModel.currentUserFlow.collectAsState(initial = User.Guest())
                     CompositionLocalProvider(ActiveUser provides user) {
                         Navigation()
+                        SessionHandler()
                     }
                 }
             }

@@ -12,4 +12,6 @@ interface UserRepository {
     suspend fun getCurrentUser(): User
 
     fun getCurrentUserFlow(): Flow<User>
+
+    fun isFirebaseLoggedInFlow(): Flow<Boolean>
 }
