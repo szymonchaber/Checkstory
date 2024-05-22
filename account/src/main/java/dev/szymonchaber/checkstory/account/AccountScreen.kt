@@ -88,10 +88,12 @@ fun AccountScreen(
 
     val openConfirmLogoutDialog = remember { mutableStateOf(false) }
     if (openConfirmLogoutDialog.value) {
-        ConfirmLogoutDialog(openConfirmLogoutDialog) {
+        ConfirmLogoutDialog(onConfirmClicked = {
             viewModel.onEvent(AccountEvent.LogoutDespiteUnsynchronizedDataClicked)
             openConfirmLogoutDialog.value = false
-        }
+        }, onDismiss = {
+            openConfirmLogoutDialog.value = false
+        })
     }
 
     val openConfirmDeleteAccountDialog = remember { mutableStateOf(false) }
@@ -418,11 +420,11 @@ private class AccountStateProvider : CollectionPreviewParameterProvider<AccountS
 )
 
 @Composable
-fun ConfirmLogoutDialog(openDialog: MutableState<Boolean>, onConfirmClicked: () -> Unit) {
+fun ConfirmLogoutDialog(
+    onConfirmClicked: () -> Unit, onDismiss: () -> Unit
+) {
     AlertDialog(
-        onDismissRequest = {
-            openDialog.value = false
-        },
+        onDismissRequest = onDismiss,
         title = {
             Text("Logout")
         },
@@ -438,9 +440,8 @@ fun ConfirmLogoutDialog(openDialog: MutableState<Boolean>, onConfirmClicked: () 
         },
         dismissButton = {
             TextButton(
-                onClick = {
-                    openDialog.value = false
-                }) {
+                onClick = onDismiss
+            ) {
                 Text("Cancel")
             }
         }

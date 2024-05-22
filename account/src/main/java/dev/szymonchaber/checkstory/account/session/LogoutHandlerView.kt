@@ -1,39 +1,52 @@
 package dev.szymonchaber.checkstory.account.session
 
+import android.widget.Toast
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
-import dev.szymonchaber.checkstory.domain.repository.UserRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
-import kotlinx.coroutines.launch
-import javax.inject.Inject
+import dev.szymonchaber.checkstory.account.ConfirmLogoutDialog
 
 @Composable
-fun SessionHandler(modifier: Modifier = Modifier) {
+fun SessionHandler() {
     val viewModel = hiltViewModel<SessionHandlerViewModel>()
     val state = viewModel.state.collectAsState()
+    val context = LocalContext.current
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect {
+            when (it) {
+                SessionHandlerEffect.ShowLogoutSuccess -> {
+                    Toast.makeText(context, "Logged out", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     if (state.value.showSessionExpiredDialog) {
-        SessionExpiredDialog(modifier)
+        SessionExpiredDialog(viewModel::onEvent)
+    }
+    if (state.value.showUnsynchronizedDataDialog) {
+        ConfirmLogoutDialog(
+            onConfirmClicked = {
+                viewModel.onEvent(SessionHandlerEvent.LogoutDespiteUnsynchronizedDataClicked)
+            },
+            onDismiss = {
+                viewModel.onEvent(SessionHandlerEvent.LogoutCancelled)
+            }
+        )
     }
 }
 
 @Composable
-private fun SessionExpiredDialog(modifier: Modifier) {
+private fun SessionExpiredDialog(onEvent: (SessionHandlerEvent) -> Unit) {
     var showDialog by remember {
         mutableStateOf(true)
     }
@@ -54,8 +67,7 @@ private fun SessionExpiredDialog(modifier: Modifier) {
             },
             dismissButton = {
                 Button(onClick = {
-                    // TODO remove this option
-                    showDialog = false
+                    onEvent(SessionHandlerEvent.LogoutClicked)
                 }) {
                     Text(text = "Logout")
                 }
@@ -64,46 +76,3 @@ private fun SessionExpiredDialog(modifier: Modifier) {
         )
     }
 }
-
-@HiltViewModel
-internal class SessionHandlerViewModel @Inject constructor(
-    private val userRepository: UserRepository
-) : BaseViewModel<
-        SessionHandlerEvent,
-        SessionHandlerState,
-        SessionHandlerEffect
-        >(SessionHandlerState()) {
-
-    init {
-        viewModelScope.launch {
-            userRepository.isFirebaseLoggedInFlow()
-                .collectLatest { isFirebaseLoggedIn ->
-                    onEvent(SessionHandlerEvent.FirebaseLoginStateChanged(isFirebaseLoggedIn))
-                }
-        }
-    }
-
-    override fun buildMviFlow(eventFlow: Flow<SessionHandlerEvent>): Flow<Pair<SessionHandlerState?, SessionHandlerEffect?>> {
-        return merge(
-            eventFlow.handleLoginStateChanged()
-        )
-    }
-
-    private fun Flow<SessionHandlerEvent>.handleLoginStateChanged(): Flow<Pair<SessionHandlerState?, SessionHandlerEffect?>> {
-        return filterIsInstance<SessionHandlerEvent.FirebaseLoginStateChanged>()
-            .map {
-                SessionHandlerState(showSessionExpiredDialog = userRepository.getCurrentUser().isLoggedIn && !it.firebaseLoggedIn) to null
-            }
-    }
-}
-
-internal class SessionHandlerState(
-    val showSessionExpiredDialog: Boolean = false
-)
-
-internal sealed interface SessionHandlerEvent {
-
-    data class FirebaseLoginStateChanged(val firebaseLoggedIn: Boolean) : SessionHandlerEvent
-}
-
-internal sealed interface SessionHandlerEffect

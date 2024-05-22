@@ -34,6 +34,7 @@ internal class UserRepositoryImpl @Inject constructor(
 
     override suspend fun removeCurrentUser() {
         userDataStore.removeCurrentUser()
+        auth.signOut()
     }
 
     override suspend fun getCurrentUser(): User {

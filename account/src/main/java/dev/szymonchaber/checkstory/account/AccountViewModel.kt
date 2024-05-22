@@ -142,7 +142,6 @@ class AccountViewModel @Inject constructor(
             .mapWithState { state, _ ->
                 when (logoutUseCase.logoutSafely()) {
                     LogoutResult.Done -> {
-                        firebaseAuth.signOut()
                         state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
                     }
 
@@ -157,7 +156,6 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.LogoutDespiteUnsynchronizedDataClicked>()
             .mapWithState { state, _ ->
                 logoutUseCase.logoutIgnoringUnsynchronizedData()
-                firebaseAuth.signOut()
                 state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
             }
     }
@@ -180,7 +178,6 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.DeleteAccountConfirmed>()
             .mapWithState { state, _ ->
                 deleteAccountUseCase.deleteAccount()
-                firebaseAuth.signOut()
                 state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to AccountEffect.ShowAccountDeleted
             }
     }
