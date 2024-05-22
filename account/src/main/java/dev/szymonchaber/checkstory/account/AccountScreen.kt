@@ -41,13 +41,13 @@ import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.firebase.ui.auth.AuthUI
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
 import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.result.ResultBackNavigator
+import dev.szymonchaber.checkstory.account.firebase.createFirebaseSignInIntent
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
@@ -121,25 +121,7 @@ fun AccountScreen(
                     }
 
                     is AccountEffect.StartAuthUi -> {
-                        val signInIntent = AuthUI.getInstance()
-                            .createSignInIntentBuilder()
-                            .setAvailableProviders(
-                                listOf(
-                                    AuthUI.IdpConfig.EmailBuilder()
-                                        .setRequireName(false)
-                                        .build()
-                                )
-                            )
-                            .setIsSmartLockEnabled(
-                                /* enableCredentials = */ false,
-                                /* enableHints = */ true
-                            )
-//                            .setTheme(DesignR.style.Theme_Checkstory)
-                            .setTosAndPrivacyPolicyUrls(
-                                termsOfServiceUrl,
-                                privacyPolicyUrl,
-                            )
-                            .build()
+                        val signInIntent = createFirebaseSignInIntent(termsOfServiceUrl, privacyPolicyUrl)
                         firebaseAuthLauncher.launch(signInIntent)
                     }
 
@@ -208,7 +190,7 @@ fun AccountScreen(
     }
 }
 
-private fun showLoggedInToast(email: String?, context: Context) {
+internal fun showLoggedInToast(email: String?, context: Context) {
     email?.ifBlank {
         null
     }?.let {
