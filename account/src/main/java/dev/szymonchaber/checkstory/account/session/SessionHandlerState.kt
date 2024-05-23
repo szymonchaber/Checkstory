@@ -5,4 +5,5 @@ internal data class SessionHandlerState(
     val showUnsynchronizedDataDialog: Boolean = false,
     val showAccountMismatchDialog: Boolean = false,
     val fixOngoing: Boolean = false,
+    val showLoading: Boolean = false,
 )

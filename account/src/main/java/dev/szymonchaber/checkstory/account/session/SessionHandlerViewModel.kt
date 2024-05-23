@@ -55,11 +55,12 @@ internal class SessionHandlerViewModel @Inject constructor(
     private fun Flow<Event>.handleLoginStateChanged(): Flow<Pair<State?, Effect?>> {
         return filterIsInstance<Event.FirebaseLoginStateChanged>()
             .map { (firebaseLoggedIn) ->
-                if (state.value.fixOngoing) {
+                val isAuthStateMismatch = userRepository.getCurrentUser().isLoggedIn && !firebaseLoggedIn
+                if (state.value.fixOngoing || !isAuthStateMismatch) {
                     null to null
                 } else {
                     State(
-                        showSessionExpiredDialog = userRepository.getCurrentUser().isLoggedIn && !firebaseLoggedIn,
+                        showSessionExpiredDialog = true,
                         fixOngoing = true
                     ) to null
                 }
@@ -84,9 +85,10 @@ internal class SessionHandlerViewModel @Inject constructor(
         return filterIsInstance<Event.FirebaseAuthResultReceived>()
             .flatMapLatest { (idpResponse) ->
                 flow {
+                    emit(state.value.copy(showLoading = true) to null)
                     if (idpResponse.error != null) {
                         Timber.e(idpResponse.error)
-                        emit(null to Effect.ShowUnknownError)
+                        emit(state.value.copy(showLoading = false) to Effect.ShowUnknownError)
                     } else {
                         emit(handleLoginSuccess())
                     }
@@ -95,16 +97,15 @@ internal class SessionHandlerViewModel @Inject constructor(
     }
 
     private suspend fun handleLoginSuccess(): Pair<State?, Effect?> {
-        // check current user vs newly logged user id
         if (!areAccountIdsMatching()) {
             FirebaseAuth.getInstance().signOut()
-            return state.value.copy(showAccountMismatchDialog = true) to null
+            return state.value.copy(showAccountMismatchDialog = true, showLoading = false) to null
         }
         return loginUseCase.login()
             .fold(
                 mapError = {
                     Timber.e(it.toString())
-                    null to Effect.ShowUnknownError
+                    state.value.copy(showLoading = false) to Effect.ShowUnknownError
                 },
                 mapSuccess = {
                     State() to Effect.ShowLoginSuccessful(it.email)
@@ -150,5 +151,9 @@ internal class SessionHandlerViewModel @Inject constructor(
             .map {
                 state.value.copy(showUnsynchronizedDataDialog = false) to null
             }
+    }
+
+    fun logoutFirebase() {
+        FirebaseAuth.getInstance().signOut()
     }
 }

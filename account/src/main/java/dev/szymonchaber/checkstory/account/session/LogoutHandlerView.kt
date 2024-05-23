@@ -3,14 +3,19 @@ package dev.szymonchaber.checkstory.account.session
 import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract
 import dev.szymonchaber.checkstory.account.ConfirmLogoutDialog
@@ -22,6 +27,14 @@ import dev.szymonchaber.checkstory.design.R
 fun SessionHandler() {
     val viewModel = hiltViewModel<SessionHandlerViewModel>()
     val state = viewModel.state.collectAsState()
+    // TODO remove before release / after testing
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
+        Button(onClick = {
+            viewModel.logoutFirebase()
+        }) {
+            Text("Logout firebase")
+        }
+    }
 
     val firebaseAuthLauncher = rememberLauncherForActivityResult(
         FirebaseAuthUIActivityResultContract()
@@ -79,6 +92,9 @@ fun SessionHandler() {
     if (state.value.showAccountMismatchDialog) {
         AccountMismatchDialog(viewModel)
     }
+    if (state.value.showLoading) {
+        LoggingInDialog()
+    }
 }
 
 @Composable
@@ -105,6 +121,21 @@ private fun AccountMismatchDialog(viewModel: SessionHandlerViewModel) {
             }
         },
         onDismissRequest = {}
+    )
+}
+
+@Preview
+@Composable
+private fun LoggingInDialog() {
+    AlertDialog(
+        title = {
+            Text(text = "Logging in")
+        },
+        text = {
+            Text(text = "Please wait...")
+        },
+        onDismissRequest = {},
+        buttons = {}
     )
 }
 
