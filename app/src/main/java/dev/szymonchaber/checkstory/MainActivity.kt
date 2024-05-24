@@ -29,6 +29,7 @@ import dev.szymonchaber.checkstory.design.theme.CheckstoryTheme
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.usecase.FetchUserDataUseCase
 import dev.szymonchaber.checkstory.navigation.Navigation
+import dev.szymonchaber.checkstory.notifications.ensure.NotificationsEnsurer
 import dev.szymonchaber.checkstory.payments.billing.BillingInteractor
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -66,6 +67,7 @@ class MainActivity : ComponentActivity() {
                     CompositionLocalProvider(ActiveUser provides user) {
                         Navigation()
                         SessionHandler()
+                        NotificationsEnsurer()
                     }
                 }
             }

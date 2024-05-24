@@ -14,7 +14,7 @@ class TemplateReminderRepositoryImpl @Inject constructor(
     private val templateRepository: TemplateRepository
 ) : TemplateReminderRepository {
 
-    override suspend fun getAllReminders(): Flow<List<Reminder>> {
+    override fun getAllReminders(): Flow<List<Reminder>> {
         return templateRepository.getAll()
             .map {
                 it.flatMap(Template::reminders)

@@ -23,6 +23,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.common)
     implementation(libs.bundles.ui)
+    implementation(libs.accompanist.permissions)
 
     ksp(libs.compose.destinations.ksp)
 
