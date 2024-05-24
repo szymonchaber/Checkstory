@@ -70,7 +70,7 @@ annotation class HomeGraph
 
 @Composable
 @Destination<HomeGraph>(route = "home_screen", start = true)
-fun ChecklistCatalogScreen(navigator: DestinationsNavigator) {
+fun HomeScreen(navigator: DestinationsNavigator) {
     trackScreenName("checklist_catalog")
     val viewModel = hiltViewModel<ChecklistCatalogViewModel>()
     var showMenu by remember { mutableStateOf(false) }
