@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.domain.usecase
 
 import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
+import dev.szymonchaber.checkstory.domain.repository.SynchronizationStatusRepository
 import dev.szymonchaber.checkstory.domain.repository.Synchronizer
 import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
@@ -10,7 +11,8 @@ class LogoutUseCase @Inject constructor(
     private val userRepository: UserRepository,
     private val synchronizer: Synchronizer,
     private val templateRepository: TemplateRepository,
-    private val checklistRepository: ChecklistRepository
+    private val checklistRepository: ChecklistRepository,
+    private val synchronizationStatusRepository: SynchronizationStatusRepository
 ) {
 
     suspend fun logoutSafely(): LogoutResult {
@@ -31,5 +33,6 @@ class LogoutUseCase @Inject constructor(
         userRepository.removeCurrentUser()
         checklistRepository.deleteAllData()
         templateRepository.deleteAllData()
+        synchronizationStatusRepository.clear()
     }
 }

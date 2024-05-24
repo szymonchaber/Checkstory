@@ -16,6 +16,7 @@ import com.ramcosta.composedestinations.generated.checklistfill.navgraphs.FillCh
 import com.ramcosta.composedestinations.generated.checklisthistory.navgraphs.ChecklistHistoryNavGraph
 import com.ramcosta.composedestinations.generated.checklisttemplate.navgraphs.EditTemplateNavGraph
 import com.ramcosta.composedestinations.generated.home.navgraphs.HomeNavGraph
+import com.ramcosta.composedestinations.generated.onboarding.navgraphs.OnboardingNavGraph
 import com.ramcosta.composedestinations.generated.payments.navgraphs.PaymentNavGraph
 
 @NavHostGraph(defaultTransitions = DefaultTransitions::class)
@@ -28,6 +29,7 @@ internal annotation class MainGraph {
     @ExternalNavGraph<AccountNavGraph>()
     @ExternalNavGraph<AboutNavGraph>()
     @ExternalNavGraph<PaymentNavGraph>()
+    @ExternalNavGraph<OnboardingNavGraph>()
     companion object Includes
 }
 

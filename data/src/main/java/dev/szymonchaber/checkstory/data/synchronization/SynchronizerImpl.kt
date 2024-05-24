@@ -4,6 +4,7 @@ import androidx.work.WorkManager
 import dev.szymonchaber.checkstory.api.checklist.ChecklistsApi
 import dev.szymonchaber.checkstory.api.command.CommandsApi
 import dev.szymonchaber.checkstory.api.template.TemplatesApi
+import dev.szymonchaber.checkstory.data.preferences.SynchronizationPreferences
 import dev.szymonchaber.checkstory.data.repository.CommandRepository
 import dev.szymonchaber.checkstory.domain.model.Command
 import dev.szymonchaber.checkstory.domain.repository.SynchronizationResult
@@ -27,7 +28,8 @@ class SynchronizerImpl @Inject internal constructor(
     private val workManager: WorkManager,
     private val userRepository: UserRepository,
     private val commandApplier: CommandApplier,
-    private val synchronizationDao: SynchronizationDao
+    private val synchronizationDao: SynchronizationDao,
+    private val synchronizationPreferences: SynchronizationPreferences
 ) : Synchronizer {
 
     private val mutex = Mutex()
@@ -95,9 +97,11 @@ class SynchronizerImpl @Inject internal constructor(
                     }
                     synchronizationDao.replaceData(templates.await(), checklists.await())
                 }
+                synchronizationPreferences.markSuccess()
                 SynchronizationResult.Success
             } catch (exception: Exception) {
                 Timber.e(exception, "API error - skipping synchronization for now")
+                synchronizationPreferences.markFailure()
                 SynchronizationResult.Error
             }
         }

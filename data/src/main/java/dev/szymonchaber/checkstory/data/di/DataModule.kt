@@ -14,9 +14,18 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import dev.szymonchaber.checkstory.data.repository.*
+import dev.szymonchaber.checkstory.data.preferences.SynchronizationPreferences
+import dev.szymonchaber.checkstory.data.repository.ChecklistRepositoryImpl
+import dev.szymonchaber.checkstory.data.repository.TemplateReminderRepositoryImpl
+import dev.szymonchaber.checkstory.data.repository.TemplateRepositoryImpl
+import dev.szymonchaber.checkstory.data.repository.UserRepositoryImpl
 import dev.szymonchaber.checkstory.data.synchronization.SynchronizerImpl
-import dev.szymonchaber.checkstory.domain.repository.*
+import dev.szymonchaber.checkstory.domain.repository.ChecklistRepository
+import dev.szymonchaber.checkstory.domain.repository.SynchronizationStatusRepository
+import dev.szymonchaber.checkstory.domain.repository.Synchronizer
+import dev.szymonchaber.checkstory.domain.repository.TemplateReminderRepository
+import dev.szymonchaber.checkstory.domain.repository.TemplateRepository
+import dev.szymonchaber.checkstory.domain.repository.UserRepository
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -39,6 +48,9 @@ internal interface DataModule {
     @Binds
     fun bindUserRepository(userRepository: UserRepositoryImpl): UserRepository
 
+    @Binds
+    fun bindSynchronizationStatusRepository(synchronizationPreferences: SynchronizationPreferences): SynchronizationStatusRepository
+
     companion object {
 
         @Provides
@@ -47,6 +59,15 @@ internal interface DataModule {
         fun provideOnboardingPreferences(application: Application): DataStore<Preferences> {
             return PreferenceDataStoreFactory.create {
                 application.preferencesDataStoreFile("onboarding_preferences")
+            }
+        }
+
+        @Provides
+        @Named("synchronizationPreferences")
+        @Singleton
+        fun provideSynchronizationPreferences(application: Application): DataStore<Preferences> {
+            return PreferenceDataStoreFactory.create {
+                application.preferencesDataStoreFile("synchronization_preferences")
             }
         }
 

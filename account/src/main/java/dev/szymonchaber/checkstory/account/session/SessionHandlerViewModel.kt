@@ -4,6 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
+import dev.szymonchaber.checkstory.data.preferences.SynchronizationPreferences
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.model.fold
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
@@ -29,6 +30,7 @@ internal class SessionHandlerViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val logoutUseCase: LogoutUseCase,
     private val loginUseCase: LoginUseCase,
+    val synchronizationPreferences: SynchronizationPreferences
 ) : BaseViewModel<Event, State, Effect>(State()) {
 
     init {

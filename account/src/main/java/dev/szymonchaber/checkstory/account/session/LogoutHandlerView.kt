@@ -4,6 +4,7 @@ import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
@@ -27,12 +28,20 @@ import dev.szymonchaber.checkstory.design.R
 fun SessionHandler() {
     val viewModel = hiltViewModel<SessionHandlerViewModel>()
     val state = viewModel.state.collectAsState()
-    // TODO remove before release / after testing
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-        Button(onClick = {
-            viewModel.logoutFirebase()
-        }) {
-            Text("Logout firebase")
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
+        Column {
+            // TODO remove before release / after testing
+//            val lastSuccess by viewModel.synchronizationPreferences.lastSuccessfulSynchronizationDate.collectAsState(
+//                initial = null
+//            )
+//            val lastFail by viewModel.synchronizationPreferences.lastFailedSynchronizationDate.collectAsState(initial = null)
+//            Text(text = "lastSuccess: ${lastSuccess?.toString()}")
+//            Text(text = "lastFail: ${lastFail?.toString()}")
+            Button(onClick = {
+                viewModel.logoutFirebase()
+            }) {
+                Text("Logout firebase")
+            }
         }
     }
 
