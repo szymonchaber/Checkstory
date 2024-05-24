@@ -16,6 +16,7 @@ firebasePerfPlugin = "1.4.2"
 gmsPlugin = "4.4.0"
 ksp = "1.9.23-1.0.20"
 firebaseUi = "8.0.2"
+firebaseAuthKtx = "23.0.0"
 
 [libraries]
 billing = "com.android.billingclient:billing-ktx:5.1.0"
@@ -102,6 +103,7 @@ turbine = "app.cash.turbine:turbine:1.1.0"
 androidx-test-junit = "androidx.test.ext:junit:1.1.5"
 androidx-test-espresso = "androidx.test.espresso:espresso-core:3.5.1"
 compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4", version.ref = "compose" }
+firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 
 [bundles]
 common = ["coroutines", "hiltLibrary", "timber", "kotlinImmutableCollections", "kotlinxDatetime"]

@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.LogStorage
+import dev.szymonchaber.checkstory.data.preferences.SynchronizationPreferences
 import javax.inject.Inject
 
 @Composable
@@ -22,16 +23,24 @@ import javax.inject.Inject
 fun DebugScreen() {
     val debugViewModel = hiltViewModel<DebugViewModel>()
     val logLines by debugViewModel.logStorage.logState.collectAsState(initial = "")
-
     Column(
         Modifier
             .padding(16.dp)
-            .verticalScroll(rememberScrollState())) {
+            .verticalScroll(rememberScrollState())
+    ) {
         Text(text = logLines)
+        // TODO remove before release / after testing
+        val lastSuccess by debugViewModel.synchronizationPreferences.lastSuccessfulSynchronizationDate.collectAsState(
+            initial = null
+        )
+        val lastFail by debugViewModel.synchronizationPreferences.lastFailedSynchronizationDate.collectAsState(initial = null)
+        Text(text = "lastSuccess: ${lastSuccess?.toString()}")
+        Text(text = "lastFail: ${lastFail?.toString()}")
     }
 }
 
 @HiltViewModel
 class DebugViewModel @Inject constructor(
-    val logStorage: LogStorage
+    val logStorage: LogStorage,
+    val synchronizationPreferences: SynchronizationPreferences
 ) : ViewModel()

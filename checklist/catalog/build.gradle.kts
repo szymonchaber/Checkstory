@@ -23,6 +23,7 @@ dependencies {
     implementation(project(":design"))
     implementation(project(":data"))
     implementation(project(":navigation"))
+    implementation(libs.firebase.auth.ktx)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(libs.bundles.common)

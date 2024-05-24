@@ -47,10 +47,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
 import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.ramcosta.composedestinations.spec.Direction
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
@@ -64,6 +68,7 @@ import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.design.views.Space
 import dev.szymonchaber.checkstory.navigation.Routes
+import javax.inject.Inject
 
 @NavGraph<ExternalModuleGraph>
 annotation class HomeGraph
@@ -106,11 +111,12 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                         }) {
                             Text(text = stringResource(id = R.string.about))
                         }
-//                        DropdownMenuItem(onClick = {
-//                            navigator.navigate("debug_screen")
-//                        }) {
-//                            Text(text = "Debug menu")
-//                        }
+                        DebugTools()
+                        DropdownMenuItem(onClick = {
+                            navigator.navigate(Direction("debug_screen"))
+                        }) {
+                            Text(text = "Debug menu")
+                        }
                     }
                 }
             )
@@ -119,6 +125,26 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             ChecklistCatalogView(viewModel, navigator)
         },
     )
+}
+
+@Composable
+fun DebugTools() {
+    val debugToolsViewModel = hiltViewModel<DebugToolsViewModel>()
+    DropdownMenuItem(onClick = {
+        debugToolsViewModel.logoutFirebase()
+    }) {
+        Text("Logout Firebase")
+    }
+}
+
+@HiltViewModel
+internal class DebugToolsViewModel @Inject constructor(
+
+) : ViewModel() {
+
+    fun logoutFirebase() {
+        FirebaseAuth.getInstance().signOut()
+    }
 }
 
 @OptIn(ExperimentalMaterialApi::class)

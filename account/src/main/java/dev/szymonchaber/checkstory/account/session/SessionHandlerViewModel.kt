@@ -154,8 +154,4 @@ internal class SessionHandlerViewModel @Inject constructor(
                 state.value.copy(showUnsynchronizedDataDialog = false) to null
             }
     }
-
-    fun logoutFirebase() {
-        FirebaseAuth.getInstance().signOut()
-    }
 }

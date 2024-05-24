@@ -3,18 +3,12 @@ package dev.szymonchaber.checkstory.account.session
 import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,22 +23,6 @@ import dev.szymonchaber.checkstory.design.R
 fun SessionHandler() {
     val viewModel = hiltViewModel<SessionHandlerViewModel>()
     val state = viewModel.state.collectAsState()
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
-        Column {
-            // TODO remove before release / after testing
-            val lastSuccess by viewModel.synchronizationPreferences.lastSuccessfulSynchronizationDate.collectAsState(
-                initial = null
-            )
-            val lastFail by viewModel.synchronizationPreferences.lastFailedSynchronizationDate.collectAsState(initial = null)
-            Text(text = "lastSuccess: ${lastSuccess?.toString()}")
-            Text(text = "lastFail: ${lastFail?.toString()}")
-            Button(onClick = {
-                viewModel.logoutFirebase()
-            }) {
-                Text("Logout firebase")
-            }
-        }
-    }
 
     val firebaseAuthLauncher = rememberLauncherForActivityResult(
         FirebaseAuthUIActivityResultContract()
