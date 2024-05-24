@@ -12,6 +12,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,12 +32,12 @@ fun SessionHandler() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
         Column {
             // TODO remove before release / after testing
-//            val lastSuccess by viewModel.synchronizationPreferences.lastSuccessfulSynchronizationDate.collectAsState(
-//                initial = null
-//            )
-//            val lastFail by viewModel.synchronizationPreferences.lastFailedSynchronizationDate.collectAsState(initial = null)
-//            Text(text = "lastSuccess: ${lastSuccess?.toString()}")
-//            Text(text = "lastFail: ${lastFail?.toString()}")
+            val lastSuccess by viewModel.synchronizationPreferences.lastSuccessfulSynchronizationDate.collectAsState(
+                initial = null
+            )
+            val lastFail by viewModel.synchronizationPreferences.lastFailedSynchronizationDate.collectAsState(initial = null)
+            Text(text = "lastSuccess: ${lastSuccess?.toString()}")
+            Text(text = "lastFail: ${lastFail?.toString()}")
             Button(onClick = {
                 viewModel.logoutFirebase()
             }) {
