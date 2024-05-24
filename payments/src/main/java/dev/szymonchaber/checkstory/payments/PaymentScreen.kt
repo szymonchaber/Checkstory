@@ -182,7 +182,11 @@ private fun ColumnScope.SubscribeBottomSection(
                 strokeWidth = 1.5.dp
             )
         } else {
-            Text(text = stringResource(id = R.string.upgrade))
+            if (ActiveUser.current.isLoggedIn) {
+                Text(text = "Upgrade to PRO")
+            } else {
+                Text(text = "Register & upgrade to PRO")
+            }
         }
     }
 }
