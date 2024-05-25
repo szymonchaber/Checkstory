@@ -1,8 +1,7 @@
 package dev.szymonchaber.checkstory.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import dev.szymonchaber.checkstory.domain.interactor.AuthCache
 import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.domain.repository.UserRepository
 import kotlinx.coroutines.channels.awaitClose
@@ -11,19 +10,19 @@ import kotlinx.coroutines.flow.callbackFlow
 import javax.inject.Inject
 
 internal class UserRepositoryImpl @Inject constructor(
-    private val userDataStore: UserDataStore
+    private val userDataStore: UserDataStore,
+    private val authCache: AuthCache,
+    private val firebaseAuth: FirebaseAuth
 ) : UserRepository {
-
-    private val auth by lazy { Firebase.auth }
 
     override fun isFirebaseLoggedInFlow(): Flow<Boolean> {
         return callbackFlow {
             val listener: (FirebaseAuth) -> Unit = {
                 trySend(it.currentUser != null)
             }
-            auth.addAuthStateListener(listener)
+            firebaseAuth.addAuthStateListener(listener)
             awaitClose {
-                auth.removeAuthStateListener(listener)
+                firebaseAuth.removeAuthStateListener(listener)
             }
         }
     }
@@ -34,7 +33,8 @@ internal class UserRepositoryImpl @Inject constructor(
 
     override suspend fun removeCurrentUser() {
         userDataStore.removeCurrentUser()
-        auth.signOut()
+        firebaseAuth.signOut()
+        authCache.clearAuthToken()
     }
 
     override suspend fun getCurrentUser(): User {

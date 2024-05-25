@@ -1,7 +1,6 @@
 package dev.szymonchaber.checkstory.api.auth
 
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import dev.szymonchaber.checkstory.api.auth.model.ApiUser
 import dev.szymonchaber.checkstory.api.auth.model.RegisterPayload
 import dev.szymonchaber.checkstory.api.di.ConfiguredHttpClient
@@ -16,11 +15,14 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import javax.inject.Inject
 
-internal class AuthApi @Inject constructor(private val client: ConfiguredHttpClient) {
+internal class AuthApi @Inject constructor(
+    private val client: ConfiguredHttpClient,
+    private val firebaseAuth: FirebaseAuth
+) {
 
     suspend fun login(): Result<LoginError, User.LoggedIn> {
         return try {
-            if (Firebase.auth.currentUser == null) {
+            if (firebaseAuth.currentUser == null) {
                 return Result.error(LoginError.NetworkError(IllegalStateException("Firebase user not logged in")))
             }
             Result.success(
@@ -36,7 +38,7 @@ internal class AuthApi @Inject constructor(private val client: ConfiguredHttpCli
 
     suspend fun register(): Result<RegisterError, User.LoggedIn> {
         return try {
-            if (Firebase.auth.currentUser == null) {
+            if (firebaseAuth.currentUser == null) {
                 return Result.error(RegisterError.NetworkError(IllegalStateException("Firebase user not logged in")))
             }
             Result.success(
@@ -44,7 +46,7 @@ internal class AuthApi @Inject constructor(private val client: ConfiguredHttpCli
                     .post("/auth/register") {
                         setBody(
                             RegisterPayload(
-                                Firebase.auth.currentUser?.email
+                                firebaseAuth.currentUser?.email
                             )
                         )
                     }

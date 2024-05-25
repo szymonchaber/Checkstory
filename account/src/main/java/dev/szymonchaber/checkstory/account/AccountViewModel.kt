@@ -1,8 +1,6 @@
 package dev.szymonchaber.checkstory.account
 
 import com.firebase.ui.auth.IdpResponse
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.common.Tracker
 import dev.szymonchaber.checkstory.common.mvi.BaseViewModel
@@ -37,12 +35,10 @@ class AccountViewModel @Inject constructor(
     private val logoutUseCase: LogoutUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val localPaymentRepository: PlayPaymentRepository,
-    private val assignPaymentToUserUseCase: AssignPaymentToUserUseCase
+    private val assignPaymentToUserUseCase: AssignPaymentToUserUseCase,
 ) : BaseViewModel<AccountEvent, AccountState, AccountEffect>(
     AccountState.initial
 ) {
-
-    private val firebaseAuth by lazy { Firebase.auth }
 
     override fun buildMviFlow(eventFlow: Flow<AccountEvent>): Flow<Pair<AccountState?, AccountEffect?>> {
         return merge(

@@ -1,7 +1,6 @@
 package dev.szymonchaber.checkstory.api.command
 
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import dev.szymonchaber.checkstory.api.command.dto.ChecklistApiCommand
 import dev.szymonchaber.checkstory.api.command.dto.TemplateApiCommand
 import dev.szymonchaber.checkstory.api.command.mapper.toCommandDto
@@ -14,10 +13,13 @@ import io.ktor.client.request.setBody
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-class CommandsApi @Inject constructor(private val httpClient: ConfiguredHttpClient) {
+class CommandsApi @Inject constructor(
+    private val httpClient: ConfiguredHttpClient,
+    private val firebaseAuth: FirebaseAuth
+) {
 
     suspend fun pushCommands(commands: List<Command>) {
-        Firebase.auth.currentUser ?: return
+        firebaseAuth.currentUser ?: return
         if (commands.isEmpty()) {
             return
         }
