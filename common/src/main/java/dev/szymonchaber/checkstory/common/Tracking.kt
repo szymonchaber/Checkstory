@@ -47,4 +47,8 @@ class Tracker @Inject constructor(
     fun logEvent(eventName: String, params: Bundle = Bundle()) {
         analytics.logEvent(eventName, params)
     }
+
+    fun setUserId(userId: String?) {
+        analytics.setUserId(userId)
+    }
 }
