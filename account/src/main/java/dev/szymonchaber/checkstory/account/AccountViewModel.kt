@@ -68,6 +68,7 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleRestorePaymentClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.RestorePaymentClicked>()
             .map {
+                tracker.logEvent("account_restore_purchase_clicked")
                 val activeSubscription = localPaymentRepository.getActiveSubscription()
                 when {
                     activeSubscription == null -> {
@@ -88,6 +89,7 @@ class AccountViewModel @Inject constructor(
                                 }
                             },
                             mapSuccess = {
+                                tracker.logEvent("account_purchase_restored")
                                 state.value.copy(
                                     purchaseRestorationOngoing = false,
                                     accountLoadingState = AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser())
@@ -122,6 +124,7 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleFirebaseLoginClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LoginClicked>()
             .mapWithState { state, _ ->
+                tracker.logEvent("account_login_clicked")
                 state to AccountEffect.StartAuthUi
             }
     }
@@ -129,6 +132,7 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleSignUpClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.SignUpClicked>()
             .mapWithState { state, _ ->
+                tracker.logEvent("account_signup_clicked")
                 state to AccountEffect.NavigateToPurchaseScreen
             }
     }
@@ -136,6 +140,7 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleLogoutClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.LogoutClicked>()
             .mapWithState { state, _ ->
+                tracker.logEvent("account_logout_clicked")
                 when (logoutUseCase.logoutSafely()) {
                     LogoutResult.Done -> {
                         state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to null
@@ -166,6 +171,7 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleDeleteAccountClicked(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.DeleteAccountClicked>()
             .map {
+                tracker.logEvent("account_delete_account_clicked")
                 null to AccountEffect.ShowConfirmDeleteAccountDialog
             }
     }
@@ -173,6 +179,7 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleDeleteAccountConfirmed(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.DeleteAccountConfirmed>()
             .mapWithState { state, _ ->
+                tracker.logEvent("account_delete_account_confirm_clicked")
                 val effect = deleteAccountUseCase.deleteAccount()
                     .fold(
                         mapError = {
@@ -194,6 +201,7 @@ class AccountViewModel @Inject constructor(
                         val response = event.response
                         if (response.error != null) {
                             Timber.e(response.error)
+                            tracker.logEvent("account_auth_error")
                             emit(state to selectAuthErrorEvent(state))
                         } else {
                             emit(state.copy(accountLoadingState = AccountLoadingState.Loading) to null)
@@ -201,6 +209,7 @@ class AccountViewModel @Inject constructor(
                         }
                     } catch (exception: Exception) {
                         Timber.e(exception)
+                        tracker.logEvent("account_auth_error")
                         state.copy(accountLoadingState = AccountLoadingState.Success(User.Guest())) to selectAuthErrorEvent(
                             state
                         )
@@ -213,6 +222,7 @@ class AccountViewModel @Inject constructor(
         return filterIsInstance<AccountEvent.FirebaseAuthFlowCancelled>()
             .withState()
             .mapLatest { (state, _) ->
+                tracker.logEvent("account_auth_flow_cancelled")
                 val effect = if (state.authForPaymentRequested) {
                     AccountEffect.ExitWithAuthResult(false, null)
                 } else {
@@ -252,6 +262,7 @@ class AccountViewModel @Inject constructor(
                     ) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
+                    tracker.logEvent("account_login_success")
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
@@ -273,6 +284,7 @@ class AccountViewModel @Inject constructor(
                     state.copy(accountLoadingState = AccountLoadingState.Success(getCurrentUserUseCase.getCurrentUser())) to AccountEffect.ShowLoginNetworkError
                 },
                 mapSuccess = {
+                    tracker.logEvent("account_signup_success")
                     val effect = if (state.purchaseRestorationOngoing) {
                         AccountEffect.ShowPurchaseRestored
                     } else {
