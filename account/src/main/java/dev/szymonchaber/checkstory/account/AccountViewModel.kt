@@ -173,8 +173,15 @@ class AccountViewModel @Inject constructor(
     private fun Flow<AccountEvent>.handleDeleteAccountConfirmed(): Flow<Pair<AccountState?, AccountEffect?>> {
         return filterIsInstance<AccountEvent.DeleteAccountConfirmed>()
             .mapWithState { state, _ ->
-                deleteAccountUseCase.deleteAccount()
-                state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to AccountEffect.ShowAccountDeleted
+                val effect = deleteAccountUseCase.deleteAccount()
+                    .fold(
+                        mapError = {
+                            AccountEffect.ShowNetworkError
+                        },
+                        mapSuccess = {
+                            AccountEffect.ShowAccountDeleted
+                        })
+                state.copy(accountLoadingState = AccountLoadingState.Success(user = getCurrentUserUseCase.getCurrentUser())) to effect
             }
     }
 

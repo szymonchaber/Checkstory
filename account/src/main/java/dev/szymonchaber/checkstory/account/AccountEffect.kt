@@ -25,4 +25,6 @@ sealed interface AccountEffect {
     data object ShowPurchaseAssignedToAnotherUser : AccountEffect
 
     data object ShowAccountDeleted : AccountEffect
+
+    data object ShowNetworkError : AccountEffect
 }

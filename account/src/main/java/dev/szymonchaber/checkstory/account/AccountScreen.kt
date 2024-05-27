@@ -165,6 +165,9 @@ fun AccountScreen(
                     AccountEffect.ShowAccountDeleted -> {
                         Toast.makeText(context, "Account deleted", Toast.LENGTH_SHORT).show()
                     }
+                    AccountEffect.ShowNetworkError -> {
+                        Toast.makeText(context, "Something went wrong", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
     }
