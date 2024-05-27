@@ -56,7 +56,7 @@ internal interface ApiModule {
 
         private const val TIME_OUT = 15_000
 
-        private const val API_ENDPOINT = "https://api.checkstory.tech"
+        private const val API_ENDPOINT = "https://api.checkstory.tech/v1/"
 
         @Provides
         @Singleton
