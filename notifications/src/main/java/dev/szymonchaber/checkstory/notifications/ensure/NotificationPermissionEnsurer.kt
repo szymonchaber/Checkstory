@@ -1,16 +1,25 @@
 package dev.szymonchaber.checkstory.notifications.ensure
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.accompanist.permissions.shouldShowRationale
 
 @Composable
 fun NotificationsEnsurer() {
@@ -31,13 +40,34 @@ private fun NotificationsEnsurerActual() {
                 viewModel.onPermissionGranted()
             }
         }
+    val lifecycle = LocalLifecycleOwner.current
+    LaunchedEffect(key1 = Unit) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            viewModel.onAppResumed()
+        }
+    }
+    val context = LocalContext.current
     if (state.value.showPermissionMissingDialog) {
         NotificationPermissionDialog(
             onDismiss = viewModel::onUserDismissed,
             onGrantPermission = {
-                permissionState.launchPermissionRequest()
+                if (permissionState.status.shouldShowRationale) {
+                    launchNotificationSettingsIntent(context)
+                } else {
+                    permissionState.launchPermissionRequest()
+                }
             },
         )
+    }
+}
+
+fun launchNotificationSettingsIntent(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val intent = Intent().apply {
+            action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        }
+        context.startActivity(intent)
     }
 }
 
