@@ -1,5 +1,6 @@
 package dev.szymonchaber.checkstory.checklist.catalog
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -46,7 +47,11 @@ fun TemplateView(
     template: Template,
     eventListener: (HomeEvent) -> Unit
 ) {
-    Column(Modifier.padding(top = 8.dp, bottom = 24.dp)) {
+    Column(
+        Modifier
+            .background(Color.White)
+            .padding(top = 8.dp, bottom = 24.dp)
+    ) {
         Row(
             Modifier
                 .fillMaxWidth(),

@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.Card
-import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
@@ -126,6 +125,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
         content = {
             ChecklistCatalogView(viewModel, navigator)
         },
+        backgroundColor = Color(0xFFF0F0F0)
     )
 }
 
@@ -255,9 +255,6 @@ private fun ChecklistCatalogView(
                     } else {
                         itemsIndexed(loadingState.templates, key = { _, item -> item.id }) { index, item ->
                             TemplateView(item, viewModel::onEvent)
-                            if (index < loadingState.templates.lastIndex) {
-                                Divider()
-                            }
                         }
                         item {
                             Box(modifier = Modifier.fillMaxWidth()) {
@@ -397,9 +394,11 @@ fun UnassignedPaymentDialog(
 fun FreeLimitReachedBanner(
     onEvent: (HomeEvent) -> Unit = {},
 ) {
-    Card(modifier = Modifier
-        .padding(horizontal = 16.dp)
-        .fillMaxWidth()) {
+    Card(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+    ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
