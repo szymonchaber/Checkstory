@@ -13,16 +13,13 @@ import dev.szymonchaber.checkstory.domain.usecase.DeleteChecklistUseCase
 import dev.szymonchaber.checkstory.domain.usecase.DeleteTemplateUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetAllTemplatesUseCase
 import dev.szymonchaber.checkstory.domain.usecase.GetCurrentUserUseCase
-import dev.szymonchaber.checkstory.domain.usecase.GetRecentChecklistsUseCase
 import dev.szymonchaber.checkstory.domain.usecase.SynchronizeDataUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -38,7 +35,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ChecklistCatalogViewModel @Inject constructor(
     private val getAllTemplatesUseCase: GetAllTemplatesUseCase,
-    private val getRecentChecklistsUseCase: GetRecentChecklistsUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val tracker: Tracker,
     private val onboardingPreferences: OnboardingPreferences,
@@ -103,24 +99,20 @@ class ChecklistCatalogViewModel @Inject constructor(
 
     private fun Flow<ChecklistCatalogEvent>.handleLoadCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
         return filterIsInstance<ChecklistCatalogEvent.LoadChecklistCatalog>()
-            .flatMapMerge {
-                val templatesLoading = getAllTemplatesUseCase.getAllTemplates()
+            .flatMapLatest {
+                getAllTemplatesUseCase.getAllTemplates()
                     .map {
-                        ChecklistCatalogLoadingState.Success(it)
-                    }.onStart<ChecklistCatalogLoadingState> {
+                        ChecklistCatalogLoadingState.Success(
+                            templates = it,
+                            canAddTemplate = canAddTemplate(getCurrentUserUseCase.getCurrentUser(), it)
+                        )
+                    }
+                    .onStart<ChecklistCatalogLoadingState> {
                         emit(ChecklistCatalogLoadingState.Loading)
                     }
-                val recentChecklistsLoading = getRecentChecklistsUseCase.getRecentChecklists()
                     .map {
-                        RecentChecklistsLoadingState.Success(it)
-                    }.onStart<RecentChecklistsLoadingState> {
-                        emit(RecentChecklistsLoadingState.Loading)
+                        state.value.copy(templatesLoadingState = it) to null
                     }
-
-                templatesLoading.combine(recentChecklistsLoading) { templates, checklists ->
-                    state.first()
-                        .copy(templatesLoadingState = templates, recentChecklistsLoadingState = checklists) to null
-                }
             }
     }
 

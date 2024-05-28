@@ -81,7 +81,7 @@ fun TemplateView(
             }
             TemplateActions(eventListener, template)
         }
-        val showChecklistCarousel by remember {
+        val showChecklistCarousel by remember(template) {
             derivedStateOf {
                 template.checklists.isNotEmpty()
             }

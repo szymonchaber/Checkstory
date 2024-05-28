@@ -1,6 +1,11 @@
 package dev.szymonchaber.checkstory.data.database.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import dev.szymonchaber.checkstory.data.database.model.CheckboxEntity
 import dev.szymonchaber.checkstory.data.database.model.ChecklistEntity
 import kotlinx.coroutines.flow.Flow
@@ -14,6 +19,11 @@ interface ChecklistDao {
                 "ORDER BY checklistEntity.createdAt DESC"
     )
     fun getAll(): Flow<List<DeepChecklistEntity>>
+
+    @Query(
+        "SELECT COUNT(checklistId) FROM checklistEntity"
+    )
+    fun getCount(): Flow<Int>
 
     @Query(
         "SELECT * FROM checklistEntity " +

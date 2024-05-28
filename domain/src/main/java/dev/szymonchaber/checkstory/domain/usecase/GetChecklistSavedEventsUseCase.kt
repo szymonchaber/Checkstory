@@ -7,5 +7,5 @@ class GetChecklistSavedEventsUseCase @Inject constructor(
     private val checklistRepository: ChecklistRepository
 ) {
 
-    fun getChecklistSavedEvents() = checklistRepository.checklistSavedEvents
+    fun getChecklistSavedEvents() = checklistRepository.checklistSavedEventFlow
 }

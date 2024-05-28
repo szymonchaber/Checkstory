@@ -6,17 +6,15 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChecklistRepository {
 
-    val checklistSavedEvents: Flow<ChecklistSaved>
+    val checklistSavedEventFlow: Flow<ChecklistSaved>
 
     suspend fun save(checklist: Checklist)
 
     suspend fun get(checklistId: ChecklistId): Checklist?
 
-    fun getChecklist(checklistId: ChecklistId): Flow<Checklist>
-
-    fun getAllChecklists(): Flow<List<Checklist>>
-
     suspend fun deleteAllData()
+
+    fun getCount(): Flow<Int>
 }
 
 object ChecklistSaved

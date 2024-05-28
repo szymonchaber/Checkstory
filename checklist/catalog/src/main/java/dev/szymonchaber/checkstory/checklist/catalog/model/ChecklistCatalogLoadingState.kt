@@ -4,6 +4,7 @@ import dev.szymonchaber.checkstory.domain.model.checklist.template.Template
 
 sealed interface ChecklistCatalogLoadingState {
 
-    class Success(val templates: List<Template>) : ChecklistCatalogLoadingState
-    object Loading : ChecklistCatalogLoadingState
+    data class Success(val templates: List<Template>, val canAddTemplate: Boolean) : ChecklistCatalogLoadingState
+
+    data object Loading : ChecklistCatalogLoadingState
 }

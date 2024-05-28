@@ -78,10 +78,8 @@ class FillChecklistViewModel @Inject constructor(
 
     private fun Flow<Event>.handleLoadChecklist(): Flow<Pair<State, Effect?>> {
         return filterIsInstance<Event.LoadChecklist>()
-            .flatMapLatest { loadEvent ->
-                getChecklistToFillUseCase.getChecklist(loadEvent.checklistId).map {
-                    State.Ready(it) to null
-                }
+            .map { loadEvent ->
+                State.Ready(getChecklistToFillUseCase.getChecklist(loadEvent.checklistId)!!) to null
             }
     }
 

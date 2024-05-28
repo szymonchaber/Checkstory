@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
+import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -45,6 +46,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
@@ -216,6 +218,10 @@ private fun ChecklistCatalogView(
         viewModel.onEvent(ChecklistCatalogEvent.PulledToRefresh)
     })
 
+    val loadingState = remember(state) {
+        state.templatesLoadingState
+    }
+
     Box(Modifier.pullRefresh(pullRefreshState)) {
         LazyColumn(
             modifier = Modifier
@@ -226,10 +232,15 @@ private fun ChecklistCatalogView(
 //            item {
 //                RecentChecklistsView(state.recentChecklistsLoadingState, viewModel::onEvent)
 //            }
-            item {
-                TemplatesHeader(state.templatesLoadingState, viewModel::onEvent)
+            if (loadingState is ChecklistCatalogLoadingState.Success && !loadingState.canAddTemplate) {
+                item {
+                    FreeLimitReachedBanner(viewModel::onEvent)
+                }
             }
-            when (val loadingState = state.templatesLoadingState) {
+            item {
+                TemplatesHeader(loadingState, viewModel::onEvent)
+            }
+            when (loadingState) {
                 ChecklistCatalogLoadingState.Loading -> {
                     item {
                         LoadingView()
@@ -379,4 +390,38 @@ fun UnassignedPaymentDialog(
             }
         }
     )
+}
+
+@Preview
+@Composable
+fun FreeLimitReachedBanner(
+    onEvent: (ChecklistCatalogEvent) -> Unit = {},
+) {
+    Card(modifier = Modifier
+        .padding(horizontal = 16.dp)
+        .fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Free template limit reached",
+                style = MaterialTheme.typography.h6
+            )
+            Space(size = 4.dp)
+            Text(
+                text = "Upgrade to PRO to create more templates",
+                style = MaterialTheme.typography.body2
+            )
+            Space(size = 8.dp)
+            Button(
+                modifier = Modifier.align(Alignment.End),
+                onClick = {
+                    onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+                }
+            ) {
+                Text("Upgrade now")
+            }
+        }
+    }
 }
