@@ -1,13 +1,13 @@
 package dev.szymonchaber.checkstory.checklist.catalog.model
 
-data class ChecklistCatalogState(
+data class HomeState(
     val templatesLoadingState: ChecklistCatalogLoadingState,
     val isRefreshing: Boolean
 ) {
 
     companion object {
 
-        val initial = ChecklistCatalogState(
+        val initial = HomeState(
             templatesLoadingState = ChecklistCatalogLoadingState.Loading,
             isRefreshing = false
         )

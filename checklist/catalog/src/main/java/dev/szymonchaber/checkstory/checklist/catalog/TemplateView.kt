@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
+import dev.szymonchaber.checkstory.checklist.catalog.model.HomeEvent
 import dev.szymonchaber.checkstory.checklist.catalog.recent.ChecklistsCarousel
 import dev.szymonchaber.checkstory.design.R
 import dev.szymonchaber.checkstory.design.dialog.ConfirmDeleteTemplateDialog
@@ -44,7 +44,7 @@ import java.util.*
 @Composable
 fun TemplateView(
     template: Template,
-    eventListener: (ChecklistCatalogEvent) -> Unit
+    eventListener: (HomeEvent) -> Unit
 ) {
     Column(Modifier.padding(top = 8.dp, bottom = 24.dp)) {
         Row(
@@ -67,7 +67,7 @@ fun TemplateView(
                         modifier = Modifier
                             .padding(start = 16.dp, top = 4.dp),
                         onClick = {
-                            eventListener(ChecklistCatalogEvent.UseTemplateClicked(template))
+                            eventListener(HomeEvent.UseTemplateClicked(template))
                         }
                     ) {
                         Text(text = stringResource(id = R.string.use).uppercase(), fontWeight = FontWeight.Bold)
@@ -96,12 +96,12 @@ fun TemplateView(
                 paddingValues = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp),
                 onChecklistClicked = {
                     eventListener(
-                        ChecklistCatalogEvent.RecentChecklistClicked(it.id)
+                        HomeEvent.RecentChecklistClicked(it.id)
                     )
                 },
                 onDeleteChecklistConfirmed = {
                     eventListener(
-                        ChecklistCatalogEvent.DeleteChecklistConfirmed(it.id)
+                        HomeEvent.DeleteChecklistConfirmed(it.id)
                     )
                 }
             )
@@ -111,7 +111,7 @@ fun TemplateView(
 
 @Composable
 private fun TemplateActions(
-    eventListener: (ChecklistCatalogEvent) -> Unit,
+    eventListener: (HomeEvent) -> Unit,
     template: Template
 ) {
     var showMenu by remember { mutableStateOf(false) }
@@ -119,7 +119,7 @@ private fun TemplateActions(
 
     if (showConfirmDeleteDialog.value) {
         ConfirmDeleteTemplateDialog(showConfirmDeleteDialog) {
-            eventListener(ChecklistCatalogEvent.DeleteTemplateConfirmed(template.id))
+            eventListener(HomeEvent.DeleteTemplateConfirmed(template.id))
             showConfirmDeleteDialog.value = false
         }
     }
@@ -137,13 +137,13 @@ private fun TemplateActions(
         ) {
             DropdownMenuItem(onClick = {
                 showMenu = false
-                eventListener(ChecklistCatalogEvent.EditTemplateClicked(template.id))
+                eventListener(HomeEvent.EditTemplateClicked(template.id))
             }) {
                 Text(text = stringResource(id = R.string.edit))
             }
             DropdownMenuItem(onClick = {
                 showMenu = false
-                eventListener(ChecklistCatalogEvent.TemplateHistoryClicked(template.id))
+                eventListener(HomeEvent.TemplateHistoryClicked(template.id))
             }) {
                 Text(text = stringResource(id = R.string.template_checklists))
             }

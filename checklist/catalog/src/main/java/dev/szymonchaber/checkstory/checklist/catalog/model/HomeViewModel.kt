@@ -33,7 +33,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class ChecklistCatalogViewModel @Inject constructor(
+class HomeViewModel @Inject constructor(
     private val getAllTemplatesUseCase: GetAllTemplatesUseCase,
     private val getCurrentUserUseCase: GetCurrentUserUseCase,
     private val tracker: Tracker,
@@ -43,11 +43,11 @@ class ChecklistCatalogViewModel @Inject constructor(
     private val deleteTemplateUseCase: DeleteTemplateUseCase,
     private val deleteChecklistUseCase: DeleteChecklistUseCase,
 ) : BaseViewModel<
-        ChecklistCatalogEvent,
-        ChecklistCatalogState,
-        ChecklistCatalogEffect
+        HomeEvent,
+        HomeState,
+        HomeEffect
         >(
-    ChecklistCatalogState.initial
+    HomeState.initial
 ) {
 
     init {
@@ -56,16 +56,16 @@ class ChecklistCatalogViewModel @Inject constructor(
                 checkForUnassignedPaymentUseCase.isUnassignedPaymentPresent() &&
                 onboardingPreferences.didShowOnboarding.first()
             ) {
-                onEvent(ChecklistCatalogEvent.UnassignedPaymentPresent)
+                onEvent(HomeEvent.UnassignedPaymentPresent)
             }
         }
         viewModelScope.launch {
             onboardingPreferences.didShowOnboarding
                 .flatMapLatest { didShowOnboarding ->
                     if (didShowOnboarding) {
-                        ChecklistCatalogEvent.LoadChecklistCatalog
+                        HomeEvent.LoadChecklistCatalog
                     } else {
-                        ChecklistCatalogEvent.GoToOnboarding
+                        HomeEvent.GoToOnboarding
                     }.let(::flowOf)
                 }
                 .onEach(::onEvent)
@@ -73,7 +73,7 @@ class ChecklistCatalogViewModel @Inject constructor(
         }
     }
 
-    override fun buildMviFlow(eventFlow: Flow<ChecklistCatalogEvent>): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
+    override fun buildMviFlow(eventFlow: Flow<HomeEvent>): Flow<Pair<HomeState?, HomeEffect?>> {
         return merge(
             eventFlow.handleLoadCatalog(),
             eventFlow.handleGoToOnboarding(),
@@ -97,8 +97,8 @@ class ChecklistCatalogViewModel @Inject constructor(
         }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleLoadCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.LoadChecklistCatalog>()
+    private fun Flow<HomeEvent>.handleLoadCatalog(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.LoadChecklistCatalog>()
             .flatMapLatest {
                 getAllTemplatesUseCase.getAllTemplates()
                     .map {
@@ -116,8 +116,8 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleRefreshCatalog(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.PulledToRefresh>()
+    private fun Flow<HomeEvent>.handleRefreshCatalog(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.PulledToRefresh>()
             .flatMapLatest {
                 flow {
                     emit(state.first().copy(isRefreshing = true) to null)
@@ -127,76 +127,76 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleGoToOnboarding(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.GoToOnboarding>()
+    private fun Flow<HomeEvent>.handleGoToOnboarding(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.GoToOnboarding>()
             .map {
-                state.first() to ChecklistCatalogEffect.NavigateToOnboarding
+                state.first() to HomeEffect.NavigateToOnboarding
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleUnassignedPaymentPresent(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.UnassignedPaymentPresent>()
+    private fun Flow<HomeEvent>.handleUnassignedPaymentPresent(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.UnassignedPaymentPresent>()
             .map {
-                state.first() to ChecklistCatalogEffect.ShowUnassignedPaymentDialog
+                state.first() to HomeEffect.ShowUnassignedPaymentDialog
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleCreateAccountForPaymentClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.CreateAccountForPaymentClicked>()
+    private fun Flow<HomeEvent>.handleCreateAccountForPaymentClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.CreateAccountForPaymentClicked>()
             .mapLatest {
-                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen(true)
+                state.first() to HomeEffect.NavigateToAccountScreen(true)
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleAccountClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.AccountClicked>()
+    private fun Flow<HomeEvent>.handleAccountClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.AccountClicked>()
             .mapLatest {
-                state.first() to ChecklistCatalogEffect.NavigateToAccountScreen(false)
+                state.first() to HomeEffect.NavigateToAccountScreen(false)
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleUseTemplateClicked(): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.UseTemplateClicked>()
+    private fun Flow<HomeEvent>.handleUseTemplateClicked(): Flow<Pair<HomeState?, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.UseTemplateClicked>()
             .onEach {
                 tracker.logEvent("template_clicked")
             }
             .map { event ->
-                null to ChecklistCatalogEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
+                null to HomeEffect.CreateAndNavigateToChecklist(basedOn = event.template.id)
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleRecentChecklistClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.RecentChecklistClicked>()
+    private fun Flow<HomeEvent>.handleRecentChecklistClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.RecentChecklistClicked>()
             .onEach {
                 tracker.logEvent("recent_checklist_clicked")
             }
             .map {
-                state.first() to ChecklistCatalogEffect.NavigateToChecklist(checklistId = it.checklistId)
+                state.first() to HomeEffect.NavigateToChecklist(checklistId = it.checklistId)
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleRecentChecklistInTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.RecentChecklistClickedInTemplate>()
+    private fun Flow<HomeEvent>.handleRecentChecklistInTemplateClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.RecentChecklistClickedInTemplate>()
             .onEach {
                 tracker.logEvent("recent_checklist_under_template_clicked")
             }
             .map {
-                state.first() to ChecklistCatalogEffect.NavigateToChecklist(checklistId = it.checklistId)
+                state.first() to HomeEffect.NavigateToChecklist(checklistId = it.checklistId)
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleEditTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.EditTemplateClicked>()
+    private fun Flow<HomeEvent>.handleEditTemplateClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.EditTemplateClicked>()
             .onEach {
                 tracker.logEvent("catalog_edit_template_clicked")
             }
             .map {
-                state.first() to ChecklistCatalogEffect.NavigateToTemplateEdit(templateId = it.templateId)
+                state.first() to HomeEffect.NavigateToTemplateEdit(templateId = it.templateId)
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleNewTemplateClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.NewTemplateClicked>()
+    private fun Flow<HomeEvent>.handleNewTemplateClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.NewTemplateClicked>()
             .onEach {
                 tracker.logEvent("new_template_clicked")
             }
@@ -204,31 +204,31 @@ class ChecklistCatalogViewModel @Inject constructor(
             .mapLatest { (state, _) ->
                 val user = getCurrentUserUseCase.getCurrentUserFlow().first()
                 val effect = if (canAddTemplate(user, state.templates)) {
-                    ChecklistCatalogEffect.NavigateToNewTemplate
+                    HomeEffect.NavigateToNewTemplate
                 } else {
-                    ChecklistCatalogEffect.NavigateToPaymentScreen
+                    HomeEffect.NavigateToPaymentScreen
                 }
                 _state.first() to effect
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleGetProClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.GetCheckstoryProClicked>()
+    private fun Flow<HomeEvent>.handleGetProClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.GetCheckstoryProClicked>()
             .onEach {
                 tracker.logEvent("catalog_get_pro_option_clicked")
             }
             .mapLatest {
-                _state.first() to ChecklistCatalogEffect.NavigateToPaymentScreen
+                _state.first() to HomeEffect.NavigateToPaymentScreen
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleAboutClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.AboutClicked>()
+    private fun Flow<HomeEvent>.handleAboutClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.AboutClicked>()
             .onEach {
                 tracker.logEvent("about_clicked")
             }
             .mapLatest {
-                _state.first() to ChecklistCatalogEffect.NavigateToAboutScreen
+                _state.first() to HomeEffect.NavigateToAboutScreen
             }
     }
 
@@ -236,18 +236,18 @@ class ChecklistCatalogViewModel @Inject constructor(
         return list.count() < MAX_FREE_TEMPLATES || user.isPaidUser
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleHistoryClicked(): Flow<Pair<ChecklistCatalogState, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.TemplateHistoryClicked>()
+    private fun Flow<HomeEvent>.handleHistoryClicked(): Flow<Pair<HomeState, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.TemplateHistoryClicked>()
             .onEach {
                 tracker.logEvent("catalog_template_history_clicked")
             }
             .map {
-                state.first() to ChecklistCatalogEffect.NavigateToTemplateHistory(templateId = it.templateId)
+                state.first() to HomeEffect.NavigateToTemplateHistory(templateId = it.templateId)
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleDeleteTemplateConfirmed(): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.DeleteTemplateConfirmed>()
+    private fun Flow<HomeEvent>.handleDeleteTemplateConfirmed(): Flow<Pair<HomeState?, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.DeleteTemplateConfirmed>()
             .onEach {
                 tracker.logEvent("catalog_template_deleted")
             }
@@ -257,8 +257,8 @@ class ChecklistCatalogViewModel @Inject constructor(
             }
     }
 
-    private fun Flow<ChecklistCatalogEvent>.handleDeleteChecklistConfirmed(): Flow<Pair<ChecklistCatalogState?, ChecklistCatalogEffect?>> {
-        return filterIsInstance<ChecklistCatalogEvent.DeleteChecklistConfirmed>()
+    private fun Flow<HomeEvent>.handleDeleteChecklistConfirmed(): Flow<Pair<HomeState?, HomeEffect?>> {
+        return filterIsInstance<HomeEvent.DeleteChecklistConfirmed>()
             .onEach {
                 tracker.logEvent("catalog_checklist_deleted")
             }

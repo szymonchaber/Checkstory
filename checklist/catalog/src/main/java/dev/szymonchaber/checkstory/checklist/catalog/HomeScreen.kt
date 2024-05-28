@@ -57,10 +57,10 @@ import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.spec.Direction
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEffect
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogEvent
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
-import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogViewModel
+import dev.szymonchaber.checkstory.checklist.catalog.model.HomeEffect
+import dev.szymonchaber.checkstory.checklist.catalog.model.HomeEvent
+import dev.szymonchaber.checkstory.checklist.catalog.model.HomeViewModel
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.ActiveUser
 import dev.szymonchaber.checkstory.design.R
@@ -79,7 +79,7 @@ annotation class HomeGraph
 @Destination<HomeGraph>(route = "home_screen", start = true)
 fun HomeScreen(navigator: DestinationsNavigator) {
     trackScreenName("checklist_catalog")
-    val viewModel = hiltViewModel<ChecklistCatalogViewModel>()
+    val viewModel = hiltViewModel<HomeViewModel>()
     var showMenu by remember { mutableStateOf(false) }
     AdvertScaffold(
         topBar = {
@@ -98,18 +98,18 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                     ) {
                         if (!ActiveUser.current.isPaidUser) {
                             DropdownMenuItem(onClick = {
-                                viewModel.onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+                                viewModel.onEvent(HomeEvent.GetCheckstoryProClicked)
                             }) {
                                 Text(text = stringResource(id = R.string.upgrade))
                             }
                         }
                         DropdownMenuItem(onClick = {
-                            viewModel.onEvent(ChecklistCatalogEvent.AccountClicked)
+                            viewModel.onEvent(HomeEvent.AccountClicked)
                         }) {
                             Text(text = "Account")
                         }
                         DropdownMenuItem(onClick = {
-                            viewModel.onEvent(ChecklistCatalogEvent.AboutClicked)
+                            viewModel.onEvent(HomeEvent.AboutClicked)
                         }) {
                             Text(text = stringResource(id = R.string.about))
                         }
@@ -152,7 +152,7 @@ internal class DebugToolsViewModel @Inject constructor(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 private fun ChecklistCatalogView(
-    viewModel: ChecklistCatalogViewModel,
+    viewModel: HomeViewModel,
     navigator: DestinationsNavigator
 ) {
     val state by viewModel.state.collectAsState()
@@ -160,50 +160,50 @@ private fun ChecklistCatalogView(
     var showUnassignedPaymentDialog by remember { mutableStateOf(false) }
     if (showUnassignedPaymentDialog) {
         UnassignedPaymentDialog(onDismiss = { showUnassignedPaymentDialog = false }) {
-            viewModel.onEvent(ChecklistCatalogEvent.CreateAccountForPaymentClicked)
+            viewModel.onEvent(HomeEvent.CreateAccountForPaymentClicked)
             showUnassignedPaymentDialog = false
         }
     }
     LaunchedEffect(Unit) {
         viewModel.effect.collect {
             when (it) {
-                is ChecklistCatalogEffect.NavigateToOnboarding -> {
+                is HomeEffect.NavigateToOnboarding -> {
                     navigator.navigate(Routes.onboardingScreen())
                 }
 
-                is ChecklistCatalogEffect.CreateAndNavigateToChecklist -> {
+                is HomeEffect.CreateAndNavigateToChecklist -> {
                     navigator.navigate(Routes.newChecklistScreen(it.basedOn))
                 }
 
-                is ChecklistCatalogEffect.NavigateToChecklist -> {
+                is HomeEffect.NavigateToChecklist -> {
                     navigator.navigate(Routes.editChecklistScreen(it.checklistId))
                 }
 
-                is ChecklistCatalogEffect.NavigateToTemplateEdit -> {
+                is HomeEffect.NavigateToTemplateEdit -> {
                     navigator.navigate(Routes.editTemplateScreen(it.templateId))
                 }
 
-                is ChecklistCatalogEffect.NavigateToTemplateHistory -> {
+                is HomeEffect.NavigateToTemplateHistory -> {
                     navigator.navigate(Routes.checklistHistoryScreen(it.templateId))
                 }
 
-                is ChecklistCatalogEffect.NavigateToNewTemplate -> {
+                is HomeEffect.NavigateToNewTemplate -> {
                     navigator.navigate(Routes.newTemplateScreen())
                 }
 
-                is ChecklistCatalogEffect.NavigateToPaymentScreen -> {
+                is HomeEffect.NavigateToPaymentScreen -> {
                     navigator.navigate(Routes.paymentScreen())
                 }
 
-                is ChecklistCatalogEffect.NavigateToAboutScreen -> {
+                is HomeEffect.NavigateToAboutScreen -> {
                     navigator.navigate(Routes.aboutScreen())
                 }
 
-                is ChecklistCatalogEffect.ShowUnassignedPaymentDialog -> {
+                is HomeEffect.ShowUnassignedPaymentDialog -> {
                     showUnassignedPaymentDialog = true
                 }
 
-                is ChecklistCatalogEffect.NavigateToAccountScreen -> {
+                is HomeEffect.NavigateToAccountScreen -> {
                     navigator.navigate(
                         Routes.accountScreen(
                             triggerPurchaseRestoration = it.triggerPurchaseRestoration
@@ -215,7 +215,7 @@ private fun ChecklistCatalogView(
     }
 
     val pullRefreshState = rememberPullRefreshState(state.isRefreshing, {
-        viewModel.onEvent(ChecklistCatalogEvent.PulledToRefresh)
+        viewModel.onEvent(HomeEvent.PulledToRefresh)
     })
 
     val loadingState = remember(state) {
@@ -264,7 +264,7 @@ private fun ChecklistCatalogView(
                                 OutlinedButton(
                                     modifier = Modifier.align(Alignment.Center),
                                     onClick = {
-                                        viewModel.onEvent(ChecklistCatalogEvent.NewTemplateClicked)
+                                        viewModel.onEvent(HomeEvent.NewTemplateClicked)
                                     }) {
                                     Text(
                                         text = stringResource(R.string.new_checklist).uppercase(),
@@ -281,7 +281,7 @@ private fun ChecklistCatalogView(
 }
 
 @Composable
-private fun TemplatesHeader(state: ChecklistCatalogLoadingState, onEvent: (ChecklistCatalogEvent) -> Unit) {
+private fun TemplatesHeader(state: ChecklistCatalogLoadingState, onEvent: (HomeEvent) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         SectionLabel(
             modifier = Modifier.padding(start = 16.dp),
@@ -320,18 +320,18 @@ private fun PaidTemplateCounter(currentCount: Int) {
 @Composable
 private fun RowScope.FreeTemplateCounter(
     currentCount: Int,
-    onEvent: (ChecklistCatalogEvent) -> Unit
+    onEvent: (HomeEvent) -> Unit
 ) {
     Text(
         style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
-        text = "$currentCount / ${ChecklistCatalogViewModel.MAX_FREE_TEMPLATES} free"
+        text = "$currentCount / ${HomeViewModel.MAX_FREE_TEMPLATES} free"
     )
     Space(4.dp)
     Text(
         modifier = Modifier
             .background(Primary)
             .clickable {
-                onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+                onEvent(HomeEvent.GetCheckstoryProClicked)
             }
             .padding(4.dp),
         style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Medium),
@@ -341,7 +341,7 @@ private fun RowScope.FreeTemplateCounter(
 }
 
 @Composable
-fun NoTemplatesView(onEvent: (ChecklistCatalogEvent) -> Unit) {
+fun NoTemplatesView(onEvent: (HomeEvent) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -357,7 +357,7 @@ fun NoTemplatesView(onEvent: (ChecklistCatalogEvent) -> Unit) {
         )
         Button(
             onClick = {
-                onEvent(ChecklistCatalogEvent.NewTemplateClicked)
+                onEvent(HomeEvent.NewTemplateClicked)
             }) {
             Text(
                 text = stringResource(R.string.new_checklist).uppercase(),
@@ -395,7 +395,7 @@ fun UnassignedPaymentDialog(
 @Preview
 @Composable
 fun FreeLimitReachedBanner(
-    onEvent: (ChecklistCatalogEvent) -> Unit = {},
+    onEvent: (HomeEvent) -> Unit = {},
 ) {
     Card(modifier = Modifier
         .padding(horizontal = 16.dp)
@@ -417,7 +417,7 @@ fun FreeLimitReachedBanner(
             Button(
                 modifier = Modifier.align(Alignment.End),
                 onClick = {
-                    onEvent(ChecklistCatalogEvent.GetCheckstoryProClicked)
+                    onEvent(HomeEvent.GetCheckstoryProClicked)
                 }
             ) {
                 Text("Upgrade now")
