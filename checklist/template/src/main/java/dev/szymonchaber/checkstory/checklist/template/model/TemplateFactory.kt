@@ -62,18 +62,8 @@ fun placeholderTasks(block: OnboardingTasks.() -> Unit): MutableList<Triple<Temp
 
 fun generateOnboardingTasks(): MutableList<Triple<TemplateTaskId, TemplateTaskId?, String>> {
     return placeholderTasks {
-        topLevelPlaceholder("Add as many tasks as you want")
-
-        topLevelPlaceholder("Nest them as needed") {
-
-            nestedPlaceholder("We think that it’s neat") {
-
-                nestedPlaceholder("Nest them as needed") {
-
-                    nestedPlaceholder("Up to four levels deep")
-
-                }
-            }
+        topLevelPlaceholder("Add as many tasks as you want") {
+            nestedPlaceholder("Nest them as needed")
         }
         topLevelPlaceholder("You can add links like this:\ncheckstory.tech")
 
