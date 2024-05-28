@@ -17,6 +17,7 @@ import dev.szymonchaber.checkstory.domain.usecase.SynchronizeDataUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -100,13 +101,15 @@ class HomeViewModel @Inject constructor(
     private fun Flow<HomeEvent>.handleLoadCatalog(): Flow<Pair<HomeState, HomeEffect?>> {
         return filterIsInstance<HomeEvent.LoadChecklistCatalog>()
             .flatMapLatest {
-                getAllTemplatesUseCase.getAllTemplates()
-                    .map {
-                        ChecklistCatalogLoadingState.Success(
-                            templates = it,
-                            canAddTemplate = canAddTemplate(getCurrentUserUseCase.getCurrentUser(), it)
-                        )
-                    }
+                combine(
+                    getAllTemplatesUseCase.getAllTemplates(),
+                    getCurrentUserUseCase.getCurrentUserFlow()
+                ) { templates, user ->
+                    ChecklistCatalogLoadingState.Success(
+                        templates = templates,
+                        canAddTemplate = canAddTemplate(user, templates)
+                    )
+                }
                     .onStart<ChecklistCatalogLoadingState> {
                         emit(ChecklistCatalogLoadingState.Loading)
                     }
