@@ -4,8 +4,8 @@ import android.app.Activity
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -78,7 +78,7 @@ fun SessionHandler() {
         )
     }
     if (state.value.showAccountMismatchDialog) {
-        AccountMismatchDialog(viewModel)
+        AccountMismatchDialog(viewModel::onEvent)
     }
     if (state.value.showLoading) {
         LoggingInDialog()
@@ -86,7 +86,8 @@ fun SessionHandler() {
 }
 
 @Composable
-private fun AccountMismatchDialog(viewModel: SessionHandlerViewModel) {
+@Preview
+private fun AccountMismatchDialog(onEvent: (SessionHandlerEvent) -> Unit = {}) {
     AlertDialog(
         title = {
             Text(text = "Account mismatch")
@@ -95,15 +96,15 @@ private fun AccountMismatchDialog(viewModel: SessionHandlerViewModel) {
             Text(text = "You are trying to login with a different account than the one you were previously logged in with. Please try again.")
         },
         confirmButton = {
-            Button(onClick = {
-                viewModel.onEvent(SessionHandlerEvent.TryAgainClicked)
+            TextButton(onClick = {
+                onEvent(SessionHandlerEvent.TryAgainClicked)
             }) {
                 Text(text = "Try again")
             }
         },
         dismissButton = {
-            Button(onClick = {
-                viewModel.onEvent(SessionHandlerEvent.LogoutClicked)
+            TextButton(onClick = {
+                onEvent(SessionHandlerEvent.LogoutClicked)
             }) {
                 Text(text = "Logout")
             }
@@ -128,7 +129,8 @@ private fun LoggingInDialog() {
 }
 
 @Composable
-private fun SessionExpiredDialog(onEvent: (SessionHandlerEvent) -> Unit) {
+@Preview
+private fun SessionExpiredDialog(onEvent: (SessionHandlerEvent) -> Unit = {}) {
     AlertDialog(
         title = {
             Text(text = "Session expired!")
@@ -137,14 +139,14 @@ private fun SessionExpiredDialog(onEvent: (SessionHandlerEvent) -> Unit) {
             Text(text = "You have to login again, otherwise your local data will be deleted")
         },
         confirmButton = {
-            Button(onClick = {
+            TextButton(onClick = {
                 onEvent(SessionHandlerEvent.LoginClicked)
             }) {
                 Text(text = "Login")
             }
         },
         dismissButton = {
-            Button(onClick = {
+            TextButton(onClick = {
                 onEvent(SessionHandlerEvent.LogoutClicked)
             }) {
                 Text(text = "Logout")
