@@ -570,7 +570,7 @@ private fun DescriptionTextField(
                 horizontal = 16.dp,
                 vertical = 8.dp,
             ),
-        label = stringResource(R.string.description),
+        label = stringResource(R.string.additional_instructions),
         placeholder = onboardingPlaceholders?.description,
         keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
     )
