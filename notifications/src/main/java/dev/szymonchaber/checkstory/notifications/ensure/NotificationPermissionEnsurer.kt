@@ -10,14 +10,11 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.repeatOnLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 
@@ -34,20 +31,9 @@ fun NotificationsEnsurer() {
 private fun NotificationsEnsurerActual() {
     val viewModel = hiltViewModel<NotificationsViewModel>()
     val state = viewModel.state.collectAsState()
-    val permissionState =
-        rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS) { granted ->
-            if (granted) {
-                viewModel.onPermissionGranted()
-            }
-        }
-    val lifecycle = LocalLifecycleOwner.current
-    LaunchedEffect(key1 = Unit) {
-        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.onAppResumed()
-        }
-    }
+    val permissionState = rememberPermissionState(Manifest.permission.POST_NOTIFICATIONS)
     val context = LocalContext.current
-    if (state.value.showPermissionMissingDialog) {
+    if (state.value.checkNotificationPermissionMissing && !permissionState.status.isGranted) {
         NotificationPermissionDialog(
             onDismiss = viewModel::onUserDismissed,
             onGrantPermission = {
@@ -61,7 +47,7 @@ private fun NotificationsEnsurerActual() {
     }
 }
 
-fun launchNotificationSettingsIntent(context: Context) {
+private fun launchNotificationSettingsIntent(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val intent = Intent().apply {
             action = Settings.ACTION_APP_NOTIFICATION_SETTINGS

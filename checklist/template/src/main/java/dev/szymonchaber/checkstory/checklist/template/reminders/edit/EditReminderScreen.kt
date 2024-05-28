@@ -1,7 +1,10 @@
 package dev.szymonchaber.checkstory.checklist.template.reminders.edit
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -115,10 +119,27 @@ private fun ColumnScope.PermissionEnsuringEditReminderView(reminder: Reminder, o
                 "Notification permission is not granted. Without it, you won't receive reminders."
             }
             Text(textToShow)
-            Button(onClick = { permissionState.launchPermissionRequest() }) {
+            val context = LocalContext.current
+            Button(onClick = {
+                if (permissionState.status.shouldShowRationale) {
+                    launchNotificationSettingsIntent(context)
+                } else {
+                    permissionState.launchPermissionRequest()
+                }
+            }) {
                 Text("Request permission")
             }
         }
+    }
+}
+
+private fun launchNotificationSettingsIntent(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val intent = Intent().apply {
+            action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+        }
+        context.startActivity(intent)
     }
 }
 
