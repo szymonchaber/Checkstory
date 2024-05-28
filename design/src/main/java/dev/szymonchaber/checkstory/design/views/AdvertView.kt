@@ -46,7 +46,7 @@ fun AdvertView(modifier: Modifier = Modifier) {
         mutableStateOf(false)
     }
     if (!adLoadingFailed) {
-        Column {
+        Column(Modifier.background(Color.White)) {
             Spacer(
                 modifier = Modifier
                     .height(2.dp)
