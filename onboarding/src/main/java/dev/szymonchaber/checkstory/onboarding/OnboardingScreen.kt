@@ -41,8 +41,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,6 +57,7 @@ import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.szymonchaber.checkstory.common.trackScreenName
 import dev.szymonchaber.checkstory.design.R
+import dev.szymonchaber.checkstory.design.views.Space
 import dev.szymonchaber.checkstory.navigation.Routes
 import kotlinx.coroutines.launch
 
@@ -205,31 +206,34 @@ private fun LegalLinks() {
 fun OnboardingView(pagerState: PagerState) {
     HorizontalPager(count = 2, state = pagerState) { page ->
         when (page) {
-            0 -> ReusableChecklistsPage()
-            1 -> KeepTrackOfThePastPage()
+            0 -> SimplyChecklists()
+            1 -> OneClickUse()
         }
     }
 }
 
+@Preview
 @Composable
-private fun ReusableChecklistsPage() {
+private fun SimplyChecklists() {
     OnboardingPage(
-        imageRes = R.drawable.onboarding_1,
-        title = "We’re all about\nreusable checklists",
-        description = "Every checklist is made from a template.\n" +
-                "This lets you start working with\na single click.\n" +
-                "You can also work on multiple checklists at the same time."
+        imageRes = R.drawable.onboarding_1_new,
+        title = "Checklists. Reusable.",
+        "Create a checklist and fill it again and again.",
+        "Name different copies of the same checklist for easy reference.",
+        "Put tasks within tasks.",
+        "Simple, right?"
     )
 }
 
+@Preview
 @Composable
-private fun KeepTrackOfThePastPage() {
+private fun OneClickUse() {
     OnboardingPage(
-        imageRes = R.drawable.onboarding_2,
-        title = "Keep track of the past",
-        description = "When you’re done with a checklist,\nyou can keep it to track your past accomplishments & notes." +
-                "\n" +
-                "Editing a template affects only future checklists - we don’t rewrite history."
+        imageRes = R.drawable.onboarding_2_new,
+        title = "One-click reuse",
+        "You can have many copies of the same checklist at once.",
+        "No manual un-checking your tasks, just a single click.",
+        "Useful for parallel work or tracking the past."
     )
 }
 
@@ -237,7 +241,7 @@ private fun KeepTrackOfThePastPage() {
 private fun OnboardingPage(
     @DrawableRes imageRes: Int,
     title: String,
-    description: String
+    vararg descriptionLines: String
 ) {
     Column(Modifier.fillMaxSize()) {
         Box(
@@ -260,19 +264,20 @@ private fun OnboardingPage(
                 .fillMaxWidth()
                 .padding(top = 16.dp)
                 .padding(horizontal = 16.dp),
-            style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Medium, textAlign = TextAlign.Center),
+            style = MaterialTheme.typography.h5.copy(fontWeight = FontWeight.Medium),
             text = title
         )
-        Text(
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .padding(horizontal = 16.dp),
-            style = MaterialTheme.typography.body1.copy(
-                textAlign = TextAlign.Center,
-                fontSize = 18.sp,
-                lineHeight = 25.sp
-            ),
-            text = description
-        )
+        Space(size = 4.dp)
+        descriptionLines.forEach {
+            Text(
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 16.dp),
+                style = MaterialTheme.typography.body2.copy(
+                    fontSize = 18.sp
+                ),
+                text = it
+            )
+        }
     }
 }
