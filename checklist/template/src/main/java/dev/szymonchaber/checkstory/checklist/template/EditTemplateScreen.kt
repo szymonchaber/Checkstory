@@ -374,7 +374,7 @@ fun EditTemplateView(
                         .detectLazyListReorder()
                         .fillMaxWidth(),
                     state = dragDropState.lazyListState,
-                    contentPadding = PaddingValues(bottom = 96.dp),
+                    contentPadding = PaddingValues(bottom = 288.dp),
                 ) {
                     item {
                         TemplateDetails(template, ready.onboardingPlaceholders, eventCollector)
