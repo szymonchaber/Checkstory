@@ -20,8 +20,8 @@ android {
         applicationId = "dev.szymonchaber.checkstory"
         minSdk = 24
         targetSdk = 33
-        versionCode = 51
-        versionName = "2.0.0-alpha06"
+        versionCode = 53
+        versionName = "2.0.0"
 
         resourceConfigurations.add("en")
 
@@ -35,6 +35,14 @@ android {
         resValue("string", "ads_application_id", getSecret("ADS_APPLICATION_ID"))
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("/Users/szymonchaber/app_signing_keystore_important.jks")
+            storePassword = "GrYpSuJ123456"
+            keyAlias = "szymonchaber"
+            keyPassword = "GrYpSuJ123456"
+        }
+    }
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -46,6 +54,7 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             resValue("string", "app_name", "Checkstory")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
