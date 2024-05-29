@@ -1,6 +1,7 @@
 package dev.szymonchaber.checkstory.checklist.template
 
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.lazy.LazyListState
@@ -25,6 +26,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastFirstOrNull
 import dev.szymonchaber.checkstory.checklist.template.reoder.LocalDragDropState
 import dev.szymonchaber.checkstory.domain.model.checklist.template.TemplateTaskId
 import kotlinx.coroutines.CoroutineScope
@@ -214,22 +216,26 @@ fun Modifier.detectDragHandleReorder(): Modifier {
             forEachGesture {
                 awaitPointerEventScope {
                     val down = awaitFirstDown(requireUnconsumed = false)
-                    var drag: PointerInputChange?
-                    var overSlop = Offset.Zero
-                    do {
-                        drag = awaitPointerSlopOrCancellation(down.id, down.type) { change, over ->
-                            change.consume()
-                            overSlop = over
-                        }
-                    } while (drag != null && !drag.isConsumed)
-                    if (drag != null) {
-                        Timber.d(
-                            """Sending
+                    val longPress = awaitLongPressOrCancellation(down.id)
+                    if (longPress != null) {
+                        var drag: PointerInputChange?
+                        var overSlop = Offset.Zero
+                        state.interactions.trySend(StartDrag(down.id, overSlop, currentPosition, size))
+                        do {
+                            drag = awaitPointerSlopOrCancellation(down.id, down.type) { change, over ->
+                                change.consume()
+                                overSlop = over
+                            }
+                        } while (drag != null && !drag.isConsumed)
+                        if (drag != null) {
+                            Timber.d(
+                                """Sending
                             |size: $size
                             |currentPosition: $currentPosition
                         """.trimMargin()
-                        )
-                        state.interactions.trySend(StartDrag(down.id, overSlop, currentPosition, size))
+                            )
+                            state.interactions.trySend(StartDrag(down.id, overSlop, currentPosition, size))
+                        }
                     }
                 }
             }
