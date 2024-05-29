@@ -54,7 +54,6 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.ExternalModuleGraph
 import com.ramcosta.composedestinations.annotation.NavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.ramcosta.composedestinations.spec.Direction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.szymonchaber.checkstory.checklist.catalog.model.ChecklistCatalogLoadingState
 import dev.szymonchaber.checkstory.checklist.catalog.model.HomeEffect
@@ -68,6 +67,7 @@ import dev.szymonchaber.checkstory.design.views.AdvertScaffold
 import dev.szymonchaber.checkstory.design.views.LoadingView
 import dev.szymonchaber.checkstory.design.views.SectionLabel
 import dev.szymonchaber.checkstory.design.views.Space
+import dev.szymonchaber.checkstory.domain.model.User
 import dev.szymonchaber.checkstory.navigation.Routes
 import javax.inject.Inject
 
@@ -95,7 +95,11 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
-                        if (!ActiveUser.current.isPaidUser) {
+                        val user = ActiveUser.current
+                        (user as? User.LoggedIn)?.email?.let {
+                            Text(modifier = Modifier.padding(all = 16.dp), text = it)
+                        }
+                        if (!user.isPaidUser) {
                             DropdownMenuItem(onClick = {
                                 viewModel.onEvent(HomeEvent.GetCheckstoryProClicked)
                             }) {
@@ -112,12 +116,12 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                         }) {
                             Text(text = stringResource(id = R.string.about))
                         }
-                        DebugTools()
-                        DropdownMenuItem(onClick = {
-                            navigator.navigate(Direction("debug_screen"))
-                        }) {
-                            Text(text = "Debug menu")
-                        }
+//                        DebugTools()
+//                        DropdownMenuItem(onClick = {
+//                            navigator.navigate(Direction("debug_screen"))
+//                        }) {
+//                            Text(text = "Debug menu")
+//                        }
                     }
                 }
             )
