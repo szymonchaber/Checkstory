@@ -78,7 +78,8 @@ class DragDropState(val lazyListState: LazyListState, val scope: CoroutineScope,
             ?.takeUnless { it.key !is TemplateTaskId }
             ?.also { itemInfo ->
                 currentIndexOfDraggedItem = itemInfo.index
-                initialDragPosition = Offset(dragSource.handlePosition.x, itemInfo.offset.toFloat())
+                initialDragPosition =
+                    Offset(dragSource.handlePosition.x, itemInfo.offset.toFloat() + dragSource.handleSize.height / 2)
                 initialDragSize = IntSize(width = dragSource.handleSize.width, height = itemInfo.size)
                 isDragging = true
                 taskViewId = itemInfo.key as? TemplateTaskId
